@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../theme/colors.dart';
@@ -59,6 +60,14 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
+    // 애니메이션 완료 후 자동 전환
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // TODO: 메인 화면이 구현되면 주석 해제
+        // context.go('/home');
+      }
+    });
+
     _controller.forward();
   }
 
@@ -68,8 +77,58 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  /// 화면 크기 기반 원의 크기 계산
+  ({double inner, double middle, double outer}) _calculateCircleSizes(
+      Size screenSize) {
+    final width = screenSize.width;
+
+    return (
+      inner: width * 0.52,        // 기준 원
+      middle: width * 0.89,       // 내부 원보다 약 1.7배
+      outer: width * 1.35,        // 중간 원보다 약 1.5배 (화면 밖으로 약간 넘침)
+    );
+  }
+
+  /// 원형 위젯 생성 헬퍼 메서드
+  Widget _buildCircle({
+    required double size,
+    required double scale,
+    required double opacity,
+    bool useOverflow = false,
+  }) {
+    final circle = Transform.scale(
+      scale: scale,
+      child: Opacity(
+        opacity: opacity,
+        child: SvgPicture.asset(
+          'assets/images/ellipse-67.svg',
+          width: size,
+          height: size,
+          colorFilter: ColorFilter.mode(
+            Colors.white.withValues(alpha: opacity),
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
+    );
+
+    if (useOverflow) {
+      return OverflowBox(
+        maxWidth: size * 1.5,
+        maxHeight: size * 1.5,
+        alignment: Alignment.center,
+        child: circle,
+      );
+    }
+
+    return circle;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final sizes = _calculateCircleSizes(screenSize);
+
     return Scaffold(
       backgroundColor: AppColors.brandPrimary,
       body: SafeArea(
@@ -77,41 +136,25 @@ class _SplashScreenState extends State<SplashScreen>
           animation: _controller,
           builder: (context, child) {
             return Stack(
+              clipBehavior: Clip.none,
               children: [
                 // 배경 원형 링들 (바깥쪽) - 애니메이션 (화면을 벗어남)
                 Center(
-                  child: Transform.scale(
+                  child: _buildCircle(
+                    size: sizes.outer,
                     scale: _outerCircleScale.value,
-                    child: Opacity(
-                      opacity: _outerCircleScale.value * 0.25,
-                      child: SvgPicture.asset(
-                        'assets/images/ellipse-67.svg',
-                        width: 700,
-                        height: 700,
-                        colorFilter: ColorFilter.mode(
-                          Colors.white.withValues(alpha: 0.25),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
+                    opacity: _outerCircleScale.value * 0.25,
+                    useOverflow: true,
                   ),
                 ),
+
                 // 중간 원형 링 - 애니메이션
                 Center(
-                  child: Transform.scale(
+                  child: _buildCircle(
+                    size: sizes.middle,
                     scale: _middleCircleScale.value,
-                    child: Opacity(
-                      opacity: _middleCircleScale.value * 0.5,
-                      child: SvgPicture.asset(
-                        'assets/images/ellipse-67.svg',
-                        width: 420,
-                        height: 420,
-                        colorFilter: ColorFilter.mode(
-                          Colors.white.withValues(alpha: 0.5),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
+                    opacity: _middleCircleScale.value * 0.5,
+                    useOverflow: true,
                   ),
                 ),
 
@@ -120,15 +163,15 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Transform.scale(
                     scale: _innerCircleScale.value,
                     child: SizedBox(
-                      width: 196,
-                      height: 196,
+                      width: sizes.inner,
+                      height: sizes.inner,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           SvgPicture.asset(
                             'assets/images/ellipse-67.svg',
-                            width: 196,
-                            height: 196,
+                            width: sizes.inner,
+                            height: sizes.inner,
                             colorFilter: const ColorFilter.mode(
                               Colors.white,
                               BlendMode.srcIn,
@@ -138,8 +181,8 @@ class _SplashScreenState extends State<SplashScreen>
                             opacity: _logoOpacity.value,
                             child: SvgPicture.asset(
                               'assets/images/brand.svg',
-                              width: 180,
-                              height: 180,
+                              width: sizes.inner * 0.92, // 로고는 원의 92% 크기
+                              height: sizes.inner * 0.92,
                             ),
                           ),
                         ],
