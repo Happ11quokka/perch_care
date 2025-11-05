@@ -3,6 +3,7 @@ class RoutePaths {
   RoutePaths._();
 
   static const String splash = '/';
+  static const String login = '/login';
   static const String home = '/home';
   // 추가 라우트 경로들을 여기에 정의
 }
