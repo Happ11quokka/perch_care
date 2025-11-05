@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../router/route_names.dart';
 
 /// 로그인 화면
 class LoginScreen extends StatefulWidget {
@@ -390,7 +392,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextButton(
               onPressed: () {
-                // TODO: 회원가입 이동
+                context.pushNamed(RouteNames.signup);
               },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
