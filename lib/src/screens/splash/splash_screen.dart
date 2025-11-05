@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../router/route_paths.dart';
 
 /// 스플래시 스크린
 class SplashScreen extends StatefulWidget {
@@ -60,11 +62,15 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // 애니메이션 완료 후 자동 전환
+    // 애니메이션 완료 후 로그인 화면으로 자동 전환
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // TODO: 메인 화면이 구현되면 주석 해제
-        // context.go('/home');
+        // 애니메이션 완료 후 0.5초 대기 후 로그인 화면으로 이동
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            context.go(RoutePaths.login);
+          }
+        });
       }
     });
 
