@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
+import '../../router/route_names.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -395,12 +397,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         Expanded(
-          child: _buildCard(
-            title: '체중',
-            value: '0',
-            unit: 'g',
-            color: Colors.lightBlue.shade100,
-            iconColor: Colors.blue,
+          child: GestureDetector(
+            onTap: () {
+              context.pushNamed(RouteNames.weightDetail);
+            },
+            child: _buildCard(
+              title: '체중',
+              value: '0',
+              unit: 'g',
+              color: Colors.lightBlue.shade100,
+              iconColor: Colors.blue,
+            ),
           ),
         ),
         const SizedBox(width: AppSpacing.md),
