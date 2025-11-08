@@ -41,6 +41,10 @@ dependencies:
   # Routing
   go_router: ^14.6.2
 
+  # Backend
+  supabase_flutter: ^2.5.3
+  flutter_dotenv: ^5.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -66,6 +70,7 @@ flutter:
   # Assets
   assets:
     - assets/images/
+    - .env
     - assets/images/login_vector/
     - assets/images/btn_google/
     - assets/images/btn_apple/
