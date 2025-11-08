@@ -217,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Center(
               child: Icon(
                 Icons.keyboard_arrow_up,
-                color: AppColors.brandPrimary.withOpacity(0.5),
+                color: AppColors.brandPrimary.withValues(alpha: 0.5),
                 size: 48,
               ),
             ),
@@ -421,6 +421,34 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 16),
         _buildSocialLoginButtons(),
+        const SizedBox(height: 24),
+        // 테스트 로그인 버튼
+        SizedBox(
+          width: 311,
+          child: OutlinedButton(
+            onPressed: () {
+              context.goNamed(RouteNames.home);
+            },
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: const BorderSide(
+                color: AppColors.brandPrimary,
+                width: 2,
+              ),
+            ),
+            child: const Text(
+              '테스트 로그인',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.brandPrimary,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

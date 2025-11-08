@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/login/login_screen.dart';
 import '../screens/signup/signup_screen.dart';
+import '../screens/home/home_screen.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -29,13 +30,11 @@ class AppRouter {
         name: RouteNames.signup,
         builder: (context, state) => const SignupScreen(),
       ),
-      // 추가 라우트들은 여기에 정의
-      // 예시:
-      // GoRoute(
-      //   path: '/home',
-      //   name: 'home',
-      //   builder: (context, state) => const HomeScreen(),
-      // ),
+      GoRoute(
+        path: RoutePaths.home,
+        name: RouteNames.home,
+        builder: (context, state) => const HomeScreen(),
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
