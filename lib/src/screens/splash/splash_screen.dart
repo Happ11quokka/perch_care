@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../router/route_paths.dart';
 
 /// 스플래시 스크린
 class SplashScreen extends StatefulWidget {
@@ -17,6 +19,7 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _middleCircleScale;
   late Animation<double> _outerCircleScale;
   late Animation<double> _logoOpacity;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -68,18 +71,29 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  void _navigateToSignUp() {
+    if (_hasNavigated || !mounted) {
+      return;
+    }
+    _hasNavigated = true;
+    context.go(RoutePaths.signUp);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.brandPrimary,
-      body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Stack(
-              children: [
-                // 배경 원형 링들 (바깥쪽) - 애니메이션 (화면을 벗어남)
-                Center(
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _navigateToSignUp,
+        child: SafeArea(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Stack(
+                children: [
+                  // 배경 원형 링들 (바깥쪽) - 애니메이션 (화면을 벗어남)
+                  Center(
                   child: Transform.scale(
                     scale: _outerCircleScale.value,
                     child: Opacity(
@@ -144,12 +158,13 @@ class _SplashScreenState extends State<SplashScreen>
                           ),
                         ],
                       ),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

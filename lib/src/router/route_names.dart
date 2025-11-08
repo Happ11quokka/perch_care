@@ -4,5 +4,6 @@ class RouteNames {
 
   static const String splash = 'splash';
   static const String home = 'home';
+  static const String signUp = 'sign-up';
   // 추가 라우트 이름들을 여기에 정의
 }
