@@ -4,6 +4,7 @@ import '../screens/splash/splash_screen.dart';
 import '../screens/login/login_screen.dart';
 import '../screens/signup/signup_screen.dart';
 import '../screens/home/home_screen.dart';
+import '../screens/weight/weight_detail_screen.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -34,6 +35,11 @@ class AppRouter {
         path: RoutePaths.home,
         name: RouteNames.home,
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.weightDetail,
+        name: RouteNames.weightDetail,
+        builder: (context, state) => const WeightDetailScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
