@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
-import 'dart:math' as math;
 
 class WeightDetailScreen extends StatefulWidget {
   const WeightDetailScreen({super.key});
@@ -14,9 +14,106 @@ class WeightDetailScreen extends StatefulWidget {
 }
 
 class _WeightDetailScreenState extends State<WeightDetailScreen> {
-  String selectedPeriod = '월'; // 주, 월, 년
-  final List<WeightRecord> weightRecords = WeightData.getSeptemberData();
-  final Map<int, double> monthlyAverages = WeightData.getMonthlyAverages();
+  late String selectedPeriod;
+  late int selectedWeek;
+  late int selectedMonth;
+  late int selectedYear;
+  late List<WeightRecord> weightRecords;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+
+    selectedPeriod = '월'; // 주, 월, 년
+    selectedYear = now.year;
+    selectedMonth = now.month;
+
+    // 현재 월의 몇 주차인지 계산
+    final weekOfMonth = ((now.day - 1) / 7).floor() + 1;
+    selectedWeek = weekOfMonth.clamp(1, 4);
+
+    // 현재 월 데이터 가져오기 (실제로는 DB에서 가져옴)
+    weightRecords = WeightData.getCurrentMonthData();
+  }
+
+  // weightRecords에서 월별 평균 계산
+  Map<int, double> _calculateMonthlyAverages() {
+    final Map<int, List<double>> monthlyData = {};
+
+    // 월별로 데이터 그룹화
+    for (final record in weightRecords) {
+      final month = record.date.month;
+      if (!monthlyData.containsKey(month)) {
+        monthlyData[month] = [];
+      }
+      monthlyData[month]!.add(record.weight);
+    }
+
+    // 월별 평균 계산
+    final Map<int, double> averages = {};
+    monthlyData.forEach((month, weights) {
+      averages[month] = weights.reduce((a, b) => a + b) / weights.length;
+    });
+
+    return averages;
+  }
+
+  // weightRecords에서 특정 주차의 요일별 평균 계산
+  Map<int, double> _calculateWeeklyData(int year, int month, int weekNumber) {
+    final Map<int, List<double>> weeklyData = {};
+
+    // 해당 주차의 시작일과 종료일 계산
+    final startDay = (weekNumber - 1) * 7 + 1;
+    final endDay = (startDay + 6).clamp(1, DateTime(year, month + 1, 0).day);
+
+    // 해당 주차의 데이터만 필터링
+    for (final record in weightRecords) {
+      if (record.date.year == year &&
+          record.date.month == month &&
+          record.date.day >= startDay &&
+          record.date.day <= endDay) {
+        final weekday = record.date.weekday % 7; // 0=일, 1=월, ..., 6=토
+        final displayDay = weekday + 1; // 1=일, 2=월, ..., 7=토
+        if (!weeklyData.containsKey(displayDay)) {
+          weeklyData[displayDay] = [];
+        }
+        weeklyData[displayDay]!.add(record.weight);
+      }
+    }
+
+    // 요일별 평균 계산
+    final Map<int, double> averages = {};
+    weeklyData.forEach((weekday, weights) {
+      averages[weekday] = weights.reduce((a, b) => a + b) / weights.length;
+    });
+
+    return averages;
+  }
+
+  // weightRecords에서 연간 월별 평균 계산
+  Map<int, double> _calculateYearlyAverages(int year) {
+    final Map<int, List<double>> yearlyData = {};
+
+    // 해당 년도의 데이터만 필터링 및 그룹화
+    for (final record in weightRecords) {
+      if (record.date.year == year) {
+        final month = record.date.month;
+        if (!yearlyData.containsKey(month)) {
+          yearlyData[month] = [];
+        }
+        yearlyData[month]!.add(record.weight);
+      }
+    }
+
+    // 월별 평균 계산
+    final Map<int, double> averages = {};
+    yearlyData.forEach((month, weights) {
+      averages[month] = weights.reduce((a, b) => a + b) / weights.length;
+    });
+
+    return averages;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,19 +270,469 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildChart(Size size) {
+    switch (selectedPeriod) {
+      case '주':
+        return _buildWeeklyChart(size);
+      case '월':
+        return _buildMonthlyChart(size);
+      case '년':
+        return _buildYearlyChart(size);
+      default:
+        return _buildMonthlyChart(size);
+    }
+  }
+
+  // 주간 차트 (월~일, 7일)
+  Widget _buildWeeklyChart(Size size) {
     final chartWidth = size.width - (AppSpacing.md * 2);
     final chartHeight = 200.0;
+    final weeklyData = _calculateWeeklyData(selectedYear, selectedMonth, selectedWeek);
 
-    return SizedBox(
+    return Container(
       width: chartWidth,
       height: chartHeight,
-      child: CustomPaint(
-        painter: WeightChartPainter(
-          monthlyAverages: monthlyAverages,
-          highlightedMonth: 9,
+      padding: const EdgeInsets.only(
+        top: AppSpacing.md,
+        bottom: AppSpacing.lg,
+        left: AppSpacing.sm,
+        right: AppSpacing.sm,
+      ),
+      child: LineChart(
+        LineChartData(
+          minX: 1,
+          maxX: 7,
+          minY: _getMinY(weeklyData),
+          maxY: _getMaxY(weeklyData),
+          lineBarsData: [
+            LineChartBarData(
+              spots: _convertMapToFlSpots(weeklyData),
+              isCurved: true,
+              curveSmoothness: 0.35,
+              color: AppColors.brandPrimary,
+              barWidth: 2,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) {
+                  return FlDotCirclePainter(
+                    radius: 5,
+                    color: AppColors.brandPrimary,
+                    strokeWidth: 2,
+                    strokeColor: Colors.white,
+                  );
+                },
+              ),
+              belowBarData: BarAreaData(show: false),
+            ),
+          ],
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  final day = value.toInt();
+                  if (day < 1 || day > 7) return const SizedBox();
+
+                  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                  return Text(
+                    weekdays[day - 1],
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.mediumGray,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          gridData: const FlGridData(show: false),
+          borderData: FlBorderData(show: false),
+          lineTouchData: LineTouchData(
+            enabled: true,
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  return LineTooltipItem(
+                    '${spot.y.toStringAsFixed(1)} g',
+                    AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                }).toList();
+              },
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  // 월간 차트 (최근 6개월)
+  Widget _buildMonthlyChart(Size size) {
+    final chartWidth = size.width - (AppSpacing.md * 2);
+    final chartHeight = 200.0;
+
+    // 최근 6개월 범위 계산
+    final now = DateTime.now();
+    final minMonth = (now.month - 5).clamp(1, 12);
+    final maxMonth = now.month;
+
+    // 실제 저장된 데이터에서 월별 평균 계산
+    final monthlyAverages = _calculateMonthlyAverages();
+
+    return Container(
+      width: chartWidth,
+      height: chartHeight,
+      padding: const EdgeInsets.only(
+        top: AppSpacing.md,
+        bottom: AppSpacing.lg,
+        left: AppSpacing.sm,
+        right: AppSpacing.sm,
+      ),
+      child: LineChart(
+        LineChartData(
+          minX: minMonth.toDouble(),
+          maxX: maxMonth.toDouble(),
+          minY: _getMinY(monthlyAverages),
+          maxY: _getMaxY(monthlyAverages),
+          lineBarsData: [
+            LineChartBarData(
+              spots: _convertMapToFlSpots(monthlyAverages),
+              isCurved: true,
+              curveSmoothness: 0.35,
+              color: AppColors.brandPrimary,
+              barWidth: 2,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) {
+                  final month = spot.x.toInt();
+                  final isHighlighted = month == selectedMonth;
+
+                  if (isHighlighted) {
+                    return FlDotCirclePainter(
+                      radius: 8,
+                      color: AppColors.brandPrimary,
+                      strokeWidth: 3,
+                      strokeColor: Colors.white,
+                    );
+                  }
+                  return FlDotCirclePainter(
+                    radius: 3,
+                    color: AppColors.lightGray,
+                  );
+                },
+              ),
+              belowBarData: BarAreaData(show: false),
+            ),
+          ],
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  final month = value.toInt();
+                  if (month < minMonth || month > maxMonth) return const SizedBox();
+
+                  final isHighlighted = month == selectedMonth;
+
+                  return Text(
+                    '$month월',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: isHighlighted
+                          ? AppColors.brandPrimary
+                          : AppColors.mediumGray,
+                      fontWeight: isHighlighted
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          gridData: const FlGridData(show: false),
+          borderData: FlBorderData(show: false),
+          lineTouchData: LineTouchData(
+            enabled: true,
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  return LineTooltipItem(
+                    '${spot.y.toStringAsFixed(1)} g',
+                    AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                }).toList();
+              },
+            ),
+          ),
+          extraLinesData: ExtraLinesData(
+            verticalLines: [
+              if (monthlyAverages[selectedMonth] != null &&
+                  monthlyAverages[selectedMonth]! > 0)
+                VerticalLine(
+                  x: selectedMonth.toDouble(),
+                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                  strokeWidth: 53,
+                  label: VerticalLineLabel(
+                    show: true,
+                    alignment: Alignment.topCenter,
+                    padding: const EdgeInsets.only(top: 10),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    labelResolver: (line) {
+                      final value = monthlyAverages[selectedMonth] ?? 0;
+                      return '${value.toStringAsFixed(1)} g';
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 연간 차트 (1~12월)
+  Widget _buildYearlyChart(Size size) {
+    final chartWidth = size.width - (AppSpacing.md * 2);
+    final chartHeight = 200.0;
+    final yearlyData = _calculateYearlyAverages(selectedYear);
+
+    return Container(
+      width: chartWidth,
+      height: chartHeight,
+      padding: const EdgeInsets.only(
+        top: AppSpacing.md,
+        bottom: AppSpacing.lg,
+        left: AppSpacing.sm,
+        right: AppSpacing.sm,
+      ),
+      child: LineChart(
+        LineChartData(
+          minX: 1,
+          maxX: 12,
+          minY: _getMinY(yearlyData),
+          maxY: _getMaxY(yearlyData),
+          lineBarsData: [
+            LineChartBarData(
+              spots: _convertMapToFlSpots(yearlyData),
+              isCurved: true,
+              curveSmoothness: 0.35,
+              color: AppColors.brandPrimary,
+              barWidth: 2,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) {
+                  final month = spot.x.toInt();
+                  final isHighlighted = month == selectedMonth;
+
+                  if (isHighlighted) {
+                    return FlDotCirclePainter(
+                      radius: 8,
+                      color: AppColors.brandPrimary,
+                      strokeWidth: 3,
+                      strokeColor: Colors.white,
+                    );
+                  }
+                  return FlDotCirclePainter(
+                    radius: 3,
+                    color: AppColors.lightGray,
+                  );
+                },
+              ),
+              belowBarData: BarAreaData(show: false),
+            ),
+          ],
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  final month = value.toInt();
+                  if (month < 1 || month > 12) return const SizedBox();
+
+                  final isHighlighted = month == selectedMonth;
+
+                  return Text(
+                    '$month월',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: isHighlighted
+                          ? AppColors.brandPrimary
+                          : AppColors.mediumGray,
+                      fontWeight: isHighlighted
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          gridData: const FlGridData(show: false),
+          borderData: FlBorderData(show: false),
+          lineTouchData: LineTouchData(
+            enabled: true,
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  return LineTooltipItem(
+                    '${spot.y.toStringAsFixed(1)} g',
+                    AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                }).toList();
+              },
+            ),
+          ),
+          extraLinesData: ExtraLinesData(
+            verticalLines: [
+              if (yearlyData[selectedMonth] != null &&
+                  yearlyData[selectedMonth]! > 0)
+                VerticalLine(
+                  x: selectedMonth.toDouble(),
+                  color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                  strokeWidth: 53,
+                  label: VerticalLineLabel(
+                    show: true,
+                    alignment: Alignment.topCenter,
+                    padding: const EdgeInsets.only(top: 10),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    labelResolver: (line) {
+                      final value = yearlyData[selectedMonth] ?? 0;
+                      return '${value.toStringAsFixed(1)} g';
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Map 데이터를 FlSpot으로 변환 (공통 헬퍼)
+  List<FlSpot> _convertMapToFlSpots(Map<int, double> data) {
+    final spots = data.entries
+        .where((entry) => entry.value > 0)
+        .map((entry) => FlSpot(
+              entry.key.toDouble(),
+              entry.value,
+            ))
+        .toList();
+
+    // X축 기준으로 정렬하여 자연스러운 연결 보장
+    spots.sort((a, b) => a.x.compareTo(b.x));
+    return spots;
+  }
+
+  // Y축 최소값 계산 (공통 헬퍼)
+  double _getMinY(Map<int, double> data) {
+    final values = data.values.where((v) => v > 0);
+    if (values.isEmpty) return 0;
+    final minValue = values.reduce((a, b) => a < b ? a : b);
+    return minValue - 5; // 여유 공간
+  }
+
+  // Y축 최대값 계산 (공통 헬퍼)
+  double _getMaxY(Map<int, double> data) {
+    final values = data.values.where((v) => v > 0);
+    if (values.isEmpty) return 100;
+    final maxValue = values.reduce((a, b) => a > b ? a : b);
+    return maxValue + 5; // 여유 공간
+  }
+
+  // Period 라벨 가져오기
+  String _getPeriodLabel() {
+    switch (selectedPeriod) {
+      case '주':
+        return '$selectedWeek주차';
+      case '월':
+        return '$selectedMonth월';
+      case '년':
+        return '$selectedYear년';
+      default:
+        return '$selectedMonth월';
+    }
+  }
+
+  // 이전 Period로 이동
+  void _onPreviousPeriod() {
+    setState(() {
+      final now = DateTime.now();
+      switch (selectedPeriod) {
+        case '주':
+          if (selectedWeek > 1) selectedWeek--;
+          break;
+        case '월':
+          final minMonth = (now.month - 5).clamp(1, 12);
+          if (selectedMonth > minMonth) selectedMonth--;
+          break;
+        case '년':
+          if (selectedYear > now.year - 1) selectedYear--;
+          break;
+      }
+    });
+  }
+
+  // 다음 Period로 이동
+  void _onNextPeriod() {
+    setState(() {
+      final now = DateTime.now();
+      switch (selectedPeriod) {
+        case '주':
+          if (selectedWeek < 4) selectedWeek++;
+          break;
+        case '월':
+          if (selectedMonth < now.month) selectedMonth++;
+          break;
+        case '년':
+          if (selectedYear < now.year) selectedYear++;
+          break;
+      }
+    });
   }
 
   Widget _buildBottomSheet(Size size, EdgeInsets padding) {
@@ -234,11 +781,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.chevron_left),
-                      onPressed: () {},
+                      onPressed: _onPreviousPeriod,
                       iconSize: 20,
                     ),
                     Text(
-                      '9월',
+                      _getPeriodLabel(),
                       style: AppTypography.bodyLarge.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.nearBlack,
@@ -246,7 +793,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.chevron_right),
-                      onPressed: () {},
+                      onPressed: _onNextPeriod,
                       iconSize: 20,
                     ),
                   ],
@@ -301,10 +848,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildCalendarGrid() {
-    // September 2025 starts on Monday (1)
-    final firstDayOfMonth = DateTime(2025, 9, 1);
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(selectedYear, selectedMonth, 1);
     final startWeekday = firstDayOfMonth.weekday % 7; // 0 = Sunday
-    final daysInMonth = 30;
+    final daysInMonth = DateTime(selectedYear, selectedMonth + 1, 0).day;
 
     final List<Widget> dayWidgets = [];
 
@@ -315,13 +862,15 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
     // Add day cells
     for (int day = 1; day <= daysInMonth; day++) {
-      final date = DateTime(2025, 9, day);
       final hasRecord = weightRecords.any((record) =>
           record.date.day == day &&
-          record.date.month == 9 &&
-          record.date.year == 2025);
+          record.date.month == selectedMonth &&
+          record.date.year == selectedYear);
 
-      dayWidgets.add(_buildDayCell(day, hasRecord));
+      final isFuture = DateTime(selectedYear, selectedMonth, day)
+          .isAfter(DateTime(now.year, now.month, now.day));
+
+      dayWidgets.add(_buildDayCell(day, hasRecord, isFuture: isFuture));
     }
 
     return GridView.count(
@@ -334,16 +883,14 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 
-  Widget _buildDayCell(int day, bool hasRecord) {
+  Widget _buildDayCell(int day, bool hasRecord, {bool isFuture = false}) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           day.toString(),
           style: AppTypography.bodyMedium.copyWith(
-            color: day > 28
-                ? AppColors.lightGray
-                : AppColors.mediumGray,
+            color: isFuture ? AppColors.lightGray : AppColors.mediumGray,
           ),
         ),
         const SizedBox(height: 4),
@@ -402,188 +949,3 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 }
 
-// Custom Painter for the weight chart
-class WeightChartPainter extends CustomPainter {
-  final Map<int, double> monthlyAverages;
-  final int highlightedMonth;
-
-  WeightChartPainter({
-    required this.monthlyAverages,
-    required this.highlightedMonth,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.lightGray
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final highlightPaint = Paint()
-      ..color = AppColors.brandPrimary
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final fillPaint = Paint()
-      ..color = AppColors.brandPrimary
-      ..style = PaintingStyle.fill;
-
-    // Chart dimensions
-    final chartWidth = size.width - 80;
-    final chartHeight = size.height - 60;
-    final leftPadding = 40.0;
-    final topPadding = 30.0;
-
-    // Draw month labels and bars
-    final months = [6, 7, 8, 9, 10, 11];
-    final monthLabels = ['6월', '7월', '8월', '9월', '10월', '11월'];
-    final barWidth = chartWidth / months.length;
-
-    // Find max value for scaling
-    final maxValue = monthlyAverages.values
-        .where((v) => v > 0)
-        .reduce((a, b) => a > b ? a : b);
-
-    // Collect points for smooth curve
-    final List<Offset> points = [];
-    for (int i = 0; i < months.length; i++) {
-      final month = months[i];
-      final value = monthlyAverages[month] ?? 0;
-      if (value > 0) {
-        final x = leftPadding + (i * barWidth) + (barWidth / 2);
-        final y = topPadding + chartHeight - (value / maxValue * chartHeight);
-        points.add(Offset(x, y));
-      }
-    }
-
-    // Draw smooth curve path
-    final smoothPath = _createSmoothPath(points);
-
-    // Draw month labels
-    for (int i = 0; i < months.length; i++) {
-      final month = months[i];
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: monthLabels[i],
-          style: TextStyle(
-            fontSize: 13,
-            color: month == highlightedMonth ? Colors.white : AppColors.mediumGray,
-            fontFamily: 'Pretendard',
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-
-      final labelX = leftPadding + (i * barWidth) + (barWidth / 2) - (textPainter.width / 2);
-      final labelY = topPadding + chartHeight + 10;
-      textPainter.paint(canvas, Offset(labelX, labelY));
-    }
-
-    // Draw smooth dashed curve
-    _drawDashedPath(canvas, smoothPath, paint);
-
-    // Draw bars and points
-    for (int i = 0; i < months.length; i++) {
-      final month = months[i];
-      final value = monthlyAverages[month] ?? 0;
-
-      if (value > 0 && month == highlightedMonth) {
-        final x = leftPadding + (i * barWidth) + (barWidth / 2);
-        final y = topPadding + chartHeight - (value / maxValue * chartHeight);
-        final barHeight = chartHeight - (chartHeight - (value / maxValue * chartHeight));
-
-        // Draw vertical bar
-        final barRect = RRect.fromRectAndRadius(
-          Rect.fromLTWH(x - 26, y, 53, barHeight),
-          const Radius.circular(20),
-        );
-        canvas.drawRRect(barRect, fillPaint);
-
-        // Draw weight label on bar
-        final weightTextPainter = TextPainter(
-          text: TextSpan(
-            text: '${value.toStringAsFixed(1)} g',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              fontFamily: 'Pretendard',
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        );
-        weightTextPainter.layout();
-        weightTextPainter.paint(
-          canvas,
-          Offset(x - weightTextPainter.width / 2, y + 10),
-        );
-
-        // Draw outer circle
-        canvas.drawCircle(Offset(x, y), 16, fillPaint);
-
-        // Draw inner white circle
-        canvas.drawCircle(
-          Offset(x, y),
-          12,
-          Paint()..color = Colors.white,
-        );
-      }
-    }
-  }
-
-  // Create smooth bezier curve path through points
-  Path _createSmoothPath(List<Offset> points) {
-    final path = Path();
-
-    if (points.isEmpty) return path;
-    if (points.length == 1) {
-      path.moveTo(points[0].dx, points[0].dy);
-      return path;
-    }
-
-    path.moveTo(points[0].dx, points[0].dy);
-
-    for (int i = 0; i < points.length - 1; i++) {
-      final p0 = i > 0 ? points[i - 1] : points[i];
-      final p1 = points[i];
-      final p2 = points[i + 1];
-      final p3 = i < points.length - 2 ? points[i + 2] : p2;
-
-      // Calculate control points for smooth curve
-      final cp1x = p1.dx + (p2.dx - p0.dx) / 6;
-      final cp1y = p1.dy + (p2.dy - p0.dy) / 6;
-      final cp2x = p2.dx - (p3.dx - p1.dx) / 6;
-      final cp2y = p2.dy - (p3.dy - p1.dy) / 6;
-
-      path.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.dx, p2.dy);
-    }
-
-    return path;
-  }
-
-  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
-    const dashWidth = 5.0;
-    const dashSpace = 5.0;
-    final metrics = path.computeMetrics();
-
-    for (final metric in metrics) {
-      double distance = 0.0;
-      bool draw = true;
-
-      while (distance < metric.length) {
-        final double length = draw ? dashWidth : dashSpace;
-        final double end = math.min(distance + length, metric.length);
-        if (draw) {
-          final extractPath = metric.extractPath(distance, end);
-          canvas.drawPath(extractPath, paint);
-        }
-        distance = end;
-        draw = !draw;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(WeightChartPainter oldDelegate) => false;
-}
