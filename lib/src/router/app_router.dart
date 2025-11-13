@@ -5,6 +5,7 @@ import '../screens/login/login_screen.dart';
 import '../screens/signup/signup_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/weight/weight_detail_screen.dart';
+import '../screens/weight/weight_add_screen.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -40,6 +41,20 @@ class AppRouter {
         path: RoutePaths.weightDetail,
         name: RouteNames.weightDetail,
         builder: (context, state) => const WeightDetailScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.weightAddToday,
+        name: RouteNames.weightAddToday,
+        builder: (context, state) => WeightAddScreen(date: DateTime.now()),
+      ),
+      GoRoute(
+        path: RoutePaths.weightAdd,
+        name: RouteNames.weightAdd,
+        builder: (context, state) {
+          final dateStr = state.pathParameters['date']!;
+          final date = DateTime.parse(dateStr);
+          return WeightAddScreen(date: date);
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
