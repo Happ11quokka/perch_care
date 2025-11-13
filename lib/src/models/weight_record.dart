@@ -6,6 +6,44 @@ class WeightRecord {
     required this.date,
     required this.weight,
   });
+
+  // JSON 직렬화
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date.toIso8601String(),
+      'weight': weight,
+    };
+  }
+
+  // JSON 역직렬화
+  factory WeightRecord.fromJson(Map<String, dynamic> json) {
+    return WeightRecord(
+      date: DateTime.parse(json['date'] as String),
+      weight: (json['weight'] as num).toDouble(),
+    );
+  }
+
+  // copyWith 메서드
+  WeightRecord copyWith({
+    DateTime? date,
+    double? weight,
+  }) {
+    return WeightRecord(
+      date: date ?? this.date,
+      weight: weight ?? this.weight,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WeightRecord &&
+          runtimeType == other.runtimeType &&
+          date == other.date &&
+          weight == other.weight;
+
+  @override
+  int get hashCode => date.hashCode ^ weight.hashCode;
 }
 
 // 더미 데이터 (샘플 데이터)
