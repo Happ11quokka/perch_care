@@ -126,152 +126,161 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.md,
-            right: AppSpacing.md,
-            top: AppSpacing.xl,
-            bottom: padding.bottom + AppSpacing.md,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 날짜 표시
-                Center(
-                  child: Text(
-                    _formatDate(widget.date),
-                    style: AppTypography.h4.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.nearBlack,
-                    ),
-                  ),
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontalPadding = constraints.maxWidth > 600
+                ? (constraints.maxWidth - 600) / 2
+                : AppSpacing.md;
 
-                const SizedBox(height: AppSpacing.xl),
-
-                // 체중 입력 필드
-                Text(
-                  '체중 (g)',
-                  style: AppTypography.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.nearBlack,
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.sm),
-
-                TextFormField(
-                  controller: _weightController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
-                  ],
-                  style: AppTypography.h3.copyWith(
-                    color: AppColors.nearBlack,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '57.9',
-                    hintStyle: AppTypography.h3.copyWith(
-                      color: AppColors.lightGray,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    suffixText: 'g',
-                    suffixStyle: AppTypography.bodyLarge.copyWith(
-                      color: AppColors.mediumGray,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      borderSide: const BorderSide(color: AppColors.lightGray),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      borderSide: const BorderSide(
-                        color: AppColors.brandPrimary,
-                        width: 2,
+            return Padding(
+              padding: EdgeInsets.only(
+                left: horizontalPadding,
+                right: horizontalPadding,
+                top: AppSpacing.xl,
+                bottom: padding.bottom + AppSpacing.md,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 날짜 표시
+                    Center(
+                      child: Text(
+                        _formatDate(widget.date),
+                        style: AppTypography.h4.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.nearBlack,
+                        ),
                       ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      borderSide: const BorderSide(color: AppColors.lightGray),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.md,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '체중을 입력해주세요.';
-                    }
-                    final weight = double.tryParse(value);
-                    if (weight == null) {
-                      return '올바른 숫자를 입력해주세요.';
-                    }
-                    if (weight <= 0) {
-                      return '체중은 0보다 커야 합니다.';
-                    }
-                    return null;
-                  },
-                ),
 
-                const Spacer(),
+                    const SizedBox(height: AppSpacing.xl),
 
-                // 저장 버튼
-                GestureDetector(
-                  onTap: _isLoading ? null : _onSave,
-                  child: Container(
-                    width: size.width - (AppSpacing.md * 2),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.md,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: _isLoading
-                            ? [AppColors.lightGray, AppColors.mediumGray]
-                            : [AppColors.gradientTop, AppColors.brandPrimary],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
+                    // 체중 입력 필드
+                    Text(
+                      '체중 (g)',
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.nearBlack,
                       ),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      boxShadow: _isLoading
-                          ? []
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.25),
-                                blurRadius: 4,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
                     ),
-                    child: _isLoading
-                        ? const Center(
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                          )
-                        : Text(
-                            '저장하기',
-                            textAlign: TextAlign.center,
-                            style: AppTypography.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+
+                    const SizedBox(height: AppSpacing.sm),
+
+                    TextFormField(
+                      controller: _weightController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+                      ],
+                      style: AppTypography.h3.copyWith(
+                        color: AppColors.nearBlack,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '57.9',
+                        hintStyle: AppTypography.h3.copyWith(
+                          color: AppColors.lightGray,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        suffixText: 'g',
+                        suffixStyle: AppTypography.bodyLarge.copyWith(
+                          color: AppColors.mediumGray,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          borderSide: const BorderSide(color: AppColors.lightGray),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          borderSide: const BorderSide(
+                            color: AppColors.brandPrimary,
+                            width: 2,
                           ),
-                  ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          borderSide: const BorderSide(color: AppColors.lightGray),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.md,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '체중을 입력해주세요.';
+                        }
+                        final weight = double.tryParse(value);
+                        if (weight == null) {
+                          return '올바른 숫자를 입력해주세요.';
+                        }
+                        if (weight <= 0) {
+                          return '체중은 0보다 커야 합니다.';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const Spacer(),
+
+                    // 저장 버튼
+                    GestureDetector(
+                      onTap: _isLoading ? null : _onSave,
+                      child: Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.md,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: _isLoading
+                                ? [AppColors.lightGray, AppColors.mediumGray]
+                                : [AppColors.gradientTop, AppColors.brandPrimary],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          boxShadow: _isLoading
+                              ? []
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                        ),
+                        child: _isLoading
+                            ? const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                '저장하기',
+                                textAlign: TextAlign.center,
+                                style: AppTypography.bodyLarge.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

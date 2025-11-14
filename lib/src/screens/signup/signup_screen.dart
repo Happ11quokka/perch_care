@@ -50,156 +50,169 @@ class _SignupScreenState extends State<SignupScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 8),
-                const Text(
-                  '환영합니다!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.nearBlack,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  '앵무새와 함께하는 여정을 시작해보세요',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: AppColors.gray600,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 40),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontalPadding = constraints.maxWidth > 600 ? 48.0 : 24.0;
 
-                // 이름 입력
-                _buildTextField(
-                  controller: _nameController,
-                  label: '이름',
-                  hintText: '이름을 입력해주세요',
-                  keyboardType: TextInputType.name,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return '이름을 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // 이메일 입력
-                _buildTextField(
-                  controller: _emailController,
-                  label: '이메일',
-                  hintText: 'example@email.com',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return '이메일을 입력해주세요';
-                    }
-                    final emailRegex = RegExp(
-                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                    );
-                    if (!emailRegex.hasMatch(value)) {
-                      return '올바른 이메일 형식을 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // 비밀번호 입력
-                _buildTextField(
-                  controller: _passwordController,
-                  label: '비밀번호',
-                  hintText: '8자 이상 입력해주세요',
-                  obscureText: !_isPasswordVisible,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: AppColors.gray500,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '비밀번호를 입력해주세요';
-                    }
-                    if (value.length < 8) {
-                      return '비밀번호는 8자 이상이어야 합니다';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // 전화번호 입력
-                _buildTextField(
-                  controller: _phoneController,
-                  label: '전화번호',
-                  hintText: '010-0000-0000',
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return '전화번호를 입력해주세요';
-                    }
-                    final phoneRegex = RegExp(r'^01[0-9]-?\d{3,4}-?\d{4}$');
-                    if (!phoneRegex.hasMatch(value.replaceAll('-', ''))) {
-                      return '올바른 전화번호 형식을 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 40),
-
-                // 회원가입 버튼
-                _buildGradientButton(
-                  label: '회원가입',
-                  onPressed: _handleSignup,
-                ),
-                const SizedBox(height: 16),
-
-                // 로그인으로 돌아가기
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 24,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const SizedBox(height: 8),
                     const Text(
-                      '이미 계정이 있으신가요? ',
-                      style: TextStyle(fontSize: 14, color: AppColors.gray600),
+                      '환영합니다!',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.nearBlack,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    const SizedBox(height: 8),
+                    const Text(
+                      '앵무새와 함께하는 여정을 시작해보세요',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: AppColors.gray600,
+                        height: 1.5,
                       ),
-                      child: const Text(
-                        '로그인',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.brandPrimary,
+                    ),
+                    const SizedBox(height: 40),
+
+                    // 이름 입력
+                    _buildTextField(
+                      controller: _nameController,
+                      label: '이름',
+                      hintText: '이름을 입력해주세요',
+                      keyboardType: TextInputType.name,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return '이름을 입력해주세요';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 이메일 입력
+                    _buildTextField(
+                      controller: _emailController,
+                      label: '이메일',
+                      hintText: 'example@email.com',
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return '이메일을 입력해주세요';
+                        }
+                        final emailRegex = RegExp(
+                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                        );
+                        if (!emailRegex.hasMatch(value)) {
+                          return '올바른 이메일 형식을 입력해주세요';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 비밀번호 입력
+                    _buildTextField(
+                      controller: _passwordController,
+                      label: '비밀번호',
+                      hintText: '8자 이상 입력해주세요',
+                      obscureText: !_isPasswordVisible,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: AppColors.gray500,
                         ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '비밀번호를 입력해주세요';
+                        }
+                        if (value.length < 8) {
+                          return '비밀번호는 8자 이상이어야 합니다';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 전화번호 입력
+                    _buildTextField(
+                      controller: _phoneController,
+                      label: '전화번호',
+                      hintText: '010-0000-0000',
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return '전화번호를 입력해주세요';
+                        }
+                        final phoneRegex = RegExp(r'^01[0-9]-?\d{3,4}-?\d{4}$');
+                        if (!phoneRegex.hasMatch(value.replaceAll('-', ''))) {
+                          return '올바른 전화번호 형식을 입력해주세요';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 40),
+
+                    // 회원가입 버튼
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      child: _buildGradientButton(
+                        label: '회원가입',
+                        onPressed: _handleSignup,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 로그인으로 돌아가기
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Text(
+                          '이미 계정이 있으신가요? ',
+                          style: TextStyle(fontSize: 14, color: AppColors.gray600),
+                        ),
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            '로그인',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.brandPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -352,6 +352,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// 하단 시트 로그인 콘텐츠
   Widget _buildLoginSheetContent() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonWidth = (screenWidth - 64).clamp(280.0, 400.0);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -374,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 28),
         SizedBox(
-          width: 311,
+          width: buttonWidth,
           child: _buildGradientButton(
             label: '로그인',
             onPressed: () {
@@ -383,32 +386,38 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              '아직 회원이 아니신가요? ',
-              style: TextStyle(fontSize: 14, color: AppColors.gray600),
-            ),
-            TextButton(
-              onPressed: () {
-                context.pushNamed(RouteNames.signup);
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '회원가입',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.brandPrimary,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Flexible(
+                child: Text(
+                  '아직 회원이 아니신가요? ',
+                  style: TextStyle(fontSize: 14, color: AppColors.gray600),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-          ],
+              TextButton(
+                onPressed: () {
+                  context.pushNamed(RouteNames.signup);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  '회원가입',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.brandPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         const Text(
@@ -424,7 +433,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 24),
         // 테스트 로그인 버튼
         SizedBox(
-          width: 311,
+          width: buttonWidth,
           child: OutlinedButton(
             onPressed: () {
               context.goNamed(RouteNames.home);

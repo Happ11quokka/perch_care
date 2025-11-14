@@ -2,6 +2,7 @@
 
 **날짜**: 2025-11-13
 **파일**:
+
 - [lib/src/screens/weight/weight_add_screen.dart](../../lib/src/screens/weight/weight_add_screen.dart)
 - [lib/src/services/weight/weight_service.dart](../../lib/src/services/weight/weight_service.dart)
 - [lib/src/models/weight_record.dart](../../lib/src/models/weight_record.dart)
@@ -38,6 +39,7 @@ class WeightService {
 ```
 
 **설계 이유**:
+
 - **Singleton 패턴**: 앱 전체에서 하나의 데이터 소스만 유지
 - **인메모리 리스트**: 빠른 CRUD 작업, 프로토타입 단계에서 유용
 - **추후 마이그레이션 용이**: Supabase 연동 시 서비스 내부 로직만 변경
@@ -95,6 +97,7 @@ class WeightRecord {
 ```
 
 **주요 메서드**:
+
 - `toJson()` / `fromJson()`: Supabase 연동 시 직렬화/역직렬화 사용
 - `copyWith()`: 불변 객체 수정 시 새 인스턴스 생성
 - `==` / `hashCode`: 날짜와 체중 기준 동등성 비교
@@ -113,6 +116,7 @@ List<WeightRecord> getWeightRecords() {
 ```
 
 **특징**:
+
 - 첫 호출 시 더미 데이터 자동 로드
 - `List.unmodifiable()`: 외부에서 리스트 직접 수정 방지
 
@@ -132,6 +136,7 @@ WeightRecord? getRecordByDate(DateTime date) {
 ```
 
 **핵심: 날짜 정규화**
+
 ```dart
 DateTime _normalizeDate(DateTime date) {
   return DateTime(date.year, date.month, date.day);
@@ -139,6 +144,7 @@ DateTime _normalizeDate(DateTime date) {
 ```
 
 **이유**:
+
 - `DateTime(2025, 11, 13, 14, 30)` → `DateTime(2025, 11, 13, 0, 0)` 변환
 - 시간 정보 제거로 "같은 날짜" 정확히 비교
 - 시간까지 비교하면 같은 날짜라도 다른 기록으로 인식되는 문제 방지
@@ -168,6 +174,7 @@ Future<void> saveWeightRecord(WeightRecord record) async {
 ```
 
 **로직**:
+
 1. 동일 날짜 기록 존재 여부 확인
 2. 존재 → **Update** (기존 인덱스에 새 값 할당)
 3. 없음 → **Insert** (리스트에 추가 후 날짜순 정렬)
@@ -203,6 +210,7 @@ List<WeightRecord> getRecordsByDateRange(DateTime start, DateTime end) {
 ```
 
 **범위 비교 트릭**:
+
 - `isAfter(start - 1일)` && `isBefore(end + 1일)`: start와 end 날짜 포함
 - 단순 `isAfter(start)`는 start 날짜 제외하므로 -1일 보정
 
@@ -250,6 +258,7 @@ GoRoute(
 ```
 
 **2가지 경로**:
+
 1. `/weight/add/today`: 오늘 날짜 고정
 2. `/weight/add/:date`: 동적 날짜 파라미터 (예: `/weight/add/2025-11-13`)
 
@@ -316,6 +325,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 ```
 
 **UX 개선**:
+
 - 기존 기록 있으면 자동으로 입력 필드에 표시
 - 사용자는 수정만 하면 됨 (처음부터 입력 불필요)
 
@@ -357,6 +367,7 @@ TextFormField(
 ```
 
 **입력 제한**:
+
 - `inputFormatters`: 정규식으로 "숫자.소수점1자리"만 허용
   - 예: `57.9` ✅, `57.99` ❌, `abc` ❌
 - `validator`: 빈 값, 음수, 문자 입력 방지
@@ -415,6 +426,7 @@ Future<void> _onSave() async {
 ```
 
 **핵심 포인트**:
+
 1. `_formKey.currentState!.validate()`: 입력 검증 실패 시 조기 반환
 2. `_isLoading`: 저장 중 버튼 비활성화 및 로딩 스피너 표시
 3. `context.pop(true)`: **true 반환**으로 이전 화면에 "저장 성공" 신호 전달
@@ -472,6 +484,7 @@ GestureDetector(
 ```
 
 **UX 디자인**:
+
 - 로딩 중: 회색 gradient + 그림자 제거 + 스피너 표시
 - 완료: 브랜드 gradient + 그림자 + "저장하기" 텍스트
 - `onTap: _isLoading ? null : _onSave`: 로딩 중 중복 클릭 방지
@@ -555,6 +568,7 @@ Widget _buildAddRecordButton(Size size) {
 ```
 
 **핵심**:
+
 - `await context.push()`: 비동기로 결과 대기
 - `result == true`: `WeightAddScreen`에서 `pop(true)` 반환한 경우
 - `_refreshData()`: `setState()` 호출로 차트/캘린더 재렌더링
@@ -608,6 +622,7 @@ Widget _buildDayCell(int day, bool hasRecord, {bool isFuture = false}) {
 ```
 
 **기능**:
+
 - 미래 날짜: `onTap: null`로 클릭 비활성화
 - 과거/오늘 날짜: 클릭 시 해당 날짜 기록 화면으로 이동
 - `dateStr = YYYY-MM-DD`: ISO 8601 형식에서 날짜만 추출
@@ -674,6 +689,7 @@ Widget _buildDayCell(int day, bool hasRecord, {bool isFuture = false}) {
 ### 6.1 Material 3 디자인 시스템 활용
 
 **AppBar**:
+
 ```dart
 AppBar(
   backgroundColor: Colors.white,
@@ -694,6 +710,7 @@ AppBar(
 ```
 
 **특징**:
+
 - elevation: 0 → 그림자 없음 (플랫 디자인)
 - 타이틀: 브랜드 컬러 (#FF9A42)
 - 뒤로가기: iOS 스타일 화살표
@@ -715,6 +732,7 @@ enabledBorder: OutlineInputBorder(
 ```
 
 **효과**:
+
 - 포커스 시: 브랜드 컬러 2px 테두리
 - 평상시: 연한 회색 1px 테두리
 - 사용자가 현재 입력 중인 필드 명확히 인식
@@ -732,6 +750,7 @@ ScaffoldMessenger.of(context).showSnackBar(
 ```
 
 **UX**:
+
 - 2초 자동 사라짐
 - 브랜드 컬러로 일관된 디자인
 - 성공/실패 색상 구분 (성공: 오렌지, 실패: 빨강)
@@ -743,6 +762,7 @@ ScaffoldMessenger.of(context).showSnackBar(
 ### 7.1 Singleton 패턴 (Service Layer)
 
 **구현**:
+
 ```dart
 class WeightService {
   WeightService._();
@@ -753,11 +773,13 @@ class WeightService {
 ```
 
 **장점**:
+
 - 앱 전체에서 하나의 데이터 소스만 유지
 - 여러 화면에서 `WeightService()` 호출 시 같은 인스턴스 반환
 - 데이터 일관성 보장
 
 **사용 예**:
+
 ```dart
 // 화면 A
 final service1 = WeightService();
@@ -771,6 +793,7 @@ final records = service2.getWeightRecords(); // service1과 같은 인스턴스
 ### 7.2 날짜 정규화의 중요성
 
 **문제 상황**:
+
 ```dart
 final date1 = DateTime(2025, 11, 13, 14, 30); // 오후 2시 30분
 final date2 = DateTime(2025, 11, 13, 9, 15);  // 오전 9시 15분
@@ -781,6 +804,7 @@ if (date1 == date2) { // false! 시간이 달라서
 ```
 
 **해결**:
+
 ```dart
 DateTime _normalizeDate(DateTime date) {
   return DateTime(date.year, date.month, date.day);
@@ -797,6 +821,7 @@ if (normalized1 == normalized2) { // true!
 ### 7.3 Navigator.pop 결과 반환
 
 **기존 방식 (비효율적)**:
+
 ```dart
 // WeightDetailScreen
 Navigator.push(
@@ -809,6 +834,7 @@ Navigator.push(
 ```
 
 **개선 방식**:
+
 ```dart
 // WeightAddScreen
 context.pop(true); // 저장 성공 시에만 true
@@ -821,22 +847,26 @@ if (result == true) {
 ```
 
 **장점**:
+
 - 불필요한 refresh 방지 (뒤로가기만 누른 경우)
 - 명확한 의도 전달 (true = 데이터 변경됨)
 
 ### 7.4 TextFormField 입력 제한
 
 **정규식 활용**:
+
 ```dart
 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}'))
 ```
 
 **의미**:
+
 - `^\d+`: 시작부터 1개 이상 숫자
 - `\.?`: 소수점 0개 또는 1개
 - `\d{0,1}`: 소수점 뒤 숫자 0~1개
 
 **허용 예시**:
+
 - `5` ✅
 - `57` ✅
 - `57.` ✅ (입력 중)
@@ -870,6 +900,7 @@ Future<void> _onSave() async {
 ```
 
 **이유**:
+
 - `await` 중에 사용자가 뒤로가기 누르면 위젯 트리에서 제거됨
 - `mounted == false` 상태에서 `setState()` 호출 시 에러 발생
 - `if (mounted)` 체크로 안전하게 방어
@@ -881,6 +912,7 @@ Future<void> _onSave() async {
 ### 8.1 Supabase 연동 (백엔드 저장)
 
 **현재**:
+
 ```dart
 Future<void> saveWeightRecord(WeightRecord record) async {
   // 인메모리 저장
@@ -891,6 +923,7 @@ Future<void> saveWeightRecord(WeightRecord record) async {
 ```
 
 **추후 구현**:
+
 ```dart
 Future<void> saveWeightRecord(WeightRecord record) async {
   // 1. 로컬 저장 (즉시 UI 반영)
@@ -910,6 +943,7 @@ Future<void> saveWeightRecord(WeightRecord record) async {
 ```
 
 **DB 스키마**:
+
 ```sql
 CREATE TABLE weight_records (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -924,10 +958,12 @@ CREATE TABLE weight_records (
 ### 8.2 삭제 기능 추가
 
 **UI**:
+
 - 기록 화면에서 "삭제" 버튼 추가
 - 확인 다이얼로그: "정말 삭제하시겠습니까?"
 
 **코드**:
+
 ```dart
 Future<void> _onDelete() async {
   final confirmed = await showDialog<bool>(
@@ -962,6 +998,7 @@ Future<void> _onDelete() async {
 - 캘린더에서 사진 썸네일 표시
 
 **모델 확장**:
+
 ```dart
 class WeightRecord {
   final DateTime date;
