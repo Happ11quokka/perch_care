@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/auth/auth_service.dart';
 
 /// 로그인 화면
 class LoginScreen extends StatefulWidget {
@@ -13,6 +15,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Auth state for email login
+  final _loginFormKey = GlobalKey<FormState>();
+  final _loginEmailController = TextEditingController();
+  final _loginPasswordController = TextEditingController();
+  final AuthService _authService = AuthService();
+  bool _isLoginLoading = false;
+  bool _isGoogleLoading = false;
+  bool _isAppleLoading = false;
   static const double _designWidth = 393.0;
   static const double _designHeight = 852.0;
 
@@ -20,6 +30,13 @@ class _LoginScreenState extends State<LoginScreen> {
   double _sheetHeight = 60.0; // 초기에는 살짝만 보임
   final double _peekHeight = 60.0; // 살짝 보이는 높이
   final double _expandedHeight = 428.0; // 완전히 확장된 높이
+
+  @override
+  void dispose() {
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -377,9 +394,7 @@ class _LoginScreenState extends State<LoginScreen> {
           width: 311,
           child: _buildGradientButton(
             label: '로그인',
-            onPressed: () {
-              // TODO: 로그인 액션 연결
-            },
+            onPressed: _showEmailLoginSheet,
           ),
         ),
         const SizedBox(height: 20),
@@ -507,14 +522,16 @@ class _LoginScreenState extends State<LoginScreen> {
         assetPath: 'assets/images/btn_google/btn_google.svg',
         semanticLabel: 'Google로 로그인',
         onTap: () {
-          // TODO: 구글 로그인 연동
+          if (_isGoogleLoading) return;
+          _handleGoogleLogin();
         },
       ),
       _SocialLoginButtonData(
         assetPath: 'assets/images/btn_apple/btn_apple.svg',
         semanticLabel: 'Apple로 로그인',
         onTap: () {
-          // TODO: 애플 로그인 연동
+          if (_isAppleLoading) return;
+          _handleAppleLogin();
         },
       ),
       _SocialLoginButtonData(
@@ -541,6 +558,151 @@ class _LoginScreenState extends State<LoginScreen> {
           .map((button) => _SocialLoginIconButton(data: button))
           .toList(growable: false),
     );
+  }
+
+  // Login helpers
+  void _showEmailLoginSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+            top: 24,
+          ),
+          child: Form(
+            key: _loginFormKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  '이메일로 로그인',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _loginEmailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: '이메일',
+                    hintText: 'example@email.com',
+                  ),
+                  validator: _validateEmail,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _loginPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: '비밀번호',
+                    hintText: '비밀번호를 입력하세요',
+                  ),
+                  validator: _validatePassword,
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: _isLoginLoading ? null : _handleEmailLogin,
+                  child: _isLoginLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('로그인'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleEmailLogin() async {
+    FocusScope.of(context).unfocus();
+    if (!_loginFormKey.currentState!.validate()) return;
+    setState(() => _isLoginLoading = true);
+    try {
+      await _authService.signInWithEmailPassword(
+        email: _loginEmailController.text.trim(),
+        password: _loginPasswordController.text,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(); // close bottom sheet
+      context.goNamed(RouteNames.home);
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인 중 오류가 발생했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoginLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    if (_isGoogleLoading) return;
+    setState(() => _isGoogleLoading = true);
+    try {
+      await _authService.signInWithGoogle();
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isGoogleLoading = false);
+    }
+  }
+
+  Future<void> _handleAppleLogin() async {
+    if (_isAppleLoading) return;
+    setState(() => _isAppleLoading = true);
+    try {
+      await _authService.signInWithApple();
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isAppleLoading = false);
+    }
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return '이메일을 입력해 주세요.';
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!emailRegex.hasMatch(value.trim())) return '올바른 이메일 형식이 아닙니다.';
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return '비밀번호를 입력해 주세요.';
+    if (value.length < 8) return '비밀번호는 최소 8자 이상입니다.';
+    return null;
   }
 }
 
