@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
+import '../../services/weight/weight_service.dart';
+import '../../router/route_paths.dart';
 
 class WeightDetailScreen extends StatefulWidget {
   const WeightDetailScreen({super.key});
@@ -19,6 +22,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   late int selectedMonth;
   late int selectedYear;
   late List<WeightRecord> weightRecords;
+  final _weightService = WeightService();
 
   @override
   void initState() {
@@ -33,8 +37,20 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     final weekOfMonth = ((now.day - 1) / 7).floor() + 1;
     selectedWeek = weekOfMonth.clamp(1, 4);
 
-    // 현재 월 데이터 가져오기 (실제로는 DB에서 가져옴)
-    weightRecords = WeightData.getCurrentMonthData();
+    // 현재 월 데이터 가져오기 (WeightService에서 가져옴)
+    _loadWeightData();
+  }
+
+  /// 체중 데이터 로드
+  void _loadWeightData() {
+    weightRecords = _weightService.getWeightRecords();
+  }
+
+  /// 데이터 새로고침
+  void _refreshData() {
+    setState(() {
+      _loadWeightData();
+    });
   }
 
   // weightRecords에서 월별 평균 계산
@@ -688,7 +704,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   String _getPeriodLabel() {
     switch (selectedPeriod) {
       case '주':
-        return '$selectedWeek주차';
+        return '$selectedMonth월 $selectedWeek주차';
       case '월':
         return '$selectedMonth월';
       case '년':
@@ -884,66 +900,95 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildDayCell(int day, bool hasRecord, {bool isFuture = false}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          day.toString(),
-          style: AppTypography.bodyMedium.copyWith(
-            color: isFuture ? AppColors.lightGray : AppColors.mediumGray,
-          ),
-        ),
-        const SizedBox(height: 4),
-        if (hasRecord)
-          Container(
-            width: 16,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.brandPrimary,
-              borderRadius: BorderRadius.circular(10),
+    final cellDate = DateTime(selectedYear, selectedMonth, day);
+
+    return GestureDetector(
+      onTap: isFuture
+          ? null
+          : () async {
+              // 특정 날짜 체중 기록 화면으로 이동
+              final dateStr = cellDate.toIso8601String().split('T')[0]; // YYYY-MM-DD
+              final result = await context.push(
+                RoutePaths.weightAdd.replaceAll(':date', dateStr),
+              );
+
+              // 저장 후 돌아온 경우 데이터 새로고침
+              if (result == true) {
+                _refreshData();
+              }
+            },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            day.toString(),
+            style: AppTypography.bodyMedium.copyWith(
+              color: isFuture ? AppColors.lightGray : AppColors.mediumGray,
             ),
-          )
-        else
+          ),
           const SizedBox(height: 4),
-      ],
+          if (hasRecord)
+            Container(
+              width: 16,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.brandPrimary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            )
+          else
+            const SizedBox(height: 4),
+        ],
+      ),
     );
   }
 
   Widget _buildAddRecordButton(Size size) {
-    return Container(
-      width: size.width - (AppSpacing.md * 2),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.gradientTop, AppColors.brandPrimary],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+    return GestureDetector(
+      onTap: () async {
+        // 오늘 체중 기록 화면으로 이동
+        final result = await context.push(RoutePaths.weightAddToday);
+
+        // 저장 후 돌아온 경우 데이터 새로고침
+        if (result == true) {
+          _refreshData();
+        }
+      },
+      child: Container(
+        width: size.width - (AppSpacing.md * 2),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
         ),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 4,
-            offset: const Offset(0, 4),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.gradientTop, AppColors.brandPrimary],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.add, color: Colors.white, size: 20),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            '오늘의 몸무게 기록하기',
-            style: AppTypography.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 4,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add, color: Colors.white, size: 20),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              '오늘의 몸무게 기록하기',
+              style: AppTypography.bodyLarge.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
