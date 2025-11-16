@@ -10,11 +10,13 @@ class AuthService {
   Future<AuthResponse> signUpWithEmail({
     required String email,
     required String password,
+    Map<String, dynamic>? metadata,
   }) =>
       _client.auth.signUp(
         email: email,
         password: password,
         emailRedirectTo: AppConfig.authRedirectUri,
+        data: metadata,
       );
 
   Future<void> signInWithGoogle() {
@@ -28,6 +30,16 @@ class AuthService {
     return _client.auth.signInWithOAuth(
       OAuthProvider.apple,
       redirectTo: AppConfig.authRedirectUri,
+    );
+  }
+
+  Future<AuthResponse> signInWithEmailPassword({
+    required String email,
+    required String password,
+  }) {
+    return _client.auth.signInWithPassword(
+      email: email,
+      password: password,
     );
   }
 

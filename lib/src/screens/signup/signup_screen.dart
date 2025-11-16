@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
+import '../../services/auth/auth_service.dart';
 
 /// 회원가입 화면
 class SignupScreen extends StatefulWidget {
@@ -18,6 +20,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final _phoneController = TextEditingController();
 
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -218,6 +222,47 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  Future<void> _handleSignup() async {
+    FocusScope.of(context).unfocus();
+    if (!_formKey.currentState!.validate()) return;
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final name = _nameController.text.trim();
+      final phone = _phoneController.text.trim();
+
+      await _authService.signUpWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        metadata: {
+          'name': name,
+          'phone': phone,
+        },
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('가입 메일을 확인하고 인증을 완료해 주세요.'),
+        ),
+      );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('예상치 못한 오류가 발생했습니다. 다시 시도해 주세요.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   /// 공통 텍스트 필드
   Widget _buildTextField({
     required TextEditingController controller,
@@ -341,7 +386,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   /// 회원가입 처리
-  void _handleSignup() {
+  void _handleSignupLegacy() {
     if (_formKey.currentState?.validate() ?? false) {
       // TODO: 실제 회원가입 API 연동
       ScaffoldMessenger.of(context).showSnackBar(
