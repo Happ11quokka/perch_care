@@ -287,6 +287,8 @@ class _SignupScreenState extends State<SignupScreen> {
           keyboardType: keyboardType,
           obscureText: obscureText,
           validator: validator,
+          textInputAction: TextInputAction.next,
+          enableIMEPersonalizedLearning: true,
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: const TextStyle(
