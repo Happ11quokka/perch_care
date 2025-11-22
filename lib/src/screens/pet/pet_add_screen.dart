@@ -22,20 +22,12 @@ class _PetAddScreenState extends State<PetAddScreen> {
   final _nameController = TextEditingController();
   final _breedController = TextEditingController();
 
-  // Form values
-  String _selectedSpecies = 'bird'; // Default to parrot
+  // Form values - 앵무새 전용이므로 species는 항상 'bird'
+  final String _selectedSpecies = 'bird';
   String _selectedGender = 'unknown';
   DateTime? _selectedBirthDate;
 
   bool _isLoading = false;
-
-  // Species options
-  final Map<String, String> _speciesOptions = {
-    'bird': '앵무새',
-    'dog': '강아지',
-    'cat': '고양이',
-    'hamster': '햄스터',
-  };
 
   // Gender options
   final Map<String, String> _genderOptions = {
@@ -133,7 +125,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -142,11 +133,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.grayscale900),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         title: Text(
-          '반려동물 등록하기',
+          '앵무새 등록하기',
           style: AppTypography.h5.copyWith(color: AppColors.brandPrimary),
         ),
         centerTitle: true,
@@ -156,17 +147,17 @@ class _PetAddScreenState extends State<PetAddScreen> {
           key: _formKey,
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.paddingLarge,
-              vertical: AppSpacing.paddingMedium,
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header text
                 Text(
-                  '소중한 반려동물의\n정보를 입력해주세요',
+                  '소중한 앵무새의\n정보를 입력해주세요',
                   style: AppTypography.h4.copyWith(
-                    color: AppColors.grayscale900,
+                    color: AppColors.nearBlack,
                     height: 1.4,
                   ),
                 ),
@@ -174,7 +165,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
                 // Pet name input
                 _buildLabel('이름 *'),
-                SizedBox(height: AppSpacing.spacingSmall),
+                SizedBox(height: AppSpacing.sm),
                 _buildTextField(
                   controller: _nameController,
                   hintText: '예: 사랑이',
@@ -185,40 +176,26 @@ class _PetAddScreenState extends State<PetAddScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: AppSpacing.paddingMedium),
+                SizedBox(height: AppSpacing.lg),
 
-                // Species selector
-                _buildLabel('종류 *'),
-                SizedBox(height: AppSpacing.spacingSmall),
-                _buildDropdown(
-                  value: _selectedSpecies,
-                  items: _speciesOptions,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedSpecies = value!;
-                    });
-                  },
-                ),
-                SizedBox(height: AppSpacing.paddingMedium),
-
-                // Breed input
+                // Breed input (앵무새 품종)
                 _buildLabel('품종 (선택)'),
-                SizedBox(height: AppSpacing.spacingSmall),
+                SizedBox(height: AppSpacing.sm),
                 _buildTextField(
                   controller: _breedController,
-                  hintText: '예: 유황앵무',
+                  hintText: '예: 유황앵무, 코뉴어, 사랑앵무, 회색앵무 등',
                 ),
-                SizedBox(height: AppSpacing.paddingMedium),
+                SizedBox(height: AppSpacing.lg),
 
                 // Birth date picker
                 _buildLabel('생년월일 (선택)'),
-                SizedBox(height: AppSpacing.spacingSmall),
+                SizedBox(height: AppSpacing.sm),
                 _buildDatePicker(),
-                SizedBox(height: AppSpacing.paddingMedium),
+                SizedBox(height: AppSpacing.lg),
 
                 // Gender selector
                 _buildLabel('성별'),
-                SizedBox(height: AppSpacing.spacingSmall),
+                SizedBox(height: AppSpacing.sm),
                 _buildDropdown(
                   value: _selectedGender,
                   items: _genderOptions,
@@ -244,7 +221,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
     return Text(
       text,
       style: AppTypography.labelLarge.copyWith(
-        color: AppColors.grayscale900,
+        color: AppColors.nearBlack,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -258,36 +235,36 @@ class _PetAddScreenState extends State<PetAddScreen> {
     return TextFormField(
       controller: controller,
       validator: validator,
-      style: AppTypography.bodyLarge.copyWith(color: AppColors.grayscale900),
+      style: AppTypography.bodyLarge.copyWith(color: AppColors.nearBlack),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: AppTypography.bodyLarge.copyWith(
-          color: AppColors.grayscale400,
+          color: AppColors.lightGray,
         ),
         filled: true,
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.paddingMedium,
-          vertical: AppSpacing.paddingMedium,
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.medium),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.medium),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.medium),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.medium),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.medium),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
       ),
@@ -301,7 +278,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.medium),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: AppColors.brandPrimary, width: 2),
       ),
       child: DropdownButtonFormField<String>(
@@ -313,11 +290,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
           );
         }).toList(),
         onChanged: onChanged,
-        style: AppTypography.bodyLarge.copyWith(color: AppColors.grayscale900),
+        style: AppTypography.bodyLarge.copyWith(color: AppColors.nearBlack),
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.paddingMedium,
-            vertical: AppSpacing.paddingMedium,
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
           ),
           border: InputBorder.none,
         ),
@@ -332,11 +309,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
       onTap: _selectBirthDate,
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.paddingMedium,
-          vertical: AppSpacing.paddingMedium,
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.medium),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(color: AppColors.brandPrimary, width: 2),
         ),
         child: Row(
@@ -348,8 +325,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
                   : '${_selectedBirthDate!.year}년 ${_selectedBirthDate!.month}월 ${_selectedBirthDate!.day}일',
               style: AppTypography.bodyLarge.copyWith(
                 color: _selectedBirthDate == null
-                    ? AppColors.grayscale400
-                    : AppColors.grayscale900,
+                    ? AppColors.lightGray
+                    : AppColors.nearBlack,
               ),
             ),
             const Icon(Icons.calendar_today, color: AppColors.brandPrimary),
@@ -365,8 +342,12 @@ class _PetAddScreenState extends State<PetAddScreen> {
       height: 56,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppColors.brandGradient,
-          borderRadius: BorderRadius.circular(AppRadius.medium),
+          gradient: const LinearGradient(
+            colors: [AppColors.gradientTop, AppColors.brandPrimary],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: ElevatedButton(
           onPressed: _isLoading ? null : _submitForm,
@@ -374,7 +355,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.medium),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
           child: _isLoading

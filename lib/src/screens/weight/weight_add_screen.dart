@@ -8,6 +8,7 @@ import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_service.dart';
+import '../../router/route_names.dart';
 
 class WeightAddScreen extends StatefulWidget {
   final DateTime date;
@@ -73,9 +74,62 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     }
 
     if (_activePetId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('먼저 반려동물을 등록해주세요.')),
+      // Show dialog with option to register a pet
+      final shouldNavigate = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          title: Text(
+            '앵무새 등록 필요',
+            style: AppTypography.h5.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.nearBlack,
+            ),
+          ),
+          content: Text(
+            '체중을 기록하려면 먼저 앵무새를 등록해야 합니다.\n지금 등록하시겠습니까?',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.mediumGray,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                '취소',
+                style: AppTypography.labelLarge.copyWith(
+                  color: AppColors.mediumGray,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.brandPrimary.withValues(alpha: 0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+              ),
+              child: Text(
+                '등록하기',
+                style: AppTypography.labelLarge.copyWith(
+                  color: AppColors.brandPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       );
+
+      if (shouldNavigate == true && mounted) {
+        context.pushNamed(RouteNames.petAdd).then((result) {
+          // Reload pet data when returning from pet registration
+          _loadActivePet();
+        });
+      }
       return;
     }
 

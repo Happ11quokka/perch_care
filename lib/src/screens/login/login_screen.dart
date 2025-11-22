@@ -644,17 +644,33 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _loginPasswordController.text,
       );
       if (!mounted) return;
-      Navigator.of(context).pop(); // close bottom sheet
+
+      // 바텀시트를 닫고, 잠시 후 홈 화면으로 이동
+      Navigator.of(context).pop();
+
+      // 네비게이션 작업을 약간 지연시켜 Navigator 상태 충돌 방지
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!mounted) return;
       context.goNamed(RouteNames.home);
     } on AuthException catch (e) {
       if (!mounted) return;
+      String errorMessage = e.message;
+
+      // 일반적인 에러 메시지를 사용자 친화적으로 변환
+      if (e.message.contains('Invalid login credentials')) {
+        errorMessage = '이메일 또는 비밀번호가 올바르지 않습니다.';
+      } else if (e.message.contains('Email not confirmed')) {
+        errorMessage = '이메일 인증이 필요합니다. 이메일을 확인해주세요.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
+        SnackBar(content: Text(errorMessage)),
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인 중 오류가 발생했습니다.')),
+        SnackBar(content: Text('로그인 중 오류가 발생했습니다: ${e.toString()}')),
       );
     } finally {
       if (mounted) setState(() => _isLoginLoading = false);
