@@ -235,6 +235,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
     return TextFormField(
       controller: controller,
       validator: validator,
+      textInputAction: TextInputAction.next,
+      enableIMEPersonalizedLearning: true,
       style: AppTypography.bodyLarge.copyWith(color: AppColors.nearBlack),
       decoration: InputDecoration(
         hintText: hintText,
