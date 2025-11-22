@@ -6,6 +6,7 @@ import '../screens/signup/signup_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/weight/weight_detail_screen.dart';
 import '../screens/weight/weight_add_screen.dart';
+import '../screens/pet/pet_add_screen.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -55,6 +56,11 @@ class AppRouter {
           final date = DateTime.parse(dateStr);
           return WeightAddScreen(date: date);
         },
+      ),
+      GoRoute(
+        path: RoutePaths.petAdd,
+        name: RouteNames.petAdd,
+        builder: (context, state) => const PetAddScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
