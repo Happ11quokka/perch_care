@@ -235,10 +235,7 @@ class _SignupScreenState extends State<SignupScreen> {
       await _authService.signUpWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        metadata: {
-          'name': name,
-          'phone': phone,
-        },
+        nickname: name,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
