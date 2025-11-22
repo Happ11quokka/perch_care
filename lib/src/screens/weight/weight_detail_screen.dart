@@ -7,6 +7,7 @@ import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
+import '../../services/pet/pet_service.dart';
 import '../../router/route_paths.dart';
 
 class WeightDetailScreen extends StatefulWidget {
@@ -21,8 +22,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   late int selectedWeek;
   late int selectedMonth;
   late int selectedYear;
-  late List<WeightRecord> weightRecords;
+  List<WeightRecord> weightRecords = [];
   final _weightService = WeightService();
+  final _petService = PetService();
+  String? _activePetId;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -38,19 +42,54 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     selectedWeek = weekOfMonth.clamp(1, 4);
 
     // 현재 월 데이터 가져오기 (WeightService에서 가져옴)
-    _loadWeightData();
+    _loadActivePet();
+  }
+
+  /// 활성 펫 로드
+  Future<void> _loadActivePet() async {
+    try {
+      final pet = await _petService.getActivePet();
+      if (pet != null && mounted) {
+        setState(() {
+          _activePetId = pet.id;
+        });
+        await _loadWeightData();
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   /// 체중 데이터 로드
-  void _loadWeightData() {
-    weightRecords = _weightService.getWeightRecords();
+  Future<void> _loadWeightData() async {
+    if (_activePetId == null) return;
+
+    try {
+      final records = await _weightService.getWeightRecords(_activePetId!);
+      if (mounted) {
+        setState(() {
+          weightRecords = records;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   /// 데이터 새로고침
-  void _refreshData() {
-    setState(() {
-      _loadWeightData();
-    });
+  Future<void> _refreshData() async {
+    await _loadWeightData();
   }
 
   // weightRecords에서 월별 평균 계산

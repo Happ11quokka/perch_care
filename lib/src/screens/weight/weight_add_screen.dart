@@ -7,6 +7,7 @@ import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
+import '../../services/pet/pet_service.dart';
 
 class WeightAddScreen extends StatefulWidget {
   final DateTime date;
@@ -24,12 +25,14 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   final _weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _weightService = WeightService();
+  final _petService = PetService();
   bool _isLoading = false;
+  String? _activePetId;
 
   @override
   void initState() {
     super.initState();
-    _loadExistingRecord();
+    _loadActivePet();
   }
 
   @override
@@ -38,10 +41,27 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     super.dispose();
   }
 
+  /// 활성 펫과 기존 기록 로드
+  Future<void> _loadActivePet() async {
+    try {
+      final pet = await _petService.getActivePet();
+      if (pet != null && mounted) {
+        setState(() {
+          _activePetId = pet.id;
+        });
+        _loadExistingRecord();
+      }
+    } catch (e) {
+      // 펫이 없는 경우 무시
+    }
+  }
+
   /// 기존 기록이 있으면 로드
-  void _loadExistingRecord() {
-    final existingRecord = _weightService.getRecordByDate(widget.date);
-    if (existingRecord != null) {
+  Future<void> _loadExistingRecord() async {
+    if (_activePetId == null) return;
+
+    final existingRecord = await _weightService.getRecordByDate(_activePetId!, widget.date);
+    if (existingRecord != null && mounted) {
       _weightController.text = existingRecord.weight.toStringAsFixed(1);
     }
   }
@@ -52,6 +72,13 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
       return;
     }
 
+    if (_activePetId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('먼저 반려동물을 등록해주세요.')),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -59,6 +86,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     try {
       final weight = double.parse(_weightController.text);
       final record = WeightRecord(
+        petId: _activePetId!,
         date: widget.date,
         weight: weight,
       );
@@ -104,6 +132,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
 
