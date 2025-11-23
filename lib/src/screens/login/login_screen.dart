@@ -23,9 +23,25 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoginLoading = false;
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
+
   static const double _designWidth = 393.0;
   static const double _designHeight = 852.0;
 
+  static const double _treeDesignWidth = 495.0;
+  static const double _treeDesignHeight = 500.0;
+  static const double _treeDesignLeft = 0.0;
+  static const double _treeDesignTop = 123.0;
+  static const double _treeScale = 0.8;
+
+  static const double _birdDesignWidth = 274.0;
+  static const double _birdDesignHeight = 287.0;
+  static const double _birdDesignLeft = 165.0;
+  static const double _birdDesignTop = 166.0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
   // 바텀시트 높이 상태
   double _sheetHeight = 60.0; // 초기에는 살짝만 보임
   final double _peekHeight = 60.0; // 살짝 보이는 높이
@@ -42,55 +58,57 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: Stack(
-        children: [
-          // 배경 원형들
-          _buildBackgroundCircles(),
-
-          // 중앙 그라데이션 원
-          _buildGradientCircle(),
-
-          // 메인 콘텐츠 (새, 나무, 브랜드명, 슬로건)
-          _buildMainContent(),
-
-          // 하단 바텀시트 영역
-          _buildBottomSheet(),
-
-          // 상단 상태바 영역
-          _buildStatusBar(),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenSize = MediaQuery.of(context).size;
+          return Stack(
+            children: [
+              _buildBackgroundCircles(
+                screenSize.width,
+                screenSize.height,
+              ),
+              _buildGradientCircle(),
+              _buildMainContent(),
+              _buildBottomSheet(),
+              _buildStatusBar(),
+            ],
+          );
+        },
       ),
     );
   }
 
   /// 배경 원형들 (3개의 큰 원)
-  Widget _buildBackgroundCircles() {
-    final screenSize = MediaQuery.of(context).size;
-    final screenWidth = screenSize.width;
-
+  Widget _buildBackgroundCircles(double screenWidth, double screenHeight) {
     double w(double value) => (value / _designWidth) * screenWidth;
-    double h(double value) => (value / _designHeight) * screenSize.height;
+    double h(double value) => (value / _designHeight) * screenHeight;
 
     final double circleCenterX = w(200);
 
-    final double largeRingSize = w(622);
+    final double largeRingScale = 1.05;
+    final double middleRingScale = 1.02;
+    final double innerRingScale = 1.03;
+
+    final double largeRingSize = w(622) * largeRingScale;
     final double largeRingCenterY = h(272);
-    final double largeRingLeft = circleCenterX - (largeRingSize / 2);
+    final double largeRingLeft =
+        circleCenterX - (largeRingSize / 2) + w(80);
     final double largeRingTop = largeRingCenterY - (largeRingSize / 2);
 
-    final double outerRingSize = w(439);
+    final double outerRingSize = w(439) * middleRingScale;
     final double outerRingCenterY = h(265.5);
-    final double outerRingLeft = circleCenterX - (outerRingSize / 2);
+    final double outerRingLeft =
+        circleCenterX - (outerRingSize / 2) + w(10);
     final double outerRingTop = outerRingCenterY - (outerRingSize / 2);
 
-    final double middleRingSize = w(268);
+    final double middleRingSize = w(268) * innerRingScale;
     final double middleRingCenterY = h(254);
     final double middleRingLeft = circleCenterX - (middleRingSize / 2);
     final double middleRingTop = middleRingCenterY - (middleRingSize / 2);
 
     return Stack(
+      clipBehavior: Clip.none,
       children: [
-        // 가장 큰 링 (Ellipse 120)
         Positioned(
           left: largeRingLeft,
           top: largeRingTop,
@@ -101,8 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
             fit: BoxFit.contain,
           ),
         ),
-
-        // 맨 외부 원환 (Ellipse 69)
         Positioned(
           left: outerRingLeft,
           top: outerRingTop,
@@ -113,8 +129,6 @@ class _LoginScreenState extends State<LoginScreen> {
             fit: BoxFit.contain,
           ),
         ),
-
-        // 중간 원환 (Ellipse 68)
         Positioned(
           left: middleRingLeft,
           top: middleRingTop,
@@ -165,47 +179,486 @@ class _LoginScreenState extends State<LoginScreen> {
     double w(double value) => (value / _designWidth) * screenWidth;
     double h(double value) => (value / _designHeight) * screenSize.height;
 
-    // 시안 좌표를 기반으로 주요 요소의 크기와 위치 계산
-    final birdWidth = w(263);
-    final birdHeight = birdWidth * (224.0 / 263.0);
-    final birdLeft = w(133);
-    final birdTop = h(157);
+    final treeWidth = w(_treeDesignWidth) * _treeScale;
+    final treeHeight = treeWidth * (_treeDesignHeight / _treeDesignWidth);
+    final treeLeft = w(_treeDesignLeft);
+    final treeTop = h(_treeDesignTop);
 
-    final treeWidth = w(487);
-    final treeLeft = w(-58);
-    final treeTop = birdTop + (birdHeight * 0.54);
+    double relX(double designX) =>
+        (designX - _treeDesignLeft) / _treeDesignWidth * treeWidth;
+    double relY(double designY) =>
+        (designY - _treeDesignTop) / _treeDesignHeight * treeHeight;
+    double relW(double designWidth) =>
+        designWidth / _treeDesignWidth * treeWidth;
+    double relH(double designHeight) =>
+        designHeight / _treeDesignHeight * treeHeight;
+
+    final birdWidth = relW(_birdDesignWidth);
+    final birdHeight = relH(_birdDesignHeight);
+    final birdOffsetLeft = relX(_birdDesignLeft);
+    final birdOffsetTop = relY(_birdDesignTop);
+
+    final leaf1173Left = relX(9); //완료
+    final leaf1173Top = relY(319);
+    final leaf1173Width = relW(20);
+    final leaf1173Height = relH(198);
+
+    final leaf1165Left = relX(260); //완료 - 순서 수정
+    final leaf1165Top = relY(418);
+    final leaf1165Width = relW(20);
+    final leaf1165Height = relH(37);
+
+    final leaf1164Left = relX(397); //완료
+    final leaf1164Top = relY(445);
+    final leaf1164Width = relW(20);
+    final leaf1164Height = relH(26);
+
+    final leaf1147Left = relX(31);  //완료
+    final leaf1147Top = relY(263);
+    final leaf1147Width = relW(20);
+    final leaf1147Height = relH(53);
+
+    final leaf1154Left = relX(26);  //완료
+    final leaf1154Top = relY(365.5);
+    final leaf1154Width = relW(20);
+    final leaf1154Height = relH(45);
+
+    final leaf1155Left = relX(137); //완료
+    final leaf1155Top = relY(369);
+    final leaf1155Width = relW(20);
+    final leaf1155Height = relH(43);
+
+    final leaf1156Left = relX(95);  //완료
+    final leaf1156Top = relY(458);
+    final leaf1156Width = relW(20);
+    final leaf1156Height = relH(25.5);
+
+    final leaf1157Left = relX(49);  //완료
+    final leaf1157Top = relY(448);
+    final leaf1157Width = relW(20);
+    final leaf1157Height = relH(26);
+
+    final leaf1158Left = relX(142); //완료
+    final leaf1158Top = relY(470);
+    final leaf1158Width = relW(20);
+    final leaf1158Height = relH(27.5);
+
+    final leaf1159Left = relX(133); //완료
+    final leaf1159Top = relY(482);
+    final leaf1159Width = relW(20);
+    final leaf1159Height = relH(20);
+
+    final leaf1160Left = relX(131); //완료
+    final leaf1160Top = relY(466);
+    final leaf1160Width = relW(20);
+    final leaf1160Height = relH(12);
+
+    final leaf1161Left = relX(81.5); //완료
+    final leaf1161Top = relY(443);
+    final leaf1161Width = relW(20);
+    final leaf1161Height = relH(12);
+
+    final leaf1162Left = relX(106); //완료
+    final leaf1162Top = relY(479);
+    final leaf1162Width = relW(20);
+    final leaf1162Height = relH(13.5);
+
+    final branch1114Left = relX(120); //완료
+    final branch1114Top = relY(439);
+    final branch1114Width = relW(20);
+    final branch1114Height = relH(54);
+
+    final branch1112Left = relX(105); //완료 - 순서 수정
+    final branch1112Top = relY(284);
+    final branch1112Width = relW(20);
+    final branch1112Height = relH(65);
+
+    final branch1113Left = relX(90);  //완료
+    final branch1113Top = relY(310);
+    final branch1113Width = relW(20);
+    final branch1113Height = relH(15);
+
+    final branch1115Left = relX(313); //완료
+    final branch1115Top = relY(370);
+    final branch1115Width = relW(20);
+    final branch1115Height = relH(54);
+    
+    final branch1175Left = relX(304); //완료
+    final branch1175Top = relY(381);
+    final branch1175Width = relW(20);
+    final branch1175Height = relH(23);
+
+    final leaf1148Left = relX(95);  //완료
+    final leaf1148Top = relY(258);
+    final leaf1148Width = relW(20);
+    final leaf1148Height = relH(50);
+
+    final leaf1149Left = relX(83);  //완료
+    final leaf1149Top = relY(281);
+    final leaf1149Width = relW(20);
+    final leaf1149Height = relH(40.5);
+
+    final leaf1172Left = relX(110); //완료
+    final leaf1172Top = relY(305);
+    final leaf1172Width = relW(20);
+    final leaf1172Height = relH(16.5);
+
+    final leaf1168Left = relX(220); //완료
+    final leaf1168Top = relY(378);
+    final leaf1168Width = relW(20);
+    final leaf1168Height = relH(50);
+
+    final leaf1169Left = relX(270); //완료
+    final leaf1169Top = relY(380);
+    final leaf1169Width = relW(20);
+    final leaf1169Height = relH(33);
+
+    final leaf1170Left = relX(240); //완료
+    final leaf1170Top = relY(335);
+    final leaf1170Width = relW(20);
+    final leaf1170Height = relH(45);
+
+    final leaf1151Left = relX(23);  //완료
+    final leaf1151Top = relY(245);
+    final leaf1151Width = relW(20);
+    final leaf1151Height = relH(44);
+
+    final leaf1153Left = relX(90); //완료
+    final leaf1153Top = relY(348);
+    final leaf1153Width = relW(20);
+    final leaf1153Height = relH(23);
+
+    final leaf1180Left = relX(45);  //완료
+    final leaf1180Top = relY(390);
+    final leaf1180Width = relW(20);
+    final leaf1180Height = relH(19.5);
+
+    final leaf1171Left = relX(280); //완료
+    final leaf1171Top = relY(325);
+    final leaf1171Width = relW(20);
+    final leaf1171Height = relH(27);
+
+    // final leaf1152Left = relX(90); 
+    // final leaf1152Top = relY(348);
+    // final leaf1152Width = relW(20);
+    // final leaf1152Height = relH(23);
+
+    // final leaf1167Left = relX(45);  
+    // final leaf1167Top = relY(390);
+    // final leaf1167Width = relW(20);
+    // final leaf1167Height = relH(19.5);
+
 
     final brandLogoWidth = w(230);
     final brandLogoLeft = (screenWidth - brandLogoWidth) / 2;
     final brandLogoTop = h(573);
 
-    final sloganWidth = w(257);
+    final sloganWidth = w(257)*0.9;
     final sloganLeft = (screenWidth - sloganWidth) / 2;
-    final sloganTop = h(618);
+    final sloganTop = h(645);
 
-    final arrowTop = h(720);
+    final arrowTop = h(690);
 
     return Positioned.fill(
       child: Stack(
         children: [
-          // 새 이미지 (꼬리까지 전체)
-          Positioned(
-            left: birdLeft,
-            top: birdTop,
-            child: SvgPicture.asset(
-              'assets/images/login_bird.svg',
-              width: birdWidth,
-              height: birdHeight,
-            ),
-          ),
-
-          // 나무 이미지
           Positioned(
             left: treeLeft,
             top: treeTop,
-            child: SvgPicture.asset('assets/images/tree.svg', width: treeWidth),
+            child: SizedBox(
+              width: treeWidth,
+              height: treeHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: birdOffsetLeft,
+                    top: birdOffsetTop,
+                    child: SvgPicture.asset(
+                      'assets/images/login_bird.svg',
+                      width: birdWidth,
+                      height: birdHeight,
+                    ),
+                  ),
+                  SvgPicture.asset(
+                    'assets/images/tree.svg',
+                    width: treeWidth,
+                    height: treeHeight,
+                  ),
+                  Positioned(
+                    left: leaf1173Left,
+                    top: leaf1173Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1173.svg',
+                      width: leaf1173Width,
+                      height: leaf1173Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1165Left,
+                    top: leaf1165Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1165.svg',
+                      width: leaf1165Width,
+                      height: leaf1165Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1164Left,
+                    top: leaf1164Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1164.svg',
+                      width: leaf1164Width,
+                      height: leaf1164Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1147Left,
+                    top: leaf1147Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1147.svg',
+                      width: leaf1147Width,
+                      height: leaf1147Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1154Left,
+                    top: leaf1154Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1154.svg',
+                      width: leaf1154Width,
+                      height: leaf1154Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1155Left,
+                    top: leaf1155Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1155.svg',
+                      width: leaf1155Width,
+                      height: leaf1155Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1156Left,
+                    top: leaf1156Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1156.svg',
+                      width: leaf1156Width,
+                      height: leaf1156Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1157Left,
+                    top: leaf1157Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1157.svg',
+                      width: leaf1157Width,
+                      height: leaf1157Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1158Left,
+                    top: leaf1158Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1158.svg',
+                      width: leaf1158Width,
+                      height: leaf1158Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1159Left,
+                    top: leaf1159Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1159.svg',
+                      width: leaf1159Width,
+                      height: leaf1159Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1160Left,
+                    top: leaf1160Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1160.svg',
+                      width: leaf1160Width,
+                      height: leaf1160Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1161Left,
+                    top: leaf1161Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1161.svg',
+                      width: leaf1161Width,
+                      height: leaf1161Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1162Left,
+                    top: leaf1162Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1162.svg',
+                      width: leaf1162Width,
+                      height: leaf1162Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: branch1114Left,
+                    top: branch1114Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1114.svg',
+                      width: branch1114Width,
+                      height: branch1114Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: branch1112Left,
+                    top: branch1112Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1112.svg',
+                      width: branch1112Width,
+                      height: branch1112Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: branch1113Left,
+                    top: branch1113Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1113.svg',
+                      width: branch1113Width,
+                      height: branch1113Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: branch1175Left,
+                    top: branch1175Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1175.svg',
+                      width: branch1175Width,
+                      height: branch1175Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: branch1115Left,
+                    top: branch1115Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1115.svg',
+                      width: branch1115Width,
+                      height: branch1115Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1148Left,
+                    top: leaf1148Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1148.svg',
+                      width: leaf1148Width,
+                      height: leaf1148Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1149Left,
+                    top: leaf1149Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1149.svg',
+                      width: leaf1149Width,
+                      height: leaf1149Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1172Left,
+                    top: leaf1172Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1172.svg',
+                      width: leaf1172Width,
+                      height: leaf1172Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1168Left,
+                    top: leaf1168Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1168.svg',
+                      width: leaf1168Width,
+                      height: leaf1168Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1169Left,
+                    top: leaf1169Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1169.svg',
+                      width: leaf1169Width,
+                      height: leaf1169Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1170Left,
+                    top: leaf1170Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1170.svg',
+                      width: leaf1170Width,
+                      height: leaf1170Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1151Left,
+                    top: leaf1151Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1151.svg',
+                      width: leaf1151Width,
+                      height: leaf1151Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1153Left,
+                    top: leaf1153Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1153.svg',
+                      width: leaf1153Width,
+                      height: leaf1153Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1180Left,
+                    top: leaf1180Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1180.svg',
+                      width: leaf1180Width,
+                      height: leaf1180Height,
+                    ),
+                  ),
+                  Positioned(
+                    left: leaf1171Left,
+                    top: leaf1171Top,
+                    child: SvgPicture.asset(
+                      'assets/images/login_vector/Vector_1171.svg',
+                      width: leaf1171Width,
+                      height: leaf1171Height,
+                    ),
+                  ),
+                  // Positioned(
+                  //   left: leaf1152Left,
+                  //   top: leaf1152Top,
+                  //   child: SvgPicture.asset(
+                  //     'assets/images/login_vector/Vector_1152.svg',
+                  //     width: leaf1152Width,
+                  //     height: leaf1152Height,
+                  //   ),
+                  // ),
+                  // Positioned(
+                  //   left: leaf1167Left,
+                  //   top: leaf1167Top,
+                  //   child: SvgPicture.asset(
+                  //     'assets/images/login_vector/Vector_1167.svg',
+                  //     width: leaf1167Width,
+                  //     height: leaf1167Height,
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
           ),
-
           // 브랜드명 (p.e.r.c.h)
           Positioned(
             left: brandLogoLeft,
@@ -231,11 +684,21 @@ class _LoginScreenState extends State<LoginScreen> {
             left: 0,
             right: 0,
             top: arrowTop,
-            child: Center(
-              child: Icon(
-                Icons.keyboard_arrow_up,
-                color: AppColors.brandPrimary.withValues(alpha: 0.5),
-                size: 48,
+            child: SizedBox(
+              height: h(60),
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  SvgPicture.asset('assets/images/login_vector/Vector_1214.svg'),
+                  Positioned(
+                    top: h(12),
+                    child: SvgPicture.asset('assets/images/login_vector/Vector_1212.svg'),
+                  ),
+                  Positioned(
+                    top: h(24),
+                    child: SvgPicture.asset('assets/images/login_vector/Vector_1213.svg'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -369,9 +832,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// 하단 시트 로그인 콘텐츠
   Widget _buildLoginSheetContent() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final buttonWidth = (screenWidth - 64).clamp(280.0, 400.0);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -394,45 +854,39 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 28),
         SizedBox(
-          width: buttonWidth,
+          width: 311,
           child: _buildGradientButton(
             label: '로그인',
             onPressed: _showEmailLoginSheet,
           ),
         ),
         const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Flexible(
-                child: Text(
-                  '아직 회원이 아니신가요? ',
-                  style: TextStyle(fontSize: 14, color: AppColors.gray600),
-                  overflow: TextOverflow.ellipsis,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              '아직 회원이 아니신가요? ',
+              style: TextStyle(fontSize: 14, color: AppColors.gray600),
+            ),
+            TextButton(
+              onPressed: () {
+                context.pushNamed(RouteNames.signup);
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text(
+                '회원가입',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.brandPrimary,
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  context.pushNamed(RouteNames.signup);
-                },
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text(
-                  '회원가입',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.brandPrimary,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         const Text(
@@ -448,7 +902,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 24),
         // 테스트 로그인 버튼
         SizedBox(
-          width: buttonWidth,
+          width: 311,
           child: OutlinedButton(
             onPressed: () {
               context.goNamed(RouteNames.home);
@@ -458,10 +912,7 @@ class _LoginScreenState extends State<LoginScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              side: const BorderSide(
-                color: AppColors.brandPrimary,
-                width: 2,
-              ),
+              side: const BorderSide(color: AppColors.brandPrimary, width: 2),
             ),
             child: const Text(
               '테스트 로그인',
@@ -644,34 +1095,18 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _loginPasswordController.text,
       );
       if (!mounted) return;
-
-      // 바텀시트를 닫고, 잠시 후 홈 화면으로 이동
-      Navigator.of(context).pop();
-
-      // 네비게이션 작업을 약간 지연시켜 Navigator 상태 충돌 방지
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      if (!mounted) return;
+      Navigator.of(context).pop(); // close bottom sheet
       context.goNamed(RouteNames.home);
     } on AuthException catch (e) {
       if (!mounted) return;
-      String errorMessage = e.message;
-
-      // 일반적인 에러 메시지를 사용자 친화적으로 변환
-      if (e.message.contains('Invalid login credentials')) {
-        errorMessage = '이메일 또는 비밀번호가 올바르지 않습니다.';
-      } else if (e.message.contains('Email not confirmed')) {
-        errorMessage = '이메일 인증이 필요합니다. 이메일을 확인해주세요.';
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
-    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그인 중 오류가 발생했습니다: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('로그인 중 오류가 발생했습니다.')));
     } finally {
       if (mounted) setState(() => _isLoginLoading = false);
     }
@@ -684,14 +1119,14 @@ class _LoginScreenState extends State<LoginScreen> {
       await _authService.signInWithGoogle();
     } on AuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')));
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -704,14 +1139,14 @@ class _LoginScreenState extends State<LoginScreen> {
       await _authService.signInWithApple();
     } on AuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')));
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);
     }
