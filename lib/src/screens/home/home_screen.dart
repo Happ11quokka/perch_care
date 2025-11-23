@@ -107,9 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? const Icon(Icons.check_circle, color: AppColors.brandPrimary)
                     : null,
                 onTap: () async {
+                  final navigator = Navigator.of(context);
                   await _petService.setActivePet(pet.id);
                   if (mounted) {
-                    Navigator.pop(context);
+                    navigator.pop();
                     _loadPets();
                   }
                 },
@@ -149,32 +150,34 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.gray50,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // App Bar
-                _buildAppBar(),
-                const SizedBox(height: AppSpacing.lg),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // App Bar
+                      _buildAppBar(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // AI Camera Banner
-                _buildAICameraBanner(),
-                const SizedBox(height: AppSpacing.lg),
+                      // AI Camera Banner
+                      _buildAICameraBanner(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // Calendar Widget
-                _buildCalendar(),
-                const SizedBox(height: AppSpacing.lg),
+                      // Calendar Widget
+                      _buildCalendar(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // AI Check Section
-                _buildAICheckSection(),
-                const SizedBox(height: AppSpacing.lg),
+                      // AI Check Section
+                      _buildAICheckSection(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // Bottom Cards
-                _buildBottomCards(),
-                const SizedBox(height: AppSpacing.lg),
+                      // Bottom Cards
+                      _buildBottomCards(),
+                      const SizedBox(height: AppSpacing.lg),
               ],
             ),
           ),
