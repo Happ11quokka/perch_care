@@ -7,6 +7,8 @@ import '../screens/home/home_screen.dart';
 import '../screens/weight/weight_detail_screen.dart';
 import '../screens/weight/weight_add_screen.dart';
 import '../screens/pet/pet_add_screen.dart';
+import '../screens/notification/notification_screen.dart';
+import '../screens/profile/profile_screen.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -61,6 +63,16 @@ class AppRouter {
         path: RoutePaths.petAdd,
         name: RouteNames.petAdd,
         builder: (context, state) => const PetAddScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.notification,
+        name: RouteNames.notification,
+        builder: (context, state) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.profile,
+        name: RouteNames.profile,
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

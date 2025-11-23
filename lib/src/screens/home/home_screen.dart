@@ -250,7 +250,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: IconButton(
                     icon: Icon(Icons.notifications_outlined, size: 24, color: AppColors.nearBlack),
-                    onPressed: () {},
+                    onPressed: () {
+                      context.pushNamed(RouteNames.notification);
+                    },
                   ),
                 ),
                 Positioned(
@@ -282,7 +284,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: IconButton(
                 icon: Icon(Icons.person_outline, size: 24, color: AppColors.nearBlack),
-                onPressed: () {},
+                onPressed: () {
+                  context.pushNamed(RouteNames.profile);
+                },
               ),
             ),
           ],
