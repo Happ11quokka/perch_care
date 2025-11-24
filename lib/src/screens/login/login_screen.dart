@@ -14,7 +14,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with TickerProviderStateMixin {
   // Auth state for email login
   final _loginFormKey = GlobalKey<FormState>();
   final _loginEmailController = TextEditingController();
@@ -23,6 +24,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoginLoading = false;
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
+
+  // Arrow animation controller
+  late AnimationController _arrowAnimationController;
 
   static const double _designWidth = 393.0;
   static const double _designHeight = 852.0;
@@ -41,6 +45,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    _arrowAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
   }
   // 바텀시트 높이 상태
   double _sheetHeight = 60.0; // 초기에는 살짝만 보임
@@ -49,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _arrowAnimationController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
     super.dispose();
@@ -679,30 +688,93 @@ class _LoginScreenState extends State<LoginScreen> {
               height: sloganWidth * (22.0 / 257.0),
             ),
           ),
-          // 하단 화살표 (업 인디케이터)
+          // 하단 화살표 (업 인디케이터) - 물결 효과 애니메이션
           Positioned(
             left: 0,
             right: 0,
             top: arrowTop,
             child: SizedBox(
               height: h(60),
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  SvgPicture.asset('assets/images/login_vector/Vector_1214.svg'),
-                  Positioned(
-                    top: h(12),
-                    child: SvgPicture.asset('assets/images/login_vector/Vector_1212.svg'),
-                  ),
-                  Positioned(
-                    top: h(24),
-                    child: SvgPicture.asset('assets/images/login_vector/Vector_1213.svg'),
-                  ),
-                ],
+              child: AnimatedBuilder(
+                animation: _arrowAnimationController,
+                builder: (context, child) {
+                  return Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      _buildAnimatedArrow(
+                        assetPath: 'assets/images/login_vector/Vector_1214.svg',
+                        delay: 0.0,
+                        baseOpacity: 0.7,
+                        offsetY: 0.0,
+                        h: h,
+                      ),
+                      _buildAnimatedArrow(
+                        assetPath: 'assets/images/login_vector/Vector_1212.svg',
+                        delay: 0.15,
+                        baseOpacity: 0.7,
+                        offsetY: 12.0,
+                        h: h,
+                      ),
+                      _buildAnimatedArrow(
+                        assetPath: 'assets/images/login_vector/Vector_1213.svg',
+                        delay: 0.3,
+                        baseOpacity: 1.0,
+                        offsetY: 24.0,
+                        h: h,
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 개별 화살표 애니메이션 빌더
+  Widget _buildAnimatedArrow({
+    required String assetPath,
+    required double delay,
+    required double baseOpacity,
+    required double offsetY,
+    required double Function(double) h,
+  }) {
+    // 애니메이션 구간 계산 (각 화살표마다 0.33초 동안 애니메이션)
+    final animationStart = delay;
+    final animationEnd = (delay + 0.33).clamp(0.0, 1.0);
+
+    // Interval로 순차 타이밍 조절
+    final intervalAnimation = CurvedAnimation(
+      parent: _arrowAnimationController,
+      curve: Interval(
+        animationStart,
+        animationEnd,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Y축 이동: 0 → -8px → 0
+    final translateY = Tween<double>(
+      begin: 0.0,
+      end: -8.0,
+    ).animate(intervalAnimation).value;
+
+    // 투명도: baseOpacity → 1.0 → baseOpacity
+    final opacity = Tween<double>(
+      begin: baseOpacity,
+      end: 1.0,
+    ).animate(intervalAnimation).value;
+
+    return Positioned(
+      top: h(offsetY),
+      child: Transform.translate(
+        offset: Offset(0, translateY),
+        child: Opacity(
+          opacity: opacity,
+          child: SvgPicture.asset(assetPath),
+        ),
       ),
     );
   }
