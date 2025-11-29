@@ -32,7 +32,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final double _peekHeight = 200.0;
   double _expandedHeight = 0;
   String _petName = '우리 새';
-  
+  String? _activePetId;
+  bool _isLoadingPet = true;
+
 
   @override
   void initState() {
@@ -48,13 +50,46 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     final maxWeeks = _getWeeksInMonth(now.year, now.month);
     selectedWeek = weekOfMonth.clamp(1, maxWeeks);
 
-    // 현재 월 데이터 가져오기 (WeightService에서 가져옴)
-    Future.microtask(_loadWeightData);
+    // Load active pet THEN load weight data
+    Future.microtask(() async {
+      await _loadActivePet();
+      if (_activePetId != null) {
+        await _loadWeightData();
+      }
+    });
+  }
+
+  /// 활성 펫 로드
+  Future<void> _loadActivePet() async {
+    try {
+      final activePet = await _petService.getActivePet();
+      if (activePet != null && mounted) {
+        setState(() {
+          _activePetId = activePet.id;
+          _petName = activePet.name;
+          _isLoadingPet = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingPet = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingPet = false;
+        });
+      }
+    }
   }
 
   /// 체중 데이터 로드
   Future<void> _loadWeightData() async {
-    final records = await _weightService.fetchAllRecords();
+    if (_activePetId == null) return;
+
+    final records = await _weightService.fetchAllRecords(petId: _activePetId);
     if (mounted) {
       setState(() {
         weightRecords = records;
@@ -143,6 +178,56 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
+
+    // Show loading state while fetching active pet
+    if (_isLoadingPet) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppColors.nearBlack),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(
+            '체중',
+            style: AppTypography.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.brandPrimary,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // Show empty state if no active pet
+    if (_activePetId == null) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppColors.nearBlack),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(
+            '체중',
+            style: AppTypography.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.brandPrimary,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: const Center(
+          child: Text('활성화된 펫이 없습니다. 펫을 먼저 추가해주세요.'),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,

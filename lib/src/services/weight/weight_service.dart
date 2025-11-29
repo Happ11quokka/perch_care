@@ -48,22 +48,44 @@ class WeightService {
   }
 
   /// 특정 날짜의 체중 기록 조회 (캐시 → Supabase 순으로 탐색)
-  Future<WeightRecord?> fetchRecordByDate(DateTime date) async {
+  Future<WeightRecord?> fetchRecordByDate(DateTime date, {String? petId}) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(date);
-    final cached = getRecordByDate(normalizedDate);
+
+    // Try cache first
+    final cached = getRecordByDate(normalizedDate, petId: petId);
     if (cached != null) {
       return cached;
     }
+
+    // Cache miss - query Supabase if petId provided
+    if (petId != null) {
+      final response = await _client
+          .from('weight_records')
+          .select()
+          .eq('pet_id', petId)
+          .eq('recorded_date', _formatDate(normalizedDate))
+          .maybeSingle();
+
+      if (response != null) {
+        final record = WeightRecord.fromJson(response);
+        _upsertLocal(record);
+        await _persistToStorage();
+        return record;
+      }
+    }
+
     return null;
   }
 
   /// 캐시에서 특정 날짜의 기록 반환
-  WeightRecord? getRecordByDate(DateTime date) {
+  WeightRecord? getRecordByDate(DateTime date, {String? petId}) {
     final normalizedDate = _normalizeDate(date);
     try {
       return _records.firstWhere(
-        (record) => _normalizeDate(record.date) == normalizedDate,
+        (record) =>
+            _normalizeDate(record.date) == normalizedDate &&
+            (petId == null || record.petId == petId),
       );
     } catch (_) {
       return null;
@@ -196,7 +218,7 @@ class WeightService {
   void _upsertLocal(WeightRecord record) {
     final normalizedDate = _normalizeDate(record.date);
     final index = _records.indexWhere(
-      (r) => _normalizeDate(r.date) == normalizedDate,
+      (r) => _normalizeDate(r.date) == normalizedDate && r.petId == record.petId,
     );
     final normalizedRecord = record.copyWith(date: normalizedDate);
     if (index == -1) {

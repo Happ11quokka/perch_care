@@ -415,7 +415,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildWeekCalendar() {
     final now = DateTime.now();
-    final startOfWeek = now.subtract(Duration(days: now.weekday % 7 - 1));
+    final startOfWeek = now.subtract(Duration(days: (now.weekday - 1) % 7));
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,

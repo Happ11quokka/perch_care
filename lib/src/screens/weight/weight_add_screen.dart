@@ -83,7 +83,13 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
   /// 기존 기록이 있으면 로드
   Future<void> _loadExistingRecord() async {
-    final existingRecord = await _weightService.fetchRecordByDate(widget.date);
+    if (_activePetId == null) return;
+
+    final existingRecord = await _weightService.fetchRecordByDate(
+      widget.date,
+      petId: _activePetId,
+    );
+
     if (existingRecord != null && mounted) {
       setState(() {
         _weightController.text = existingRecord.weight.toStringAsFixed(1);
