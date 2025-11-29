@@ -23,8 +23,27 @@ class WeightService {
   List<WeightRecord> getWeightRecords() => List.unmodifiable(_records);
 
   /// Supabase에서 전체 체중 기록을 불러와 캐시 업데이트
-  Future<List<WeightRecord>> fetchAllRecords() async {
+  Future<List<WeightRecord>> fetchAllRecords({String? petId}) async {
     await _ensureInitialized();
+
+    if (petId != null) {
+      // Supabase에서 특정 펫의 체중 기록 조회
+      final response = await _client
+          .from('weight_records')
+          .select()
+          .eq('pet_id', petId)
+          .order('recorded_date', ascending: true);
+
+      final records = (response as List)
+          .map((json) => WeightRecord.fromJson(json))
+          .toList();
+
+      // 로컬 캐시 업데이트
+      _records.clear();
+      _records.addAll(records);
+      await _persistToStorage();
+    }
+
     return getWeightRecords();
   }
 
@@ -57,16 +76,48 @@ class WeightService {
   Future<void> saveWeightRecord(WeightRecord record) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(record.date);
+
+    // Supabase에 저장
+    final existingRecord = await _client
+        .from('weight_records')
+        .select()
+        .eq('pet_id', record.petId)
+        .eq('recorded_date', _formatDate(normalizedDate))
+        .maybeSingle();
+
+    if (existingRecord != null) {
+      // Update existing record
+      await _client
+          .from('weight_records')
+          .update(record.toJson())
+          .eq('id', existingRecord['id']);
+    } else {
+      // Insert new record
+      await _client
+          .from('weight_records')
+          .insert(record.toInsertJson());
+    }
+
+    // 로컬 캐시 업데이트
     _upsertLocal(record.copyWith(date: normalizedDate));
     await _persistToStorage();
   }
 
   /// 특정 날짜의 체중 기록 삭제
-  Future<void> deleteWeightRecord(DateTime date) async {
+  Future<void> deleteWeightRecord(DateTime date, String petId) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(date);
+
+    // Supabase에서 삭제
+    await _client
+        .from('weight_records')
+        .delete()
+        .eq('pet_id', petId)
+        .eq('recorded_date', _formatDate(normalizedDate));
+
+    // 로컬 캐시에서 삭제
     _records.removeWhere(
-      (record) => _normalizeDate(record.date) == normalizedDate,
+      (record) => _normalizeDate(record.date) == normalizedDate && record.petId == petId,
     );
     await _persistToStorage();
   }
@@ -184,6 +235,7 @@ class WeightService {
     final prefs = await SharedPreferences.getInstance();
     final data = _records
         .map((record) => jsonEncode({
+              'petId': record.petId,
               'date': record.date.toIso8601String(),
               'weight': record.weight,
             }))

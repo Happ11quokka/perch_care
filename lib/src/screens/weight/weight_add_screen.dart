@@ -39,7 +39,10 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   void initState() {
     super.initState();
     _weightController.addListener(_onWeightChanged);
-    Future.microtask(_loadExistingRecord);
+    Future.microtask(() async {
+      await _loadActivePet();
+      await _loadExistingRecord();
+    });
   }
 
   @override
@@ -61,6 +64,20 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
       });
     } else {
       if (mounted) setState(() {});
+    }
+  }
+
+  /// 활성 펫 ID 로드
+  Future<void> _loadActivePet() async {
+    try {
+      final activePet = await _petService.getActivePet();
+      if (activePet != null && mounted) {
+        setState(() {
+          _activePetId = activePet.id;
+        });
+      }
+    } catch (e) {
+      // 에러 처리는 saveWeightRecord에서 사용자에게 알림
     }
   }
 
