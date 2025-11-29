@@ -24,11 +24,14 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   late int selectedWeek;
   late int selectedMonth;
   late int selectedYear;
+  int selectedWeekday = 1;
   List<WeightRecord> weightRecords = [];
   final _weightService = WeightService();
+  final _petService = PetService();
   double _sheetHeight = 0;
   final double _peekHeight = 200.0;
   double _expandedHeight = 0;
+  String _petName = '우리 새';
   
 
   @override
