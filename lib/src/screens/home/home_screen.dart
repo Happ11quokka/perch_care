@@ -542,12 +542,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: _buildCard(
-            title: 'AI 백과사전',
-            value: '0',
-            unit: 'g',
-            color: Colors.brown.shade100,
-            iconColor: Colors.brown,
+          child: GestureDetector(
+            onTap: () {
+              context.pushNamed(RouteNames.aiEncyclopedia);
+            },
+            child: _buildCard(
+              title: 'AI 백과사전',
+              value: '0',
+              unit: 'g',
+              color: Colors.brown.shade100,
+              iconColor: Colors.brown,
+            ),
           ),
         ),
       ],
