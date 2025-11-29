@@ -39,9 +39,15 @@ class _LoginScreenState extends State<LoginScreen>
   static const double _birdDesignLeft = 165.0;
   static const double _birdDesignTop = 166.0;
 
+  late AnimationController _arrowAnimationController;
+
   @override
   void initState() {
     super.initState();
+    _arrowAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
   }
   // 바텀시트 높이 상태
   double _sheetHeight = 60.0; // 초기에는 살짝만 보임

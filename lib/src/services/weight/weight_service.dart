@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../models/weight_record.dart';
 
@@ -167,6 +168,7 @@ class WeightService {
     final records = raw.map((e) {
       final map = jsonDecode(e) as Map<String, dynamic>;
       return WeightRecord(
+        petId: map['petId'] as String? ?? 'default',
         date: DateTime.parse(map['date'] as String),
         weight: (map['weight'] as num).toDouble(),
       );
