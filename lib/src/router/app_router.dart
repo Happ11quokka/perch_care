@@ -9,6 +9,7 @@ import '../screens/weight/weight_add_screen.dart';
 import '../screens/pet/pet_add_screen.dart';
 import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/ai_encyclopedia/ai_encyclopedia_screen.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -73,6 +74,11 @@ class AppRouter {
         path: RoutePaths.profile,
         name: RouteNames.profile,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.aiEncyclopedia,
+        name: RouteNames.aiEncyclopedia,
+        builder: (context, state) => const AIEncyclopediaScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
