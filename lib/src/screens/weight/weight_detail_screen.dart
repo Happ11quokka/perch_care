@@ -24,12 +24,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   late int selectedWeek;
   late int selectedMonth;
   late int selectedYear;
-  late int selectedWeekday; // 주 차트에서 강조할 요일 (1=일, 2=월, ..., 7=토)
   List<WeightRecord> weightRecords = [];
   final _weightService = WeightService();
-  final _petService = PetService();
-  String? _activePetId;
-  String _petName = '사랑이';
   double _sheetHeight = 0;
   final double _peekHeight = 200.0;
   double _expandedHeight = 0;
@@ -49,72 +45,17 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     final maxWeeks = _getWeeksInMonth(now.year, now.month);
     selectedWeek = weekOfMonth.clamp(1, maxWeeks);
 
-    // 현재 요일 (1=일, 2=월, ..., 7=토)
-    selectedWeekday = (now.weekday % 7) + 1;
-
-    // 활성 펫 정보 및 체중 데이터 가져오기
-    Future.microtask(_loadActivePet);
-  }
-
-  /// 활성 펫 및 체중 데이터 로드
-  Future<void> _loadActivePet() async {
-    try {
-      final activePet = await _petService.getActivePet();
-      if (activePet != null && mounted) {
-        setState(() {
-          _activePetId = activePet.id;
-          _petName = activePet.name;
-        });
-        await _loadWeightData();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '활성 펫을 찾을 수 없습니다. 펫을 먼저 등록해주세요.',
-              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '펫 정보를 불러오는데 실패했습니다.',
-              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    // 현재 월 데이터 가져오기 (WeightService에서 가져옴)
+    Future.microtask(_loadWeightData);
   }
 
   /// 체중 데이터 로드
   Future<void> _loadWeightData() async {
-    if (_activePetId == null) return;
-
-    try {
-      final records = await _weightService.getWeightRecords(_activePetId!);
-      if (mounted) {
-        setState(() {
-          weightRecords = records;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '체중 기록을 불러오는데 실패했습니다.',
-              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    final records = await _weightService.fetchAllRecords();
+    if (mounted) {
+      setState(() {
+        weightRecords = records;
+      });
     }
   }
 
@@ -403,8 +344,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
     final chartMinX = 0.5;
     final chartMaxX = 7.5;
-    // selectedWeekday를 사용하여 강조 표시
-    final highlightedDay = selectedWeekday;
+    final highlightedDay = _determineHighlightedWeekday();
     final selectedValue = filteredWeeklyData[highlightedDay] ?? 0;
     final highlightLabel = '${weekdays[highlightedDay - 1]}요일';
     final minY = _getMinY(filteredWeeklyData);
@@ -969,6 +909,19 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     return baseWidth * (totalPoints / visiblePoints);
   }
 
+  int _determineHighlightedWeekday() {
+    final now = DateTime.now();
+    final currentWeekOfMonth = ((now.day - 1) / 7).floor() + 1;
+    final isCurrentWeek = now.year == selectedYear &&
+        now.month == selectedMonth &&
+        currentWeekOfMonth == selectedWeek;
+    if (isCurrentWeek) {
+      final weekday = now.weekday % 7;
+      return weekday + 1;
+    }
+    return 4;
+  }
+
   List<int> _generateDisplayMonths(int centerMonth,
       {int visibleCount = 6, int anchorIndex = 3}) {
     if (visibleCount <= 0) return [];
@@ -1036,8 +989,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             }
             selectedWeek = _getWeeksInMonth(selectedYear, selectedMonth);
           }
-          // 현재 주로 돌아온 경우 오늘 요일 선택, 아니면 기존 요일 유지
-          _updateSelectedWeekday(now);
           break;
         case '월':
           final minMonth = (now.month - 5).clamp(1, 12);
@@ -1068,8 +1019,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             }
             selectedWeek = 1;
           }
-          // 현재 주로 돌아온 경우 오늘 요일 선택, 아니면 기존 요일 유지
-          _updateSelectedWeekday(now);
           break;
         case '월':
           if (selectedMonth < now.month) selectedMonth++;
@@ -1163,7 +1112,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '$_petName의 몸무게 총 ${weightRecords.length}일 기록 중',
+                    '사랑이의 몸무게 총 ${weightRecords.length}일 기록 중',
                     style: AppTypography.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.nearBlack,
@@ -1380,6 +1329,7 @@ class _MonthlyGuideLinePainter extends CustomPainter {
     required this.selectedPosition,
     required this.selectedValue,
     required this.selectedLabel,
+    this.lineHeightFactor = 0.7,
     this.drawBackground = true,
     this.drawLabel = false,
   });
@@ -1390,6 +1340,7 @@ class _MonthlyGuideLinePainter extends CustomPainter {
   final double selectedPosition;
   final double selectedValue;
   final String selectedLabel;
+  final double lineHeightFactor;
   final bool drawBackground;
   final bool drawLabel;
 
@@ -1398,12 +1349,12 @@ class _MonthlyGuideLinePainter extends CustomPainter {
     if (itemCount <= 0) return;
     final availableWidth = size.width;
     final bottomY = size.height;
-    final lineHeight = size.height * 0.7;
+    final lineHeight = size.height * lineHeightFactor;
     final Paint divisionPaint = Paint()
       ..color = AppColors.lightGray
       ..strokeWidth = 0.7;
 
-    double dxForValue(double value) {
+    double _dxForValue(double value) {
       if ((maxX - minX).abs() < 0.0001) {
         return availableWidth / 2;
       }
@@ -1414,7 +1365,7 @@ class _MonthlyGuideLinePainter extends CustomPainter {
     if (drawBackground) {
       for (int i = 0; i <= itemCount; i++) {
         final boundaryValue = (i - 0.5).toDouble();
-        final dx = dxForValue(boundaryValue);
+        final dx = _dxForValue(boundaryValue);
         canvas.drawLine(
           Offset(dx, bottomY),
           Offset(dx, bottomY - lineHeight),
@@ -1428,7 +1379,7 @@ class _MonthlyGuideLinePainter extends CustomPainter {
     final highlightWidth = math.min(48.0, availableWidth * 0.45);
     final highlightHeight = math.min(size.height, lineHeight + 35);
     if (selectedPosition < minX || selectedPosition > maxX) return;
-    final dx = dxForValue(selectedPosition);
+    final dx = _dxForValue(selectedPosition);
     final Rect highlightRect = Rect.fromCenter(
       center: Offset(dx, bottomY - highlightHeight / 2),
       width: highlightWidth,
