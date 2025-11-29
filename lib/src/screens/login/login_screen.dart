@@ -1146,9 +1146,10 @@ class _LoginScreenState extends State<LoginScreen>
       context.goNamed(RouteNames.home);
     } on AuthException catch (e) {
       if (!mounted) return;
+      final errorMessage = _getLocalizedAuthErrorMessage(e);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1166,9 +1167,10 @@ class _LoginScreenState extends State<LoginScreen>
       await _authService.signInWithGoogle();
     } on AuthException catch (e) {
       if (!mounted) return;
+      final errorMessage = _getLocalizedAuthErrorMessage(e);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1186,9 +1188,10 @@ class _LoginScreenState extends State<LoginScreen>
       await _authService.signInWithApple();
     } on AuthException catch (e) {
       if (!mounted) return;
+      final errorMessage = _getLocalizedAuthErrorMessage(e);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1210,6 +1213,39 @@ class _LoginScreenState extends State<LoginScreen>
     if (value == null || value.isEmpty) return '비밀번호를 입력해 주세요.';
     if (value.length < 8) return '비밀번호는 최소 8자 이상입니다.';
     return null;
+  }
+
+  /// Supabase AuthException을 한글 메시지로 변환
+  String _getLocalizedAuthErrorMessage(AuthException e) {
+    final message = e.message.toLowerCase();
+
+    // 로그인 관련 에러
+    if (message.contains('invalid login credentials') ||
+        message.contains('invalid email or password')) {
+      return '이메일 또는 비밀번호가 올바르지 않습니다.';
+    }
+
+    // 이메일 관련 에러
+    if (message.contains('email not confirmed')) {
+      return '이메일 인증이 필요합니다. 이메일을 확인해주세요.';
+    }
+
+    if (message.contains('user not found')) {
+      return '존재하지 않는 계정입니다.';
+    }
+
+    // 비밀번호 관련 에러
+    if (message.contains('password')) {
+      return '비밀번호가 올바르지 않습니다.';
+    }
+
+    // 네트워크 관련 에러
+    if (message.contains('network') || message.contains('connection')) {
+      return '네트워크 연결을 확인해주세요.';
+    }
+
+    // 일반적인 에러 (원본 메시지 반환)
+    return e.message;
   }
 }
 
