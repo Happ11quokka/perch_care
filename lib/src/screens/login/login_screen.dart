@@ -25,9 +25,6 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
 
-  // Arrow animation controller
-  late AnimationController _arrowAnimationController;
-
   static const double _designWidth = 393.0;
   static const double _designHeight = 852.0;
 
@@ -45,10 +42,6 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-    _arrowAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat();
   }
   // 바텀시트 높이 상태
   double _sheetHeight = 60.0; // 초기에는 살짝만 보임
@@ -695,36 +688,19 @@ class _LoginScreenState extends State<LoginScreen>
             top: arrowTop,
             child: SizedBox(
               height: h(60),
-              child: AnimatedBuilder(
-                animation: _arrowAnimationController,
-                builder: (context, child) {
-                  return Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      _buildAnimatedArrow(
-                        assetPath: 'assets/images/login_vector/Vector_1214.svg',
-                        delay: 0.0,
-                        baseOpacity: 0.7,
-                        offsetY: 0.0,
-                        h: h,
-                      ),
-                      _buildAnimatedArrow(
-                        assetPath: 'assets/images/login_vector/Vector_1212.svg',
-                        delay: 0.15,
-                        baseOpacity: 0.7,
-                        offsetY: 12.0,
-                        h: h,
-                      ),
-                      _buildAnimatedArrow(
-                        assetPath: 'assets/images/login_vector/Vector_1213.svg',
-                        delay: 0.3,
-                        baseOpacity: 1.0,
-                        offsetY: 24.0,
-                        h: h,
-                      ),
-                    ],
-                  );
-                },
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  SvgPicture.asset('assets/images/login_vector/Vector_1214.svg'),
+                  Positioned(
+                    top: h(12),
+                    child: SvgPicture.asset('assets/images/login_vector/Vector_1212.svg'),
+                  ),
+                  Positioned(
+                    top: h(24),
+                    child: SvgPicture.asset('assets/images/login_vector/Vector_1213.svg'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -971,6 +947,31 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 16),
         _buildSocialLoginButtons(),
+        const SizedBox(height: 24),
+        // 테스트 로그인 버튼
+        SizedBox(
+          width: 311,
+          child: OutlinedButton(
+            onPressed: () {
+              context.goNamed(RouteNames.home);
+            },
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: const BorderSide(color: AppColors.brandPrimary, width: 2),
+            ),
+            child: const Text(
+              '테스트 로그인',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.brandPrimary,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -1146,10 +1147,9 @@ class _LoginScreenState extends State<LoginScreen>
       context.goNamed(RouteNames.home);
     } on AuthException catch (e) {
       if (!mounted) return;
-      final errorMessage = _getLocalizedAuthErrorMessage(e);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1167,10 +1167,9 @@ class _LoginScreenState extends State<LoginScreen>
       await _authService.signInWithGoogle();
     } on AuthException catch (e) {
       if (!mounted) return;
-      final errorMessage = _getLocalizedAuthErrorMessage(e);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1188,10 +1187,9 @@ class _LoginScreenState extends State<LoginScreen>
       await _authService.signInWithApple();
     } on AuthException catch (e) {
       if (!mounted) return;
-      final errorMessage = _getLocalizedAuthErrorMessage(e);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
