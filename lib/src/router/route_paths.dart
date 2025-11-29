@@ -9,6 +9,10 @@ class RoutePaths {
   static const String weightDetail = '/weight-detail';
   static const String weightAddToday = '/weight/add/today';
   static const String weightAdd = '/weight/add/:date';
+  static const String petAdd = '/pet/add';
+  static const String notification = '/notification';
+  static const String profile = '/profile';
+  static const String aiEncyclopedia = '/ai-encyclopedia';
 
   // 추가 라우트 경로들을 여기에 정의
 }

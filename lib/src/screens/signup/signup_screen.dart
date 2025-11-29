@@ -230,15 +230,11 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isLoading = true);
     try {
       final name = _nameController.text.trim();
-      final phone = _phoneController.text.trim();
 
       await _authService.signUpWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        metadata: {
-          'name': name,
-          'phone': phone,
-        },
+        nickname: name,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -290,6 +286,8 @@ class _SignupScreenState extends State<SignupScreen> {
           keyboardType: keyboardType,
           obscureText: obscureText,
           validator: validator,
+          textInputAction: TextInputAction.next,
+          enableIMEPersonalizedLearning: true,
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: const TextStyle(
@@ -383,20 +381,5 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
-  }
-
-  /// 회원가입 처리
-  void _handleSignupLegacy() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // TODO: 실제 회원가입 API 연동
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('회원가입이 완료되었습니다!'),
-          backgroundColor: AppColors.brandPrimary,
-        ),
-      );
-      // 로그인 화면으로 돌아가기
-      context.pop();
-    }
   }
 }
