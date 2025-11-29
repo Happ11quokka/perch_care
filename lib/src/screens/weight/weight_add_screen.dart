@@ -28,46 +28,18 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   final _weightService = WeightService();
   final _petService = PetService();
   bool _isLoading = false;
-  String? _activePetId;
   double _sheetHeight = 0;
   final double _peekHeight = 260.0;
   double _expandedHeight = 0;
   int _bcsLevel = 3;
   double _sliderWeight = 65;
+  String? _activePetId;
 
   @override
   void initState() {
     super.initState();
     _weightController.addListener(_onWeightChanged);
-    Future.microtask(_loadActivePet);
-  }
-
-  /// 활성 펫 ID 로드
-  Future<void> _loadActivePet() async {
-    try {
-      final activePet = await _petService.getActivePet();
-      if (mounted) {
-        setState(() {
-          _activePetId = activePet?.id;
-        });
-        // 활성 펫 로드 후 기존 레코드 로드
-        await _loadExistingRecord();
-      }
-    } catch (e) {
-      // 로그인하지 않았거나 펫이 없는 경우
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '활성 펫을 찾을 수 없습니다. 펫을 먼저 등록해주세요.',
-              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        context.pop();
-      }
-    }
+    Future.microtask(_loadExistingRecord);
   }
 
   @override
@@ -94,21 +66,15 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
   /// 기존 기록이 있으면 로드
   Future<void> _loadExistingRecord() async {
-    if (_activePetId == null) return;
-
-    try {
-      final existingRecord = await _weightService.getRecordByDate(_activePetId!, widget.date);
-      if (existingRecord != null && mounted) {
-        setState(() {
-          _weightController.text = existingRecord.weight.toStringAsFixed(1);
-          _sliderWeight = existingRecord.weight.clamp(40, 90).toDouble();
-          _bcsLevel = _mapWeightToBcsLevel(existingRecord.weight);
-        });
-      } else {
-        _sliderWeight = _sliderWeight.clamp(40, 90);
-      }
-    } catch (e) {
-      // 기록이 없는 경우는 정상적인 상황이므로 무시
+    final existingRecord = await _weightService.fetchRecordByDate(widget.date);
+    if (existingRecord != null && mounted) {
+      setState(() {
+        _weightController.text = existingRecord.weight.toStringAsFixed(1);
+        _sliderWeight = existingRecord.weight.clamp(40, 90).toDouble();
+        _bcsLevel = _mapWeightToBcsLevel(existingRecord.weight);
+      });
+    } else {
+      _sliderWeight = _sliderWeight.clamp(40, 90);
     }
   }
 

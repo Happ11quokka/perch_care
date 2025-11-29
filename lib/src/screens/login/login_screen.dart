@@ -25,9 +25,6 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
 
-  // Arrow animation controller
-  late AnimationController _arrowAnimationController;
-
   static const double _designWidth = 393.0;
   static const double _designHeight = 852.0;
 
@@ -42,12 +39,14 @@ class _LoginScreenState extends State<LoginScreen>
   static const double _birdDesignLeft = 165.0;
   static const double _birdDesignTop = 166.0;
 
+  late AnimationController _arrowAnimationController;
+
   @override
   void initState() {
     super.initState();
     _arrowAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
       vsync: this,
+      duration: const Duration(milliseconds: 1500),
     )..repeat();
   }
   // 바텀시트 높이 상태
@@ -695,36 +694,19 @@ class _LoginScreenState extends State<LoginScreen>
             top: arrowTop,
             child: SizedBox(
               height: h(60),
-              child: AnimatedBuilder(
-                animation: _arrowAnimationController,
-                builder: (context, child) {
-                  return Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      _buildAnimatedArrow(
-                        assetPath: 'assets/images/login_vector/Vector_1214.svg',
-                        delay: 0.0,
-                        baseOpacity: 0.7,
-                        offsetY: 0.0,
-                        h: h,
-                      ),
-                      _buildAnimatedArrow(
-                        assetPath: 'assets/images/login_vector/Vector_1212.svg',
-                        delay: 0.15,
-                        baseOpacity: 0.7,
-                        offsetY: 12.0,
-                        h: h,
-                      ),
-                      _buildAnimatedArrow(
-                        assetPath: 'assets/images/login_vector/Vector_1213.svg',
-                        delay: 0.3,
-                        baseOpacity: 1.0,
-                        offsetY: 24.0,
-                        h: h,
-                      ),
-                    ],
-                  );
-                },
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  SvgPicture.asset('assets/images/login_vector/Vector_1214.svg'),
+                  Positioned(
+                    top: h(12),
+                    child: SvgPicture.asset('assets/images/login_vector/Vector_1212.svg'),
+                  ),
+                  Positioned(
+                    top: h(24),
+                    child: SvgPicture.asset('assets/images/login_vector/Vector_1213.svg'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -971,6 +953,31 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 16),
         _buildSocialLoginButtons(),
+        const SizedBox(height: 24),
+        // 테스트 로그인 버튼
+        SizedBox(
+          width: 311,
+          child: OutlinedButton(
+            onPressed: () {
+              context.goNamed(RouteNames.home);
+            },
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: const BorderSide(color: AppColors.brandPrimary, width: 2),
+            ),
+            child: const Text(
+              '테스트 로그인',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.brandPrimary,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -1210,6 +1217,39 @@ class _LoginScreenState extends State<LoginScreen>
     if (value == null || value.isEmpty) return '비밀번호를 입력해 주세요.';
     if (value.length < 8) return '비밀번호는 최소 8자 이상입니다.';
     return null;
+  }
+
+  /// Supabase AuthException을 한글 메시지로 변환
+  String _getLocalizedAuthErrorMessage(AuthException e) {
+    final message = e.message.toLowerCase();
+
+    // 로그인 관련 에러
+    if (message.contains('invalid login credentials') ||
+        message.contains('invalid email or password')) {
+      return '이메일 또는 비밀번호가 올바르지 않습니다.';
+    }
+
+    // 이메일 관련 에러
+    if (message.contains('email not confirmed')) {
+      return '이메일 인증이 필요합니다. 이메일을 확인해주세요.';
+    }
+
+    if (message.contains('user not found')) {
+      return '존재하지 않는 계정입니다.';
+    }
+
+    // 비밀번호 관련 에러
+    if (message.contains('password')) {
+      return '비밀번호가 올바르지 않습니다.';
+    }
+
+    // 네트워크 관련 에러
+    if (message.contains('network') || message.contains('connection')) {
+      return '네트워크 연결을 확인해주세요.';
+    }
+
+    // 일반적인 에러 (원본 메시지 반환)
+    return e.message;
   }
 }
 
