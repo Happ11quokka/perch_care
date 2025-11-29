@@ -5,6 +5,8 @@ import '../../theme/typography.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../router/route_names.dart';
+import '../../services/pet/pet_service.dart';
+import '../../models/pet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,39 +16,168 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _petService = PetService();
   DateTime selectedDate = DateTime.now();
-  String selectedPet = '사랑이';
+  List<Pet> _pets = [];
+  Pet? _activePet;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPets();
+  }
+
+  Future<void> _loadPets() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final pets = await _petService.getMyPets();
+      final activePet = await _petService.getActivePet();
+
+      if (mounted) {
+        setState(() {
+          _pets = pets;
+          _activePet = activePet;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // 앵무새 전용 앱이므로 항상 🦜 이모지 사용
+  String _getPetEmoji(String species) {
+    return '🦜';
+  }
+
+  void _showPetSelector() {
+    if (_pets.isEmpty) {
+      // Navigate to pet add screen if no pets
+      context.pushNamed(RouteNames.petAdd).then((_) => _loadPets());
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                '앵무새 선택',
+                style: AppTypography.h5.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.nearBlack,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ..._pets.map((pet) => ListTile(
+                leading: Text(_getPetEmoji(pet.species), style: const TextStyle(fontSize: 24)),
+                title: Text(
+                  pet.name,
+                  style: AppTypography.bodyLarge.copyWith(
+                    fontWeight: _activePet?.id == pet.id ? FontWeight.w700 : FontWeight.w500,
+                    color: AppColors.nearBlack,
+                  ),
+                ),
+                trailing: _activePet?.id == pet.id
+                    ? const Icon(Icons.check_circle, color: AppColors.brandPrimary)
+                    : null,
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  await _petService.setActivePet(pet.id);
+                  if (mounted) {
+                    navigator.pop();
+                    _loadPets();
+                  }
+                },
+              )),
+              Divider(color: AppColors.gray200),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.add, color: AppColors.brandPrimary),
+                ),
+                title: Text(
+                  '새 앵무새 추가',
+                  style: AppTypography.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.brandPrimary,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.pushNamed(RouteNames.petAdd).then((_) => _loadPets());
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.gray50,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // App Bar
-                _buildAppBar(),
-                const SizedBox(height: AppSpacing.lg),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // App Bar
+                      _buildAppBar(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // AI Camera Banner
-                _buildAICameraBanner(),
-                const SizedBox(height: AppSpacing.lg),
+                      // AI Camera Banner
+                      _buildAICameraBanner(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // Calendar Widget
-                _buildCalendar(),
-                const SizedBox(height: AppSpacing.lg),
+                      // Calendar Widget
+                      _buildCalendar(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // AI Check Section
-                _buildAICheckSection(),
-                const SizedBox(height: AppSpacing.lg),
+                      // AI Check Section
+                      _buildAICheckSection(),
+                      const SizedBox(height: AppSpacing.lg),
 
-                // Bottom Cards
-                _buildBottomCards(),
-                const SizedBox(height: AppSpacing.lg),
+                      // Bottom Cards
+                      _buildBottomCards(),
+                      const SizedBox(height: AppSpacing.lg),
               ],
             ),
           ),
@@ -60,37 +191,43 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Pet Selector
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: AppColors.brandPrimary, width: 2),
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Text('🐶', style: const TextStyle(fontSize: 20)),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                selectedPet,
-                style: AppTypography.bodyLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.nearBlack,
+        GestureDetector(
+          onTap: _showPetSelector,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.brandPrimary, width: 2),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Icon(Icons.arrow_drop_down, size: 24, color: AppColors.brandPrimary),
-            ],
+              ],
+            ),
+            child: Row(
+              children: [
+                Text(
+                  _activePet != null ? _getPetEmoji(_activePet!.species) : '🐾',
+                  style: const TextStyle(fontSize: 20),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  _activePet?.name ?? '앵무새 추가',
+                  style: AppTypography.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.nearBlack,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                const Icon(Icons.arrow_drop_down, size: 24, color: AppColors.brandPrimary),
+              ],
+            ),
           ),
         ),
 
@@ -113,7 +250,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: IconButton(
                     icon: Icon(Icons.notifications_outlined, size: 24, color: AppColors.nearBlack),
-                    onPressed: () {},
+                    onPressed: () {
+                      context.pushNamed(RouteNames.notification);
+                    },
                   ),
                 ),
                 Positioned(
@@ -145,7 +284,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: IconButton(
                 icon: Icon(Icons.person_outline, size: 24, color: AppColors.nearBlack),
-                onPressed: () {},
+                onPressed: () {
+                  context.pushNamed(RouteNames.profile);
+                },
               ),
             ),
           ],
@@ -365,30 +506,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          Row(
-            children: [
-              _buildPetAvatar('🐶'),
-              _buildPetAvatar('🐱'),
-              _buildPetAvatar('🦜'),
-              _buildPetAvatar('🐹'),
-            ],
+          // 앵무새 전용 앱이므로 앵무새 아바타만 표시
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: AppColors.brandPrimary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text('🦜', style: const TextStyle(fontSize: 40)),
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPetAvatar(String emoji) {
-    return Container(
-      margin: const EdgeInsets.only(left: 8),
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: AppColors.gray100,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(emoji, style: const TextStyle(fontSize: 24)),
       ),
     );
   }
@@ -412,12 +542,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: _buildCard(
-            title: 'AI 백과사전',
-            value: '0',
-            unit: 'g',
-            color: Colors.brown.shade100,
-            iconColor: Colors.brown,
+          child: GestureDetector(
+            onTap: () {
+              context.pushNamed(RouteNames.aiEncyclopedia);
+            },
+            child: _buildCard(
+              title: 'AI 백과사전',
+              value: '0',
+              unit: 'g',
+              color: Colors.brown.shade100,
+              iconColor: Colors.brown,
+            ),
           ),
         ),
       ],

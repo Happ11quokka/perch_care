@@ -8,6 +8,7 @@ import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
+import '../../services/pet/pet_service.dart';
 
 class WeightAddScreen extends StatefulWidget {
   final DateTime date;
@@ -25,7 +26,9 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   final _weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _weightService = WeightService();
+  final _petService = PetService();
   bool _isLoading = false;
+  String? _activePetId;
   double _sheetHeight = 0;
   final double _peekHeight = 260.0;
   double _expandedHeight = 0;
@@ -36,7 +39,35 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   void initState() {
     super.initState();
     _weightController.addListener(_onWeightChanged);
-    Future.microtask(_loadExistingRecord);
+    Future.microtask(_loadActivePet);
+  }
+
+  /// 활성 펫 ID 로드
+  Future<void> _loadActivePet() async {
+    try {
+      final activePet = await _petService.getActivePet();
+      if (mounted) {
+        setState(() {
+          _activePetId = activePet?.id;
+        });
+        // 활성 펫 로드 후 기존 레코드 로드
+        await _loadExistingRecord();
+      }
+    } catch (e) {
+      // 로그인하지 않았거나 펫이 없는 경우
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '활성 펫을 찾을 수 없습니다. 펫을 먼저 등록해주세요.',
+              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        context.pop();
+      }
+    }
   }
 
   @override
@@ -63,21 +94,40 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
   /// 기존 기록이 있으면 로드
   Future<void> _loadExistingRecord() async {
-    final existingRecord = await _weightService.fetchRecordByDate(widget.date);
-    if (existingRecord != null && mounted) {
-      setState(() {
-        _weightController.text = existingRecord.weight.toStringAsFixed(1);
-        _sliderWeight = existingRecord.weight.clamp(40, 90).toDouble();
-        _bcsLevel = _mapWeightToBcsLevel(existingRecord.weight);
-      });
-    } else {
-      _sliderWeight = _sliderWeight.clamp(40, 90);
+    if (_activePetId == null) return;
+
+    try {
+      final existingRecord = await _weightService.getRecordByDate(_activePetId!, widget.date);
+      if (existingRecord != null && mounted) {
+        setState(() {
+          _weightController.text = existingRecord.weight.toStringAsFixed(1);
+          _sliderWeight = existingRecord.weight.clamp(40, 90).toDouble();
+          _bcsLevel = _mapWeightToBcsLevel(existingRecord.weight);
+        });
+      } else {
+        _sliderWeight = _sliderWeight.clamp(40, 90);
+      }
+    } catch (e) {
+      // 기록이 없는 경우는 정상적인 상황이므로 무시
     }
   }
 
   /// 저장 버튼 클릭
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_activePetId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '활성 펫을 찾을 수 없습니다.',
+            style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -88,6 +138,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     try {
       final weight = double.parse(_weightController.text);
       final record = WeightRecord(
+        petId: _activePetId!,
         date: widget.date,
         weight: weight,
       );
@@ -193,11 +244,6 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         ),
       ),
     );
-  }
-
-  /// 날짜 포맷팅 (예: 2023년 08월 12일 체중 기록)
-  String _formatDate(DateTime date) {
-    return '${date.year}년 ${date.month.toString().padLeft(2, '0')}월 ${date.day.toString().padLeft(2, '0')}일 체중 기록';
   }
 
   Widget _buildTopContent() {
@@ -422,11 +468,6 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     );
   }
 
-  int _determineHighlightedWeekday() {
-    final weekday = widget.date.weekday % 7;
-    return weekday + 1;
-  }
-
   Widget _buildDateCard() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -644,6 +685,6 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   String _formatLunarDisplay(DateTime date) {
     final lunarMonth = (date.month - 1) % 12 + 1;
     final lunarDay = ((date.day + 15 - 1) % 30) + 1;
-    return '음력 ${lunarMonth}월 ${lunarDay}일';
+    return '음력 $lunarMonth월 $lunarDay일';
   }
 }
