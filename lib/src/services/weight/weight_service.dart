@@ -15,12 +15,20 @@ class WeightService {
 
   static const String _storageKey = 'local_weight_records';
 
-  // 인메모리 데이터 저장소 (간단한 캐시)
-  final List<WeightRecord> _records = [];
+  // 펫별 인메모리 데이터 저장소 (간단한 캐시)
+  final Map<String, List<WeightRecord>> _recordsByPet = {};
   bool _isInitialized = false;
 
   /// 모든 체중 기록 조회 (메모리 캐시)
-  List<WeightRecord> getWeightRecords() => List.unmodifiable(_records);
+  List<WeightRecord> getWeightRecords({String? petId}) {
+    if (petId != null) {
+      return List.unmodifiable(_recordsByPet[petId] ?? const <WeightRecord>[]);
+    }
+
+    final allRecords = _recordsByPet.values.expand((records) => records).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    return List.unmodifiable(allRecords);
+  }
 
   /// Supabase에서 전체 체중 기록을 불러와 캐시 업데이트
   Future<List<WeightRecord>> fetchAllRecords({String? petId}) async {
@@ -38,10 +46,12 @@ class WeightService {
           .map((json) => WeightRecord.fromJson(json))
           .toList();
 
-      // 로컬 캐시 업데이트
-      _records.clear();
-      _records.addAll(records);
+      // 로컬 캐시 업데이트 (해당 펫 데이터만 교체)
+      _recordsByPet[petId] = records
+        ..sort((a, b) => a.date.compareTo(b.date));
       await _persistToStorage();
+
+      return List.unmodifiable(_recordsByPet[petId]!);
     }
 
     return getWeightRecords();
@@ -81,15 +91,26 @@ class WeightService {
   /// 캐시에서 특정 날짜의 기록 반환
   WeightRecord? getRecordByDate(DateTime date, {String? petId}) {
     final normalizedDate = _normalizeDate(date);
-    try {
-      return _records.firstWhere(
-        (record) =>
-            _normalizeDate(record.date) == normalizedDate &&
-            (petId == null || record.petId == petId),
-      );
-    } catch (_) {
-      return null;
+    final Iterable<List<WeightRecord>> sources;
+
+    if (petId != null) {
+      final records = _recordsByPet[petId];
+      if (records == null) return null;
+      sources = [records];
+    } else {
+      sources = _recordsByPet.values;
     }
+
+    for (final records in sources) {
+      try {
+        return records.firstWhere(
+          (record) => _normalizeDate(record.date) == normalizedDate,
+        );
+      } catch (_) {
+        continue;
+      }
+    }
+    return null;
   }
 
   /// 체중 기록 저장 또는 수정
@@ -138,9 +159,13 @@ class WeightService {
         .eq('recorded_date', _formatDate(normalizedDate));
 
     // 로컬 캐시에서 삭제
-    _records.removeWhere(
-      (record) => _normalizeDate(record.date) == normalizedDate && record.petId == petId,
+    final records = _recordsByPet[petId];
+    records?.removeWhere(
+      (record) => _normalizeDate(record.date) == normalizedDate,
     );
+    if (records != null && records.isEmpty) {
+      _recordsByPet.remove(petId);
+    }
     await _persistToStorage();
   }
 
@@ -151,7 +176,7 @@ class WeightService {
 
   /// 모든 데이터 클리어 (테스트용)
   void clearAllRecords() {
-    _records.clear();
+    _recordsByPet.clear();
     _persistToStorage();
   }
 
@@ -217,16 +242,17 @@ class WeightService {
 
   void _upsertLocal(WeightRecord record) {
     final normalizedDate = _normalizeDate(record.date);
-    final index = _records.indexWhere(
-      (r) => _normalizeDate(r.date) == normalizedDate && r.petId == record.petId,
-    );
     final normalizedRecord = record.copyWith(date: normalizedDate);
+    final records = _recordsByPet.putIfAbsent(record.petId, () => []);
+    final index = records.indexWhere(
+      (r) => _normalizeDate(r.date) == normalizedDate,
+    );
     if (index == -1) {
-      _records.add(normalizedRecord);
+      records.add(normalizedRecord);
     } else {
-      _records[index] = normalizedRecord;
+      records[index] = normalizedRecord;
     }
-    _records.sort((a, b) => a.date.compareTo(b.date));
+    records.sort((a, b) => a.date.compareTo(b.date));
   }
 
   Future<void> _ensureInitialized() async {
@@ -238,24 +264,31 @@ class WeightService {
   Future<void> _loadFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> raw = prefs.getStringList(_storageKey) ?? [];
-    final records = raw.map((e) {
-      final map = jsonDecode(e) as Map<String, dynamic>;
-      return WeightRecord(
+    final Map<String, List<WeightRecord>> loaded = {};
+
+    for (final item in raw) {
+      final map = jsonDecode(item) as Map<String, dynamic>;
+      final record = WeightRecord(
         petId: map['petId'] as String? ?? 'default',
         date: DateTime.parse(map['date'] as String),
         weight: (map['weight'] as num).toDouble(),
       );
-    }).toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+      loaded.putIfAbsent(record.petId, () => []).add(record);
+    }
 
-    _records
+    for (final entries in loaded.entries) {
+      entries.value.sort((a, b) => a.date.compareTo(b.date));
+    }
+
+    _recordsByPet
       ..clear()
-      ..addAll(records);
+      ..addAll(loaded);
   }
 
   Future<void> _persistToStorage() async {
     final prefs = await SharedPreferences.getInstance();
-    final data = _records
+    final data = _recordsByPet.values
+        .expand((records) => records)
         .map((record) => jsonEncode({
               'petId': record.petId,
               'date': record.date.toIso8601String(),
