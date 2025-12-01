@@ -1202,7 +1202,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '사랑이의 몸무게 총 ${weightRecords.length}일 기록 중',
+                    '$_petName의 몸무게 총 ${weightRecords.length}일 기록 중',
                     style: AppTypography.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.nearBlack,
