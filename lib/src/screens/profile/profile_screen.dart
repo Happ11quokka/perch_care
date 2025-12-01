@@ -28,14 +28,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserInfo() async {
-    // TODO: Supabase에서 사용자 정보 가져오기
     final user = _authService.currentUser;
-    if (user != null) {
-      setState(() {
-        _userEmail = user.email ?? 'user@example.com';
-        _userName = user.userMetadata?['name'] ?? '사용자';
-      });
+    if (user == null) return;
+
+    Map<String, dynamic>? profile;
+    try {
+      profile = await _authService.getProfile();
+    } catch (_) {
+      // 프로필 불러오기에 실패해도 메타데이터를 사용해 계속 진행
     }
+
+    String? nickname;
+    final profileNickname = profile?['nickname'];
+    if (profileNickname is String && profileNickname.trim().isNotEmpty) {
+      nickname = profileNickname;
+    } else {
+      final metadataNickname = user.userMetadata?['nickname'];
+      if (metadataNickname is String && metadataNickname.trim().isNotEmpty) {
+        nickname = metadataNickname;
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _userEmail = user.email ?? 'user@example.com';
+      _userName = nickname ?? '사용자';
+    });
   }
 
   Future<void> _handleLogout() async {
