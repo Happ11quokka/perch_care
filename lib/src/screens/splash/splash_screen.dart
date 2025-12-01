@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import '../../theme/colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../router/route_paths.dart';
+import '../../theme/colors.dart';
 
 /// 스플래시 스크린
 class SplashScreen extends StatefulWidget {
@@ -61,13 +62,13 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // 애니메이션 완료 후 로그인 화면으로 자동 전환
+    // 애니메이션 완료 후 인증 상태에 맞는 화면으로 자동 전환
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // 애니메이션 완료 후 0.5초 대기 후 로그인 화면으로 이동
+        // 애니메이션 완료 후 0.5초 대기 후 적절한 화면으로 이동
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
-            context.go(RoutePaths.login);
+            _navigateToInitialRoute();
           }
         });
       }
@@ -201,5 +202,13 @@ class _SplashScreenState extends State<SplashScreen>
         ),
       ),
     );
+  }
+
+  void _navigateToInitialRoute() {
+    final session = Supabase.instance.client.auth.currentSession;
+    final targetRoute =
+        session == null ? RoutePaths.login : RoutePaths.home;
+    if (!mounted) return;
+    context.go(targetRoute);
   }
 }
