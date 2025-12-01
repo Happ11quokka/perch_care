@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../models/pet.dart';
+import '../../services/ai/ai_encyclopedia_service.dart';
+import '../../services/pet/pet_service.dart';
 import '../../theme/colors.dart';
 import '../../theme/radius.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
-import '../../services/ai/ai_encyclopedia_service.dart';
 
 class AIEncyclopediaScreen extends StatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -18,6 +20,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _inputController = TextEditingController();
   final AiEncyclopediaService _aiService = AiEncyclopediaService();
+  final PetService _petService = PetService();
   final List<_Message> _messages = [
     _Message(
       role: MessageRole.assistant,
@@ -26,7 +29,14 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
       timestamp: DateTime.now(),
     ),
   ];
+  Pet? _activePet;
   bool _isSending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadActivePet();
+  }
 
   @override
   void dispose() {
@@ -70,6 +80,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
       final answer = await _aiService.ask(
         query: text,
         history: history,
+        petProfileContext: _buildPetProfileContext(),
       );
 
       setState(() {
@@ -97,6 +108,18 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
         });
       }
       _scrollToBottom();
+    }
+  }
+
+  Future<void> _loadActivePet() async {
+    try {
+      final pet = await _petService.getActivePet();
+      if (!mounted) return;
+      setState(() {
+        _activePet = pet;
+      });
+    } catch (_) {
+      // ignore load failures and allow AI to work without personalization
     }
   }
 
@@ -130,6 +153,72 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
         ),
       ),
     );
+  }
+
+  String? _buildPetProfileContext() {
+    final pet = _activePet;
+    if (pet == null) return null;
+
+    final details = <String>[
+      '- 이름: ${pet.name}',
+    ];
+
+    final breed = pet.breed?.trim();
+    if (breed != null && breed.isNotEmpty) {
+      details.add('- 품종: $breed');
+    }
+
+    if (pet.birthDate != null) {
+      details.add('- 나이: ${_formatAge(pet.birthDate!)} (생일 ${pet.birthDate!.toIso8601String().split('T').first})');
+    }
+
+    final gender = _mapGender(pet.gender);
+    if (gender != null) {
+      details.add('- 성별: $gender');
+    }
+
+    if (details.isEmpty) return null;
+
+    return [
+      '사용자가 다중 프로필에서 선택한 앵무새 정보를 참고해.',
+      ...details,
+      '가능한 한 위 앵무새 조건(특히 품종)을 기준으로 맞춤 조언을 제공해.',
+    ].join('\n');
+  }
+
+  String? _mapGender(String? gender) {
+    switch (gender) {
+      case 'male':
+        return '수컷';
+      case 'female':
+        return '암컷';
+      case 'unknown':
+        return '성별 미상';
+      default:
+        return null;
+    }
+  }
+
+  String _formatAge(DateTime birthDate) {
+    final now = DateTime.now();
+    int years = now.year - birthDate.year;
+    int months = now.month - birthDate.month;
+    int days = now.day - birthDate.day;
+
+    if (days < 0) {
+      months -= 1;
+    }
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    final segments = <String>[];
+    if (years > 0) segments.add('$years세');
+    if (months > 0) segments.add('$months개월');
+    if (segments.isEmpty) segments.add('1개월 미만');
+
+    return segments.join(' ');
   }
 
   void _scrollToBottom() {

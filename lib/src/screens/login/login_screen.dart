@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -692,22 +694,39 @@ class _LoginScreenState extends State<LoginScreen>
             left: 0,
             right: 0,
             top: arrowTop,
-            child: SizedBox(
-              height: h(60),
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  SvgPicture.asset('assets/images/login_vector/Vector_1214.svg'),
-                  Positioned(
-                    top: h(12),
-                    child: SvgPicture.asset('assets/images/login_vector/Vector_1212.svg'),
+            child: AnimatedBuilder(
+              animation: _arrowAnimationController,
+              builder: (context, child) {
+                return SizedBox(
+                  height: h(60),
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      _buildAnimatedArrow(
+                        assetPath: 'assets/images/login_vector/Vector_1214.svg',
+                        delay: 0.0,
+                        baseOpacity: 0.45,
+                        offsetY: 0,
+                        h: h,
+                      ),
+                      _buildAnimatedArrow(
+                        assetPath: 'assets/images/login_vector/Vector_1212.svg',
+                        delay: 0.2,
+                        baseOpacity: 0.6,
+                        offsetY: 12,
+                        h: h,
+                      ),
+                      _buildAnimatedArrow(
+                        assetPath: 'assets/images/login_vector/Vector_1213.svg',
+                        delay: 0.4,
+                        baseOpacity: 0.75,
+                        offsetY: 24,
+                        h: h,
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    top: h(24),
-                    child: SvgPicture.asset('assets/images/login_vector/Vector_1213.svg'),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -723,31 +742,10 @@ class _LoginScreenState extends State<LoginScreen>
     required double offsetY,
     required double Function(double) h,
   }) {
-    // 애니메이션 구간 계산 (각 화살표마다 0.33초 동안 애니메이션)
-    final animationStart = delay;
-    final animationEnd = (delay + 0.33).clamp(0.0, 1.0);
-
-    // Interval로 순차 타이밍 조절
-    final intervalAnimation = CurvedAnimation(
-      parent: _arrowAnimationController,
-      curve: Interval(
-        animationStart,
-        animationEnd,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    // Y축 이동: 0 → -8px → 0
-    final translateY = Tween<double>(
-      begin: 0.0,
-      end: -8.0,
-    ).animate(intervalAnimation).value;
-
-    // 투명도: baseOpacity → 1.0 → baseOpacity
-    final opacity = Tween<double>(
-      begin: baseOpacity,
-      end: 1.0,
-    ).animate(intervalAnimation).value;
+    // 사인 곡선을 이용해 위로 솟았다가 돌아오는 물결 모션 생성
+    final wave = (math.sin((_arrowAnimationController.value + delay) * 2 * math.pi) + 1) / 2;
+    final translateY = -6 * wave;
+    final opacity = baseOpacity + (1 - baseOpacity) * wave;
 
     return Positioned(
       top: h(offsetY),
@@ -954,30 +952,6 @@ class _LoginScreenState extends State<LoginScreen>
         const SizedBox(height: 16),
         _buildSocialLoginButtons(),
         const SizedBox(height: 24),
-        // 테스트 로그인 버튼
-        SizedBox(
-          width: 311,
-          child: OutlinedButton(
-            onPressed: () {
-              context.goNamed(RouteNames.home);
-            },
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(0, 50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              side: const BorderSide(color: AppColors.brandPrimary, width: 2),
-            ),
-            child: const Text(
-              '테스트 로그인',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.brandPrimary,
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }

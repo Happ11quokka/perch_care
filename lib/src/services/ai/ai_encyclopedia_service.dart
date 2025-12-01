@@ -28,16 +28,26 @@ class AiEncyclopediaService {
     String? model,
     double temperature = 0.2,
     int maxTokens = 512,
+    String? petProfileContext,
   }) async {
     if (_apiKey.isEmpty) {
       throw Exception('PERPLEXITY_API_KEY가 설정되지 않았습니다.');
     }
 
+    final systemPrompt = StringBuffer(
+      '너는 앵무새 케어 전문가야. 근거가 불확실하면 짧게 말하고 수의사 상담을 권장해. 5줄 이내로 답변해.',
+    );
+    if (petProfileContext != null && petProfileContext.trim().isNotEmpty) {
+      systemPrompt
+        ..write('\n\n아래 앵무새 프로필을 먼저 파악해:\n')
+        ..write(petProfileContext.trim())
+        ..write('\n답변할 때는 위 앵무새 정보(특히 품종)를 기준으로 이야기를 풀어줘.');
+    }
+
     final messages = <Map<String, String>>[
       {
         'role': 'system',
-        'content':
-            '너는 앵무새 케어 전문가야. 근거가 불확실하면 짧게 말하고 수의사 상담을 권장해. 5줄 이내로 답변해.',
+        'content': systemPrompt.toString(),
       },
       ...history,
       {'role': 'user', 'content': query},
