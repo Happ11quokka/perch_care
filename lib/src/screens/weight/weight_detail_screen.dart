@@ -102,21 +102,19 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     _loadWeightData();
   }
 
-  // weightRecords에서 월별 평균 계산
-  Map<int, double> _calculateMonthlyAverages() {
-    final Map<int, List<double>> monthlyData = {};
+  // weightRecords에서 월별 평균 계산 (연도+월 기준)
+  Map<DateTime, double> _calculateMonthlyAverages() {
+    final Map<DateTime, List<double>> monthlyData = {};
 
-    // 월별로 데이터 그룹화
+    // 연도와 월 단위로 데이터 그룹화
     for (final record in weightRecords) {
-      final month = record.date.month;
-      if (!monthlyData.containsKey(month)) {
-        monthlyData[month] = [];
-      }
-      monthlyData[month]!.add(record.weight);
+      final monthKey = DateTime(record.date.year, record.date.month);
+      monthlyData.putIfAbsent(monthKey, () => []);
+      monthlyData[monthKey]!.add(record.weight);
     }
 
     // 월별 평균 계산
-    final Map<int, double> averages = {};
+    final Map<DateTime, double> averages = {};
     monthlyData.forEach((month, weights) {
       averages[month] = weights.reduce((a, b) => a + b) / weights.length;
     });
@@ -596,7 +594,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
     // 실제 저장된 데이터에서 월별 평균 계산
     final monthlyAverages = _calculateMonthlyAverages();
-    final displayedMonths = _generateDisplayMonths(selectedMonth);
+    final displayedMonths = _generateDisplayMonths(
+      centerYear: selectedYear,
+      centerMonth: selectedMonth,
+    );
     final totalMonths = displayedMonths.length;
     final selectedIndex = totalMonths >= 4 ? 3 : math.max(0, totalMonths - 1);
     final filteredMonthlyAverages = {
@@ -608,8 +609,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     final chartMaxX = hasMonths ? totalMonths + 0.5 : 0.0;
     final selectedKey = selectedIndex + 1;
     final selectedValue = filteredMonthlyAverages[selectedKey] ?? 0;
-    final selectedMonthLabel =
-        totalMonths > selectedIndex ? '${displayedMonths[selectedIndex]}월' : '';
+    final selectedMonthLabel = totalMonths > selectedIndex
+        ? _formatYearMonth(displayedMonths[selectedIndex])
+        : '';
     final chartWidth = _calculateScrollableWidth(
       baseWidth: baseWidth,
       totalPoints: totalMonths,
@@ -714,7 +716,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                             final month = displayedMonths[index];
 
                             return Text(
-                              '$month월',
+                              _formatYearMonth(month),
                               style: AppTypography.bodySmall.copyWith(
                                 color: isHighlighted
                                     ? AppColors.brandPrimary
@@ -1010,13 +1012,21 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     return 4;
   }
 
-  List<int> _generateDisplayMonths(int centerMonth,
-      {int visibleCount = 6, int anchorIndex = 3}) {
+  List<DateTime> _generateDisplayMonths({
+    required int centerYear,
+    required int centerMonth,
+    int visibleCount = 6,
+    int anchorIndex = 3,
+  }) {
     if (visibleCount <= 0) return [];
-    return List<int>.generate(visibleCount, (index) {
+    return List<DateTime>.generate(visibleCount, (index) {
       final offset = index - anchorIndex;
-      return _wrapMonth(centerMonth + offset);
+      return DateTime(centerYear, centerMonth + offset, 1);
     });
+  }
+
+  String _formatYearMonth(DateTime date) {
+    return '${date.year}년 ${date.month}월';
   }
 
   List<int> _generateDisplayYears(int centerYear,
@@ -1028,14 +1038,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       years.add(centerYear + offset);
     }
     return years;
-  }
-
-  int _wrapMonth(int month) {
-    var result = month % 12;
-    if (result <= 0) {
-      result += 12;
-    }
-    return result;
   }
 
   int _getWeeksInMonth(int year, int month) {
