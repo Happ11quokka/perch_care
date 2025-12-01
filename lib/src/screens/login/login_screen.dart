@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -26,6 +27,8 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isLoginLoading = false;
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
+  StreamSubscription<AuthState>? _authStateSubscription;
+  bool _hasNavigatedAfterLogin = false;
 
   static const double _designWidth = 393.0;
   static const double _designHeight = 852.0;
@@ -50,6 +53,8 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat();
+    _authStateSubscription =
+        _authService.authStateChanges.listen(_handleAuthStateChange);
   }
   // 바텀시트 높이 상태
   double _sheetHeight = 60.0; // 초기에는 살짝만 보임
@@ -61,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen>
     _arrowAnimationController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
+    _authStateSubscription?.cancel();
     super.dispose();
   }
 
@@ -1113,6 +1119,23 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  void _handleAuthStateChange(AuthState state) {
+    if (state.session == null) return;
+    if (state.event == AuthChangeEvent.signedIn ||
+        state.event == AuthChangeEvent.initialSession) {
+      _navigateToHomeAfterLogin();
+    }
+  }
+
+  void _navigateToHomeAfterLogin({bool closeEmailSheet = false}) {
+    if (!mounted || _hasNavigatedAfterLogin) return;
+    _hasNavigatedAfterLogin = true;
+    if (closeEmailSheet) {
+      Navigator.of(context).pop();
+    }
+    context.goNamed(RouteNames.home);
+  }
+
   Future<void> _handleEmailLogin() async {
     FocusScope.of(context).unfocus();
     if (!_loginFormKey.currentState!.validate()) return;
@@ -1122,9 +1145,7 @@ class _LoginScreenState extends State<LoginScreen>
         email: _loginEmailController.text.trim(),
         password: _loginPasswordController.text,
       );
-      if (!mounted) return;
-      Navigator.of(context).pop(); // close bottom sheet
-      context.goNamed(RouteNames.home);
+      _navigateToHomeAfterLogin(closeEmailSheet: true);
     } on AuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1145,6 +1166,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isGoogleLoading = true);
     try {
       await _authService.signInWithGoogle();
+      _navigateToHomeAfterLogin();
     } on AuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1165,6 +1187,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isAppleLoading = true);
     try {
       await _authService.signInWithApple();
+      _navigateToHomeAfterLogin();
     } on AuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
