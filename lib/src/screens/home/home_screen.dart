@@ -7,6 +7,7 @@ import '../../theme/radius.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../models/pet.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -183,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

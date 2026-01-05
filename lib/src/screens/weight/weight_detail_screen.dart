@@ -11,6 +11,7 @@ import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../router/route_paths.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
 class WeightDetailScreen extends StatefulWidget {
   const WeightDetailScreen({super.key});
@@ -268,6 +269,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           },
         ),
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

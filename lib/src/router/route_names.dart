@@ -11,6 +11,7 @@ class RouteNames {
   static const String weightAddToday = 'weight-add-today';
   static const String weightAdd = 'weight-add';
   static const String petAdd = 'pet-add';
+  static const String petProfile = 'pet-profile';
   static const String notification = 'notification';
   static const String profile = 'profile';
   static const String aiEncyclopedia = 'ai-encyclopedia';
@@ -18,8 +19,6 @@ class RouteNames {
   static const String forgotPasswordMethod = 'forgot-password-method';
   static const String forgotPasswordCode = 'forgot-password-code';
   static const String forgotPasswordReset = 'forgot-password-reset';
-  static const String biometricSetup = 'biometric-setup';
-  static const String biometricComplete = 'biometric-complete';
   static const String profileSetup = 'profile-setup';
   static const String profileSetupComplete = 'profile-setup-complete';
   // 추가 라우트 이름들을 여기에 정의

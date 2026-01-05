@@ -5,6 +5,7 @@ import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
 /// 프로필 화면
 class ProfileScreen extends StatefulWidget {
@@ -131,6 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }
 
@@ -224,6 +226,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _buildSection(
       title: '계정',
       items: [
+        _MenuItem(
+          icon: Icons.pets,
+          title: '반려동물 프로필',
+          onTap: () {
+            context.pushNamed(RouteNames.petProfile);
+          },
+        ),
         _MenuItem(
           icon: Icons.account_circle_outlined,
           title: '계정 정보',

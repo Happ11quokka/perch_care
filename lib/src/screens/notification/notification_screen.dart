@@ -3,6 +3,7 @@ import '../../theme/colors.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/notification.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
 /// 알림 화면
 class NotificationScreen extends StatefulWidget {
@@ -69,6 +70,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 );
               },
             ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

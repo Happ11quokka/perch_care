@@ -9,14 +9,13 @@ import '../screens/home/home_screen.dart';
 import '../screens/weight/weight_detail_screen.dart';
 import '../screens/weight/weight_add_screen.dart';
 import '../screens/pet/pet_add_screen.dart';
+import '../screens/pet/pet_profile_screen.dart';
 import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/ai_encyclopedia/ai_encyclopedia_screen.dart';
 import '../screens/forgot_password/forgot_password_method_screen.dart';
 import '../screens/forgot_password/forgot_password_code_screen.dart';
 import '../screens/forgot_password/forgot_password_reset_screen.dart';
-import '../screens/biometric/biometric_setup_screen.dart';
-import '../screens/biometric/biometric_complete_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/profile_setup/profile_setup_complete_screen.dart';
 import 'route_names.dart';
@@ -77,7 +76,15 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.petAdd,
         name: RouteNames.petAdd,
-        builder: (context, state) => const PetAddScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return PetAddScreen(petId: extra?['petId']);
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.petProfile,
+        name: RouteNames.petProfile,
+        builder: (context, state) => const PetProfileScreen(),
       ),
       GoRoute(
         path: RoutePaths.notification,
@@ -119,16 +126,6 @@ class AppRouter {
         path: RoutePaths.forgotPasswordReset,
         name: RouteNames.forgotPasswordReset,
         builder: (context, state) => const ForgotPasswordResetScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.biometricSetup,
-        name: RouteNames.biometricSetup,
-        builder: (context, state) => const BiometricSetupScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.biometricComplete,
-        name: RouteNames.biometricComplete,
-        builder: (context, state) => const BiometricCompleteScreen(),
       ),
       GoRoute(
         path: RoutePaths.profileSetup,

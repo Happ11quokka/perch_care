@@ -602,11 +602,17 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_isKakaoLoading) return;
     setState(() => _isKakaoLoading = true);
     try {
-      // TODO: 카카오 로그인 구현
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _authService.signInWithKakao();
+      _navigateToHomeAfterLogin();
+    } on AuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('카카오 로그인은 준비 중입니다.')),
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kakao 로그인 중 오류가 발생했습니다.')),
       );
     } finally {
       if (mounted) setState(() => _isKakaoLoading = false);

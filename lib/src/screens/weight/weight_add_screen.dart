@@ -9,6 +9,7 @@ import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_service.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
 class WeightAddScreen extends StatefulWidget {
   final DateTime date;
@@ -232,6 +233,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           },
         ),
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

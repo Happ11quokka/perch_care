@@ -341,8 +341,11 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
 
-      // 비밀번호 재설정 완료 후 지문 인증 등록 화면으로 이동
-      context.goNamed(RouteNames.biometricSetup);
+      // 비밀번호 재설정 완료 후 로그인 화면으로 이동
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('비밀번호가 성공적으로 변경되었습니다.')),
+      );
+      context.goNamed(RouteNames.login);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

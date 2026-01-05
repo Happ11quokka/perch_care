@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
-import '../../theme/typography.dart';
-import '../../theme/radius.dart';
-import '../../theme/spacing.dart';
-import '../../services/pet/pet_service.dart';
-import '../../router/route_names.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
+/// 반려동물 등록/수정 화면 - Figma 디자인 기반
 class PetAddScreen extends StatefulWidget {
-  const PetAddScreen({super.key});
+  final String? petId; // null이면 등록, 값이 있으면 수정
+
+  const PetAddScreen({
+    super.key,
+    this.petId,
+  });
 
   @override
   State<PetAddScreen> createState() => _PetAddScreenState();
@@ -16,47 +19,46 @@ class PetAddScreen extends StatefulWidget {
 
 class _PetAddScreenState extends State<PetAddScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _petService = PetService();
-
-  // Form controllers
   final _nameController = TextEditingController();
-  final _breedController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _speciesController = TextEditingController();
 
-  // Form values - 앵무새 전용이므로 species는 항상 'bird'
-  final String _selectedSpecies = 'bird';
-  String _selectedGender = 'unknown';
+  String? _selectedGender;
   DateTime? _selectedBirthDate;
+  DateTime? _selectedAdoptionDate;
 
   bool _isLoading = false;
 
-  // Gender options
-  final Map<String, String> _genderOptions = {
-    'male': '수컷',
-    'female': '암컷',
-    'unknown': '모름',
-  };
+  final List<String> _genderOptions = ['수컷', '암컷', '모름'];
+
+  @override
+  void initState() {
+    super.initState();
+    // TODO: petId가 있으면 기존 데이터 로드
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _breedController.dispose();
+    _weightController.dispose();
+    _speciesController.dispose();
     super.dispose();
   }
 
-  Future<void> _selectBirthDate() async {
+  Future<void> _selectDate(BuildContext context, bool isBirthDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedBirthDate ?? DateTime.now(),
+      initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.brandPrimary,
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFFF9A42),
               onPrimary: Colors.white,
               surface: Colors.white,
-              onSurface: AppColors.nearBlack,
+              onSurface: Color(0xFF1A1A1A),
             ),
           ),
           child: child!,
@@ -64,318 +66,363 @@ class _PetAddScreenState extends State<PetAddScreen> {
       },
     );
 
-    if (picked != null && picked != _selectedBirthDate) {
+    if (picked != null) {
       setState(() {
-        _selectedBirthDate = picked;
+        if (isBirthDate) {
+          _selectedBirthDate = picked;
+        } else {
+          _selectedAdoptionDate = picked;
+        }
       });
     }
   }
 
-  Future<void> _submitForm() async {
+  Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      await _petService.createPet(
-        name: _nameController.text.trim(),
-        species: _selectedSpecies,
-        breed: _breedController.text.trim().isEmpty
-            ? null
-            : _breedController.text.trim(),
-        birthDate: _selectedBirthDate,
-        gender: _selectedGender,
+      // TODO: 실제 저장 로직
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('저장되었습니다.')),
       );
-
-      if (mounted) {
-        // Navigate to home screen
-        context.go(RouteNames.home);
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${_nameController.text.trim()}이(가) 등록되었습니다!'),
-            backgroundColor: AppColors.brandPrimary,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      context.pop();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('등록 중 오류가 발생했습니다: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
+      );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          '앵무새 등록하기',
-          style: AppTypography.h5.copyWith(color: AppColors.brandPrimary),
-        ),
         centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header text
-                Text(
-                  '소중한 앵무새의\n정보를 입력해주세요',
-                  style: AppTypography.h4.copyWith(
-                    color: AppColors.nearBlack,
-                    height: 1.4,
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.04),
-
-                // Pet name input
-                _buildLabel('이름 *'),
-                SizedBox(height: AppSpacing.sm),
-                _buildTextField(
-                  controller: _nameController,
-                  hintText: '예: 사랑이',
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return '이름을 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // Breed input (앵무새 품종)
-                _buildLabel('품종 (선택)'),
-                SizedBox(height: AppSpacing.sm),
-                _buildTextField(
-                  controller: _breedController,
-                  hintText: '예: 유황앵무, 코뉴어, 사랑앵무, 회색앵무 등',
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // Birth date picker
-                _buildLabel('생년월일 (선택)'),
-                SizedBox(height: AppSpacing.sm),
-                _buildDatePicker(),
-                SizedBox(height: AppSpacing.lg),
-
-                // Gender selector
-                _buildLabel('성별'),
-                SizedBox(height: AppSpacing.sm),
-                _buildDropdown(
-                  value: _selectedGender,
-                  items: _genderOptions,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedGender = value!;
-                    });
-                  },
-                ),
-                SizedBox(height: screenHeight * 0.06),
-
-                // Submit button
-                _buildSubmitButton(),
-              ],
-            ),
+        title: const Text(
+          '프로필',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1A1A1A),
+            letterSpacing: -0.5,
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: AppTypography.labelLarge.copyWith(
-        color: AppColors.nearBlack,
-        fontWeight: FontWeight.w600,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 34),
+                      // 프로필 이미지
+                      Stack(
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 120,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFD9D9D9),
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/images/pet_profile.svg',
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                // TODO: 이미지 선택
+                              },
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFFFF9A42),
+                                ),
+                                child: const Icon(
+                                  Icons.edit,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      // 이름
+                      _buildTextField(
+                        controller: _nameController,
+                        hintText: '이름을 입력해 주세요',
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return '이름을 입력해 주세요';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      // 성별
+                      _buildDropdownField(
+                        value: _selectedGender,
+                        hint: '성별을 선택해 주세요',
+                        items: _genderOptions,
+                        onChanged: (value) {
+                          setState(() => _selectedGender = value);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      // 몸무게
+                      _buildTextField(
+                        controller: _weightController,
+                        hintText: '몸무게',
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+                      // 생일
+                      _buildDateField(
+                        hint: '생일',
+                        selectedDate: _selectedBirthDate,
+                        onTap: () => _selectDate(context, true),
+                      ),
+                      const SizedBox(height: 16),
+                      // 가족이 된 날
+                      _buildDateField(
+                        hint: '가족이 된 날',
+                        selectedDate: _selectedAdoptionDate,
+                        onTap: () => _selectDate(context, false),
+                      ),
+                      const SizedBox(height: 16),
+                      // 종
+                      _buildTextField(
+                        controller: _speciesController,
+                        hintText: '종',
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // 저장 버튼
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+            child: GestureDetector(
+              onTap: _isLoading ? null : _handleSave,
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          '저장',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: -0.45,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }
 
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
+    TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      textInputAction: TextInputAction.next,
-      enableIMEPersonalizedLearning: true,
-      style: AppTypography.bodyLarge.copyWith(color: AppColors.nearBlack),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppTypography.bodyLarge.copyWith(
-          color: AppColors.lightGray,
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF97928A), width: 1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF1A1A1A),
+            letterSpacing: -0.35,
+          ),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF97928A),
+              letterSpacing: -0.35,
+            ),
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+            errorStyle: const TextStyle(height: 0, fontSize: 0),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDropdown({
-    required String value,
-    required Map<String, String> items,
+  Widget _buildDropdownField({
+    required String? value,
+    required String hint,
+    required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.brandPrimary, width: 2),
-      ),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        items: items.entries.map((entry) {
-          return DropdownMenuItem(
-            value: entry.key,
-            child: Text(entry.value),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        style: AppTypography.bodyLarge.copyWith(color: AppColors.nearBlack),
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
+    return GestureDetector(
+      onTap: () async {
+        final selected = await showDialog<String>(
+          context: context,
+          builder: (context) => SimpleDialog(
+            title: const Text('성별 선택'),
+            children: items.map((item) {
+              return SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, item),
+                child: Text(item),
+              );
+            }).toList(),
           ),
-          border: InputBorder.none,
-        ),
-        dropdownColor: Colors.white,
-        icon: const Icon(Icons.arrow_drop_down, color: AppColors.brandPrimary),
-      ),
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return InkWell(
-      onTap: _selectBirthDate,
+        );
+        if (selected != null) {
+          onChanged(selected);
+        }
+      },
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
+        height: 60,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: AppColors.brandPrimary, width: 2),
+          border: Border.all(color: const Color(0xFF97928A), width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _selectedBirthDate == null
-                  ? '생년월일을 선택해주세요'
-                  : '${_selectedBirthDate!.year}년 ${_selectedBirthDate!.month}월 ${_selectedBirthDate!.day}일',
-              style: AppTypography.bodyLarge.copyWith(
-                color: _selectedBirthDate == null
-                    ? AppColors.lightGray
-                    : AppColors.nearBlack,
-              ),
-            ),
-            const Icon(Icons.calendar_today, color: AppColors.brandPrimary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.gradientTop, AppColors.brandPrimary],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: ElevatedButton(
-          onPressed: _isLoading ? null : _submitForm,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  '등록하기',
-                  style: AppTypography.labelLarge.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                value ?? hint,
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: value == null
+                      ? const Color(0xFF97928A)
+                      : const Color(0xFF1A1A1A),
+                  letterSpacing: -0.35,
                 ),
+              ),
+              const Icon(
+                Icons.arrow_drop_down,
+                color: Color(0xFF97928A),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateField({
+    required String hint,
+    required DateTime? selectedDate,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFF97928A), width: 1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                selectedDate == null
+                    ? hint
+                    : '${selectedDate.year}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.day.toString().padLeft(2, '0')}',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: selectedDate == null
+                      ? const Color(0xFF97928A)
+                      : const Color(0xFF1A1A1A),
+                  letterSpacing: -0.35,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
