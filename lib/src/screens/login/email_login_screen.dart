@@ -36,8 +36,8 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   bool _hasNavigatedAfterLogin = false;
 
   // 아이콘 에셋 경로
-  static const String _emailIconPath = 'assets/images/email_icon.svg';
-  static const String _lockIconPath = 'assets/images/lock_icon.svg';
+  static const String _emailIconPath = 'assets/images/signup_vector/email.svg';
+  static const String _lockIconPath = 'assets/images/signup_vector/password.svg';
   static const String _checkIconPath =
       'assets/images/b54717784f94f4ef1b3ab356fb0d4011afe42f97.svg';
   static const String _checkIconGrayPath = 'assets/images/check_gray_icon.svg';
@@ -257,8 +257,8 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               const SizedBox(width: 20),
               SvgPicture.asset(
                 iconPath,
-                width: 24,
-                height: 24,
+                width: 20,
+                height: 20,
                 colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
               ),
               const SizedBox(width: 12),
@@ -288,6 +288,8 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
+                    filled: false, // 테마 기본 배경색 제거
+                    fillColor: Colors.transparent,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),

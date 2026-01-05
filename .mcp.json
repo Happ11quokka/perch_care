@@ -1,10 +1,10 @@
 {
   "mcpServers": {
     "supabase": {
-      "command": "npx",
-      "args": ["-y", "@supabase/mcp-server-supabase@latest"],
-      "env": {
-        "SUPABASE_ACCESS_TOKEN": "sbp_217eb133f73ab50e15003bbb2fd78fc089a7733b"
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=qqutjrtciivyfscmnktp",
+      "headers": {
+        "Authorization": "Bearer sbp_557d5729708b5610ecf77e2f576d6450a7b2fb38"
       }
     }
   }

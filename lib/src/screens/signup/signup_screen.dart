@@ -23,9 +23,9 @@ class _SignupScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
 
   // 아이콘 에셋 경로
-  static const String _personIconPath = 'assets/images/person_icon.svg';
-  static const String _emailIconPath = 'assets/images/email_icon.svg';
-  static const String _lockIconPath = 'assets/images/lock_icon.svg';
+  static const String _personIconPath = 'assets/images/signup_vector/name.svg';
+  static const String _emailIconPath = 'assets/images/signup_vector/email.svg';
+  static const String _lockIconPath = 'assets/images/signup_vector/password.svg';
 
   @override
   void dispose() {
@@ -208,8 +208,8 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(width: 20),
               SvgPicture.asset(
                 iconPath,
-                width: 24,
-                height: 24,
+                width: 20,
+                height: 20,
                 colorFilter: const ColorFilter.mode(
                   Color(0xFF97928A),
                   BlendMode.srcIn,
@@ -244,6 +244,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     focusedBorder: InputBorder.none,
                     errorBorder: InputBorder.none,
                     focusedErrorBorder: InputBorder.none,
+                    filled: false, // 테마 기본 배경색 제거
+                    fillColor: Colors.transparent,
                     contentPadding: EdgeInsets.zero,
                     errorStyle: const TextStyle(height: 0, fontSize: 0),
                   ),
