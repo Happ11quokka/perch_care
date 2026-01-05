@@ -207,7 +207,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _navigateToInitialRoute() {
     final session = Supabase.instance.client.auth.currentSession;
     final targetRoute =
-        session == null ? RoutePaths.login : RoutePaths.home;
+        session == null ? RoutePaths.onboarding : RoutePaths.home;
     if (!mounted) return;
     context.go(targetRoute);
   }

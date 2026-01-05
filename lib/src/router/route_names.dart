@@ -3,6 +3,7 @@ class RouteNames {
   RouteNames._();
 
   static const String splash = 'splash';
+  static const String onboarding = 'onboarding';
   static const String login = 'login';
   static const String signup = 'signup';
   static const String home = 'home';
@@ -13,5 +14,13 @@ class RouteNames {
   static const String notification = 'notification';
   static const String profile = 'profile';
   static const String aiEncyclopedia = 'ai-encyclopedia';
+  static const String emailLogin = 'email-login';
+  static const String forgotPasswordMethod = 'forgot-password-method';
+  static const String forgotPasswordCode = 'forgot-password-code';
+  static const String forgotPasswordReset = 'forgot-password-reset';
+  static const String biometricSetup = 'biometric-setup';
+  static const String biometricComplete = 'biometric-complete';
+  static const String profileSetup = 'profile-setup';
+  static const String profileSetupComplete = 'profile-setup-complete';
   // 추가 라우트 이름들을 여기에 정의
 }
