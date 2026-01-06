@@ -14,6 +14,8 @@ class ProfileSetupScreen extends StatefulWidget {
 }
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
+  static const _fieldBorderColor = Color(0xFF97928A);
+  static const _fieldRadius = 16.0;
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -44,12 +46,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     super.dispose();
   }
 
-  bool get _isFormValid {
-    return _nameController.text.isNotEmpty &&
-        _selectedGender != null &&
-        _emailController.text.isNotEmpty &&
-        _phoneController.text.isNotEmpty;
-  }
+  // Form validation - currently not used but kept for future validation features
+  // bool get _isFormValid {
+  //   return _nameController.text.isNotEmpty &&
+  //       _selectedGender != null &&
+  //       _emailController.text.isNotEmpty &&
+  //       _phoneController.text.isNotEmpty;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -148,21 +151,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Widget _buildNameField() {
-    final isFocused = _nameFocusNode.hasFocus;
-    final hasValue = _nameController.text.isNotEmpty;
-
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(_fieldRadius),
         border: Border.all(
-          color: (isFocused || hasValue)
-              ? AppColors.brandPrimary
-              : const Color(0xFF97928A),
+          color: _fieldBorderColor,
           width: 1,
         ),
-        color: isFocused ? const Color(0x1AFF9A42) : Colors.transparent,
+        color: Colors.white,
       ),
+      clipBehavior: Clip.antiAlias,
       child: Center(
         child: TextField(
           controller: _nameController,
@@ -186,27 +185,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               letterSpacing: -0.35,
             ),
           ),
-          onChanged: (_) => setState(() {}),
         ),
       ),
     );
   }
 
   Widget _buildGenderField() {
-    final hasValue = _selectedGender != null;
-
     return GestureDetector(
       onTap: _showGenderPicker,
       child: Container(
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: hasValue ? AppColors.brandPrimary : const Color(0xFF97928A),
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(_fieldRadius),
+          border: Border.all(color: _fieldBorderColor, width: 1),
+          color: Colors.white,
         ),
+        clipBehavior: Clip.antiAlias,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -216,9 +211,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: hasValue
+                color: _selectedGender != null
                     ? const Color(0xFF1A1A1A)
-                    : const Color(0xFF97928A),
+                    : _fieldBorderColor,
                 letterSpacing: -0.35,
               ),
             ),
@@ -241,21 +236,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Widget _buildEmailField() {
-    final isFocused = _emailFocusNode.hasFocus;
-    final hasValue = _emailController.text.isNotEmpty;
-
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(_fieldRadius),
         border: Border.all(
-          color: (isFocused || hasValue)
-              ? AppColors.brandPrimary
-              : const Color(0xFF97928A),
+          color: _fieldBorderColor,
           width: 1,
         ),
-        color: isFocused ? const Color(0x1AFF9A42) : Colors.transparent,
+        color: Colors.white,
       ),
+      clipBehavior: Clip.antiAlias,
       child: Center(
         child: TextField(
           controller: _emailController,
@@ -280,28 +271,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               letterSpacing: -0.35,
             ),
           ),
-          onChanged: (_) => setState(() {}),
         ),
       ),
     );
   }
 
   Widget _buildPhoneField() {
-    final isFocused = _phoneFocusNode.hasFocus;
-    final hasValue = _phoneController.text.isNotEmpty;
-
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(_fieldRadius),
         border: Border.all(
-          color: (isFocused || hasValue)
-              ? AppColors.brandPrimary
-              : const Color(0xFF97928A),
+          color: _fieldBorderColor,
           width: 1,
         ),
-        color: isFocused ? const Color(0x1AFF9A42) : Colors.transparent,
+        color: Colors.white,
       ),
+      clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
           // 국가 선택

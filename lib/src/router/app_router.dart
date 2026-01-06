@@ -12,6 +12,7 @@ import '../screens/pet/pet_add_screen.dart';
 import '../screens/pet/pet_profile_screen.dart';
 import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/profile/pet_profile_detail_screen.dart';
 import '../screens/ai_encyclopedia/ai_encyclopedia_screen.dart';
 import '../screens/forgot_password/forgot_password_method_screen.dart';
 import '../screens/forgot_password/forgot_password_code_screen.dart';
@@ -95,6 +96,11 @@ class AppRouter {
         path: RoutePaths.profile,
         name: RouteNames.profile,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.petProfileDetail,
+        name: RouteNames.petProfileDetail,
+        builder: (context, state) => const PetProfileDetailScreen(),
       ),
       GoRoute(
         path: RoutePaths.aiEncyclopedia,

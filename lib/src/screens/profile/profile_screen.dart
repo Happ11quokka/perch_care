@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
-import '../../theme/spacing.dart';
-import '../../theme/radius.dart';
 import '../../router/route_names.dart';
-import '../../services/auth/auth_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
-/// 프로필 화면
+/// 프로필 화면 - 반려동물 프로필 목록
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -16,204 +14,175 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final AuthService _authService = AuthService();
+  static const Color _unselectedCardColor = Color(0xFFE7E5E1);
+  // TODO: 실제 데이터로 대체
+  final String _userName = '쿼카16978님';
+  int? _selectedPetIndex = 0; // 현재 기록 중인 프로필
 
-  // TODO: 실제 사용자 정보로 대체 필요
-  String _userName = '사용자';
-  String _userEmail = 'user@example.com';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserInfo();
-  }
-
-  Future<void> _loadUserInfo() async {
-    final user = _authService.currentUser;
-    if (user == null) return;
-
-    Map<String, dynamic>? profile;
-    try {
-      profile = await _authService.getProfile();
-    } catch (_) {
-      // 프로필 불러오기에 실패해도 메타데이터를 사용해 계속 진행
-    }
-
-    String? nickname;
-    final profileNickname = profile?['nickname'];
-    if (profileNickname is String && profileNickname.trim().isNotEmpty) {
-      nickname = profileNickname;
-    } else {
-      final metadataNickname = user.userMetadata?['nickname'];
-      if (metadataNickname is String && metadataNickname.trim().isNotEmpty) {
-        nickname = metadataNickname;
-      }
-    }
-
-    if (!mounted) return;
-    setState(() {
-      _userEmail = user.email ?? 'user@example.com';
-      _userName = nickname ?? '사용자';
-    });
-  }
-
-  Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('로그아웃'),
-        content: const Text('로그아웃 하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
-            ),
-            child: const Text('로그아웃'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      try {
-        await _authService.signOut();
-        if (!mounted) return;
-        context.goNamed(RouteNames.login);
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그아웃 중 오류가 발생했습니다.')),
-        );
-      }
-    }
-  }
+  // TODO: 실제 반려동물 데이터로 대체
+  final List<Map<String, dynamic>> _pets = [
+    {
+      'name': '점점이',
+      'species': '종이름넣어줘요',
+      'age': '3년 1개월 23일',
+      'gender': 'female', // 'male' or 'female'
+    },
+    {
+      'name': '점점이',
+      'species': '종이름넣어줘요',
+      'age': '3년 1개월 23일',
+      'gender': 'male',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.gray50,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        shadowColor: Colors.black.withValues(alpha: 0.05),
-        surfaceTintColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          '프로필',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.nearBlack,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: Column(
           children: [
-            _buildProfileHeader(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildAccountSection(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildGeneralSection(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildInfoSection(),
-            const SizedBox(height: AppSpacing.xxxl),
-            _buildLogoutButton(),
-            const SizedBox(height: AppSpacing.xxxl),
+            // 상단 앱바
+            _buildAppBar(),
+
+            // 스크롤 가능한 컨텐츠
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 사용자 프로필 섹션
+                    _buildUserProfileSection(),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
+                    // "나의 반려가족" 타이틀
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        '나의 반려가족',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF1A1A1A),
+                          height: 22 / 16,
+                          letterSpacing: 0.08,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 7),
+
+                    // 반려동물 프로필 카드들
+                    ..._pets.asMap().entries.map((entry) {
+                      return _buildPetProfileCard(
+                        index: entry.key,
+                        pet: entry.value,
+                      );
+                    }),
+
+                    const SizedBox(height: 12),
+
+                    // 새로운 아이 등록하기 버튼
+                    _buildAddPetButton(),
+
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
+      bottomNavigationBar: const BottomNavBar(currentIndex: -1), // 선택 상태 없음
     );
   }
 
-  /// 프로필 헤더
-  Widget _buildProfileHeader() {
+  /// 상단 앱바
+  Widget _buildAppBar() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xxl),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // 뒤로가기 버튼
+          Positioned(
+            left: 0,
+            child: GestureDetector(
+              onTap: () => context.goNamed(RouteNames.home),
+              child: SizedBox(
+                width: 28,
+                height: 28,
+                child: SvgPicture.asset(
+                  'assets/images/profile/back_arrow.svg',
+                ),
+              ),
+            ),
+          ),
+
+          // 제목
+          Text(
+            '프로필',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1A1A1A),
+              height: 34 / 20,
+              letterSpacing: -0.5,
+            ),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // 프로필 사진
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.gray200,
-              border: Border.all(
-                color: AppColors.brandPrimary,
-                width: 3,
-              ),
-            ),
-            child: Icon(
-              Icons.person,
-              size: 40,
-              color: AppColors.gray500,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
+    );
+  }
 
-          // 사용자명
+  /// 사용자 프로필 섹션
+  Widget _buildUserProfileSection() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(37, 12, 32, 0),
+      child: Row(
+        children: [
+          // 프로필 아이콘
+          SvgPicture.asset(
+            'assets/images/profile/profile.svg',
+            width: 50,
+            height: 50,
+          ),
+
+          const SizedBox(width: 16),
+
+          // 사용자 이름
           Text(
             _userName,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.nearBlack,
-            ),
-          ),
-          const SizedBox(height: 4),
-
-          // 이메일
-          Text(
-            _userEmail,
             style: TextStyle(
-              fontSize: 14,
-              color: AppColors.mediumGray,
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1A1A1A),
+              height: 22 / 16,
+              letterSpacing: 0.08,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
 
-          // 프로필 수정 버튼
-          OutlinedButton.icon(
-            onPressed: () {
-              // TODO: 프로필 수정 화면으로 이동
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('프로필 수정 기능은 준비중입니다.')),
-              );
+          const Spacer(),
+
+          // 편집 아이콘
+          GestureDetector(
+            onTap: () {
+              // TODO: 사용자 프로필 편집 기능
             },
-            icon: const Icon(Icons.edit, size: 18),
-            label: const Text('프로필 수정'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.brandPrimary,
-              side: BorderSide(color: AppColors.brandPrimary),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xl,
-                vertical: AppSpacing.sm,
-              ),
+            child: SvgPicture.asset(
+              'assets/images/profile/edit.svg',
+              width: 24,
+              height: 24,
             ),
           ),
         ],
@@ -221,239 +190,181 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// 계정 섹션
-  Widget _buildAccountSection() {
-    return _buildSection(
-      title: '계정',
-      items: [
-        _MenuItem(
-          icon: Icons.pets,
-          title: '반려동물 프로필',
-          onTap: () {
-            context.pushNamed(RouteNames.petProfile);
-          },
-        ),
-        _MenuItem(
-          icon: Icons.account_circle_outlined,
-          title: '계정 정보',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('계정 정보 기능은 준비중입니다.')),
-            );
-          },
-        ),
-        _MenuItem(
-          icon: Icons.lock_outline,
-          title: '비밀번호 변경',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('비밀번호 변경 기능은 준비중입니다.')),
-            );
-          },
-        ),
-        _MenuItem(
-          icon: Icons.delete_outline,
-          title: '회원 탈퇴',
-          textColor: AppColors.error,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('회원 탈퇴 기능은 준비중입니다.')),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  /// 일반 섹션
-  Widget _buildGeneralSection() {
-    return _buildSection(
-      title: '일반',
-      items: [
-        _MenuItem(
-          icon: Icons.notifications_outlined,
-          title: '알림 설정',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('알림 설정 기능은 준비중입니다.')),
-            );
-          },
-        ),
-        _MenuItem(
-          icon: Icons.language_outlined,
-          title: '언어 설정',
-          trailing: const Text(
-            '한국어',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.mediumGray,
-            ),
-          ),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('언어 설정 기능은 준비중입니다.')),
-            );
-          },
-        ),
-        _MenuItem(
-          icon: Icons.palette_outlined,
-          title: '테마 설정',
-          trailing: const Text(
-            '라이트',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.mediumGray,
-            ),
-          ),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('테마 설정 기능은 준비중입니다.')),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  /// 정보 섹션
-  Widget _buildInfoSection() {
-    return _buildSection(
-      title: '정보',
-      items: [
-        _MenuItem(
-          icon: Icons.help_outline,
-          title: 'FAQ',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('FAQ 기능은 준비중입니다.')),
-            );
-          },
-        ),
-        _MenuItem(
-          icon: Icons.description_outlined,
-          title: '이용약관',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('이용약관 기능은 준비중입니다.')),
-            );
-          },
-        ),
-        _MenuItem(
-          icon: Icons.privacy_tip_outlined,
-          title: '개인정보 처리방침',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('개인정보 처리방침 기능은 준비중입니다.')),
-            );
-          },
-        ),
-        _MenuItem(
-          icon: Icons.info_outline,
-          title: '버전 정보',
-          trailing: const Text(
-            'v1.0.0',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.mediumGray,
-            ),
-          ),
-          onTap: null,
-        ),
-      ],
-    );
-  }
-
-  /// 섹션 빌더
-  Widget _buildSection({
-    required String title,
-    required List<_MenuItem> items,
+  /// 반려동물 프로필 카드
+  Widget _buildPetProfileCard({
+    required int index,
+    required Map<String, dynamic> pet,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.mediumGray,
-            ),
+    final isSelected = index == _selectedPetIndex;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPetIndex = index;
+        });
+      },
+      child: Container(
+        height: 120,
+        margin: const EdgeInsets.fromLTRB(32, 0, 32, 12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFF5ED) : _unselectedCardColor,
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : Colors.transparent,
+            width: 1,
           ),
+          borderRadius: BorderRadius.circular(16),
         ),
-        const SizedBox(height: AppSpacing.sm),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              thickness: 1,
-              color: AppColors.gray200,
-              indent: AppSpacing.lg,
-              endIndent: AppSpacing.lg,
+        child: Row(
+          children: [
+            // 프로필 이미지
+            SvgPicture.asset(
+              'assets/images/profile/pet_profile_placeholder.svg',
+              width: 62.64,
+              height: 62.64,
             ),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return ListTile(
-                leading: Icon(
-                  item.icon,
-                  color: item.textColor ?? AppColors.nearBlack,
-                  size: 24,
+
+            const SizedBox(width: 15),
+
+            // 정보
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 이름과 성별
+                  Row(
+                    children: [
+                      Text(
+                        pet['name'],
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF1A1A1A),
+                          height: 22 / 16,
+                          letterSpacing: 0.08,
+                        ),
+                      ),
+                      const SizedBox(width: 1),
+                      SvgPicture.asset(
+                        pet['gender'] == 'male'
+                          ? 'assets/images/profile/gender_male.svg'
+                          : 'assets/images/profile/gender_female.svg',
+                        width: 20,
+                        height: 20,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // 종
+                  Text(
+                    pet['species'],
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF6B6B6B),
+                      height: 22 / 12,
+                      letterSpacing: 0.06,
+                    ),
+                  ),
+
+                  // 나이
+                  Text(
+                    pet['age'],
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF6B6B6B),
+                      height: 22 / 12,
+                      letterSpacing: 0.06,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 편집 아이콘
+            GestureDetector(
+              onTap: () {
+                context.pushNamed(RouteNames.petProfileDetail);
+              },
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.brandPrimary : const Color(0xFF97928A),
+                  shape: BoxShape.circle,
                 ),
-                title: Text(
-                  item.title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: item.textColor ?? AppColors.nearBlack,
+                child: Center(
+                  child: SvgPicture.asset(
+                    'assets/images/profile/edit.svg',
+                    width: 14,
+                    height: 14,
+                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   ),
                 ),
-                trailing: item.trailing ??
-                    (item.onTap != null
-                        ? Icon(
-                            Icons.chevron_right,
-                            color: AppColors.gray400,
-                          )
-                        : null),
-                onTap: item.onTap,
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  /// 로그아웃 버튼
-  Widget _buildLogoutButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: SizedBox(
-        width: double.infinity,
-        child: TextButton(
-          onPressed: _handleLogout,
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.error,
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          ),
-          child: const Text(
-            '로그아웃',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+  /// 새로운 아이 등록하기 버튼
+  Widget _buildAddPetButton() {
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(RouteNames.petProfileDetail);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 32),
+        child: _DashedBorder(
+          color: const Color(0xFF97928A),
+          radius: 16,
+          strokeWidth: 1,
+          dashWidth: 6,
+          dashGap: 6,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // 플러스 아이콘
+                Container(
+                  width: 14.15,
+                  height: 14.15,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF97928A),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    size: 10,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // 텍스트
+                Text(
+                  '새로운 아이 등록하기',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF97928A),
+                    height: 34 / 16,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -462,19 +373,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-/// 메뉴 아이템 데이터 클래스
-class _MenuItem {
-  final IconData icon;
-  final String title;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final Color? textColor;
+class _DashedBorder extends StatelessWidget {
+  final Widget child;
+  final double radius;
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashGap;
 
-  const _MenuItem({
-    required this.icon,
-    required this.title,
-    this.trailing,
-    this.onTap,
-    this.textColor,
+  const _DashedBorder({
+    required this.child,
+    required this.radius,
+    required this.color,
+    required this.strokeWidth,
+    required this.dashWidth,
+    required this.dashGap,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _DashedBorderPainter(
+        color: color,
+        radius: radius,
+        strokeWidth: strokeWidth,
+        dashWidth: dashWidth,
+        dashGap: dashGap,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashGap;
+
+  const _DashedBorderPainter({
+    required this.color,
+    required this.radius,
+    required this.strokeWidth,
+    required this.dashWidth,
+    required this.dashGap,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Radius.circular(radius),
+    );
+    final path = Path()..addRRect(rrect);
+
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final double next = distance + dashWidth;
+        canvas.drawPath(metric.extractPath(distance, next), paint);
+        distance = next + dashGap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.radius != radius ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.dashWidth != dashWidth ||
+        oldDelegate.dashGap != dashGap;
+  }
 }

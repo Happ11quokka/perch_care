@@ -81,6 +81,8 @@ flutter:
     - assets/images/btn_naver/
     - assets/images/btn_kakao/
     - assets/images/signup_vector/
+    - assets/images/home_vector/
+    - assets/images/profile/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

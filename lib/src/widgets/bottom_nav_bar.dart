@@ -17,6 +17,10 @@ class BottomNavBar extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
         boxShadow: [
           BoxShadow(
             color: Color(0x0A000000),
@@ -25,47 +29,32 @@ class BottomNavBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              _buildNavItem(
-                context: context,
-                index: 0,
-                iconPath: 'assets/images/home.svg',
-                onTap: () => context.goNamed(RouteNames.home),
-              ),
-              _buildNavItem(
-                context: context,
-                index: 1,
-                iconPath: 'assets/images/calender.svg',
-                onTap: () {
-                  // TODO: 캘린더 화면으로 이동
-                },
-              ),
-              _buildNavItem(
-                context: context,
-                index: 2,
-                iconPath: 'assets/images/chat.svg',
-                onTap: () => context.goNamed(RouteNames.profile),
-              ),
-            ],
-          ),
-          // Home indicator
-          Container(
-            height: 34,
-            alignment: Alignment.center,
-            child: Container(
-              width: 134,
-              height: 5,
-              decoration: BoxDecoration(
-                color: const Color(0xFF626877),
-                borderRadius: BorderRadius.circular(100),
-              ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            _buildNavItem(
+              context: context,
+              index: 0,
+              iconPath: 'assets/images/home.svg',
+              onTap: () => context.goNamed(RouteNames.home),
             ),
-          ),
-        ],
+            _buildNavItem(
+              context: context,
+              index: 1,
+              iconPath: 'assets/images/calender.svg',
+              onTap: () {
+                // TODO: 캘린더 화면으로 이동
+              },
+            ),
+            _buildNavItem(
+              context: context,
+              index: 2,
+              iconPath: 'assets/images/chat.svg',
+              onTap: () => context.goNamed(RouteNames.profile),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -76,21 +65,16 @@ class BottomNavBar extends StatelessWidget {
     required String iconPath,
     required VoidCallback onTap,
   }) {
-    final isSelected = currentIndex == index;
-    final isFirst = index == 0;
-    final isLast = index == 2;
+    // currentIndex가 -1이면 선택된 탭 없음 (프로필 페이지 등)
+    final isSelected = currentIndex >= 0 && currentIndex == index;
 
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           height: 92,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: isFirst ? const Radius.circular(32) : Radius.zero,
-              topRight: isLast ? const Radius.circular(32) : Radius.zero,
-            ),
+          decoration: const BoxDecoration(
+            color: Colors.transparent,
           ),
           child: Center(
             child: SvgPicture.asset(

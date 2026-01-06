@@ -293,9 +293,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
     return Container(
       height: 60,
       decoration: BoxDecoration(
+        color: Colors.white,
         border: Border.all(color: const Color(0xFF97928A), width: 1),
         borderRadius: BorderRadius.circular(16),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: TextFormField(
@@ -358,9 +360,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
       child: Container(
         height: 60,
         decoration: BoxDecoration(
+          color: Colors.white,
           border: Border.all(color: const Color(0xFF97928A), width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
@@ -399,9 +403,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
       child: Container(
         height: 60,
         decoration: BoxDecoration(
+          color: Colors.white,
           border: Border.all(color: const Color(0xFF97928A), width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(

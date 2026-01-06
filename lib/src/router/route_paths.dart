@@ -12,6 +12,7 @@ class RoutePaths {
   static const String weightAdd = '/weight/add/:date';
   static const String petAdd = '/pet/add';
   static const String petProfile = '/pet/profile';
+  static const String petProfileDetail = '/pet/profile/detail';
   static const String notification = '/notification';
   static const String profile = '/profile';
   static const String aiEncyclopedia = '/ai-encyclopedia';

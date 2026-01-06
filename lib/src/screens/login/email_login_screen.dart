@@ -227,7 +227,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     final isActive = hasFocus || hasValue;
     final borderColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
     final bgColor = (hasFocus && hasValue)
-        ? const Color(0xFFFF9A42).withOpacity(0.1)
+        ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
         : Colors.transparent;
     final iconColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
 
