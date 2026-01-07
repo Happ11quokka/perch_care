@@ -106,40 +106,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// 상단 앱바
   Widget _buildAppBar() {
-    return Container(
+    return SizedBox(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // 뒤로가기 버튼
-          Positioned(
-            left: 0,
-            child: GestureDetector(
-              onTap: () => context.goNamed(RouteNames.home),
-              child: SizedBox(
-                width: 28,
-                height: 28,
-                child: SvgPicture.asset(
-                  'assets/images/profile/back_arrow.svg',
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // 뒤로가기 버튼
+            Positioned(
+              left: 0,
+              child: GestureDetector(
+                onTap: () => context.goNamed(RouteNames.home),
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: SvgPicture.asset(
+                    'assets/images/profile/back_arrow.svg',
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // 제목
-          Text(
-            '프로필',
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1A1A1A),
-              height: 34 / 20,
-              letterSpacing: -0.5,
+            // 제목
+            Text(
+              '프로필',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1A1A1A),
+                height: 34 / 20,
+                letterSpacing: -0.5,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -150,11 +153,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.fromLTRB(37, 12, 32, 0),
       child: Row(
         children: [
-          // 프로필 아이콘
-          SvgPicture.asset(
-            'assets/images/profile/profile.svg',
-            width: 50,
-            height: 50,
+          // 프로필 아이콘과 편집 버튼
+          GestureDetector(
+            onTap: () {
+              context.pushNamed(RouteNames.profileSetup);
+            },
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // 프로필 아이콘
+                  SvgPicture.asset(
+                    'assets/images/profile/profile.svg',
+                    width: 50,
+                    height: 50,
+                  ),
+                  // 편집 아이콘
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: AppColors.brandPrimary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          'assets/images/profile/edit.svg',
+                          width: 10,
+                          height: 10,
+                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
 
           const SizedBox(width: 16),
@@ -169,20 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: const Color(0xFF1A1A1A),
               height: 22 / 16,
               letterSpacing: 0.08,
-            ),
-          ),
-
-          const Spacer(),
-
-          // 편집 아이콘
-          GestureDetector(
-            onTap: () {
-              // TODO: 사용자 프로필 편집 기능
-            },
-            child: SvgPicture.asset(
-              'assets/images/profile/edit.svg',
-              width: 24,
-              height: 24,
             ),
           ),
         ],

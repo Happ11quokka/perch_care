@@ -17,59 +17,79 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: IconButton(
-            icon: SvgPicture.asset(
-              'assets/images/back_arrow_icon.svg',
-              width: 28,
-              height: 28,
-            ),
-            onPressed: () => context.pop(),
-          ),
-        ),
-        centerTitle: true,
-        title: const Text(
-          '설정 완료',
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
-            letterSpacing: -0.5,
-            height: 1.7,
-          ),
-        ),
-      ),
       body: SafeArea(
         child: Column(
           children: [
+            // 상단 앱바
+            Container(
+              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Stack(
+                children: [
+                  // 뒤로가기 버튼
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: GestureDetector(
+                      onTap: () => context.pop(),
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: SvgPicture.asset(
+                          'assets/images/profile/back_arrow.svg',
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 제목
+                  Center(
+                    child: Text(
+                      '설정 완료',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1A1A1A),
+                        height: 34 / 20,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // 완료 아이콘
-                  SvgPicture.asset(
-                    'assets/images/profile_complete_icon.svg',
+                  Container(
                     width: 120,
                     height: 120,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD9D9D9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.person,
+                        size: 60,
+                        color: const Color(0xFF6B6B6B),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 32),
                   // 완료 메시지
-                  const Text(
+                  Text(
                     '설정이 완료되었습니다!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A1A1A),
+                      color: const Color(0xFF1A1A1A),
+                      height: 34 / 24,
                       letterSpacing: -0.6,
-                      height: 1.42,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -77,13 +97,13 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   Text(
                     '$petName를 얄랄루 룰라룰라',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: const Color(0xFF97928A),
+                      height: 20 / 14,
                       letterSpacing: -0.35,
-                      height: 1.43,
                     ),
                   ),
                 ],
@@ -99,7 +119,7 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
 
   Widget _buildBottomButtons(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(32, 16, 32, 34),
+      padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
       child: Row(
         children: [
           // 다음에 버튼

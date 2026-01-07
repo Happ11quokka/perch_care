@@ -50,6 +50,9 @@ dependencies:
   http: ^1.2.2
   shared_preferences: ^2.3.2
 
+  # Country Picker
+  country_picker: ^2.0.26
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

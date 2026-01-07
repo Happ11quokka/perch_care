@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:country_picker/country_picker.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import 'widgets/country_selector_bottom_sheet.dart';
@@ -25,7 +26,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _phoneFocusNode = FocusNode();
 
   String? _selectedGender;
-  Country _selectedCountry = Country.korea;
+  Country _selectedCountry = CountryParser.parseCountryCode('KR'); // 대한민국
 
   @override
   void initState() {
@@ -46,49 +47,51 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     super.dispose();
   }
 
-  // Form validation - currently not used but kept for future validation features
-  // bool get _isFormValid {
-  //   return _nameController.text.isNotEmpty &&
-  //       _selectedGender != null &&
-  //       _emailController.text.isNotEmpty &&
-  //       _phoneController.text.isNotEmpty;
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: IconButton(
-            icon: SvgPicture.asset(
-              'assets/images/back_arrow_icon.svg',
-              width: 28,
-              height: 28,
-            ),
-            onPressed: () => context.pop(),
-          ),
-        ),
-        centerTitle: true,
-        title: const Text(
-          '프로필 설정',
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
-            letterSpacing: -0.5,
-            height: 1.7,
-          ),
-        ),
-      ),
       body: SafeArea(
         child: Column(
           children: [
+            // 상단 앱바
+            Container(
+              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Stack(
+                children: [
+                  // 뒤로가기 버튼
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: GestureDetector(
+                      onTap: () => context.pop(),
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: SvgPicture.asset(
+                          'assets/images/profile/back_arrow.svg',
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 제목
+                  Center(
+                    child: Text(
+                      '프로필 설정',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1A1A1A),
+                        height: 34 / 20,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -127,21 +130,41 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         clipBehavior: Clip.none,
         children: [
           // 프로필 아바타
-          SvgPicture.asset(
-            'assets/images/profile_avatar.svg',
+          Container(
             width: 120,
             height: 120,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD9D9D9),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Icon(
+                Icons.person,
+                size: 60,
+                color: const Color(0xFF6B6B6B),
+              ),
+            ),
           ),
           // 편집 버튼
           Positioned(
-            bottom: -6,
-            right: -6,
+            bottom: 0,
+            right: 0,
             child: GestureDetector(
               onTap: _handleEditPhoto,
-              child: SvgPicture.asset(
-                'assets/images/profile_edit_icon.svg',
+              child: Container(
                 width: 24,
                 height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.edit,
+                    size: 12,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ),
@@ -154,15 +177,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(_fieldRadius),
+        color: Colors.white,
         border: Border.all(
           color: _fieldBorderColor,
           width: 1,
         ),
-        color: Colors.white,
+        borderRadius: BorderRadius.circular(_fieldRadius),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Center(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      alignment: Alignment.centerLeft,
+      child: Theme(
+        data: ThemeData(
+          textSelectionTheme: TextSelectionThemeData(
+            cursorColor: AppColors.brandPrimary,
+          ),
+        ),
         child: TextField(
           controller: _nameController,
           focusNode: _nameFocusNode,
@@ -174,8 +203,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             letterSpacing: -0.35,
           ),
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            filled: false,
+            fillColor: Colors.transparent,
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
             border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
             hintText: '이름을 입력해 주세요',
             hintStyle: TextStyle(
               fontFamily: 'Pretendard',
@@ -195,13 +232,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       onTap: _showGenderPicker,
       child: Container(
         height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(_fieldRadius),
-          border: Border.all(color: _fieldBorderColor, width: 1),
           color: Colors.white,
+          border: Border.all(color: _fieldBorderColor, width: 1),
+          borderRadius: BorderRadius.circular(_fieldRadius),
         ),
-        clipBehavior: Clip.antiAlias,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -217,17 +253,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 letterSpacing: -0.35,
               ),
             ),
-            Transform.rotate(
-              angle: 3.14159, // 180 degrees
-              child: SvgPicture.asset(
-                'assets/images/dropdown_arrow_icon.svg',
-                width: 12,
-                height: 8,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF97928A),
-                  BlendMode.srcIn,
-                ),
-              ),
+            Icon(
+              Icons.keyboard_arrow_down,
+              color: const Color(0xFF97928A),
+              size: 20,
             ),
           ],
         ),
@@ -239,15 +268,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(_fieldRadius),
+        color: Colors.white,
         border: Border.all(
           color: _fieldBorderColor,
           width: 1,
         ),
-        color: Colors.white,
+        borderRadius: BorderRadius.circular(_fieldRadius),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Center(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      alignment: Alignment.centerLeft,
+      child: Theme(
+        data: ThemeData(
+          textSelectionTheme: TextSelectionThemeData(
+            cursorColor: AppColors.brandPrimary,
+          ),
+        ),
         child: TextField(
           controller: _emailController,
           focusNode: _emailFocusNode,
@@ -260,8 +295,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             letterSpacing: -0.35,
           ),
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            filled: false,
+            fillColor: Colors.transparent,
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
             border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
             hintText: '이메일을 입력해 주세요',
             hintStyle: TextStyle(
               fontFamily: 'Pretendard',
@@ -280,78 +323,78 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(_fieldRadius),
+        color: Colors.white,
         border: Border.all(
           color: _fieldBorderColor,
           width: 1,
         ),
-        color: Colors.white,
+        borderRadius: BorderRadius.circular(_fieldRadius),
       ),
-      clipBehavior: Clip.antiAlias,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
         children: [
           // 국가 선택
           GestureDetector(
             onTap: _showCountrySelector,
-            child: Container(
-              padding: const EdgeInsets.only(left: 20),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 국기 이미지
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: SvgPicture.asset(
-                      _selectedCountry.flagAsset,
-                      width: 24,
-                      height: 17,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Transform.rotate(
-                    angle: 3.14159, // 180 degrees
-                    child: SvgPicture.asset(
-                      'assets/images/dropdown_arrow_icon.svg',
-                      width: 12,
-                      height: 8,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF97928A),
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 국기 이모지
+                Text(
+                  _selectedCountry.flagEmoji,
+                  style: const TextStyle(fontSize: 20),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  color: const Color(0xFF97928A),
+                  size: 20,
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 10),
           // 전화번호 입력
           Expanded(
-            child: TextField(
-              controller: _phoneController,
-              focusNode: _phoneFocusNode,
-              keyboardType: TextInputType.phone,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF1A1A1A),
-                letterSpacing: -0.35,
+            child: Theme(
+              data: ThemeData(
+                textSelectionTheme: TextSelectionThemeData(
+                  cursorColor: AppColors.brandPrimary,
+                ),
               ),
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.only(right: 20),
-                border: InputBorder.none,
-                hintText: '전화번호를 입력해 주세요',
-                hintStyle: TextStyle(
+              child: TextField(
+                controller: _phoneController,
+                focusNode: _phoneFocusNode,
+                keyboardType: TextInputType.phone,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xFF97928A),
+                  color: Color(0xFF1A1A1A),
                   letterSpacing: -0.35,
                 ),
+                decoration: InputDecoration(
+                  filled: false,
+                  fillColor: Colors.transparent,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  hintText: '전화번호를 입력해 주세요',
+                  hintStyle: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF97928A),
+                    letterSpacing: -0.35,
+                  ),
+                ),
+                onChanged: (_) => setState(() {}),
               ),
-              onChanged: (_) => setState(() {}),
             ),
           ),
         ],
@@ -361,7 +404,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   Widget _buildBottomButtons() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(32, 16, 32, 34),
+      padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
       child: Row(
         children: [
           // 다음에 버튼
