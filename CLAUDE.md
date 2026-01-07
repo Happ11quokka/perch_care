@@ -135,3 +135,70 @@ The app uses the custom URL scheme `perchcare://auth-callback` for authenticatio
 - iOS: `ios/Runner/Info.plist`
 - macOS: `macos/Runner/Info.plist`
 - Android: `android/app/src/main/AndroidManifest.xml`
+
+## Design Implementation Guidelines
+
+### What NOT to Implement from Figma Designs
+
+When implementing designs from Figma, **DO NOT** implement the following elements as they are mockup/presentation artifacts only:
+
+1. **Status Bar Elements** - DO NOT implement:
+   - Clock/time display (9:41, etc.)
+   - Battery indicator
+   - WiFi/cellular signal icons
+   - Any iOS/Android status bar elements
+   - These are handled automatically by the device's system UI
+
+2. **Home Indicator Bar** - DO NOT implement:
+   - The horizontal bar at the bottom of iPhone designs (Home Indicator)
+   - This is an iOS system UI element, not part of the app
+   - Use `SafeArea` widget to respect system safe areas automatically
+
+3. **Device Frames** - DO NOT implement:
+   - Phone bezels or device frames shown in mockups
+   - Notches or camera cutouts
+   - These are presentation elements only
+
+### What TO Implement from Figma Designs
+
+Focus on implementing the actual app UI:
+- Navigation bars and tabs (app-level UI)
+- Content sections and cards
+- Buttons and interactive elements
+- Custom icons and illustrations
+- Typography and spacing
+- Colors and gradients
+- Shadows and visual effects
+
+### Example: Bottom Navigation Bar
+
+**Correct Implementation:**
+```dart
+SafeArea(
+  child: Row(
+    children: [
+      // Navigation items only
+    ],
+  ),
+)
+```
+
+**Incorrect Implementation (DO NOT DO THIS):**
+```dart
+Column(
+  children: [
+    Row(/* navigation items */),
+    Container(/* fake home indicator bar */), // ❌ Don't implement this
+  ],
+)
+```
+
+### Safe Area Usage
+
+Always use `SafeArea` or `MediaQuery.padding` to handle device-specific insets:
+- Status bar height
+- Home indicator area
+- Notch/camera cutout areas
+- Keyboard insets
+
+This ensures the app works correctly across all devices without hardcoding system UI elements.
