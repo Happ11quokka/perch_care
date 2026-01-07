@@ -153,7 +153,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }
 

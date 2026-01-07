@@ -8,6 +8,7 @@ class RouteNames {
   static const String signup = 'signup';
   static const String home = 'home';
   static const String weightDetail = 'weight-detail';
+  static const String weightChart = 'weight-chart';
   static const String weightAddToday = 'weight-add-today';
   static const String weightAdd = 'weight-add';
   static const String petAdd = 'pet-add';
@@ -16,6 +17,9 @@ class RouteNames {
   static const String notification = 'notification';
   static const String profile = 'profile';
   static const String aiEncyclopedia = 'ai-encyclopedia';
+  static const String wciIndex = 'wci-index';
+  static const String foodRecord = 'food-record';
+  static const String waterRecord = 'water-record';
   static const String emailLogin = 'email-login';
   static const String forgotPasswordMethod = 'forgot-password-method';
   static const String forgotPasswordCode = 'forgot-password-code';

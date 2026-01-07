@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 /// 반려동물 등록/수정 화면 - Figma 디자인 기반
@@ -28,6 +29,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
   DateTime? _selectedAdoptionDate;
 
   bool _isLoading = false;
+  final _petCache = PetLocalCacheService();
 
   final List<String> _genderOptions = ['수컷', '암컷', '모름'];
 
@@ -87,6 +89,23 @@ class _PetAddScreenState extends State<PetAddScreen> {
     try {
       // TODO: 실제 저장 로직
       await Future.delayed(const Duration(seconds: 1));
+      final petId =
+          widget.petId ?? DateTime.now().millisecondsSinceEpoch.toString();
+      final petName = _nameController.text.trim().isEmpty
+          ? '새'
+          : _nameController.text.trim();
+      final species = _speciesController.text.trim();
+      final gender = _mapGenderValue(_selectedGender);
+      await _petCache.upsertPet(
+        PetProfileCache(
+          id: petId,
+          name: petName,
+          species: species.isEmpty ? null : species,
+          gender: gender,
+          birthDate: _selectedBirthDate,
+        ),
+        setActive: true,
+      );
 
       if (!mounted) return;
 
@@ -101,6 +120,19 @@ class _PetAddScreenState extends State<PetAddScreen> {
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String? _mapGenderValue(String? gender) {
+    switch (gender) {
+      case '수컷':
+        return 'male';
+      case '암컷':
+        return 'female';
+      case '모름':
+        return 'unknown';
+      default:
+        return null;
     }
   }
 

@@ -8,7 +8,7 @@ import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
-import '../../services/pet/pet_service.dart';
+import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 class WeightAddScreen extends StatefulWidget {
@@ -27,7 +27,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   final _weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _weightService = WeightService();
-  final _petService = PetService();
+  final _petCache = PetLocalCacheService();
   bool _isLoading = false;
   double _sheetHeight = 0;
   final double _peekHeight = 260.0;
@@ -71,7 +71,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   /// 활성 펫 ID 로드
   Future<void> _loadActivePet() async {
     try {
-      final activePet = await _petService.getActivePet();
+      final activePet = await _petCache.getActivePet();
       if (activePet != null && mounted) {
         setState(() {
           _activePetId = activePet.id;
@@ -86,7 +86,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   Future<void> _loadExistingRecord() async {
     if (_activePetId == null) return;
 
-    final existingRecord = await _weightService.fetchRecordByDate(
+    final existingRecord = await _weightService.fetchLocalRecordByDate(
       widget.date,
       petId: _activePetId,
     );
@@ -133,7 +133,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         weight: weight,
       );
 
-      await _weightService.saveWeightRecord(record);
+      await _weightService.saveLocalWeightRecord(record);
 
       if (mounted) {
         // 성공 메시지
@@ -233,7 +233,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           },
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 

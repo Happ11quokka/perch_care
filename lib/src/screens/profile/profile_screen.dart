@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
@@ -15,9 +16,12 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   static const Color _unselectedCardColor = Color(0xFFE7E5E1);
+  final _petCache = PetLocalCacheService();
   // TODO: 실제 데이터로 대체
   final String _userName = '쿼카16978님';
   int? _selectedPetIndex = 0; // 현재 기록 중인 프로필
+  List<PetProfileCache> _cachedPets = [];
+  bool _isLoadingPets = true;
 
   // TODO: 실제 반려동물 데이터로 대체
   final List<Map<String, dynamic>> _pets = [
@@ -34,6 +38,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'gender': 'male',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPets();
+  }
+
+  Future<void> _loadPets() async {
+    final pets = await _petCache.getPets();
+    if (!mounted) return;
+    setState(() {
+      _cachedPets = pets;
+      _isLoadingPets = false;
+      if (_cachedPets.isNotEmpty) {
+        _selectedPetIndex = 0;
+      }
+    });
+  }
+
+  List<Map<String, dynamic>> get _displayPets {
+    if (_cachedPets.isEmpty) return _pets;
+    return _cachedPets.map(_mapCacheToDisplay).toList();
+  }
+
+  Map<String, dynamic> _mapCacheToDisplay(PetProfileCache pet) {
+    return {
+      'id': pet.id,
+      'name': pet.name,
+      'species': pet.species?.isNotEmpty == true ? pet.species! : '종 정보 없음',
+      'age': _formatAge(pet.birthDate),
+      'gender': pet.gender,
+      'isCached': true,
+    };
+  }
+
+  String _formatAge(DateTime? birthDate) {
+    if (birthDate == null) return '나이 정보 없음';
+    final now = DateTime.now();
+    int years = now.year - birthDate.year;
+    int months = now.month - birthDate.month;
+    int days = now.day - birthDate.day;
+
+    if (days < 0) {
+      final prevMonth = DateTime(now.year, now.month, 0);
+      days += prevMonth.day;
+      months -= 1;
+    }
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    final segments = <String>[];
+    if (years > 0) segments.add('${years}년');
+    if (months > 0) segments.add('${months}개월');
+    if (days > 0) segments.add('${days}일');
+    return segments.isEmpty ? '0일' : segments.join(' ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,12 +142,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 7),
 
                     // 반려동물 프로필 카드들
-                    ..._pets.asMap().entries.map((entry) {
-                      return _buildPetProfileCard(
-                        index: entry.key,
-                        pet: entry.value,
-                      );
-                    }),
+                    if (_isLoadingPets)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
+                        child: LinearProgressIndicator(minHeight: 2),
+                      )
+                    else
+                      ..._displayPets.asMap().entries.map((entry) {
+                        return _buildPetProfileCard(
+                          index: entry.key,
+                          pet: entry.value,
+                        );
+                      }),
 
                     const SizedBox(height: 12),
 
@@ -227,6 +295,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           _selectedPetIndex = index;
         });
+        final petId = pet['id'] as String?;
+        if (petId != null) {
+          _petCache.setActivePetId(petId);
+        }
       },
       child: Container(
         height: 120,
@@ -272,13 +344,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(width: 1),
-                      SvgPicture.asset(
-                        pet['gender'] == 'male'
-                          ? 'assets/images/profile/gender_male.svg'
-                          : 'assets/images/profile/gender_female.svg',
-                        width: 20,
-                        height: 20,
-                      ),
+                      if (pet['gender'] == 'male' ||
+                          pet['gender'] == 'female')
+                        SvgPicture.asset(
+                          pet['gender'] == 'male'
+                              ? 'assets/images/profile/gender_male.svg'
+                              : 'assets/images/profile/gender_female.svg',
+                          width: 20,
+                          height: 20,
+                        )
+                      else
+                        const SizedBox(width: 20, height: 20),
                     ],
                   ),
 
@@ -315,8 +391,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // 편집 아이콘
             GestureDetector(
-              onTap: () {
-                context.pushNamed(RouteNames.petProfileDetail);
+              onTap: () async {
+                await context.pushNamed(RouteNames.petProfileDetail);
+                await _loadPets();
               },
               child: Container(
                 width: 32,
@@ -344,8 +421,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// 새로운 아이 등록하기 버튼
   Widget _buildAddPetButton() {
     return GestureDetector(
-      onTap: () {
-        context.pushNamed(RouteNames.petProfileDetail);
+      onTap: () async {
+        await context.pushNamed(RouteNames.petProfileDetail);
+        await _loadPets();
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 32),

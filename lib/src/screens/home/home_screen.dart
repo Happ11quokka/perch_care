@@ -367,34 +367,34 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'WCI',
-                            style: const TextStyle(
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                          TextSpan(
-                            text: '*',
-                            style: const TextStyle(
-                              color: AppColors.brandPrimary,
-                            ),
-                          ),
-                          const TextSpan(text: ' 건강 상태'),
-                        ],
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => context.pushNamed(RouteNames.wciIndex),
+                  child: RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
                       ),
+                      children: [
+                        TextSpan(
+                          text: 'WCI',
+                          style: const TextStyle(
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '*',
+                          style: const TextStyle(
+                            color: AppColors.brandPrimary,
+                          ),
+                        ),
+                        const TextSpan(text: ' 건강 상태'),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
                 Row(
                   children: [
@@ -416,6 +416,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Divider(
+              height: 1,
+              thickness: 1,
+              color: Color(0xFFF0F0F0),
             ),
           ),
           const SizedBox(height: 24),
@@ -539,7 +548,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconPath: 'assets/images/home_vector/eat.svg',
                 hasData: _hasFoodData,
                 onTap: () {
-                  // TODO: 사료 화면으로 이동
+                  context.pushNamed(RouteNames.foodRecord);
                 },
               ),
             ),
@@ -556,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconPath: 'assets/images/home_vector/water.svg',
                 hasData: _hasWaterData,
                 onTap: () {
-                  // TODO: 수분 화면으로 이동
+                  context.pushNamed(RouteNames.waterRecord);
                 },
               ),
             ),

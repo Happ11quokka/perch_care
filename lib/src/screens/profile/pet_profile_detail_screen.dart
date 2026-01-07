@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 /// 반려동물 프로필 상세/편집 화면
@@ -14,6 +15,7 @@ class PetProfileDetailScreen extends StatefulWidget {
 
 class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _petCache = PetLocalCacheService();
 
   // TODO: 실제 데이터로 대체
   final TextEditingController _nameController = TextEditingController();
@@ -463,10 +465,43 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
 
   /// 저장 처리
   void _handleSave() {
-    // TODO: 실제 저장 로직 구현
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('저장되었습니다.')),
-    );
-    context.pop();
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    final petId = DateTime.now().millisecondsSinceEpoch.toString();
+    final petName = _nameController.text.trim().isEmpty
+        ? '새'
+        : _nameController.text.trim();
+    final species = _speciesController.text.trim();
+    final gender = _mapGenderValue(_selectedGender);
+    _petCache
+        .upsertPet(
+          PetProfileCache(
+            id: petId,
+            name: petName,
+            species: species.isEmpty ? null : species,
+            gender: gender,
+            birthDate: _birthday,
+          ),
+          setActive: true,
+        )
+        .then((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('저장되었습니다.')),
+          );
+          context.pop();
+        });
+  }
+
+  String? _mapGenderValue(String? gender) {
+    switch (gender) {
+      case '수컷':
+        return 'male';
+      case '암컷':
+        return 'female';
+      default:
+        return null;
+    }
   }
 }

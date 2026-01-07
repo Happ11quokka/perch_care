@@ -7,6 +7,7 @@ import '../screens/login/email_login_screen.dart';
 import '../screens/signup/signup_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/weight/weight_detail_screen.dart';
+import '../screens/weight/weight_record_screen.dart';
 import '../screens/weight/weight_add_screen.dart';
 import '../screens/pet/pet_add_screen.dart';
 import '../screens/pet/pet_profile_screen.dart';
@@ -14,6 +15,9 @@ import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/pet_profile_detail_screen.dart';
 import '../screens/ai_encyclopedia/ai_encyclopedia_screen.dart';
+import '../screens/wci/wci_index_screen.dart';
+import '../screens/food/food_record_screen.dart';
+import '../screens/water/water_record_screen.dart';
 import '../screens/forgot_password/forgot_password_method_screen.dart';
 import '../screens/forgot_password/forgot_password_code_screen.dart';
 import '../screens/forgot_password/forgot_password_reset_screen.dart';
@@ -58,6 +62,11 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.weightDetail,
         name: RouteNames.weightDetail,
+        builder: (context, state) => const WeightRecordScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.weightChart,
+        name: RouteNames.weightChart,
         builder: (context, state) => const WeightDetailScreen(),
       ),
       GoRoute(
@@ -73,6 +82,16 @@ class AppRouter {
           final date = DateTime.parse(dateStr);
           return WeightAddScreen(date: date);
         },
+      ),
+      GoRoute(
+        path: RoutePaths.foodRecord,
+        name: RouteNames.foodRecord,
+        builder: (context, state) => const FoodRecordScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.waterRecord,
+        name: RouteNames.waterRecord,
+        builder: (context, state) => const WaterRecordScreen(),
       ),
       GoRoute(
         path: RoutePaths.petAdd,
@@ -106,6 +125,11 @@ class AppRouter {
         path: RoutePaths.aiEncyclopedia,
         name: RouteNames.aiEncyclopedia,
         builder: (context, state) => const AIEncyclopediaScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.wciIndex,
+        name: RouteNames.wciIndex,
+        builder: (context, state) => const WciIndexScreen(),
       ),
       GoRoute(
         path: RoutePaths.emailLogin,

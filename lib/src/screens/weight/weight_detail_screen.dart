@@ -1,17 +1,14 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
-import '../../theme/typography.dart';
-import '../../theme/spacing.dart';
-import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
+import '../../models/schedule_record.dart';
 import '../../services/weight/weight_service.dart';
-import '../../services/pet/pet_service.dart';
-import '../../router/route_paths.dart';
+import '../../services/pet/pet_local_cache_service.dart';
+import '../../router/route_names.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/add_schedule_bottom_sheet.dart';
 
 class WeightDetailScreen extends StatefulWidget {
   const WeightDetailScreen({super.key});
@@ -21,1259 +18,690 @@ class WeightDetailScreen extends StatefulWidget {
 }
 
 class _WeightDetailScreenState extends State<WeightDetailScreen> {
-  late String selectedPeriod;
-  late int selectedWeek;
-  late int selectedMonth;
-  late int selectedYear;
-  int selectedWeekday = 1;
-  List<WeightRecord> weightRecords = [];
   final _weightService = WeightService();
-  final _petService = PetService();
-  double _sheetHeight = 0;
-  final double _peekHeight = 200.0;
-  double _expandedHeight = 0;
-  String _petName = '우리 새';
-  String? _activePetId;
-  bool _isLoadingPet = true;
+  final _petCache = PetLocalCacheService();
 
+  bool _isWeeklyView = true; // true: 주, false: 월
+  int _selectedYear = DateTime.now().year;
+  int _selectedMonth = DateTime.now().month;
+  final int _selectedDay = DateTime.now().day;
+  List<WeightRecord> _weightRecords = [];
+  List<ScheduleRecord> _scheduleRecords = [];
+  String _petName = '사랑이';
+  String? _activePetId;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadActivePet();
+    _generateDummyData();
+  }
+
+  void _generateDummyData() {
     final now = DateTime.now();
+    final dummyRecords = <WeightRecord>[];
 
-    selectedPeriod = '월'; // 주, 월, 년
-    selectedYear = now.year;
-    selectedMonth = now.month;
-
-    // 현재 월의 몇 주차인지 계산
-    final weekOfMonth = ((now.day - 1) / 7).floor() + 1;
-    final maxWeeks = _getWeeksInMonth(now.year, now.month);
-    selectedWeek = weekOfMonth.clamp(1, maxWeeks);
-
-    // Load active pet THEN load weight data
-    Future.microtask(() async {
-      await _loadActivePet();
-      if (_activePetId != null) {
-        await _loadWeightData();
+    // 최근 6개월 데이터 생성
+    for (int monthOffset = -5; monthOffset <= 0; monthOffset++) {
+      final month = DateTime(now.year, now.month + monthOffset);
+      // 각 월에 5~10개의 기록 생성
+      final recordCount = 5 + (monthOffset.abs() % 6);
+      for (int i = 0; i < recordCount; i++) {
+        final day = 1 + (i * 3) % 28;
+        final baseWeight = 55.0 + monthOffset * 0.5; // 월별 약간의 변화
+        final variation = (i % 3) * 0.3 - 0.3; // 일별 변동
+        dummyRecords.add(WeightRecord(
+          petId: 'dummy_pet',
+          date: DateTime(month.year, month.month, day),
+          weight: baseWeight + variation,
+        ));
       }
+    }
+
+    // 현재 월에 더 많은 기록 추가 (Figma 디자인처럼)
+    final currentMonth = DateTime(now.year, now.month);
+    final daysWithRecords = [2, 3, 5, 6, 7, 8, 9]; // Figma에서 보이는 날짜들
+    for (final day in daysWithRecords) {
+      if (day <= now.day) {
+        dummyRecords.add(WeightRecord(
+          petId: 'dummy_pet',
+          date: DateTime(currentMonth.year, currentMonth.month, day),
+          weight: 57.0 + (day % 3) * 0.2,
+        ));
+      }
+    }
+
+    setState(() {
+      _weightRecords = dummyRecords;
     });
   }
 
-  /// 활성 펫 로드
   Future<void> _loadActivePet() async {
     try {
-      final activePet = await _petService.getActivePet();
-      if (activePet != null && mounted) {
-        setState(() {
-          _activePetId = activePet.id;
-          _petName = activePet.name;
-          _isLoadingPet = false;
-        });
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoadingPet = false;
-          });
-        }
+      final activePet = await _petCache.getActivePet();
+      if (!mounted) return;
+      setState(() {
+        _activePetId = activePet?.id;
+        _petName = activePet?.name ?? _petName;
+      });
+      if (_activePetId != null) {
+        await _loadWeightData();
       }
-    } catch (e) {
+    } catch (_) {
+      // Handle error
+    } finally {
       if (mounted) {
         setState(() {
-          _isLoadingPet = false;
+          _isLoading = false;
         });
       }
     }
   }
 
-  /// 체중 데이터 로드
   Future<void> _loadWeightData() async {
     if (_activePetId == null) return;
-
-    final records = await _weightService.fetchAllRecords(petId: _activePetId);
+    final records = await _weightService.fetchLocalRecords(petId: _activePetId);
     if (mounted) {
       setState(() {
-        weightRecords = records;
+        _weightRecords = records;
       });
     }
   }
 
-  /// 데이터 새로고침
-  void _refreshData() {
-    _loadWeightData();
+  void _handleBack() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.goNamed(RouteNames.home);
   }
 
-  // weightRecords에서 월별 평균 계산 (연도+월 기준)
-  Map<DateTime, double> _calculateMonthlyAverages() {
-    final Map<DateTime, List<double>> monthlyData = {};
-
-    // 연도와 월 단위로 데이터 그룹화
-    for (final record in weightRecords) {
-      final monthKey = DateTime(record.date.year, record.date.month);
-      monthlyData.putIfAbsent(monthKey, () => []);
-      monthlyData[monthKey]!.add(record.weight);
+  int get _totalRecordDays {
+    final uniqueDays = <String>{};
+    for (final record in _weightRecords) {
+      uniqueDays.add('${record.date.year}-${record.date.month}-${record.date.day}');
     }
-
-    // 월별 평균 계산
-    final Map<DateTime, double> averages = {};
-    monthlyData.forEach((month, weights) {
-      averages[month] = weights.reduce((a, b) => a + b) / weights.length;
-    });
-
-    return averages;
-  }
-
-  // weightRecords에서 특정 주차의 요일별 평균 계산
-  Map<int, double> _calculateWeeklyData(int year, int month, int weekNumber) {
-    final Map<int, List<double>> weeklyData = {};
-
-    // 해당 주차의 시작일과 종료일 계산
-    final startDay = (weekNumber - 1) * 7 + 1;
-    final endDay = (startDay + 6).clamp(1, DateTime(year, month + 1, 0).day);
-
-    // 해당 주차의 데이터만 필터링
-    for (final record in weightRecords) {
-      if (record.date.year == year &&
-          record.date.month == month &&
-          record.date.day >= startDay &&
-          record.date.day <= endDay) {
-        final weekday = record.date.weekday % 7; // 0=일, 1=월, ..., 6=토
-        final displayDay = weekday + 1; // 1=일, 2=월, ..., 7=토
-        if (!weeklyData.containsKey(displayDay)) {
-          weeklyData[displayDay] = [];
-        }
-        weeklyData[displayDay]!.add(record.weight);
-      }
-    }
-
-    // 요일별 평균 계산
-    final Map<int, double> averages = {};
-    weeklyData.forEach((weekday, weights) {
-      averages[weekday] = weights.reduce((a, b) => a + b) / weights.length;
-    });
-
-    return averages;
-  }
-
-  // weightRecords에서 연간 월별 평균 계산
-  Map<int, double> _calculateYearlyAverages() {
-    final Map<int, List<double>> yearlyData = {};
-
-    for (final record in weightRecords) {
-      final year = record.date.year;
-      yearlyData.putIfAbsent(year, () => []);
-      yearlyData[year]!.add(record.weight);
-    }
-
-    final Map<int, double> averages = {};
-    yearlyData.forEach((year, weights) {
-      averages[year] = weights.reduce((a, b) => a + b) / weights.length;
-    });
-
-    return averages;
+    return uniqueDays.length;
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-
-    // Show loading state while fetching active pet
-    if (_isLoadingPet) {
+    if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppColors.nearBlack),
-            onPressed: () => context.pop(),
-          ),
-          title: Text(
-            '체중',
-            style: AppTypography.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.brandPrimary,
-            ),
-          ),
-          centerTitle: true,
-        ),
+        appBar: _buildAppBar(),
         body: const Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: const BottomNavBar(currentIndex: 1),
       );
     }
 
-    // Show empty state if no active pet
     if (_activePetId == null) {
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppColors.nearBlack),
-            onPressed: () => context.pop(),
-          ),
-          title: Text(
-            '체중',
-            style: AppTypography.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.brandPrimary,
-            ),
-          ),
-          centerTitle: true,
-        ),
+        appBar: _buildAppBar(),
         body: const Center(
           child: Text('활성화된 펫이 없습니다. 펫을 먼저 추가해주세요.'),
         ),
+        bottomNavigationBar: const BottomNavBar(currentIndex: 1),
       );
     }
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final calculatedExpanded = constraints.maxHeight * 0.6;
-            final maxHeightLimit = constraints.maxHeight - AppSpacing.md;
-            final safeUpperBound =
-                maxHeightLimit < _peekHeight ? _peekHeight : maxHeightLimit;
-            _expandedHeight = calculatedExpanded.clamp(
-              _peekHeight,
-              safeUpperBound,
-            );
-            if (_sheetHeight == 0) {
-              _sheetHeight = _expandedHeight;
-            } else {
-              _sheetHeight =
-                  _sheetHeight.clamp(_peekHeight, _expandedHeight);
-            }
-
-            return Stack(
-              children: [
-                Positioned.fill(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.only(
-                      bottom: _expandedHeight + AppSpacing.xl,
-                    ),
-                    child: _buildTopSection(size),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: _buildBottomSheet(size, padding),
-                ),
-              ],
-            );
-          },
-        ),
+      appBar: _buildAppBar(),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  _buildHeaderText(),
+                  const SizedBox(height: 24),
+                  _buildPeriodToggle(),
+                  const SizedBox(height: 16),
+                  _buildChart(),
+                  const SizedBox(height: 8),
+                  _buildRecordSummary(),
+                  const SizedBox(height: 16),
+                  _buildCalendarCard(),
+                  const SizedBox(height: 16),
+                  _buildScheduleList(),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+          _buildAddRecordButton(),
+        ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 
-  Widget _buildTopSection(Size size) {
-    return Container(
-      color: Colors.white,
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppColors.nearBlack),
+        onPressed: _handleBack,
+      ),
+      centerTitle: true,
+      title: const Text(
+        '기록',
+        style: TextStyle(
+          fontFamily: 'Pretendard',
+          fontSize: 20,
+          fontWeight: FontWeight.w500,
+          color: AppColors.nearBlack,
+          letterSpacing: -0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderText() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         children: [
-          // Header with back button
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, size: 20),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                Text(
-                  '체중',
-                  style: AppTypography.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.brandPrimary,
-                  ),
-                ),
-                const SizedBox(width: 48), // Balance for back button
-              ],
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.lg),
-
-          // Title
           Text(
             ' 꾸준히 기록을 남기며',
             textAlign: TextAlign.center,
-            style: AppTypography.h4.copyWith(
-              fontWeight: FontWeight.w700,
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
+              height: 1.5,
+              letterSpacing: -0.6,
             ),
           ),
           Text(
             '$_petName 체중 변화를 한 눈에!',
             textAlign: TextAlign.center,
-            style: AppTypography.h4.copyWith(
-              fontWeight: FontWeight.w700,
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
+              height: 1.5,
+              letterSpacing: -0.6,
             ),
           ),
-
-          const SizedBox(height: AppSpacing.sm),
-
-          // Subtitle
-          Text(
+          const SizedBox(height: 4),
+          const Text(
             '지금 바로 기록하고 우리 아이 건강 상태를',
             textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
               color: AppColors.mediumGray,
+              height: 1.5,
             ),
           ),
-          Text(
+          const Text(
             '편하게 관리해 보세요.',
             textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
               color: AppColors.mediumGray,
+              height: 1.5,
             ),
           ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          // Period Selector
-          _buildPeriodSelector(),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          // Chart
-          _buildChart(size),
-
-          const SizedBox(height: AppSpacing.md),
         ],
       ),
     );
   }
 
-  Widget _buildPeriodSelector() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.brandPrimary, width: 1),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildPeriodButton('주'),
-          _buildPeriodButton('월'),
-          _buildPeriodButton('년'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPeriodButton(String period) {
-    final isSelected = selectedPeriod == period;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedPeriod = period;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Text(
-          period,
-          style: AppTypography.bodySmall.copyWith(
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-            color: isSelected ? Colors.white : AppColors.mediumGray,
+  Widget _buildPeriodToggle() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 32),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          height: 33,
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: AppColors.brandPrimary, width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () => setState(() => _isWeeklyView = true),
+                child: Container(
+                  width: 30,
+                  height: 29,
+                  decoration: BoxDecoration(
+                    color: _isWeeklyView ? AppColors.brandPrimary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '주',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: _isWeeklyView ? Colors.white : AppColors.mediumGray,
+                        letterSpacing: -0.325,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 9),
+              GestureDetector(
+                onTap: () => setState(() => _isWeeklyView = false),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Text(
+                    '월',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: !_isWeeklyView ? Colors.white : AppColors.mediumGray,
+                      letterSpacing: -0.325,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildChart(Size size) {
-    switch (selectedPeriod) {
-      case '주':
-        return _buildWeeklyChart(size);
-      case '월':
-        return _buildMonthlyChart(size);
-      case '년':
-        return _buildYearlyChart(size);
-      default:
-        return _buildMonthlyChart(size);
-    }
-  }
-
-  // 주간 차트 (월~일, 7일)
-  Widget _buildWeeklyChart(Size size) {
-    final baseWidth = size.width - (AppSpacing.md * 2);
-    final chartHeight = 200.0;
-    final weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-    final weeklyData = _calculateWeeklyData(selectedYear, selectedMonth, selectedWeek);
-    final filteredWeeklyData = {
-      for (int day = 1; day <= 7; day++) day: weeklyData[day] ?? 0,
-    };
-    final chartWidth = _calculateScrollableWidth(
-      baseWidth: baseWidth,
-      totalPoints: 7,
-    );
-    final chartMinX = 0.5;
-    final chartMaxX = 7.5;
-    final highlightedDay = _determineHighlightedWeekday();
-    final selectedValue = filteredWeeklyData[highlightedDay] ?? 0;
-    final highlightLabel = '${weekdays[highlightedDay - 1]}요일';
-    final minY = _getMinY(filteredWeeklyData);
-    final maxY = _getMaxY(filteredWeeklyData);
-    final chartPadding = EdgeInsets.only(
-      top: AppSpacing.md,
-      bottom: AppSpacing.lg,
-      left: AppSpacing.sm,
-      right: AppSpacing.sm,
-    );
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: chartWidth,
-        height: chartHeight,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: CustomPaint(
-                  painter: _MonthlyGuideLinePainter(
-                    itemCount: 7,
-                    minX: chartMinX,
-                    maxX: chartMaxX,
-                    selectedPosition: highlightedDay.toDouble(),
-                    selectedValue: selectedValue,
-                    selectedLabel: highlightLabel,
-                    drawBackground: true,
-                    drawLabel: false,
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: LineChart(
-                  LineChartData(
-                    minX: chartMinX,
-                    maxX: chartMaxX,
-                    minY: minY,
-                    maxY: maxY,
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: _convertMapToFlSpots(filteredWeeklyData),
-                        isCurved: true,
-                        curveSmoothness: 0.35,
-                        color: AppColors.mediumGray,
-                        barWidth: 3,
-                        isStrokeCapRound: true,
-                        dashArray: const [8, 4],
-                        dotData: FlDotData(
-                          show: true,
-                          getDotPainter: (spot, percent, barData, index) {
-                            final isHighlighted = spot.x.toInt() == highlightedDay;
-                            if (isHighlighted) {
-                              return FlDotCirclePainter(
-                                radius: 10,
-                                color: Colors.white,
-                                strokeWidth: 4,
-                                strokeColor: AppColors.brandPrimary,
-                              );
-                            }
-                            return FlDotCirclePainter(
-                              radius: 6,
-                              color: AppColors.lightGray,
-                            );
-                          },
-                        ),
-                        belowBarData: BarAreaData(show: false),
-                      ),
-                    ],
-                    titlesData: FlTitlesData(
-                      leftTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          interval: 1,
-                          getTitlesWidget: (value, meta) {
-                            if ((value - value.round()).abs() > 0.01) {
-                              return const SizedBox();
-                            }
-                            final day = value.toInt();
-                            if (day < 1 || day > 7) return const SizedBox();
-                            final isHighlighted = day == highlightedDay;
-                            return Text(
-                              weekdays[day - 1],
-                              style: AppTypography.bodySmall.copyWith(
-                                color: isHighlighted
-                                    ? AppColors.brandPrimary
-                                    : AppColors.mediumGray,
-                                fontWeight:
-                                    isHighlighted ? FontWeight.w600 : FontWeight.w400,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    gridData: const FlGridData(show: false),
-                    borderData: FlBorderData(show: false),
-                    lineTouchData: LineTouchData(
-                      enabled: true,
-                      touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: (touchedSpots) {
-                          return touchedSpots.map((spot) {
-                            return LineTooltipItem(
-                              '${spot.y.toStringAsFixed(1)} g',
-                              AppTypography.bodySmall.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            );
-                          }).toList();
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: _MonthlyGuideLinePainter(
-                      itemCount: 7,
-                      minX: chartMinX,
-                      maxX: chartMaxX,
-                      selectedPosition: highlightedDay.toDouble(),
-                      selectedValue: selectedValue,
-                      selectedLabel: highlightLabel,
-                      drawBackground: false,
-                      drawLabel: true,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildChart() {
+    return SizedBox(
+      height: 220,
+      // 주: 월별 데이터 차트, 월: 주간(일~토) 데이터 차트
+      child: _isWeeklyView ? _buildMonthlyOverviewChart() : _buildWeeklyDaysChart(),
     );
   }
 
-  // 월간 차트 (최근 6개월)
-  Widget _buildMonthlyChart(Size size) {
-    final baseWidth = size.width - (AppSpacing.md * 2);
-    final chartHeight = 200.0;
-
-    // 실제 저장된 데이터에서 월별 평균 계산
+  Widget _buildMonthlyOverviewChart() {
+    // 최근 6개월 데이터 표시
+    final months = _generateDisplayMonths();
     final monthlyAverages = _calculateMonthlyAverages();
-    final displayedMonths = _generateDisplayMonths(
-      centerYear: selectedYear,
-      centerMonth: selectedMonth,
-    );
-    final totalMonths = displayedMonths.length;
-    final selectedIndex = totalMonths >= 4 ? 3 : math.max(0, totalMonths - 1);
-    final filteredMonthlyAverages = {
-      for (int i = 0; i < displayedMonths.length; i++)
-        i + 1: monthlyAverages[displayedMonths[i]] ?? 0,
-    };
-    final hasMonths = totalMonths > 0;
-    final chartMinX = hasMonths ? 0.5 : 0.0;
-    final chartMaxX = hasMonths ? totalMonths + 0.5 : 0.0;
-    final selectedKey = selectedIndex + 1;
-    final selectedValue = filteredMonthlyAverages[selectedKey] ?? 0;
-    final selectedMonthLabel = totalMonths > selectedIndex
-        ? _formatYearMonth(displayedMonths[selectedIndex])
-        : '';
-    final chartWidth = _calculateScrollableWidth(
-      baseWidth: baseWidth,
-      totalPoints: totalMonths,
-    );
-    final minY = _getMinY(filteredMonthlyAverages);
-    final maxY = _getMaxY(filteredMonthlyAverages);
-    final chartPadding = EdgeInsets.only(
-      top: AppSpacing.md,
-      bottom: AppSpacing.lg,
-      left: AppSpacing.sm,
-      right: AppSpacing.sm,
-    );
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: chartWidth,
-        height: chartHeight,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: CustomPaint(
-                  painter: _MonthlyGuideLinePainter(
-                    itemCount: totalMonths,
-                    minX: chartMinX,
-                    maxX: chartMaxX,
-                    selectedPosition: selectedKey.toDouble(),
-                    selectedValue: selectedValue,
-                    selectedLabel: selectedMonthLabel,
-                    drawBackground: true,
-                    drawLabel: false,
-                    ),
-                ),
-              ),
+    // 현재 월의 인덱스 (마지막 = 현재 월)
+    final selectedIndex = months.length - 1;
+    final selectedMonth = months[selectedIndex];
+    final selectedValue = monthlyAverages[selectedMonth] ?? 57.2; // 더미 기본값
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Stack(
+        children: [
+          // 차트 배경 및 선택 표시
+          CustomPaint(
+            size: const Size(double.infinity, 180),
+            painter: _WeeklyChartBackgroundPainter(
+              months: months,
+              selectedIndex: selectedIndex,
+              selectedValue: selectedValue,
             ),
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: LineChart(
-                  LineChartData(
-                    minX: chartMinX,
-                    maxX: chartMaxX,
-                    minY: minY,
-                    maxY: maxY,
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: _convertMapToFlSpots(filteredMonthlyAverages),
-                        isCurved: true,
-                        curveSmoothness: 0.35,
-                        color: AppColors.mediumGray,
-                        barWidth: 3,
-                        isStrokeCapRound: true,
-                        dashArray: const [8, 4],
-                        dotData: FlDotData(
-                          show: true,
-                          getDotPainter: (spot, percent, barData, index) {
-                            final isHighlighted = spot.x.toInt() == selectedKey;
-
-                            if (isHighlighted) {
-                              return FlDotCirclePainter(
-                                radius: 10,
-                                color: Colors.white,
-                                strokeWidth: 4,
-                                strokeColor: AppColors.brandPrimary,
-                              );
-                            }
+          ),
+          // 라인 차트
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20, bottom: 40, left: 20, right: 20),
+              child: LineChart(
+                LineChartData(
+                  minX: -0.5,
+                  maxX: 5.5,
+                  minY: _getMinY(monthlyAverages, months),
+                  maxY: _getMaxY(monthlyAverages, months),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: _getChartSpots(months, monthlyAverages),
+                      isCurved: true,
+                      curveSmoothness: 0.4,
+                      color: AppColors.lightGray,
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) {
+                          if (index == selectedIndex && selectedValue > 0) {
                             return FlDotCirclePainter(
-                              radius: 6,
-                              color: AppColors.lightGray,
+                              radius: 8,
+                              color: Colors.white,
+                              strokeWidth: 3,
+                              strokeColor: AppColors.brandPrimary,
                             );
-                          },
-                        ),
-                        belowBarData: BarAreaData(show: false),
-                      ),
-                    ],
-                    titlesData: FlTitlesData(
-                      leftTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          interval: 1,
-                          getTitlesWidget: (value, meta) {
-                            if ((value - value.round()).abs() > 0.01) {
-                              return const SizedBox();
-                            }
-                            final index = value.toInt() - 1;
-                            if (index < 0 || index >= displayedMonths.length) {
-                              return const SizedBox();
-                            }
-
-                            final isHighlighted = (index + 1) == selectedKey;
-                            final month = displayedMonths[index];
-
-                            return Text(
-                              _formatYearMonth(month),
-                              style: AppTypography.bodySmall.copyWith(
-                                color: isHighlighted
-                                    ? AppColors.brandPrimary
-                                    : AppColors.mediumGray,
-                                fontWeight: isHighlighted
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    gridData: const FlGridData(show: false),
-                    borderData: FlBorderData(show: false),
-                    lineTouchData: LineTouchData(
-                      enabled: true,
-                      touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: (touchedSpots) {
-                          return touchedSpots.map((spot) {
-                            return LineTooltipItem(
-                              '${spot.y.toStringAsFixed(1)} g',
-                              AppTypography.bodySmall.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            );
-                          }).toList();
+                          }
+                          return FlDotCirclePainter(
+                            radius: 5,
+                            color: AppColors.lightGray,
+                          );
                         },
                       ),
+                      belowBarData: BarAreaData(show: false),
                     ),
-                  ),
+                  ],
+                  titlesData: const FlTitlesData(show: false),
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineTouchData: const LineTouchData(enabled: false),
                 ),
               ),
             ),
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: _MonthlyGuideLinePainter(
-                      itemCount: totalMonths,
-                      minX: chartMinX,
-                      maxX: chartMaxX,
-                      selectedPosition: selectedKey.toDouble(),
-                      selectedValue: selectedValue,
-                      selectedLabel: selectedMonthLabel,
-                      drawBackground: false,
-                      drawLabel: true,
-                    ),
+          ),
+          // 월 라벨
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(months.length, (index) {
+                final isSelected = index == selectedIndex;
+                return Text(
+                  '${months[index].month}월',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: isSelected ? Colors.white : AppColors.mediumGray,
+                    letterSpacing: -0.13,
                   ),
-                ),
-              ),
+                );
+              }),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  // 연간 차트 (1~12월)
-  Widget _buildYearlyChart(Size size) {
-    final baseWidth = size.width - (AppSpacing.md * 2);
-    final chartHeight = 200.0;
-    final yearlyAverages = _calculateYearlyAverages();
-    final displayedYears = _generateDisplayYears(selectedYear);
-    final totalYears = displayedYears.length;
-    final selectedIndex = displayedYears.indexOf(selectedYear).clamp(0, totalYears - 1);
-    final filteredYearlyData = {
-      for (int i = 0; i < displayedYears.length; i++)
-        i + 1: yearlyAverages[displayedYears[i]] ?? 0,
-    };
-    final chartWidth = _calculateScrollableWidth(
-      baseWidth: baseWidth,
-      totalPoints: totalYears,
-    );
-    final chartMinX = totalYears > 0 ? 0.5 : 0.0;
-    final chartMaxX = totalYears > 0 ? totalYears + 0.5 : 0.0;
-    final selectedKey = selectedIndex + 1;
-    final selectedValue = filteredYearlyData[selectedKey] ?? 0;
-    final selectedYearLabel =
-        totalYears > selectedIndex ? '${displayedYears[selectedIndex]}년' : '';
-    final minY = _getMinY(filteredYearlyData);
-    final maxY = _getMaxY(filteredYearlyData);
-    final chartPadding = EdgeInsets.only(
-      top: AppSpacing.md,
-      bottom: AppSpacing.lg,
-      left: AppSpacing.sm,
-      right: AppSpacing.sm,
-    );
+  Widget _buildWeeklyDaysChart() {
+    // 주간 차트 - 요일별 데이터 표시
+    final weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+    final weeklyData = _calculateWeeklyData();
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: chartWidth,
-        height: chartHeight,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: CustomPaint(
-                  painter: _MonthlyGuideLinePainter(
-                    itemCount: totalYears,
-                    minX: chartMinX,
-                    maxX: chartMaxX,
-                    selectedPosition: selectedKey.toDouble(),
-                    selectedValue: selectedValue,
-                    selectedLabel: selectedYearLabel,
-                    drawBackground: true,
-                    drawLabel: false,
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: LineChart(
-                  LineChartData(
-                    minX: chartMinX,
-                    maxX: chartMaxX,
-                    minY: minY,
-                    maxY: maxY,
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: _convertMapToFlSpots(filteredYearlyData),
-                        isCurved: true,
-                        curveSmoothness: 0.35,
-                        color: AppColors.mediumGray,
-                        barWidth: 3,
-                        isStrokeCapRound: true,
-                        dashArray: const [8, 4],
-                        dotData: FlDotData(
-                          show: true,
-                          getDotPainter: (spot, percent, barData, index) {
-                            final isHighlighted = spot.x.toInt() == selectedKey;
-                            if (isHighlighted) {
-                              return FlDotCirclePainter(
-                                radius: 10,
-                                color: Colors.white,
-                                strokeWidth: 4,
-                                strokeColor: AppColors.brandPrimary,
-                              );
-                            }
-                            return FlDotCirclePainter(
-                              radius: 6,
-                              color: AppColors.lightGray,
-                            );
-                          },
-                        ),
-                        belowBarData: BarAreaData(show: false),
-                      ),
-                    ],
-                    titlesData: FlTitlesData(
-                      leftTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          interval: 1,
-                          getTitlesWidget: (value, meta) {
-                            if ((value - value.round()).abs() > 0.01) {
-                              return const SizedBox();
-                            }
-                            final index = value.toInt() - 1;
-                            if (index < 0 || index >= displayedYears.length) {
-                              return const SizedBox();
-                            }
-                            final year = displayedYears[index];
-                            final isHighlighted = (index + 1) == selectedKey;
-                            return Text(
-                              '$year년',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: isHighlighted
-                                    ? AppColors.brandPrimary
-                                    : AppColors.mediumGray,
-                                fontWeight:
-                                    isHighlighted ? FontWeight.w600 : FontWeight.w400,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          Expanded(
+            child: LineChart(
+              LineChartData(
+                minX: 0,
+                maxX: 6,
+                minY: _getMinYFromMap(weeklyData),
+                maxY: _getMaxYFromMap(weeklyData),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: weeklyData.entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList(),
+                    isCurved: true,
+                    curveSmoothness: 0.4,
+                    color: AppColors.lightGray,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 5,
+                          color: AppColors.lightGray,
+                        );
+                      },
                     ),
-                    gridData: const FlGridData(show: false),
-                    borderData: FlBorderData(show: false),
-                    lineTouchData: LineTouchData(
-                      enabled: true,
-                      touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: (touchedSpots) {
-                          return touchedSpots.map((spot) {
-                            return LineTooltipItem(
-                              '${spot.y.toStringAsFixed(1)} g',
-                              AppTypography.bodySmall.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            );
-                          }).toList();
-                        },
-                      ),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
+                titlesData: FlTitlesData(
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= weekdays.length) return const SizedBox();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            weekdays[index],
+                            style: const TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.mediumGray,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
               ),
             ),
-            Positioned.fill(
-              child: Padding(
-                padding: chartPadding,
-                child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: _MonthlyGuideLinePainter(
-                      itemCount: totalYears,
-                      minX: chartMinX,
-                      maxX: chartMaxX,
-                      selectedPosition: selectedKey.toDouble(),
-                      selectedValue: selectedValue,
-                      selectedLabel: selectedYearLabel,
-                      drawBackground: false,
-                      drawLabel: true,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  // Map 데이터를 FlSpot으로 변환 (공통 헬퍼)
-  List<FlSpot> _convertMapToFlSpots(Map<int, double> data) {
-    final spots = data.entries
-        .where((entry) => entry.value > 0)
-        .map((entry) => FlSpot(
-              entry.key.toDouble(),
-              entry.value,
-            ))
-        .toList();
+  List<DateTime> _generateDisplayMonths() {
+    final now = DateTime.now();
+    return List.generate(6, (index) {
+      return DateTime(now.year, now.month - 5 + index);
+    });
+  }
 
-    // X축 기준으로 정렬하여 자연스러운 연결 보장
-    spots.sort((a, b) => a.x.compareTo(b.x));
+  Map<DateTime, double> _calculateMonthlyAverages() {
+    final Map<DateTime, List<double>> monthlyData = {};
+    for (final record in _weightRecords) {
+      final monthKey = DateTime(record.date.year, record.date.month);
+      monthlyData.putIfAbsent(monthKey, () => []);
+      monthlyData[monthKey]!.add(record.weight);
+    }
+    final Map<DateTime, double> averages = {};
+    monthlyData.forEach((month, weights) {
+      averages[month] = weights.reduce((a, b) => a + b) / weights.length;
+    });
+    return averages;
+  }
+
+  Map<int, double> _calculateWeeklyData() {
+    final Map<int, List<double>> weeklyData = {};
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
+
+    for (final record in _weightRecords) {
+      final daysDiff = record.date.difference(startOfWeek).inDays;
+      if (daysDiff >= 0 && daysDiff < 7) {
+        weeklyData.putIfAbsent(daysDiff, () => []);
+        weeklyData[daysDiff]!.add(record.weight);
+      }
+    }
+
+    final Map<int, double> averages = {};
+    for (int i = 0; i < 7; i++) {
+      if (weeklyData.containsKey(i)) {
+        averages[i] = weeklyData[i]!.reduce((a, b) => a + b) / weeklyData[i]!.length;
+      }
+    }
+    return averages;
+  }
+
+  List<FlSpot> _getChartSpots(List<DateTime> months, Map<DateTime, double> averages) {
+    final spots = <FlSpot>[];
+    // 더미 데이터 기본값들 (Figma 디자인과 유사하게)
+    final dummyValues = [52.5, 53.8, 54.2, 55.0, 56.3, 57.2];
+    for (int i = 0; i < months.length; i++) {
+      final value = averages[months[i]] ?? dummyValues[i % dummyValues.length];
+      spots.add(FlSpot(i.toDouble(), value));
+    }
     return spots;
   }
 
-  // Y축 최소값 계산 (공통 헬퍼)
-  double _getMinY(Map<int, double> data) {
-    final values = data.values.where((v) => v > 0);
-    if (values.isEmpty) return 0;
-    final minValue = values.reduce((a, b) => a < b ? a : b);
-    return minValue - 5; // 여유 공간
+  double _getMinY(Map<DateTime, double> averages, List<DateTime> months) {
+    final dummyValues = [52.5, 53.8, 54.2, 55.0, 56.3, 57.2];
+    final values = months.asMap().entries.map((e) =>
+      averages[e.value] ?? dummyValues[e.key % dummyValues.length]
+    );
+    if (values.isEmpty) return 50;
+    return values.reduce((a, b) => a < b ? a : b) - 3;
   }
 
-  // Y축 최대값 계산 (공통 헬퍼)
-  double _getMaxY(Map<int, double> data) {
-    final values = data.values.where((v) => v > 0);
-    if (values.isEmpty) return 100;
-    final maxValue = values.reduce((a, b) => a > b ? a : b);
-    return maxValue + 5; // 여유 공간
+  double _getMaxY(Map<DateTime, double> averages, List<DateTime> months) {
+    final dummyValues = [52.5, 53.8, 54.2, 55.0, 56.3, 57.2];
+    final values = months.asMap().entries.map((e) =>
+      averages[e.value] ?? dummyValues[e.key % dummyValues.length]
+    );
+    if (values.isEmpty) return 60;
+    return values.reduce((a, b) => a > b ? a : b) + 3;
   }
 
-  // 차트가 6개의 데이터만 한 화면에 표시하고 나머지는 스크롤되도록 너비 계산
-  double _calculateScrollableWidth({
-    required double baseWidth,
-    required int totalPoints,
-    int visiblePoints = 6,
-  }) {
-    if (totalPoints <= visiblePoints || totalPoints == 0) {
-      return baseWidth;
-    }
-    return baseWidth * (totalPoints / visiblePoints);
+  double _getMinYFromMap(Map<int, double> data) {
+    if (data.isEmpty) return 0;
+    return data.values.reduce((a, b) => a < b ? a : b) - 5;
   }
 
-  int _determineHighlightedWeekday() {
-    final now = DateTime.now();
-    final currentWeekOfMonth = ((now.day - 1) / 7).floor() + 1;
-    final isCurrentWeek = now.year == selectedYear &&
-        now.month == selectedMonth &&
-        currentWeekOfMonth == selectedWeek;
-    if (isCurrentWeek) {
-      final weekday = now.weekday % 7;
-      return weekday + 1;
-    }
-    return 4;
+  double _getMaxYFromMap(Map<int, double> data) {
+    if (data.isEmpty) return 100;
+    return data.values.reduce((a, b) => a > b ? a : b) + 5;
   }
 
-  List<DateTime> _generateDisplayMonths({
-    required int centerYear,
-    required int centerMonth,
-    int visibleCount = 6,
-    int anchorIndex = 3,
-  }) {
-    if (visibleCount <= 0) return [];
-    return List<DateTime>.generate(visibleCount, (index) {
-      final offset = index - anchorIndex;
-      return DateTime(centerYear, centerMonth + offset, 1);
-    });
-  }
-
-  String _formatYearMonth(DateTime date) {
-    return '${date.year}년 ${date.month}월';
-  }
-
-  List<int> _generateDisplayYears(int centerYear,
-      {int visibleCount = 6, int anchorIndex = 3}) {
-    if (visibleCount <= 0) return [];
-    final List<int> years = [];
-    for (int index = 0; index < visibleCount; index++) {
-      final offset = index - anchorIndex;
-      years.add(centerYear + offset);
-    }
-    return years;
-  }
-
-  int _getWeeksInMonth(int year, int month) {
-    final firstDay = DateTime(year, month, 1);
-    final totalDays = DateTime(year, month + 1, 0).day;
-    final firstWeekday = firstDay.weekday; // 1=Mon, 7=Sun
-    final leadingDays = (firstWeekday % 7);
-    return ((leadingDays + totalDays) / 7).ceil();
-  }
-
-  // Period 라벨 가져오기
-  String _getPeriodLabel() {
-    switch (selectedPeriod) {
-      case '주':
-        return '$selectedMonth월 $selectedWeek주차';
-      case '월':
-        return '$selectedMonth월';
-      case '년':
-        return '$selectedYear년';
-      default:
-        return '$selectedMonth월';
-    }
-  }
-
-  // 이전 Period로 이동
-  void _onPreviousPeriod() {
-    setState(() {
-      final now = DateTime.now();
-      switch (selectedPeriod) {
-        case '주':
-          if (selectedWeek > 1) {
-            selectedWeek--;
-          } else {
-            if (selectedMonth == 1) {
-              selectedYear--;
-              selectedMonth = 12;
-            } else {
-              selectedMonth--;
-            }
-            selectedWeek = _getWeeksInMonth(selectedYear, selectedMonth);
-          }
-          break;
-        case '월':
-          final minMonth = (now.month - 5).clamp(1, 12);
-          if (selectedMonth > minMonth) selectedMonth--;
-          break;
-        case '년':
-          if (selectedYear > now.year - 1) selectedYear--;
-          break;
-      }
-    });
-  }
-
-  // 다음 Period로 이동
-  void _onNextPeriod() {
-    setState(() {
-      final now = DateTime.now();
-      switch (selectedPeriod) {
-        case '주':
-          final maxWeeks = _getWeeksInMonth(selectedYear, selectedMonth);
-          if (selectedWeek < maxWeeks) {
-            selectedWeek++;
-          } else {
-            if (selectedMonth == 12) {
-              selectedYear++;
-              selectedMonth = 1;
-            } else {
-              selectedMonth++;
-            }
-            selectedWeek = 1;
-          }
-          break;
-        case '월':
-          if (selectedMonth < now.month) selectedMonth++;
-          break;
-        case '년':
-          if (selectedYear < now.year) selectedYear++;
-          break;
-      }
-    });
-  }
-
-  // 선택된 요일 업데이트 (현재 주인 경우 오늘 요일, 아니면 기존 유지)
-  void _updateSelectedWeekday(DateTime now) {
-    final currentWeekOfMonth = ((now.day - 1) / 7).floor() + 1;
-    final isCurrentWeek = now.year == selectedYear &&
-        now.month == selectedMonth &&
-        currentWeekOfMonth == selectedWeek;
-
-    if (isCurrentWeek) {
-      selectedWeekday = (now.weekday % 7) + 1;
-    }
-    // 현재 주가 아니면 기존 selectedWeekday 유지
-  }
-
-  Widget _buildBottomSheet(Size size, EdgeInsets padding) {
-    return GestureDetector(
-      onVerticalDragUpdate: (details) {
-        setState(() {
-          _sheetHeight -= details.delta.dy;
-          _sheetHeight = _sheetHeight.clamp(_peekHeight, _expandedHeight);
-        });
-      },
-      onVerticalDragEnd: (details) {
-        setState(() {
-          if (details.primaryVelocity != null) {
-            if (details.primaryVelocity! < -500) {
-              _sheetHeight = _expandedHeight;
-              return;
-            } else if (details.primaryVelocity! > 500) {
-              _sheetHeight = _peekHeight;
-              return;
-            }
-          }
-
-          final midPoint = (_peekHeight + _expandedHeight) / 2;
-          _sheetHeight =
-              _sheetHeight > midPoint ? _expandedHeight : _peekHeight;
-        });
-      },
-      onTap: () {
-        setState(() {
-          _sheetHeight =
-              _sheetHeight == _peekHeight ? _expandedHeight : _peekHeight;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-        height: _sheetHeight,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.lg),
-            topRight: Radius.circular(AppRadius.lg),
+  Widget _buildRecordSummary() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Text.rich(
+        TextSpan(
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppColors.nearBlack,
+            letterSpacing: -0.4,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 10,
-              offset: const Offset(0, 0),
-            ),
-          ],
-        ),
-        child: Column(
           children: [
-            // Handle
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              width: 36,
-              height: 5,
-              decoration: BoxDecoration(
-                color: AppColors.lightGray,
-                borderRadius: BorderRadius.circular(2.5),
-              ),
+            TextSpan(text: '$_petName의 몸무게 총 '),
+            TextSpan(
+              text: '$_totalRecordDays일',
+              style: const TextStyle(color: AppColors.brandPrimary),
             ),
-
-            // Calendar Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '$_petName의 몸무게 총 ${weightRecords.length}일 기록 중',
-                    style: AppTypography.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.nearBlack,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: _onPreviousPeriod,
-                        iconSize: 20,
-                      ),
-                      Text(
-                        _getPeriodLabel(),
-                        style: AppTypography.bodyLarge.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.nearBlack,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: _onNextPeriod,
-                        iconSize: 20,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.md),
-
-            // Calendar Grid
-            Expanded(
-              child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Column(
-                  children: [
-                    _buildCalendarHeader(),
-                    const SizedBox(height: AppSpacing.sm),
-                    _buildCalendarGrid(),
-                    const SizedBox(height: AppSpacing.xl),
-
-                    // Add Record Button
-                    _buildAddRecordButton(size),
-
-                    SizedBox(height: padding.bottom + AppSpacing.lg),
-                  ],
-                ),
-              ),
-            ),
+            const TextSpan(text: ' 기록 중'),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCalendarCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            offset: const Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildCalendarHeader(),
+          const SizedBox(height: 8),
+          _buildCalendarWeekdays(),
+          _buildCalendarDays(),
+        ],
       ),
     );
   }
 
   Widget _buildCalendarHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: _previousMonth,
+            child: const Icon(Icons.chevron_left, size: 20, color: AppColors.nearBlack),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '$_selectedYear년 $_selectedMonth월',
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.nearBlack,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: _nextMonth,
+            child: const Icon(Icons.chevron_right, size: 20, color: AppColors.nearBlack),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _previousMonth() {
+    setState(() {
+      if (_selectedMonth == 1) {
+        _selectedMonth = 12;
+        _selectedYear--;
+      } else {
+        _selectedMonth--;
+      }
+    });
+  }
+
+  void _nextMonth() {
+    setState(() {
+      if (_selectedMonth == 12) {
+        _selectedMonth = 1;
+        _selectedYear++;
+      } else {
+        _selectedMonth++;
+      }
+    });
+  }
+
+  Widget _buildCalendarWeekdays() {
     const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: weekdays.map((day) {
         return Expanded(
-          child: Center(
-            child: Text(
-              day,
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.mediumGray,
+          child: SizedBox(
+            height: 44,
+            child: Center(
+              child: Text(
+                day,
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF97928A),
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
           ),
@@ -1282,276 +710,499 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 
-  Widget _buildCalendarGrid() {
-    final now = DateTime.now();
-    final firstDayOfMonth = DateTime(selectedYear, selectedMonth, 1);
+  Widget _buildCalendarDays() {
+    final firstDayOfMonth = DateTime(_selectedYear, _selectedMonth, 1);
+    final lastDayOfMonth = DateTime(_selectedYear, _selectedMonth + 1, 0);
     final startWeekday = firstDayOfMonth.weekday % 7; // 0 = Sunday
-    final daysInMonth = DateTime(selectedYear, selectedMonth + 1, 0).day;
+    final daysInMonth = lastDayOfMonth.day;
 
-    final List<Widget> dayWidgets = [];
+    // Previous month days
+    final prevMonth = DateTime(_selectedYear, _selectedMonth, 0);
+    final prevMonthDays = prevMonth.day;
 
-    // Add empty cells for days before the 1st
-    for (int i = 0; i < startWeekday; i++) {
-      dayWidgets.add(const SizedBox());
+    final List<Widget> rows = [];
+    final List<Widget> currentRow = [];
+
+    // Add days from previous month
+    for (int i = startWeekday - 1; i >= 0; i--) {
+      final day = prevMonthDays - i;
+      currentRow.add(_buildDayCell(day, isOtherMonth: true));
     }
 
-    // Add day cells
+    // Add days of current month
     for (int day = 1; day <= daysInMonth; day++) {
-      final hasRecord = weightRecords.any((record) =>
-          record.date.day == day &&
-          record.date.month == selectedMonth &&
-          record.date.year == selectedYear);
+      final hasRecord = _hasRecordOnDay(day);
+      final isSelected = day == _selectedDay &&
+          _selectedYear == DateTime.now().year &&
+          _selectedMonth == DateTime.now().month;
+      final isSunday = (startWeekday + day - 1) % 7 == 0;
 
-      final isFuture = DateTime(selectedYear, selectedMonth, day)
-          .isAfter(DateTime(now.year, now.month, now.day));
+      currentRow.add(_buildDayCell(
+        day,
+        hasRecord: hasRecord,
+        isSelected: isSelected,
+        isSunday: isSunday,
+      ));
 
-      dayWidgets.add(_buildDayCell(day, hasRecord, isFuture: isFuture));
+      if (currentRow.length == 7) {
+        rows.add(Row(children: List.from(currentRow)));
+        currentRow.clear();
+      }
     }
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 7,
-      mainAxisSpacing: AppSpacing.md,
-      crossAxisSpacing: AppSpacing.sm,
-      children: dayWidgets,
+    // Add days from next month
+    if (currentRow.isNotEmpty) {
+      int nextDay = 1;
+      while (currentRow.length < 7) {
+        currentRow.add(_buildDayCell(nextDay++, isOtherMonth: true));
+      }
+      rows.add(Row(children: List.from(currentRow)));
+    }
+
+    return Column(children: rows);
+  }
+
+  bool _hasRecordOnDay(int day) {
+    return _weightRecords.any((record) =>
+        record.date.day == day &&
+        record.date.month == _selectedMonth &&
+        record.date.year == _selectedYear);
+  }
+
+  Widget _buildDayCell(
+    int day, {
+    bool hasRecord = false,
+    bool isSelected = false,
+    bool isOtherMonth = false,
+    bool isSunday = false,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: isOtherMonth
+            ? null
+            : () => _onDayTap(day),
+        child: SizedBox(
+          height: 44,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (hasRecord && !isSelected)
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F0F0),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+              if (isSelected)
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+              Text(
+                '$day',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? Colors.white
+                      : isOtherMonth
+                          ? const Color(0xFF97928A)
+                          : isSunday
+                              ? const Color(0xFFEE3300)
+                              : AppColors.nearBlack,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildDayCell(int day, bool hasRecord, {bool isFuture = false}) {
-    final cellDate = DateTime(selectedYear, selectedMonth, day);
+  void _onDayTap(int day) async {
+    final selectedDate = DateTime(_selectedYear, _selectedMonth, day);
+    final result = await showAddScheduleBottomSheet(
+      context: context,
+      initialDate: selectedDate,
+    );
+    if (result != null) {
+      setState(() {
+        _scheduleRecords.add(result);
+      });
+    }
+  }
 
-    return GestureDetector(
-      onTap: isFuture
-          ? null
-          : () async {
-              // 특정 날짜 체중 기록 화면으로 이동
-              final dateStr = cellDate.toIso8601String().split('T')[0]; // YYYY-MM-DD
-              final result = await context.push(
-                RoutePaths.weightAdd.replaceAll(':date', dateStr),
-              );
+  Widget _buildScheduleList() {
+    // Filter schedules for the selected month
+    final monthSchedules = _scheduleRecords.where((record) {
+      return record.startTime.year == _selectedYear &&
+          record.startTime.month == _selectedMonth;
+    }).toList();
 
-              // 저장 후 돌아온 경우 데이터 새로고침
-              if (result == true) {
-                _refreshData();
-              }
-            },
+    // Sort by start time
+    monthSchedules.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    if (monthSchedules.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.event_note_outlined,
+                size: 48,
+                color: AppColors.mediumGray.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '등록된 일정이 없습니다',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.35,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '아래 버튼을 눌러 일정을 추가해보세요',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 12,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Group schedules by date
+    final Map<DateTime, List<ScheduleRecord>> groupedSchedules = {};
+    for (final schedule in monthSchedules) {
+      final dateKey = DateTime(
+        schedule.startTime.year,
+        schedule.startTime.month,
+        schedule.startTime.day,
+      );
+      groupedSchedules.putIfAbsent(dateKey, () => []);
+      groupedSchedules[dateKey]!.add(schedule);
+    }
+
+    final sortedDates = groupedSchedules.keys.toList()..sort();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            day.toString(),
-            style: AppTypography.bodyMedium.copyWith(
-              color: isFuture ? AppColors.lightGray : AppColors.mediumGray,
+          const Text(
+            '이번 달 일정',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.nearBlack,
+              letterSpacing: -0.4,
             ),
           ),
-          const SizedBox(height: 4),
-          if (hasRecord)
-            Container(
-              width: 16,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.brandPrimary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            )
-          else
-            const SizedBox(height: 4),
+          const SizedBox(height: 12),
+          ...sortedDates.map((date) => _buildScheduleDateGroup(date, groupedSchedules[date]!)),
         ],
       ),
     );
   }
 
-  Widget _buildAddRecordButton(Size size) {
-    return GestureDetector(
-      onTap: () async {
-        // 오늘 체중 기록 화면으로 이동
-        final result = await context.push(RoutePaths.weightAddToday);
+  Widget _buildScheduleDateGroup(DateTime date, List<ScheduleRecord> schedules) {
+    final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+    final weekday = weekdays[(date.weekday - 1) % 7];
+    final isToday = date.year == DateTime.now().year &&
+        date.month == DateTime.now().month &&
+        date.day == DateTime.now().day;
 
-        // 저장 후 돌아온 경우 데이터 새로고침
-        if (result == true) {
-          _refreshData();
-        }
-      },
-      child: Container(
-        width: size.width - (AppSpacing.md * 2),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.gradientTop, AppColors.brandPrimary],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: [
+              Text(
+                '${date.month}월 ${date.day}일 ($weekday)',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isToday ? AppColors.brandPrimary : AppColors.nearBlack,
+                  letterSpacing: -0.35,
+                ),
+              ),
+              if (isToday) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    '오늘',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 4,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add, color: Colors.white, size: 20),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              '오늘의 몸무게 기록하기',
-              style: AppTypography.bodyLarge.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+        ...schedules.map((schedule) => _buildScheduleItem(schedule)),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildScheduleItem(ScheduleRecord schedule) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 40,
+            decoration: BoxDecoration(
+              color: schedule.color,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  schedule.title,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.nearBlack,
+                    letterSpacing: -0.35,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  schedule.formattedTimeRange,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 12,
+                    color: AppColors.mediumGray,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (schedule.reminderMinutes != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.notifications_outlined,
+                    size: 14,
+                    color: AppColors.mediumGray,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${schedule.reminderMinutes}분 전',
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 11,
+                      color: AppColors.mediumGray,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddRecordButton() {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+        child: GestureDetector(
+          onTap: () async {
+            final result = await showAddScheduleBottomSheet(
+              context: context,
+              initialDate: DateTime.now(),
+            );
+            if (result != null) {
+              setState(() {
+                _scheduleRecords.add(result);
+              });
+            }
+          },
+          child: Container(
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                begin: Alignment(-0.95, 0),
+                end: Alignment(0.95, 0),
+                colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.25),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.add, size: 12, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  '기록 추가',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    letterSpacing: -0.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _MonthlyGuideLinePainter extends CustomPainter {
-  _MonthlyGuideLinePainter({
-    required this.itemCount,
-    required this.minX,
-    required this.maxX,
-    required this.selectedPosition,
-    required this.selectedValue,
-    required this.selectedLabel,
-    this.lineHeightFactor = 0.7,
-    this.drawBackground = true,
-    this.drawLabel = false,
-  });
-
-  final int itemCount;
-  final double minX;
-  final double maxX;
-  final double selectedPosition;
+class _WeeklyChartBackgroundPainter extends CustomPainter {
+  final List<DateTime> months;
+  final int selectedIndex;
   final double selectedValue;
-  final String selectedLabel;
-  final double lineHeightFactor;
-  final bool drawBackground;
-  final bool drawLabel;
+
+  _WeeklyChartBackgroundPainter({
+    required this.months,
+    required this.selectedIndex,
+    required this.selectedValue,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (itemCount <= 0) return;
-    final availableWidth = size.width;
-    final bottomY = size.height;
-    final lineHeight = size.height * lineHeightFactor;
-    final Paint divisionPaint = Paint()
-      ..color = AppColors.lightGray
-      ..strokeWidth = 0.7;
+    if (months.isEmpty) return;
 
-    double _dxForValue(double value) {
-      if ((maxX - minX).abs() < 0.0001) {
-        return availableWidth / 2;
-      }
-      final ratio = (value - minX) / (maxX - minX);
-      return ratio.clamp(0.0, 1.0) * availableWidth;
-    }
+    final itemWidth = size.width / months.length;
+    final selectedX = itemWidth * selectedIndex + itemWidth / 2;
 
-    if (drawBackground) {
-      for (int i = 0; i <= itemCount; i++) {
-        final boundaryValue = (i - 0.5).toDouble();
-        final dx = _dxForValue(boundaryValue);
-        canvas.drawLine(
-          Offset(dx, bottomY),
-          Offset(dx, bottomY - lineHeight),
-          divisionPaint,
-        );
-      }
-    }
-
-    if (itemCount <= 0) return;
-
-    final highlightWidth = math.min(48.0, availableWidth * 0.45);
-    final highlightHeight = math.min(size.height, lineHeight + 35);
-    if (selectedPosition < minX || selectedPosition > maxX) return;
-    final dx = _dxForValue(selectedPosition);
-    final Rect highlightRect = Rect.fromCenter(
-      center: Offset(dx, bottomY - highlightHeight / 2),
-      width: highlightWidth,
-      height: highlightHeight,
+    // Draw selected column background
+    const pillWidth = 53.0;
+    const pillHeight = 169.0;
+    final pillRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(selectedX, size.height / 2),
+        width: pillWidth,
+        height: pillHeight,
+      ),
+      const Radius.circular(20),
     );
 
-    if (drawBackground) {
-      final RRect rrect = RRect.fromRectAndRadius(
-        highlightRect,
-        const Radius.circular(18),
-      );
-      final Paint highlightPaint = Paint()..color = AppColors.brandPrimary;
-      canvas.drawRRect(rrect, highlightPaint);
-    }
+    // Gradient paint
+    final gradient = const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+    );
 
-    if (drawLabel) {
-      final valueText = selectedValue > 0
-          ? '${selectedValue.toStringAsFixed(1)} g'
-          : '-- g';
-      final valuePainter = TextPainter(
+    final rect = Rect.fromLTWH(
+      selectedX - pillWidth / 2,
+      (size.height - pillHeight) / 2,
+      pillWidth,
+      pillHeight,
+    );
+
+    final paint = Paint()..shader = gradient.createShader(rect);
+    canvas.drawRRect(pillRect, paint);
+
+    // Draw value text
+    if (selectedValue > 0) {
+      final textPainter = TextPainter(
         text: TextSpan(
-          text: valueText,
-          style: AppTypography.bodySmall.copyWith(
-            color: Colors.white,
+          text: '${selectedValue.toStringAsFixed(1)} g',
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-        maxLines: 1,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: highlightWidth - 12);
-
-      final monthPainter = TextPainter(
-        text: TextSpan(
-          text: selectedLabel,
-          style: AppTypography.bodySmall.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w500,
+            height: 2.3,
           ),
         ),
         textDirection: TextDirection.ltr,
-        maxLines: 1,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: highlightWidth - 12);
+      )..layout();
 
-      final double upperOffset = math.max(
-        highlightRect.top + AppSpacing.xs,
-        0,
-      ).toDouble();
-      final double lowerOffset = math.min(
-        highlightRect.bottom - monthPainter.height - AppSpacing.xs,
-        size.height,
-      ).toDouble();
-
-      valuePainter.paint(
+      textPainter.paint(
         canvas,
-        Offset(
-          dx - (valuePainter.width / 2),
-          upperOffset,
-        ),
-      );
-      monthPainter.paint(
-        canvas,
-        Offset(
-          dx - (monthPainter.width / 2),
-          lowerOffset,
-        ),
+        Offset(selectedX - textPainter.width / 2, (size.height - pillHeight) / 2 + 7),
       );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _MonthlyGuideLinePainter oldDelegate) {
-    return itemCount != oldDelegate.itemCount ||
-        minX != oldDelegate.minX ||
-        maxX != oldDelegate.maxX ||
-        selectedPosition != oldDelegate.selectedPosition ||
-        selectedValue != oldDelegate.selectedValue ||
-        selectedLabel != oldDelegate.selectedLabel ||
-        drawBackground != oldDelegate.drawBackground ||
-        drawLabel != oldDelegate.drawLabel;
+  bool shouldRepaint(covariant _WeeklyChartBackgroundPainter oldDelegate) {
+    return months != oldDelegate.months ||
+        selectedIndex != oldDelegate.selectedIndex ||
+        selectedValue != oldDelegate.selectedValue;
   }
 }

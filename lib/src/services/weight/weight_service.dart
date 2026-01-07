@@ -57,6 +57,15 @@ class WeightService {
     return getWeightRecords();
   }
 
+  /// 로컬 캐시에서 체중 기록 로드 (Supabase 미사용)
+  Future<List<WeightRecord>> fetchLocalRecords({String? petId}) async {
+    await _ensureInitialized();
+    if (petId != null) {
+      return List.unmodifiable(_recordsByPet[petId] ?? const <WeightRecord>[]);
+    }
+    return getWeightRecords();
+  }
+
   /// 특정 날짜의 체중 기록 조회 (캐시 → Supabase 순으로 탐색)
   Future<WeightRecord?> fetchRecordByDate(DateTime date, {String? petId}) async {
     await _ensureInitialized();
@@ -86,6 +95,15 @@ class WeightService {
     }
 
     return null;
+  }
+
+  /// 로컬 캐시에서 특정 날짜의 체중 기록 조회 (Supabase 미사용)
+  Future<WeightRecord?> fetchLocalRecordByDate(
+    DateTime date, {
+    String? petId,
+  }) async {
+    await _ensureInitialized();
+    return getRecordByDate(date, petId: petId);
   }
 
   /// 캐시에서 특정 날짜의 기록 반환
@@ -142,6 +160,14 @@ class WeightService {
     }
 
     // 로컬 캐시 업데이트
+    _upsertLocal(record.copyWith(date: normalizedDate));
+    await _persistToStorage();
+  }
+
+  /// 로컬 캐시에 체중 기록 저장 또는 수정 (Supabase 미사용)
+  Future<void> saveLocalWeightRecord(WeightRecord record) async {
+    await _ensureInitialized();
+    final normalizedDate = _normalizeDate(record.date);
     _upsertLocal(record.copyWith(date: normalizedDate));
     await _persistToStorage();
   }

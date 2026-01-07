@@ -43,15 +43,13 @@ class BottomNavBar extends StatelessWidget {
               context: context,
               index: 1,
               iconPath: 'assets/images/calender.svg',
-              onTap: () {
-                // TODO: 캘린더 화면으로 이동
-              },
+              onTap: () => context.goNamed(RouteNames.weightChart),
             ),
             _buildNavItem(
               context: context,
               index: 2,
               iconPath: 'assets/images/chat.svg',
-              onTap: () => context.goNamed(RouteNames.profile),
+              onTap: () => context.goNamed(RouteNames.aiEncyclopedia),
             ),
           ],
         ),
