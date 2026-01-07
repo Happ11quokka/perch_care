@@ -331,18 +331,28 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         borderRadius: BorderRadius.circular(_fieldRadius),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      alignment: Alignment.centerLeft,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 국가 선택
           GestureDetector(
             onTap: _showCountrySelector,
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // 국기 이모지
                 Text(
                   _selectedCountry.flagEmoji,
-                  style: const TextStyle(fontSize: 20),
+                  textHeightBehavior: const TextHeightBehavior(
+                    applyHeightToFirstAscent: false,
+                    applyHeightToLastDescent: false,
+                  ),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    height: 1,
+                  ),
                 ),
                 const SizedBox(width: 6),
                 Icon(
@@ -366,6 +376,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 controller: _phoneController,
                 focusNode: _phoneFocusNode,
                 keyboardType: TextInputType.phone,
+                textAlignVertical: TextAlignVertical.center,
                 style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,

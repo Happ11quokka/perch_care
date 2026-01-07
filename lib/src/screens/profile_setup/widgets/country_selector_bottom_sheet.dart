@@ -18,64 +18,65 @@ class CountrySelectorBottomSheet extends StatefulWidget {
 
 class _CountrySelectorBottomSheetState extends State<CountrySelectorBottomSheet> {
   late Country _selectedCountry;
-
-  // 표시할 국가 목록 (Figma 디자인 순서)
-  static final List<String> _displayCountryCodes = [
-    'US',  // 미국
-    'IN',  // 인도
-    'AR',  // 아르헨티나
-    'IT',  // 이탈리아
-    'CA',  // 캐나다
-  ];
+  late final List<Country> _countries;
 
   @override
   void initState() {
     super.initState();
     _selectedCountry = widget.selectedCountry;
-  }
-
-  List<Country> get _displayCountries {
-    return _displayCountryCodes
-        .map((code) => CountryParser.parseCountryCode(code))
+    final seen = <String>{};
+    _countries = CountryService()
+        .getAll()
+        .where((country) => seen.add(country.countryCode))
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final bottomSheetHeight = MediaQuery.of(context).size.height * 0.7;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 헤더
-            Padding(
-              padding: const EdgeInsets.only(top: 24, bottom: 16),
-              child: Text(
-                '국가를 선택하세요',
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1A1A1A),
-                  height: 24 / 14,
-                  letterSpacing: -0.35,
+        child: SizedBox(
+          height: bottomSheetHeight,
+          child: Column(
+            children: [
+              // 헤더
+              Padding(
+                padding: const EdgeInsets.only(top: 24, bottom: 16),
+                child: Text(
+                  '국가를 선택하세요',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A1A),
+                    height: 24 / 14,
+                    letterSpacing: -0.35,
+                  ),
                 ),
               ),
-            ),
-            // 국가 목록
-            ..._displayCountries.map((country) => _buildCountryItem(country)),
-            const SizedBox(height: 8),
-          ],
+              // 국가 목록
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _countries.length,
+                  itemBuilder: (context, index) {
+                    return _buildCountryItem(context, _countries[index]);
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCountryItem(Country country) {
+  Widget _buildCountryItem(BuildContext context, Country country) {
     final isSelected = _selectedCountry.countryCode == country.countryCode;
 
     return InkWell(
@@ -97,9 +98,9 @@ class _CountrySelectorBottomSheetState extends State<CountrySelectorBottomSheet>
               style: const TextStyle(fontSize: 32),
             ),
             const SizedBox(width: 12),
-            // 국가명 (한글 직접 매핑)
+            // 국가명 (로컬라이즈)
             Text(
-              _getLocalizedCountryName(country),
+              _getLocalizedCountryName(context, country),
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
@@ -115,16 +116,11 @@ class _CountrySelectorBottomSheetState extends State<CountrySelectorBottomSheet>
     );
   }
 
-  /// 국가명 한글 매핑
-  String _getLocalizedCountryName(Country country) {
-    const Map<String, String> koreanNames = {
-      'US': '미국',
-      'IN': '인도',
-      'AR': '아르헨티나',
-      'IT': '이탈리아',
-      'CA': '캐나다',
-      'KR': '대한민국',
-    };
-    return koreanNames[country.countryCode] ?? country.name;
+  /// 국가명 로컬라이즈 (기본: 한국어)
+  String _getLocalizedCountryName(BuildContext context, Country country) {
+    final localizations = CountryLocalizations.of(context) ??
+        CountryLocalizations(const Locale('ko'));
+    return localizations.countryName(countryCode: country.countryCode) ??
+        country.name;
   }
 }
