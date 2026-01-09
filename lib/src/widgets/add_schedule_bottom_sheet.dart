@@ -5,12 +5,14 @@ import 'analog_time_picker.dart';
 
 class AddScheduleBottomSheet extends StatefulWidget {
   final DateTime initialDate;
+  final String? petId;
   final Function(ScheduleRecord) onSave;
 
   const AddScheduleBottomSheet({
     super.key,
     required this.initialDate,
     required this.onSave,
+    this.petId,
   });
 
   @override
@@ -111,7 +113,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
     );
 
     final record = ScheduleRecord(
-      petId: 'dummy_pet',
+      petId: widget.petId ?? '',
       startTime: startDateTime,
       endTime: endDateTime,
       title: _title,
@@ -613,6 +615,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
 Future<ScheduleRecord?> showAddScheduleBottomSheet({
   required BuildContext context,
   required DateTime initialDate,
+  String? petId,
 }) async {
   ScheduleRecord? result;
   await showModalBottomSheet<void>(
@@ -626,6 +629,7 @@ Future<ScheduleRecord?> showAddScheduleBottomSheet({
         ),
         child: AddScheduleBottomSheet(
           initialDate: initialDate,
+          petId: petId,
           onSave: (record) {
             result = record;
           },

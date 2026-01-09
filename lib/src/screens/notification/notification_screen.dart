@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/notification.dart';
+import '../../services/notification/notification_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 /// 알림 화면
@@ -14,22 +16,99 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  late List<AppNotification> _notifications;
+  final _notificationService = NotificationService();
+  List<AppNotification> _notifications = [];
+  StreamSubscription<List<AppNotification>>? _subscription;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // TODO: 실제로는 서비스에서 가져와야 함
-    _notifications = NotificationData.getDummyNotifications();
+    _loadNotifications();
+    _subscribeToNotifications();
   }
 
-  void _markAsRead(String id) {
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() => _isLoading = true);
+    try {
+      final notifications = await _notificationService.fetchNotifications();
+      if (mounted) {
+        setState(() {
+          _notifications = notifications;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _subscribeToNotifications() {
+    _subscription = _notificationService.subscribeToNotifications().listen(
+      (notifications) {
+        if (mounted) {
+          setState(() => _notifications = notifications);
+        }
+      },
+    );
+  }
+
+  Future<void> _markAsRead(String id) async {
+    // 로컬 상태 먼저 업데이트 (빠른 UI 반응)
     setState(() {
       final index = _notifications.indexWhere((n) => n.id == id);
       if (index != -1) {
         _notifications[index] = _notifications[index].copyWith(isRead: true);
       }
     });
+
+    // 서버에 반영
+    try {
+      await _notificationService.markAsRead(id);
+    } catch (e) {
+      // 에러 발생 시 다시 로드
+      _loadNotifications();
+    }
+  }
+
+  Future<void> _markAllAsRead() async {
+    try {
+      await _notificationService.markAllAsRead();
+      setState(() {
+        _notifications = _notifications
+            .map((n) => n.copyWith(isRead: true))
+            .toList();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('오류가 발생했습니다.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteNotification(String id) async {
+    try {
+      await _notificationService.deleteNotification(id);
+      setState(() {
+        _notifications.removeWhere((n) => n.id == id);
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('삭제 중 오류가 발생했습니다.')),
+        );
+      }
+    }
   }
 
   @override
@@ -54,22 +133,48 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
         centerTitle: true,
-      ),
-      body: _notifications.isEmpty
-          ? _buildEmptyState()
-          : ListView.separated(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              itemCount: _notifications.length,
-              separatorBuilder: (context, index) =>
-                  const SizedBox(height: AppSpacing.md),
-              itemBuilder: (context, index) {
-                final notification = _notifications[index];
-                return _NotificationCard(
-                  notification: notification,
-                  onTap: () => _markAsRead(notification.id),
-                );
-              },
+        actions: [
+          if (_notifications.any((n) => !n.isRead))
+            TextButton(
+              onPressed: _markAllAsRead,
+              child: Text(
+                '모두 읽음',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.brandPrimary,
+                ),
+              ),
             ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _notifications.isEmpty
+              ? _buildEmptyState()
+              : ListView.separated(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  itemCount: _notifications.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: AppSpacing.md),
+                  itemBuilder: (context, index) {
+                    final notification = _notifications[index];
+                    return Dismissible(
+                      key: Key(notification.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        color: Colors.red,
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      onDismissed: (_) => _deleteNotification(notification.id),
+                      child: _NotificationCard(
+                        notification: notification,
+                        onTap: () => _markAsRead(notification.id),
+                      ),
+                    );
+                  },
+                ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }

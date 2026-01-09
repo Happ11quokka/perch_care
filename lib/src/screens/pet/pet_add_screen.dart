@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../models/pet.dart';
+import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
@@ -29,14 +31,56 @@ class _PetAddScreenState extends State<PetAddScreen> {
   DateTime? _selectedAdoptionDate;
 
   bool _isLoading = false;
+  bool _isLoadingData = false;
   final _petCache = PetLocalCacheService();
+  final _petService = PetService();
+  Pet? _existingPet;
 
   final List<String> _genderOptions = ['수컷', '암컷', '모름'];
 
   @override
   void initState() {
     super.initState();
-    // TODO: petId가 있으면 기존 데이터 로드
+    if (widget.petId != null) {
+      _loadExistingPet();
+    }
+  }
+
+  Future<void> _loadExistingPet() async {
+    setState(() => _isLoadingData = true);
+    try {
+      final pet = await _petService.getPetById(widget.petId!);
+      if (pet == null) throw Exception('Pet not found');
+
+      _existingPet = pet;
+      _nameController.text = pet.name;
+      _speciesController.text = pet.breed ?? '';
+      _selectedGender = _mapGenderToDisplay(pet.gender);
+      _selectedBirthDate = pet.birthDate;
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('펫 정보를 불러오는데 실패했습니다.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingData = false);
+    }
+  }
+
+  String? _mapGenderToDisplay(String? gender) {
+    switch (gender) {
+      case 'male':
+        return '수컷';
+      case 'female':
+        return '암컷';
+      case 'unknown':
+        return '모름';
+      default:
+        return null;
+    }
   }
 
   @override
@@ -87,22 +131,43 @@ class _PetAddScreenState extends State<PetAddScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: 실제 저장 로직
-      await Future.delayed(const Duration(seconds: 1));
-      final petId =
-          widget.petId ?? DateTime.now().millisecondsSinceEpoch.toString();
       final petName = _nameController.text.trim().isEmpty
           ? '새'
           : _nameController.text.trim();
       final species = _speciesController.text.trim();
       final gender = _mapGenderValue(_selectedGender);
-      await _petCache.upsertPet(
-        PetProfileCache(
-          id: petId,
+
+      Pet savedPet;
+
+      if (_existingPet != null) {
+        // 기존 펫 수정
+        savedPet = await _petService.updatePet(
+          petId: _existingPet!.id,
           name: petName,
           species: species.isEmpty ? null : species,
-          gender: gender,
+          breed: species.isEmpty ? null : species,
           birthDate: _selectedBirthDate,
+          gender: gender,
+        );
+      } else {
+        // 새 펫 생성
+        savedPet = await _petService.createPet(
+          name: petName,
+          species: species.isEmpty ? '새' : species,
+          breed: species.isEmpty ? null : species,
+          birthDate: _selectedBirthDate,
+          gender: gender,
+        );
+      }
+
+      // 로컬 캐시도 업데이트
+      await _petCache.upsertPet(
+        PetProfileCache(
+          id: savedPet.id,
+          name: savedPet.name,
+          species: savedPet.breed,
+          gender: savedPet.gender,
+          birthDate: savedPet.birthDate,
         ),
         setActive: true,
       );
@@ -110,13 +175,15 @@ class _PetAddScreenState extends State<PetAddScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장되었습니다.')),
+        SnackBar(
+            content:
+                Text(_existingPet != null ? '수정되었습니다.' : '등록되었습니다.')),
       );
-      context.pop();
+      context.pop(true); // 결과 반환하여 이전 화면에서 새로고침 가능하게
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
+        SnackBar(content: Text('저장 중 오류가 발생했습니다: $e')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

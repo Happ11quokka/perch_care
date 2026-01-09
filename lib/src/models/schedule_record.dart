@@ -86,4 +86,57 @@ class ScheduleRecord {
 
   String get formattedStartDate => formatDate(startTime);
   String get formattedEndDate => formatDate(endTime);
+
+  /// Color를 hex string으로 변환
+  String get colorHex {
+    final argb = color.toARGB32();
+    return '#${argb.toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase()}';
+  }
+
+  /// hex string을 Color로 변환
+  static Color colorFromHex(String hex) {
+    final hexCode = hex.replaceAll('#', '');
+    return Color(int.parse('FF$hexCode', radix: 16));
+  }
+
+  /// Supabase JSON 역직렬화
+  factory ScheduleRecord.fromJson(Map<String, dynamic> json) {
+    return ScheduleRecord(
+      id: json['id'] as String,
+      petId: json['pet_id'] as String,
+      startTime: DateTime.parse(json['start_time'] as String),
+      endTime: DateTime.parse(json['end_time'] as String),
+      title: json['title'] as String,
+      description: json['description'] as String?,
+      color: colorFromHex(json['color'] as String? ?? '#FF9A42'),
+      reminderMinutes: json['reminder_minutes'] as int?,
+    );
+  }
+
+  /// Supabase JSON 직렬화 (조회용)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'pet_id': petId,
+      'start_time': startTime.toIso8601String(),
+      'end_time': endTime.toIso8601String(),
+      'title': title,
+      'description': description,
+      'color': colorHex,
+      'reminder_minutes': reminderMinutes,
+    };
+  }
+
+  /// Supabase INSERT용 JSON (id 제외)
+  Map<String, dynamic> toInsertJson() {
+    return {
+      'pet_id': petId,
+      'start_time': startTime.toIso8601String(),
+      'end_time': endTime.toIso8601String(),
+      'title': title,
+      'description': description,
+      'color': colorHex,
+      'reminder_minutes': reminderMinutes,
+    };
+  }
 }

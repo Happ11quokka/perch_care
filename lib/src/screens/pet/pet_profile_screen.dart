@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_local_cache_service.dart';
@@ -16,33 +17,23 @@ class PetProfileScreen extends StatefulWidget {
 
 class _PetProfileScreenState extends State<PetProfileScreen> {
   final _petCache = PetLocalCacheService();
+  final _supabase = Supabase.instance.client;
   List<PetProfileCache> _cachedPets = [];
   String? _selectedPetId;
   bool _isLoadingPets = true;
-  // TODO: 실제 데이터는 상태 관리나 DB에서 가져와야 함
-  final List<Map<String, dynamic>> pets = [
-    {
-      'id': '1',
-      'name': '점점이',
-      'species': '종이름넣어줘요',
-      'age': '3년 1개월 23일',
-      'gender': 'male',
-      'isSelected': true,
-    },
-    {
-      'id': '2',
-      'name': '점점이',
-      'species': '종이름넣어줘요',
-      'age': '3년 1개월 23일',
-      'gender': 'female',
-      'isSelected': false,
-    },
-  ];
+  String _userNickname = '';
 
   @override
   void initState() {
     super.initState();
-    _loadPets();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadPets(),
+      _loadUserProfile(),
+    ]);
   }
 
   Future<void> _loadPets() async {
@@ -56,8 +47,27 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
     });
   }
 
+  Future<void> _loadUserProfile() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final response = await _supabase
+          .from('profiles')
+          .select('nickname')
+          .eq('id', userId)
+          .single();
+
+      if (!mounted) return;
+      setState(() {
+        _userNickname = response['nickname'] as String? ?? '사용자';
+      });
+    } catch (_) {
+      // 프로필 로드 실패 시 기본값 사용
+    }
+  }
+
   List<Map<String, dynamic>> get _displayPets {
-    if (_cachedPets.isEmpty) return pets;
     return _cachedPets.map(_mapCacheToDisplay).toList();
   }
 
@@ -196,9 +206,9 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           ),
           const SizedBox(width: 16),
           // 닉네임
-          const Text(
-            '쿼카16978님',
-            style: TextStyle(
+          Text(
+            _userNickname.isEmpty ? '사용자' : '$_userNickname님',
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,

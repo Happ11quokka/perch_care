@@ -15,6 +15,8 @@ enum NotificationType {
 /// 알림 모델
 class AppNotification {
   final String id;
+  final String userId;
+  final String? petId;
   final NotificationType type;
   final String title;
   final String message;
@@ -23,6 +25,8 @@ class AppNotification {
 
   const AppNotification({
     required this.id,
+    required this.userId,
+    this.petId,
     required this.type,
     required this.title,
     required this.message,
@@ -54,55 +58,68 @@ class AppNotification {
     }
   }
 
-  /// 읽음 상태 토글
-  AppNotification copyWith({bool? isRead}) {
+  /// Supabase JSON 역직렬화
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
-      id: id,
-      type: type,
-      title: title,
-      message: message,
-      timestamp: timestamp,
-      isRead: isRead ?? this.isRead,
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      petId: json['pet_id'] as String?,
+      type: NotificationType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => NotificationType.system,
+      ),
+      title: json['title'] as String,
+      message: json['message'] as String? ?? '',
+      timestamp: DateTime.parse(json['created_at'] as String),
+      isRead: json['is_read'] as bool? ?? false,
     );
   }
-}
 
-/// 더미 알림 데이터
-class NotificationData {
-  /// 더미 알림 리스트 생성
-  static List<AppNotification> getDummyNotifications({String petName = '초코'}) {
-    final now = DateTime.now();
-
-    return [
-      AppNotification(
-        id: '1',
-        type: NotificationType.reminder,
-        title: '기록 리마인더',
-        message: '$petName 오늘 기록을 해주세요!',
-        timestamp: now.subtract(const Duration(hours: 2)),
-        isRead: false,
-      ),
-      AppNotification(
-        id: '2',
-        type: NotificationType.healthWarning,
-        title: '체중 이상 감지',
-        message: '현재 기록 데이터를 통해 24일 체중부터 이상한 것 같아요',
-        timestamp: now.subtract(const Duration(days: 1)),
-        isRead: false,
-      ),
-      AppNotification(
-        id: '3',
-        type: NotificationType.system,
-        title: '앱 업데이트',
-        message: '앱이 업데이트되었습니다. 새로운 기능을 확인해보세요!',
-        timestamp: now.subtract(const Duration(days: 3)),
-        isRead: true,
-      ),
-    ];
+  /// Supabase JSON 직렬화
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'pet_id': petId,
+      'type': type.name,
+      'title': title,
+      'message': message,
+      'is_read': isRead,
+    };
   }
 
-  /// 읽지 않은 알림 개수 반환
-  static int getUnreadCount(List<AppNotification> notifications) {
-    return notifications.where((n) => !n.isRead).length;
+  /// Supabase INSERT용 JSON (id 제외)
+  Map<String, dynamic> toInsertJson() {
+    return {
+      'user_id': userId,
+      'pet_id': petId,
+      'type': type.name,
+      'title': title,
+      'message': message,
+      'is_read': isRead,
+    };
+  }
+
+  /// 읽음 상태 토글
+  AppNotification copyWith({
+    String? id,
+    String? userId,
+    String? petId,
+    NotificationType? type,
+    String? title,
+    String? message,
+    DateTime? timestamp,
+    bool? isRead,
+  }) {
+    return AppNotification(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      petId: petId ?? this.petId,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      message: message ?? this.message,
+      timestamp: timestamp ?? this.timestamp,
+      isRead: isRead ?? this.isRead,
+    );
   }
 }

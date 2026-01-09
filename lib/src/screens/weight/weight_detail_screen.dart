@@ -5,6 +5,7 @@ import '../../theme/colors.dart';
 import '../../models/weight_record.dart';
 import '../../models/schedule_record.dart';
 import '../../services/weight/weight_service.dart';
+import '../../services/schedule/schedule_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../router/route_names.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -19,6 +20,7 @@ class WeightDetailScreen extends StatefulWidget {
 
 class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final _weightService = WeightService();
+  final _scheduleService = ScheduleService();
   final _petCache = PetLocalCacheService();
 
   bool _isWeeklyView = true; // true: 주, false: 월
@@ -35,46 +37,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   void initState() {
     super.initState();
     _loadActivePet();
-    _generateDummyData();
-  }
-
-  void _generateDummyData() {
-    final now = DateTime.now();
-    final dummyRecords = <WeightRecord>[];
-
-    // 최근 6개월 데이터 생성
-    for (int monthOffset = -5; monthOffset <= 0; monthOffset++) {
-      final month = DateTime(now.year, now.month + monthOffset);
-      // 각 월에 5~10개의 기록 생성
-      final recordCount = 5 + (monthOffset.abs() % 6);
-      for (int i = 0; i < recordCount; i++) {
-        final day = 1 + (i * 3) % 28;
-        final baseWeight = 55.0 + monthOffset * 0.5; // 월별 약간의 변화
-        final variation = (i % 3) * 0.3 - 0.3; // 일별 변동
-        dummyRecords.add(WeightRecord(
-          petId: 'dummy_pet',
-          date: DateTime(month.year, month.month, day),
-          weight: baseWeight + variation,
-        ));
-      }
-    }
-
-    // 현재 월에 더 많은 기록 추가 (Figma 디자인처럼)
-    final currentMonth = DateTime(now.year, now.month);
-    final daysWithRecords = [2, 3, 5, 6, 7, 8, 9]; // Figma에서 보이는 날짜들
-    for (final day in daysWithRecords) {
-      if (day <= now.day) {
-        dummyRecords.add(WeightRecord(
-          petId: 'dummy_pet',
-          date: DateTime(currentMonth.year, currentMonth.month, day),
-          weight: 57.0 + (day % 3) * 0.2,
-        ));
-      }
-    }
-
-    setState(() {
-      _weightRecords = dummyRecords;
-    });
   }
 
   Future<void> _loadActivePet() async {
@@ -86,7 +48,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         _petName = activePet?.name ?? _petName;
       });
       if (_activePetId != null) {
-        await _loadWeightData();
+        await Future.wait([
+          _loadWeightData(),
+          _loadScheduleData(),
+        ]);
       }
     } catch (_) {
       // Handle error
@@ -96,6 +61,24 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _loadScheduleData() async {
+    if (_activePetId == null) return;
+    try {
+      final schedules = await _scheduleService.fetchSchedulesByMonth(
+        petId: _activePetId!,
+        year: _selectedYear,
+        month: _selectedMonth,
+      );
+      if (mounted) {
+        setState(() {
+          _scheduleRecords = schedules;
+        });
+      }
+    } catch (_) {
+      // Handle error
     }
   }
 
@@ -339,7 +322,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     // 현재 월의 인덱스 (마지막 = 현재 월)
     final selectedIndex = months.length - 1;
     final selectedMonth = months[selectedIndex];
-    final selectedValue = monthlyAverages[selectedMonth] ?? 57.2; // 더미 기본값
+    final selectedValue = monthlyAverages[selectedMonth] ?? 0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -544,30 +527,24 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   List<FlSpot> _getChartSpots(List<DateTime> months, Map<DateTime, double> averages) {
     final spots = <FlSpot>[];
-    // 더미 데이터 기본값들 (Figma 디자인과 유사하게)
-    final dummyValues = [52.5, 53.8, 54.2, 55.0, 56.3, 57.2];
     for (int i = 0; i < months.length; i++) {
-      final value = averages[months[i]] ?? dummyValues[i % dummyValues.length];
-      spots.add(FlSpot(i.toDouble(), value));
+      final value = averages[months[i]];
+      if (value != null) {
+        spots.add(FlSpot(i.toDouble(), value));
+      }
     }
     return spots;
   }
 
   double _getMinY(Map<DateTime, double> averages, List<DateTime> months) {
-    final dummyValues = [52.5, 53.8, 54.2, 55.0, 56.3, 57.2];
-    final values = months.asMap().entries.map((e) =>
-      averages[e.value] ?? dummyValues[e.key % dummyValues.length]
-    );
-    if (values.isEmpty) return 50;
+    final values = months.map((m) => averages[m]).whereType<double>().toList();
+    if (values.isEmpty) return 0;
     return values.reduce((a, b) => a < b ? a : b) - 3;
   }
 
   double _getMaxY(Map<DateTime, double> averages, List<DateTime> months) {
-    final dummyValues = [52.5, 53.8, 54.2, 55.0, 56.3, 57.2];
-    final values = months.asMap().entries.map((e) =>
-      averages[e.value] ?? dummyValues[e.key % dummyValues.length]
-    );
-    if (values.isEmpty) return 60;
+    final values = months.map((m) => averages[m]).whereType<double>().toList();
+    if (values.isEmpty) return 100;
     return values.reduce((a, b) => a > b ? a : b) + 3;
   }
 
@@ -672,6 +649,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         _selectedMonth--;
       }
     });
+    _loadScheduleData();
   }
 
   void _nextMonth() {
@@ -683,6 +661,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         _selectedMonth++;
       }
     });
+    _loadScheduleData();
   }
 
   Widget _buildCalendarWeekdays() {
@@ -832,11 +811,21 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     final result = await showAddScheduleBottomSheet(
       context: context,
       initialDate: selectedDate,
+      petId: _activePetId,
     );
     if (result != null) {
-      setState(() {
-        _scheduleRecords.add(result);
-      });
+      try {
+        // Supabase에 저장
+        await _scheduleService.createSchedule(result);
+        // 목록 새로고침
+        await _loadScheduleData();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('일정 저장 중 오류가 발생했습니다.')),
+          );
+        }
+      }
     }
   }
 
@@ -1078,11 +1067,19 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             final result = await showAddScheduleBottomSheet(
               context: context,
               initialDate: DateTime.now(),
+              petId: _activePetId,
             );
             if (result != null) {
-              setState(() {
-                _scheduleRecords.add(result);
-              });
+              try {
+                await _scheduleService.createSchedule(result);
+                await _loadScheduleData();
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('일정 저장 중 오류가 발생했습니다.')),
+                  );
+                }
+              }
             }
           },
           child: Container(
