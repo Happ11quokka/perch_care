@@ -1,17 +1,28 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.user import ProfileResponse, ProfileUpdateRequest, SocialAccountResponse, SocialAccountLinkRequest
 from app.services import user_service
+from app.utils.security import verify_google_id_token
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/me/profile", response_model=ProfileResponse)
-async def get_my_profile(current_user: User = Depends(get_current_user)):
-    return current_user
+async def get_my_profile(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(User)
+        .where(User.id == current_user.id)
+        .options(selectinload(User.social_accounts))
+    )
+    return result.scalar_one()
 
 
 @router.put("/me/profile", response_model=ProfileResponse)
@@ -29,12 +40,25 @@ async def link_social_account(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    provider_id = request.provider_id
+    provider_email = request.provider_email
+
+    if request.provider == "google" and request.id_token:
+        google_info = verify_google_id_token(request.id_token)
+        if not google_info:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google ID token")
+        provider_id = google_info["sub"]
+        provider_email = provider_email or google_info.get("email")
+
+    if not provider_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing provider_id or id_token")
+
     return await user_service.link_social_account(
         db,
         user_id=current_user.id,
         provider=request.provider,
-        provider_id=request.provider_id,
-        provider_email=request.provider_email,
+        provider_id=provider_id,
+        provider_email=provider_email,
     )
 
 

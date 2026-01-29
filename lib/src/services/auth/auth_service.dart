@@ -225,12 +225,14 @@ class AuthService {
   /// 소셜 계정 연동
   Future<void> linkSocialAccount({
     required String provider,
-    required String providerId,
+    String? idToken,
+    String? providerId,
     String? providerEmail,
   }) async {
     await _api.post('/users/me/social-accounts', body: {
       'provider': provider,
-      'provider_id': providerId,
+      if (idToken != null) 'id_token': idToken,
+      if (providerId != null) 'provider_id': providerId,
       if (providerEmail != null) 'provider_email': providerEmail,
     });
   }

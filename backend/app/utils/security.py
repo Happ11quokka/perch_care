@@ -1,18 +1,19 @@
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 from app.config import get_settings
 
 settings = get_settings()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 
 def create_access_token(user_id: str) -> str:
@@ -32,4 +33,17 @@ def decode_token(token: str) -> dict | None:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
         return payload
     except JWTError:
+        return None
+
+
+def verify_google_id_token(token: str) -> dict | None:
+    """Verify Google ID token and return user info (sub, email, etc.)."""
+    try:
+        idinfo = google_id_token.verify_oauth2_token(
+            token,
+            google_requests.Request(),
+            audience=settings.google_client_id,
+        )
+        return idinfo
+    except Exception:
         return None

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.auth import SignUpRequest, LoginRequest, TokenResponse, RefreshRequest, OAuthRequest, OAuthLoginResponse
 from app.services import auth_service
+from app.utils.security import verify_google_id_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -24,13 +25,25 @@ async def refresh(request: RefreshRequest, db: AsyncSession = Depends(get_db)):
 
 @router.post("/oauth/{provider}", response_model=OAuthLoginResponse)
 async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = Depends(get_db)):
-    # In production, verify id_token or exchange authorization_code with the provider
-    # For now, this endpoint expects the frontend to handle OAuth and send the verified user info
-    # TODO: Implement provider-specific token verification (Google, Apple, Kakao)
+    provider_id: str | None = None
+    email = request.email
+
+    if provider == "google" and request.id_token:
+        google_info = verify_google_id_token(request.id_token)
+        if not google_info:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google ID token")
+        provider_id = google_info["sub"]
+        email = email or google_info.get("email")
+    else:
+        provider_id = request.authorization_code or ""
+
+    if not provider_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing provider credentials")
+
     return await auth_service.oauth_login(
         db,
         provider=provider,
-        provider_id=request.id_token or request.authorization_code or "",
-        email=request.email,
+        provider_id=provider_id,
+        email=email,
         nickname=None,
     )

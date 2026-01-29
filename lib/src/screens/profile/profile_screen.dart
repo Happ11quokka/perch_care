@@ -73,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (idToken == null) throw Exception('idToken is null');
       await _authService.linkSocialAccount(
         provider: 'google',
-        providerId: idToken,
+        idToken: idToken,
       );
       await _loadSocialAccounts();
       if (!mounted) return;
@@ -101,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (idToken == null) throw Exception('identityToken is null');
       await _authService.linkSocialAccount(
         provider: 'apple',
-        providerId: idToken,
+        idToken: idToken,
       );
       await _loadSocialAccounts();
       if (!mounted) return;
@@ -306,16 +306,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: const Color(0xFFF0F0F0),
                     ),
 
-                    // 소셜 계정 연동 섹션
-                    _buildSocialAccountsSection(),
-
-                    // 구분선
-                    Container(
-                      height: 1,
-                      margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
-                    ),
-
                     // "나의 반려가족" 타이틀
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -352,6 +342,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // 새로운 아이 등록하기 버튼
                     _buildAddPetButton(),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
+                    // 소셜 계정 연동 섹션
+                    _buildSocialAccountsSection(),
 
                     const SizedBox(height: 100),
                   ],

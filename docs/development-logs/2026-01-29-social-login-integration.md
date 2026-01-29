@@ -86,3 +86,145 @@
 - Apple 로그인: 시뮬레이터 제한으로 실기기 테스트 필요.
 - Google 로그인: `initialize()` 중복 호출 및 `clientId` 미전달 이슈 수정 후 정상 동작.
 - 백엔드 API 연동은 FastAPI 서버 준비 후 E2E 테스트 필요.
+
+---
+
+## 버그 수정: Google OAuth provider_id 저장 오류
+
+**날짜**: 2026-01-29
+**수정 파일**:
+- [backend/app/utils/security.py](../../backend/app/utils/security.py)
+- [backend/app/routers/auth.py](../../backend/app/routers/auth.py)
+- [backend/app/routers/users.py](../../backend/app/routers/users.py)
+- [backend/app/schemas/user.py](../../backend/app/schemas/user.py)
+- [backend/requirements.txt](../../backend/requirements.txt)
+- [backend/.env](../../backend/.env)
+- [lib/src/services/auth/auth_service.dart](../../lib/src/services/auth/auth_service.dart)
+- [lib/src/screens/profile/profile_screen.dart](../../lib/src/screens/profile/profile_screen.dart)
+
+### 증상
+
+Google 소셜 로그인 및 계정 연동 시 DB INSERT 에러 발생:
+
+```
+asyncpg.exceptions.StringDataRightTruncationError:
+  value too long for type character varying(255)
+```
+
+`social_accounts` 테이블의 `provider_id` 컬럼(`VARCHAR(255)`)에 Google ID Token(JWT, 1000+ chars)이 그대로 저장되고 있었음.
+
+### 원인
+
+두 곳에서 동일한 문제가 발생:
+
+1. **OAuth 로그인 (`/auth/oauth/google`)**: `auth.py`에서 `request.id_token`을 검증 없이 `provider_id`로 사용.
+   ```python
+   # 수정 전 (auth.py)
+   provider_id = request.id_token or request.authorization_code or ""
+   ```
+
+2. **소셜 계정 연동 (`/users/me/social-accounts`)**: Flutter `profile_screen.dart`에서 Google `idToken` (JWT 전체)을 `providerId`로 전달하고, 백엔드 `users.py`가 검증 없이 그대로 DB에 저장.
+   ```dart
+   // 수정 전 (profile_screen.dart)
+   await _authService.linkSocialAccount(
+     provider: 'google',
+     providerId: idToken,  // JWT 전체 (1000+ chars)
+   );
+   ```
+
+### 수정 내용
+
+#### 1. Google ID Token 서버 검증 함수 추가 (`security.py`)
+
+`google-auth` 라이브러리를 사용하여 ID Token을 검증하고 `sub` claim(Google 유저 고유 ID, 숫자 문자열)을 추출하는 함수 추가:
+
+```python
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
+
+def verify_google_id_token(token: str) -> dict | None:
+    idinfo = google_id_token.verify_oauth2_token(
+        token,
+        google_requests.Request(),
+        audience=settings.google_client_id,  # 우리 앱 토큰만 허용
+    )
+    return idinfo  # {"sub": "1234567890", "email": "...", ...}
+```
+
+- `audience` 파라미터로 우리 앱의 Google Client ID만 허용 (타 앱 토큰 차단).
+
+#### 2. OAuth 로그인 엔드포인트 수정 (`auth.py`)
+
+```python
+# 수정 후
+if provider == "google" and request.id_token:
+    google_info = verify_google_id_token(request.id_token)
+    if not google_info:
+        raise HTTPException(status_code=401, detail="Invalid Google ID token")
+    provider_id = google_info["sub"]  # 짧은 숫자 ID
+    email = email or google_info.get("email")
+```
+
+#### 3. 소셜 계정 연동 엔드포인트 수정 (`users.py`)
+
+연동 API에서도 동일하게 `id_token`을 받아 서버에서 검증:
+
+```python
+if request.provider == "google" and request.id_token:
+    google_info = verify_google_id_token(request.id_token)
+    provider_id = google_info["sub"]
+    provider_email = provider_email or google_info.get("email")
+```
+
+#### 4. 스키마 변경 (`user.py`)
+
+`SocialAccountLinkRequest`에 `id_token` 필드 추가:
+
+```python
+class SocialAccountLinkRequest(BaseModel):
+    provider: str
+    id_token: str | None = None       # 추가
+    provider_id: str | None = None
+    provider_email: str | None = None
+```
+
+#### 5. Flutter 클라이언트 수정
+
+`auth_service.dart`의 `linkSocialAccount`에 `idToken` 파라미터 추가, `profile_screen.dart`에서 Google/Apple 연동 시 `idToken`으로 전송:
+
+```dart
+// 수정 후 (profile_screen.dart)
+await _authService.linkSocialAccount(
+  provider: 'google',
+  idToken: idToken,  // provider_id 대신 id_token으로 전송
+);
+```
+
+#### 6. 의존성 및 환경 설정
+
+- `requirements.txt`에 `google-auth==2.37.0`, `requests==2.32.3` 추가.
+- `.env`에 `GOOGLE_CLIENT_ID` 값 설정 (iOS `GoogleService-Info.plist`의 `CLIENT_ID` 값 사용).
+
+### 데이터 흐름 (수정 후)
+
+```
+Flutter App                          FastAPI Backend
+─────────────────────────────────────────────────────
+Google SDK → idToken (JWT)
+                    ──id_token──▶  verify_google_id_token()
+                                   ├─ JWT 서명 검증
+                                   ├─ audience(Client ID) 검증
+                                   └─ sub claim 추출 ("1234567890")
+                                          │
+                                   provider_id = "1234567890"
+                                          │
+                                   INSERT INTO social_accounts
+                                   (provider_id = "1234567890") ✅
+```
+
+### 핵심 교훈
+
+- 클라이언트에서 받은 OAuth 토큰은 **반드시 서버에서 검증** 후 사용해야 한다.
+- `provider_id`에는 provider가 발급한 **유저 고유 식별자**를 저장해야 하며, 토큰 자체를 저장하면 안 된다.
+- Google의 경우 `id_token`(JWT)의 `sub` claim이 유저 고유 ID이다.
+- `audience` 검증을 빠뜨리면 다른 앱에서 발급된 Google 토큰으로도 인증이 통과되는 보안 취약점이 생긴다.
