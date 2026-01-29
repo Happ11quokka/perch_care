@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// JWT 토큰 관리 서비스
 class TokenService {
@@ -11,15 +11,15 @@ class TokenService {
 
   TokenService._();
 
+  final _secureStorage = const FlutterSecureStorage();
   String? _accessToken;
   String? _refreshToken;
   bool _initialized = false;
 
   Future<void> init() async {
     if (_initialized) return;
-    final prefs = await SharedPreferences.getInstance();
-    _accessToken = prefs.getString(_accessTokenKey);
-    _refreshToken = prefs.getString(_refreshTokenKey);
+    _accessToken = await _secureStorage.read(key: _accessTokenKey);
+    _refreshToken = await _secureStorage.read(key: _refreshTokenKey);
     _initialized = true;
   }
 
@@ -49,16 +49,14 @@ class TokenService {
   }) async {
     _accessToken = accessToken;
     _refreshToken = refreshToken;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_accessTokenKey, accessToken);
-    await prefs.setString(_refreshTokenKey, refreshToken);
+    await _secureStorage.write(key: _accessTokenKey, value: accessToken);
+    await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
   }
 
   Future<void> clearTokens() async {
     _accessToken = null;
     _refreshToken = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_accessTokenKey);
-    await prefs.remove(_refreshTokenKey);
+    await _secureStorage.delete(key: _accessTokenKey);
+    await _secureStorage.delete(key: _refreshTokenKey);
   }
 }

@@ -19,14 +19,9 @@ class ApiClient {
   final _tokenService = TokenService.instance;
 
   Map<String, String> get _headers {
-    final headers = <String, String>{
+    return {
       'Content-Type': 'application/json',
     };
-    final token = _tokenService.accessToken;
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    return headers;
   }
 
   Map<String, String> get _authHeaders {

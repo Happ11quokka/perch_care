@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/auth/auth_service.dart';
 import 'widgets/country_selector_bottom_sheet.dart';
 
 /// 프로필 설정 화면
@@ -24,6 +28,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _nameFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _phoneFocusNode = FocusNode();
+
+  final _authService = AuthService();
+  final _imagePicker = ImagePicker();
+  File? _selectedImage;
+  bool _isSaving = false;
 
   String? _selectedGender;
   Country _selectedCountry = CountryParser.parseCountryCode('KR'); // 대한민국
@@ -136,14 +145,22 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFD9D9D9),
               shape: BoxShape.circle,
+              image: _selectedImage != null
+                  ? DecorationImage(
+                      image: FileImage(_selectedImage!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: Center(
-              child: Icon(
-                Icons.person,
-                size: 60,
-                color: const Color(0xFF6B6B6B),
-              ),
-            ),
+            child: _selectedImage == null
+                ? Center(
+                    child: Icon(
+                      Icons.person,
+                      size: 60,
+                      color: const Color(0xFF6B6B6B),
+                    ),
+                  )
+                : null,
           ),
           // 편집 버튼
           Positioned(
@@ -481,8 +498,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  void _handleEditPhoto() {
-    // TODO: 사진 선택 기능 구현
+  Future<void> _handleEditPhoto() async {
+    final pickedFile = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 80,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
   }
 
   void _showGenderPicker() {
@@ -571,12 +598,28 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     context.goNamed(RouteNames.home);
   }
 
-  void _handleComplete() {
-    // TODO: 프로필 데이터 저장 로직
-    // 완료 화면으로 이동
-    context.goNamed(
-      RouteNames.profileSetupComplete,
-      extra: {'petName': _nameController.text.isNotEmpty ? _nameController.text : '점점이'},
-    );
+  Future<void> _handleComplete() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    try {
+      await _authService.updateProfile(
+        nickname: _nameController.text.trim().isNotEmpty
+            ? _nameController.text.trim()
+            : null,
+      );
+      if (!mounted) return;
+      context.goNamed(
+        RouteNames.profileSetupComplete,
+        extra: {'petName': _nameController.text.isNotEmpty ? _nameController.text : '점점이'},
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('프로필 저장 중 오류가 발생했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 }

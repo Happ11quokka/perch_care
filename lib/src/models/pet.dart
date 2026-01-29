@@ -7,6 +7,8 @@ class Pet {
   final String? breed;
   final DateTime? birthDate;
   final String? gender; // 'male', 'female', 'unknown'
+  final double? weight; // 체중 (g 단위)
+  final DateTime? adoptionDate; // 가족이 된 날
   final String? profileImageUrl;
   final bool isActive;
   final DateTime createdAt;
@@ -20,6 +22,8 @@ class Pet {
     this.breed,
     this.birthDate,
     this.gender,
+    this.weight,
+    this.adoptionDate,
     this.profileImageUrl,
     this.isActive = true,
     required this.createdAt,
@@ -37,6 +41,10 @@ class Pet {
           ? DateTime.parse(json['birth_date'] as String)
           : null,
       gender: json['gender'] as String?,
+      weight: (json['weight'] as num?)?.toDouble(),
+      adoptionDate: json['adoption_date'] != null
+          ? DateTime.parse(json['adoption_date'] as String)
+          : null,
       profileImageUrl: json['profile_image_url'] as String?,
       isActive: json['is_active'] as bool? ?? true,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -53,6 +61,8 @@ class Pet {
       'breed': breed,
       'birth_date': birthDate?.toIso8601String().split('T').first,
       'gender': gender,
+      if (weight != null) 'weight': weight,
+      'adoption_date': adoptionDate?.toIso8601String().split('T').first,
       'profile_image_url': profileImageUrl,
       'is_active': isActive,
     };
@@ -68,6 +78,9 @@ class Pet {
       if (birthDate != null)
         'birth_date': birthDate!.toIso8601String().split('T').first,
       if (gender != null) 'gender': gender,
+      if (weight != null) 'weight': weight,
+      if (adoptionDate != null)
+        'adoption_date': adoptionDate!.toIso8601String().split('T').first,
       if (profileImageUrl != null) 'profile_image_url': profileImageUrl,
       'is_active': isActive,
     };
@@ -81,6 +94,8 @@ class Pet {
     String? breed,
     DateTime? birthDate,
     String? gender,
+    double? weight,
+    DateTime? adoptionDate,
     String? profileImageUrl,
     bool? isActive,
     DateTime? createdAt,
@@ -94,6 +109,8 @@ class Pet {
       breed: breed ?? this.breed,
       birthDate: birthDate ?? this.birthDate,
       gender: gender ?? this.gender,
+      weight: weight ?? this.weight,
+      adoptionDate: adoptionDate ?? this.adoptionDate,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,

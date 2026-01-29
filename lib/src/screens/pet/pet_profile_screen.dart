@@ -212,7 +212,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           // 설정 버튼
           GestureDetector(
             onTap: () {
-              // TODO: 설정 화면으로 이동
+              context.pushNamed(RouteNames.profile);
             },
             child: SvgPicture.asset(
               'assets/images/settings_icon.svg',

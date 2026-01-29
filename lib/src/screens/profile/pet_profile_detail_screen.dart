@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../theme/colors.dart';
+import '../../models/pet.dart';
+import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
@@ -16,14 +21,93 @@ class PetProfileDetailScreen extends StatefulWidget {
 class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   final _petCache = PetLocalCacheService();
+  final _petService = PetService();
+  final _imagePicker = ImagePicker();
+  File? _selectedImage;
 
-  // TODO: 실제 데이터로 대체
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _speciesController = TextEditingController();
   String? _selectedGender;
   DateTime? _birthday;
   DateTime? _adoptionDate;
+  String? _existingPetId;
+  bool _isLoading = false;
+  bool _isLoadingData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingPet();
+  }
+
+  String? _mapGenderToDisplay(String? gender) {
+    switch (gender) {
+      case 'male':
+        return '수컷';
+      case 'female':
+        return '암컷';
+      case 'unknown':
+        return '모름';
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _loadExistingPet() async {
+    try {
+      final activePet = await _petCache.getActivePet();
+      if (activePet == null) {
+        if (mounted) setState(() => _isLoadingData = false);
+        return;
+      }
+
+      _existingPetId = activePet.id;
+
+      // 서버에서 최신 데이터 로드
+      final pet = await _petService.getPetById(activePet.id);
+      if (!mounted) return;
+
+      if (pet != null) {
+        setState(() {
+          _nameController.text = pet.name;
+          _speciesController.text = pet.breed ?? '';
+          _selectedGender = _mapGenderToDisplay(pet.gender);
+          _birthday = pet.birthDate;
+          _adoptionDate = pet.adoptionDate;
+          if (pet.weight != null) {
+            _weightController.text = pet.weight.toString();
+          }
+          _isLoadingData = false;
+        });
+      } else {
+        // 서버에 없으면 로컬 캐시 데이터 사용
+        setState(() {
+          _nameController.text = activePet.name;
+          _speciesController.text = activePet.species ?? '';
+          _selectedGender = _mapGenderToDisplay(activePet.gender);
+          _birthday = activePet.birthDate;
+          _isLoadingData = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingData = false);
+    }
+  }
+
+  Future<void> _handlePickImage() async {
+    final pickedFile = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 80,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -38,7 +122,9 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
+        child: _isLoadingData
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
           children: [
             // 상단 앱바
             _buildAppBar(),
@@ -131,21 +217,32 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // 프로필 이미지 플레이스홀더
-            SvgPicture.asset(
-              'assets/images/profile/pet_profile_placeholder.svg',
-              width: 120,
-              height: 120,
-            ),
+            // 프로필 이미지
+            if (_selectedImage != null)
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: FileImage(_selectedImage!),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+            else
+              SvgPicture.asset(
+                'assets/images/profile/pet_profile_placeholder.svg',
+                width: 120,
+                height: 120,
+              ),
 
             // 편집 버튼
             Positioned(
               right: 0,
               bottom: 0,
               child: GestureDetector(
-                onTap: () {
-                  // TODO: 이미지 업로드 기능
-                },
+                onTap: _handlePickImage,
                 child: Container(
                   width: 36,
                   height: 36,
@@ -386,20 +483,29 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _handleSave,
+          onTap: _isLoading ? null : _handleSave,
           borderRadius: BorderRadius.circular(16),
           child: Center(
-            child: Text(
-              '저장',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                height: 26 / 18,
-                letterSpacing: -0.45,
-              ),
-            ),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    '저장',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      height: 26 / 18,
+                      letterSpacing: -0.45,
+                    ),
+                  ),
           ),
         ),
       ),
@@ -464,34 +570,74 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   }
 
   /// 저장 처리
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    final petId = DateTime.now().millisecondsSinceEpoch.toString();
-    final petName = _nameController.text.trim().isEmpty
-        ? '새'
-        : _nameController.text.trim();
-    final species = _speciesController.text.trim();
-    final gender = _mapGenderValue(_selectedGender);
-    _petCache
-        .upsertPet(
-          PetProfileCache(
-            id: petId,
-            name: petName,
-            species: species.isEmpty ? null : species,
-            gender: gender,
-            birthDate: _birthday,
-          ),
-          setActive: true,
-        )
-        .then((_) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('저장되었습니다.')),
-          );
-          context.pop();
-        });
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final petName = _nameController.text.trim().isEmpty
+          ? '새'
+          : _nameController.text.trim();
+      final species = _speciesController.text.trim();
+      final gender = _mapGenderValue(_selectedGender);
+      final weightText = _weightController.text.trim();
+      final double? weightValue = weightText.isNotEmpty ? double.tryParse(weightText) : null;
+
+      Pet savedPet;
+
+      if (_existingPetId != null) {
+        // 서버에 수정
+        savedPet = await _petService.updatePet(
+          petId: _existingPetId!,
+          name: petName,
+          species: species.isEmpty ? null : species,
+          breed: species.isEmpty ? null : species,
+          birthDate: _birthday,
+          gender: gender,
+          weight: weightValue,
+          adoptionDate: _adoptionDate,
+        );
+      } else {
+        // 서버에 생성
+        savedPet = await _petService.createPet(
+          name: petName,
+          species: species.isEmpty ? '새' : species,
+          breed: species.isEmpty ? null : species,
+          birthDate: _birthday,
+          gender: gender,
+          weight: weightValue,
+          adoptionDate: _adoptionDate,
+        );
+      }
+
+      // 로컬 캐시도 동기화
+      await _petCache.upsertPet(
+        PetProfileCache(
+          id: savedPet.id,
+          name: savedPet.name,
+          species: savedPet.breed,
+          gender: savedPet.gender,
+          birthDate: savedPet.birthDate,
+        ),
+        setActive: true,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('저장되었습니다.')),
+      );
+      context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('저장 중 오류가 발생했습니다: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   String? _mapGenderValue(String? gender) {

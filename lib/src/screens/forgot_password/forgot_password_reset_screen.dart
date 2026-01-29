@@ -3,10 +3,20 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/auth/auth_service.dart';
 
 /// 비밀번호 찾기 - 새 비밀번호 입력 화면
 class ForgotPasswordResetScreen extends StatefulWidget {
-  const ForgotPasswordResetScreen({super.key});
+  final String identifier; // 이메일 또는 전화번호
+  final String code;
+  final String method; // 'email' 또는 'phone'
+
+  const ForgotPasswordResetScreen({
+    super.key,
+    required this.identifier,
+    required this.code,
+    this.method = 'email',
+  });
 
   @override
   State<ForgotPasswordResetScreen> createState() =>
@@ -19,6 +29,7 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
   final _newPasswordFocusNode = FocusNode();
   final _confirmPasswordFocusNode = FocusNode();
 
+  final _authService = AuthService();
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   bool _newPasswordHasFocus = false;
@@ -337,11 +348,14 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
 
     setState(() => _isLoading = true);
     try {
-      // TODO: 실제 비밀번호 재설정 API 호출
-      await Future.delayed(const Duration(seconds: 1));
+      await _authService.updatePassword(
+        identifier: widget.identifier,
+        code: widget.code,
+        newPassword: newPassword,
+        method: widget.method,
+      );
       if (!mounted) return;
 
-      // 비밀번호 재설정 완료 후 로그인 화면으로 이동
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('비밀번호가 성공적으로 변경되었습니다.')),
       );

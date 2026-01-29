@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/auth/auth_service.dart';
 
 /// 비밀번호 찾기 - 코드 입력 화면
 class ForgotPasswordCodeScreen extends StatefulWidget {
@@ -30,9 +31,11 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
   );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
+  final _authService = AuthService();
   Timer? _timer;
   int _remainingSeconds = 120; // 2분
   bool _isResending = false;
+  bool _isVerifying = false;
 
   @override
   void initState() {
@@ -304,17 +307,45 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
     );
   }
 
-  void _handleVerifyCode() {
-    // 코드 검증 후 다음 화면으로 이동
-    // TODO: 실제 코드 검증 API 호출
-    context.pushNamed(RouteNames.forgotPasswordReset);
+  Future<void> _handleVerifyCode() async {
+    if (_isVerifying) return;
+    setState(() => _isVerifying = true);
+
+    final code = _controllers.map((c) => c.text).join();
+
+    try {
+      await _authService.verifyResetCode(widget.destination, code, method: widget.method);
+      if (!mounted) return;
+      context.pushNamed(
+        RouteNames.forgotPasswordReset,
+        extra: {
+          'identifier': widget.destination,
+          'code': code,
+          'method': widget.method,
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('코드가 올바르지 않습니다. 다시 확인해 주세요.')),
+      );
+      for (final controller in _controllers) {
+        controller.clear();
+      }
+      _focusNodes[0].requestFocus();
+    } finally {
+      if (mounted) setState(() => _isVerifying = false);
+    }
   }
 
   Future<void> _handleResendCode() async {
     setState(() => _isResending = true);
     try {
-      // TODO: 실제 코드 재전송 API 호출
-      await Future.delayed(const Duration(seconds: 1));
+      if (widget.method == 'phone') {
+        await _authService.resetPasswordByPhone(widget.destination);
+      } else {
+        await _authService.resetPassword(widget.destination);
+      }
       // 입력 필드 초기화
       for (final controller in _controllers) {
         controller.clear();
@@ -325,6 +356,11 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('코드가 다시 전송되었습니다.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('코드 전송 중 오류가 발생했습니다.')),
       );
     } finally {
       if (mounted) setState(() => _isResending = false);

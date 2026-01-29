@@ -57,9 +57,8 @@ class DailyRecordService {
   }
 
   /// 일일 기록 삭제
-  Future<void> deleteDailyRecord(String recordId) async {
-    // pet_id is needed for the URL; pass a placeholder since API identifies by record_id
-    await _api.delete('/pets/_/daily-records/$recordId');
+  Future<void> deleteDailyRecord(String petId, String recordId) async {
+    await _api.delete('/pets/$petId/daily-records/$recordId');
   }
 
   /// 특정 날짜의 일일 기록 삭제

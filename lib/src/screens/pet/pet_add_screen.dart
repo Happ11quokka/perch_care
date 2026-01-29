@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../services/pet/pet_service.dart';
@@ -26,6 +29,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
   final _weightController = TextEditingController();
   final _speciesController = TextEditingController();
 
+  final _imagePicker = ImagePicker();
+  File? _selectedImage;
   String? _selectedGender;
   DateTime? _selectedBirthDate;
   DateTime? _selectedAdoptionDate;
@@ -123,6 +128,20 @@ class _PetAddScreenState extends State<PetAddScreen> {
     }
   }
 
+  Future<void> _handlePickImage() async {
+    final pickedFile = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 80,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -136,6 +155,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
           : _nameController.text.trim();
       final species = _speciesController.text.trim();
       final gender = _mapGenderValue(_selectedGender);
+      final weightText = _weightController.text.trim();
+      final double? weightValue = weightText.isNotEmpty ? double.tryParse(weightText) : null;
 
       Pet savedPet;
 
@@ -148,6 +169,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
           breed: species.isEmpty ? null : species,
           birthDate: _selectedBirthDate,
           gender: gender,
+          weight: weightValue,
+          adoptionDate: _selectedAdoptionDate,
         );
       } else {
         // 새 펫 생성
@@ -157,6 +180,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
           breed: species.isEmpty ? null : species,
           birthDate: _selectedBirthDate,
           gender: gender,
+          weight: weightValue,
+          adoptionDate: _selectedAdoptionDate,
         );
       }
 
@@ -227,7 +252,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
           ),
         ),
       ),
-      body: Column(
+      body: _isLoadingData
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
@@ -244,26 +271,32 @@ class _PetAddScreenState extends State<PetAddScreen> {
                           Container(
                             width: 120,
                             height: 120,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFFD9D9D9),
+                              color: const Color(0xFFD9D9D9),
+                              image: _selectedImage != null
+                                  ? DecorationImage(
+                                      image: FileImage(_selectedImage!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
                             ),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/images/pet_profile.svg',
-                                width: 60,
-                                height: 60,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
+                            child: _selectedImage == null
+                                ? Center(
+                                    child: SvgPicture.asset(
+                                      'assets/images/pet_profile.svg',
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  )
+                                : null,
                           ),
                           Positioned(
                             right: 0,
                             bottom: 0,
                             child: GestureDetector(
-                              onTap: () {
-                                // TODO: 이미지 선택
-                              },
+                              onTap: _handlePickImage,
                               child: Container(
                                 width: 32,
                                 height: 32,

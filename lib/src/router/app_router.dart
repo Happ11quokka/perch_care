@@ -155,7 +155,14 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.forgotPasswordReset,
         name: RouteNames.forgotPasswordReset,
-        builder: (context, state) => const ForgotPasswordResetScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return ForgotPasswordResetScreen(
+            identifier: extra?['identifier'] ?? '',
+            code: extra?['code'] ?? '',
+            method: extra?['method'] ?? 'email',
+          );
+        },
       ),
       GoRoute(
         path: RoutePaths.profileSetup,

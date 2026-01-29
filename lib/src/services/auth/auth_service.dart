@@ -91,9 +91,46 @@ class AuthService {
     await _tokenService.clearTokens();
   }
 
-  /// 비밀번호 재설정 이메일 전송
+  /// 비밀번호 재설정 코드 전송 (이메일)
   Future<void> resetPassword(String email) async {
     await _api.post('/auth/reset-password', body: {'email': email}, auth: false);
+  }
+
+  /// 비밀번호 재설정 코드 전송 (휴대폰)
+  Future<void> resetPasswordByPhone(String phone) async {
+    await _api.post('/auth/reset-password', body: {'phone': phone}, auth: false);
+  }
+
+  /// 비밀번호 재설정 코드 검증
+  Future<void> verifyResetCode(String identifier, String code, {String method = 'email'}) async {
+    final body = <String, dynamic>{
+      'code': code,
+    };
+    if (method == 'phone') {
+      body['phone'] = identifier;
+    } else {
+      body['email'] = identifier;
+    }
+    await _api.post('/auth/verify-reset-code', body: body, auth: false);
+  }
+
+  /// 새 비밀번호 설정
+  Future<void> updatePassword({
+    required String identifier,
+    required String code,
+    required String newPassword,
+    String method = 'email',
+  }) async {
+    final body = <String, dynamic>{
+      'code': code,
+      'new_password': newPassword,
+    };
+    if (method == 'phone') {
+      body['phone'] = identifier;
+    } else {
+      body['email'] = identifier;
+    }
+    await _api.post('/auth/update-password', body: body, auth: false);
   }
 
   /// 프로필 조회

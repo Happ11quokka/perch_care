@@ -92,6 +92,14 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
   }
 
   void _save() {
+    // Validation: Check petId
+    if (widget.petId == null || widget.petId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('펫 정보가 없습니다.')),
+      );
+      return;
+    }
+
     if (_title.isEmpty) {
       _title = '제목 없음';
     }
@@ -112,8 +120,16 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
       _endTime.minute,
     );
 
+    // Validation: Check endDateTime is after startDateTime
+    if (endDateTime.isBefore(startDateTime) || endDateTime.isAtSameMomentAs(startDateTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('종료 시간은 시작 시간 이후여야 합니다.')),
+      );
+      return;
+    }
+
     final record = ScheduleRecord(
-      petId: widget.petId ?? '',
+      petId: widget.petId!,
       startTime: startDateTime,
       endTime: endDateTime,
       title: _title,

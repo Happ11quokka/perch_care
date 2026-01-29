@@ -76,14 +76,25 @@ class NotificationService {
     await _api.delete('/notifications/by-pet/$petId');
   }
 
-  /// 알림 폴링 스트림 (30초 간격)
-  Stream<List<AppNotification>> subscribeToNotifications() {
-    return Stream.periodic(const Duration(seconds: 30), (_) async {
+  /// 알림 폴링 스트림 (점진적 백오프)
+  Stream<List<AppNotification>> subscribeToNotifications() async* {
+    int interval = 30;
+    const maxInterval = 120;
+    while (true) {
+      await Future.delayed(Duration(seconds: interval));
       try {
-        return await fetchNotifications(unreadOnly: true);
+        final notifications = await fetchNotifications();
+        yield notifications;
+        // 새 알림이 있으면 빠르게, 없으면 점진적으로 늘림
+        if (notifications.any((n) => !n.isRead)) {
+          interval = 30;
+        } else {
+          interval = (interval * 1.5).clamp(30, maxInterval).toInt();
+        }
       } catch (_) {
-        return <AppNotification>[];
+        yield <AppNotification>[];
+        interval = (interval * 2).clamp(30, maxInterval).toInt();
       }
-    }).asyncMap((future) => future);
+    }
   }
 }

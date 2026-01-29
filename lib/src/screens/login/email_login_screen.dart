@@ -510,16 +510,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // 개발용 admin/admin 로그인 (서버 없이 테스트)
-    if (email == 'admin' && password == 'admin') {
-      await Future.delayed(const Duration(milliseconds: 300));
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _navigateToHomeAfterLogin();
-      }
-      return;
-    }
-
     try {
       await _authService.signInWithEmailPassword(
         email: email,

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/auth/auth_service.dart';
 
 /// 비밀번호 찾기 - 방법 선택 화면
 class ForgotPasswordMethodScreen extends StatefulWidget {
@@ -15,12 +16,41 @@ class ForgotPasswordMethodScreen extends StatefulWidget {
 
 class _ForgotPasswordMethodScreenState
     extends State<ForgotPasswordMethodScreen> {
+  final _authService = AuthService();
+
   // 선택된 방법: 'phone' 또는 'email'
   String _selectedMethod = 'phone';
 
-  // 임시 사용자 정보 (실제로는 API에서 가져옴)
-  final String _phoneNumber = '010-1234-5555';
-  final String _email = 'peter_2503312@naver.com';
+  // 사용자 연락처 (프로필에서 로드)
+  String _phoneNumber = '';
+  String _email = '';
+  bool _isLoadingProfile = true;
+
+  bool _isSending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserContact();
+  }
+
+  Future<void> _loadUserContact() async {
+    try {
+      final profile = await _authService.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _email = profile?['email'] as String? ?? '';
+        _phoneNumber = profile?['phone'] as String? ?? '';
+        _isLoadingProfile = false;
+        // phone 정보가 없으면 email을 기본 선택
+        if (_phoneNumber.isEmpty) {
+          _selectedMethod = 'email';
+        }
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingProfile = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +85,9 @@ class _ForgotPasswordMethodScreenState
         ),
       ),
       body: SafeArea(
-        child: Column(
+        child: _isLoadingProfile
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
@@ -78,23 +110,26 @@ class _ForgotPasswordMethodScreenState
                         ),
                       ),
                       const SizedBox(height: 32),
-                      // 휴대폰 번호 옵션
-                      _buildMethodOption(
-                        method: 'phone',
-                        icon: 'assets/images/phone_icon.svg',
-                        label: '휴대폰 번호',
-                        value: _phoneNumber,
-                        isSelected: _selectedMethod == 'phone',
-                      ),
-                      const SizedBox(height: 8),
+                      // 휴대폰 번호 옵션 (번호가 있을 때만 표시)
+                      if (_phoneNumber.isNotEmpty) ...[
+                        _buildMethodOption(
+                          method: 'phone',
+                          icon: 'assets/images/phone_icon.svg',
+                          label: '휴대폰 번호',
+                          value: _phoneNumber,
+                          isSelected: _selectedMethod == 'phone',
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       // 이메일 옵션
-                      _buildMethodOption(
-                        method: 'email',
-                        icon: 'assets/images/mail_gray_icon.svg',
-                        label: '이메일',
-                        value: _email,
-                        isSelected: _selectedMethod == 'email',
-                      ),
+                      if (_email.isNotEmpty)
+                        _buildMethodOption(
+                          method: 'email',
+                          icon: 'assets/images/mail_gray_icon.svg',
+                          label: '이메일',
+                          value: _email,
+                          isSelected: _selectedMethod == 'email',
+                        ),
                     ],
                   ),
                 ),
@@ -210,7 +245,7 @@ class _ForgotPasswordMethodScreenState
 
   Widget _buildSendCodeButton() {
     return GestureDetector(
-      onTap: _handleSendCode,
+      onTap: _isSending ? null : _handleSendCode,
       child: Container(
         height: 60,
         decoration: BoxDecoration(
@@ -221,31 +256,61 @@ class _ForgotPasswordMethodScreenState
           ),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Center(
-          child: Text(
-            '코드 보내기',
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              letterSpacing: -0.45,
-            ),
-          ),
+        child: Center(
+          child: _isSending
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text(
+                  '코드 보내기',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    letterSpacing: -0.45,
+                  ),
+                ),
         ),
       ),
     );
   }
 
-  void _handleSendCode() {
-    // 선택된 방법에 따라 코드 전송 후 다음 화면으로 이동
+  Future<void> _handleSendCode() async {
+    if (_isSending) return;
+
+    setState(() => _isSending = true);
+
     final destination = _selectedMethod == 'phone' ? _phoneNumber : _email;
-    context.pushNamed(
-      RouteNames.forgotPasswordCode,
-      extra: {
-        'method': _selectedMethod,
-        'destination': destination,
-      },
-    );
+
+    try {
+      if (_selectedMethod == 'email') {
+        await _authService.resetPassword(destination);
+      } else {
+        await _authService.resetPasswordByPhone(destination);
+      }
+
+      if (!mounted) return;
+
+      context.pushNamed(
+        RouteNames.forgotPasswordCode,
+        extra: {
+          'method': _selectedMethod,
+          'destination': destination,
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('코드 전송 중 오류가 발생했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
   }
 }

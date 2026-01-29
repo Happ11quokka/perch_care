@@ -3,8 +3,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/dashed_border.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
 class ProfileScreen extends StatefulWidget {
@@ -17,32 +19,23 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   static const Color _unselectedCardColor = Color(0xFFE7E5E1);
   final _petCache = PetLocalCacheService();
-  // TODO: 실제 데이터로 대체
-  final String _userName = '쿼카16978님';
-  int? _selectedPetIndex = 0; // 현재 기록 중인 프로필
+  final _authService = AuthService();
+  String _userName = '';
+  int? _selectedPetIndex = 0;
   List<PetProfileCache> _cachedPets = [];
   bool _isLoadingPets = true;
-
-  // TODO: 실제 반려동물 데이터로 대체
-  final List<Map<String, dynamic>> _pets = [
-    {
-      'name': '점점이',
-      'species': '종이름넣어줘요',
-      'age': '3년 1개월 23일',
-      'gender': 'female', // 'male' or 'female'
-    },
-    {
-      'name': '점점이',
-      'species': '종이름넣어줘요',
-      'age': '3년 1개월 23일',
-      'gender': 'male',
-    },
-  ];
 
   @override
   void initState() {
     super.initState();
-    _loadPets();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadPets(),
+      _loadUserProfile(),
+    ]);
   }
 
   Future<void> _loadPets() async {
@@ -57,8 +50,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _loadUserProfile() async {
+    try {
+      final profile = await _authService.getProfile();
+      if (profile == null || !mounted) return;
+      setState(() {
+        _userName = profile['nickname'] as String? ?? '사용자';
+      });
+    } catch (_) {
+      // 프로필 로드 실패 시 기본값 사용
+    }
+  }
+
   List<Map<String, dynamic>> get _displayPets {
-    if (_cachedPets.isEmpty) return _pets;
     return _cachedPets.map(_mapCacheToDisplay).toList();
   }
 
@@ -268,7 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // 사용자 이름
           Text(
-            _userName,
+            _userName.isEmpty ? '사용자' : '$_userName님',
             style: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -427,7 +431,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 32),
-        child: _DashedBorder(
+        child: DashedBorder(
           color: const Color(0xFF97928A),
           radius: 16,
           strokeWidth: 1,
@@ -473,88 +477,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
-  }
-}
-
-class _DashedBorder extends StatelessWidget {
-  final Widget child;
-  final double radius;
-  final Color color;
-  final double strokeWidth;
-  final double dashWidth;
-  final double dashGap;
-
-  const _DashedBorder({
-    required this.child,
-    required this.radius,
-    required this.color,
-    required this.strokeWidth,
-    required this.dashWidth,
-    required this.dashGap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DashedBorderPainter(
-        color: color,
-        radius: radius,
-        strokeWidth: strokeWidth,
-        dashWidth: dashWidth,
-        dashGap: dashGap,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: child,
-      ),
-    );
-  }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-  final double strokeWidth;
-  final double dashWidth;
-  final double dashGap;
-
-  const _DashedBorderPainter({
-    required this.color,
-    required this.radius,
-    required this.strokeWidth,
-    required this.dashWidth,
-    required this.dashGap,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Radius.circular(radius),
-    );
-    final path = Path()..addRRect(rrect);
-
-    for (final metric in path.computeMetrics()) {
-      double distance = 0;
-      while (distance < metric.length) {
-        final double next = distance + dashWidth;
-        canvas.drawPath(metric.extractPath(distance, next), paint);
-        distance = next + dashGap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
-    return oldDelegate.color != color ||
-        oldDelegate.radius != radius ||
-        oldDelegate.strokeWidth != strokeWidth ||
-        oldDelegate.dashWidth != dashWidth ||
-        oldDelegate.dashGap != dashGap;
   }
 }

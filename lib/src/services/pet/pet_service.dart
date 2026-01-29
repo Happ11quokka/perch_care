@@ -37,6 +37,8 @@ class PetService {
     String? breed,
     DateTime? birthDate,
     String? gender,
+    double? weight,
+    DateTime? adoptionDate,
     String? profileImageUrl,
   }) async {
     final body = <String, dynamic>{
@@ -46,6 +48,9 @@ class PetService {
       if (birthDate != null)
         'birth_date': birthDate.toIso8601String().split('T').first,
       if (gender != null) 'gender': gender,
+      if (weight != null) 'weight': weight,
+      if (adoptionDate != null)
+        'adoption_date': adoptionDate.toIso8601String().split('T').first,
       if (profileImageUrl != null) 'profile_image_url': profileImageUrl,
     };
 
@@ -61,6 +66,8 @@ class PetService {
     String? breed,
     DateTime? birthDate,
     String? gender,
+    double? weight,
+    DateTime? adoptionDate,
     String? profileImageUrl,
   }) async {
     final updates = <String, dynamic>{};
@@ -71,6 +78,10 @@ class PetService {
       updates['birth_date'] = birthDate.toIso8601String().split('T').first;
     }
     if (gender != null) updates['gender'] = gender;
+    if (weight != null) updates['weight'] = weight;
+    if (adoptionDate != null) {
+      updates['adoption_date'] = adoptionDate.toIso8601String().split('T').first;
+    }
     if (profileImageUrl != null) updates['profile_image_url'] = profileImageUrl;
 
     final response = await _api.put('/pets/$petId', body: updates);

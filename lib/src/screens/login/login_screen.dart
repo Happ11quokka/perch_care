@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import '../../services/auth/auth_service.dart';
 
 /// 로그인 화면 - Figma 디자인 기반
@@ -64,11 +65,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isKakaoLoading) return;
     setState(() => _isKakaoLoading = true);
     try {
-      // TODO: 카카오 로그인 구현
-      await Future.delayed(const Duration(milliseconds: 500));
+      // TODO: Kakao SDK로 authorizationCode 획득 후 전달
+      // await _authService.signInWithKakao(authorizationCode: code);
+      _navigateToHomeAfterLogin();
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('카카오 로그인은 준비 중입니다.')),
+        const SnackBar(content: Text('Kakao 로그인 중 오류가 발생했습니다.')),
       );
     } finally {
       if (mounted) setState(() => _isKakaoLoading = false);
@@ -85,7 +88,13 @@ class _LoginScreenState extends State<LoginScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(RoutePaths.onboarding);
+            }
+          },
         ),
         centerTitle: true,
         title: const Text(

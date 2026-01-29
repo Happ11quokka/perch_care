@@ -33,6 +33,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   String? _activePetId;
   bool _isLoading = true;
 
+  // Cached calculation results
+  Map<DateTime, double>? _cachedMonthlyAverages;
+  Map<int, double>? _cachedWeeklyData;
+
   @override
   void initState() {
     super.initState();
@@ -88,6 +92,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     if (mounted) {
       setState(() {
         _weightRecords = records;
+        // Invalidate caches when weight records change
+        _cachedMonthlyAverages = null;
+        _cachedWeeklyData = null;
       });
     }
   }
@@ -285,20 +292,28 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               const SizedBox(width: 9),
               GestureDetector(
                 onTap: () => setState(() => _isWeeklyView = false),
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Text(
-                    '월',
-                    style: TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: !_isWeeklyView ? Colors.white : AppColors.mediumGray,
-                      letterSpacing: -0.325,
+                child: Container(
+                  width: 30,
+                  height: 29,
+                  decoration: BoxDecoration(
+                    color: !_isWeeklyView ? AppColors.brandPrimary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '월',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: !_isWeeklyView ? Colors.white : AppColors.mediumGray,
+                        letterSpacing: -0.325,
+                      ),
                     ),
                   ),
                 ),
               ),
+              const SizedBox(width: 2),
             ],
           ),
         ),
@@ -490,6 +505,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Map<DateTime, double> _calculateMonthlyAverages() {
+    // Return cached result if available
+    if (_cachedMonthlyAverages != null) {
+      return _cachedMonthlyAverages!;
+    }
+
     final Map<DateTime, List<double>> monthlyData = {};
     for (final record in _weightRecords) {
       final monthKey = DateTime(record.date.year, record.date.month);
@@ -500,10 +520,18 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     monthlyData.forEach((month, weights) {
       averages[month] = weights.reduce((a, b) => a + b) / weights.length;
     });
+
+    // Cache the result
+    _cachedMonthlyAverages = averages;
     return averages;
   }
 
   Map<int, double> _calculateWeeklyData() {
+    // Return cached result if available
+    if (_cachedWeeklyData != null) {
+      return _cachedWeeklyData!;
+    }
+
     final Map<int, List<double>> weeklyData = {};
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
@@ -522,6 +550,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         averages[i] = weeklyData[i]!.reduce((a, b) => a + b) / weeklyData[i]!.length;
       }
     }
+
+    // Cache the result
+    _cachedWeeklyData = averages;
     return averages;
   }
 

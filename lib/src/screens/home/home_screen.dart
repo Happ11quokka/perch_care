@@ -267,7 +267,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMonthSelector() {
-    final months = [2, 3, 4, 5, 6, 7, 8];
+    // Generate 7 months centered around current month
+    final currentMonth = DateTime.now().month;
+    final months = <int>[];
+    for (int i = -3; i <= 3; i++) {
+      int month = currentMonth + i;
+      // Handle year wrap-around
+      while (month < 1) { month += 12; }
+      while (month > 12) { month -= 12; }
+      months.add(month);
+    }
 
     return SizedBox(
       key: const ValueKey('month'),
@@ -655,7 +664,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHealthSignalCard() {
     return GestureDetector(
       onTap: () {
-        // TODO: 건강 신호 화면으로 이동
+        context.pushNamed(RouteNames.aiEncyclopedia);
       },
       child: Container(
         height: 170,
