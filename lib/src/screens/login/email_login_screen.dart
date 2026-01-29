@@ -534,7 +534,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     setState(() => _isGoogleLoading = true);
     try {
       final signIn = GoogleSignIn.instance;
-      await signIn.initialize();
       final account = await signIn.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null) throw Exception('idToken is null');
