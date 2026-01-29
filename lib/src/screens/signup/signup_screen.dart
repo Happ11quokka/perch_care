@@ -20,6 +20,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _hasNavigatedAfterSignup = false;
   final AuthService _authService = AuthService();
 
   // 아이콘 에셋 경로
@@ -325,8 +326,9 @@ class _SignupScreenState extends State<SignupScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              if (_hasNavigatedAfterSignup) return;
+              _hasNavigatedAfterSignup = true;
               Navigator.pop(dialogContext);
-              // 홈으로 이동 (이미 로그인된 상태)
               context.goNamed(RouteNames.home);
             },
             child: const Text(
@@ -339,9 +341,11 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           TextButton(
             onPressed: () {
+              if (_hasNavigatedAfterSignup) return;
+              _hasNavigatedAfterSignup = true;
               Navigator.pop(dialogContext);
-              // 프로필 화면으로 이동하여 소셜 연동
-              context.goNamed(RouteNames.profile);
+              context.goNamed(RouteNames.home);
+              context.pushNamed(RouteNames.profile);
             },
             child: const Text(
               '소셜 계정 연동하기',

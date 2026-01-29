@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../router/route_names.dart';
 
 class WciIndexScreen extends StatelessWidget {
   const WciIndexScreen({super.key});
@@ -15,7 +16,13 @@ class WciIndexScreen extends StatelessWidget {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed(RouteNames.home);
+            }
+          },
         ),
         centerTitle: true,
         title: const Text(

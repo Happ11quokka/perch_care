@@ -6,7 +6,6 @@ import '../../models/weight_record.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/weight/weight_service.dart';
 import '../../theme/colors.dart';
-import '../../theme/spacing.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../router/route_names.dart';
 

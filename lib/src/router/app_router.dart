@@ -23,8 +23,21 @@ import '../screens/forgot_password/forgot_password_code_screen.dart';
 import '../screens/forgot_password/forgot_password_reset_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/profile_setup/profile_setup_complete_screen.dart';
+import '../services/api/token_service.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
+
+/// 인증 없이 접근 가능한 경로 목록
+const _publicPaths = {
+  RoutePaths.splash,
+  RoutePaths.onboarding,
+  RoutePaths.login,
+  RoutePaths.signup,
+  RoutePaths.emailLogin,
+  RoutePaths.forgotPasswordMethod,
+  RoutePaths.forgotPasswordCode,
+  RoutePaths.forgotPasswordReset,
+};
 
 /// 앱의 라우터 설정
 class AppRouter {
@@ -33,6 +46,29 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
+    redirect: (context, state) {
+      final isLoggedIn = TokenService.instance.isLoggedIn;
+      final currentPath = state.uri.path;
+      final isPublicRoute = _publicPaths.contains(currentPath);
+
+      // 스플래시는 항상 접근 가능 (초기 진입점)
+      if (currentPath == RoutePaths.splash) return null;
+
+      // 비로그인 사용자가 보호된 라우트에 접근 시 로그인으로 리다이렉트
+      if (!isLoggedIn && !isPublicRoute) {
+        return RoutePaths.login;
+      }
+
+      // 로그인된 사용자가 인증 화면에 접근 시 홈으로 리다이렉트
+      if (isLoggedIn && (currentPath == RoutePaths.login ||
+          currentPath == RoutePaths.signup ||
+          currentPath == RoutePaths.emailLogin ||
+          currentPath == RoutePaths.onboarding)) {
+        return RoutePaths.home;
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: RoutePaths.splash,
@@ -62,12 +98,12 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.weightDetail,
         name: RouteNames.weightDetail,
-        builder: (context, state) => const WeightRecordScreen(),
+        builder: (context, state) => const WeightDetailScreen(),
       ),
       GoRoute(
-        path: RoutePaths.weightChart,
-        name: RouteNames.weightChart,
-        builder: (context, state) => const WeightDetailScreen(),
+        path: RoutePaths.weightRecord,
+        name: RouteNames.weightRecord,
+        builder: (context, state) => const WeightRecordScreen(),
       ),
       GoRoute(
         path: RoutePaths.weightAddToday,
@@ -78,8 +114,13 @@ class AppRouter {
         path: RoutePaths.weightAdd,
         name: RouteNames.weightAdd,
         builder: (context, state) {
-          final dateStr = state.pathParameters['date']!;
-          final date = DateTime.parse(dateStr);
+          final dateStr = state.pathParameters['date'];
+          DateTime date;
+          try {
+            date = DateTime.parse(dateStr ?? '');
+          } catch (_) {
+            date = DateTime.now();
+          }
           return WeightAddScreen(date: date);
         },
       ),
@@ -97,8 +138,9 @@ class AppRouter {
         path: RoutePaths.petAdd,
         name: RouteNames.petAdd,
         builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return PetAddScreen(petId: extra?['petId']);
+          final extra = state.extra;
+          final map = extra is Map<String, dynamic> ? extra : null;
+          return PetAddScreen(petId: map?['petId']);
         },
       ),
       GoRoute(
@@ -145,10 +187,11 @@ class AppRouter {
         path: RoutePaths.forgotPasswordCode,
         name: RouteNames.forgotPasswordCode,
         builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
+          final extra = state.extra;
+          final map = extra is Map<String, dynamic> ? extra : null;
           return ForgotPasswordCodeScreen(
-            method: extra?['method'] ?? 'phone',
-            destination: extra?['destination'] ?? '',
+            method: map?['method'] ?? 'phone',
+            destination: map?['destination'] ?? '',
           );
         },
       ),
@@ -156,11 +199,12 @@ class AppRouter {
         path: RoutePaths.forgotPasswordReset,
         name: RouteNames.forgotPasswordReset,
         builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
+          final extra = state.extra;
+          final map = extra is Map<String, dynamic> ? extra : null;
           return ForgotPasswordResetScreen(
-            identifier: extra?['identifier'] ?? '',
-            code: extra?['code'] ?? '',
-            method: extra?['method'] ?? 'email',
+            identifier: map?['identifier'] ?? '',
+            code: map?['code'] ?? '',
+            method: map?['method'] ?? 'email',
           );
         },
       ),
@@ -173,9 +217,10 @@ class AppRouter {
         path: RoutePaths.profileSetupComplete,
         name: RouteNames.profileSetupComplete,
         builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
+          final extra = state.extra;
+          final map = extra is Map<String, dynamic> ? extra : null;
           return ProfileSetupCompleteScreen(
-            petName: extra?['petName'] ?? '점점이',
+            petName: map?['petName'] ?? '점점이',
           );
         },
       ),

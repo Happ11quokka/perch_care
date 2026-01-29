@@ -389,7 +389,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Positioned(
               left: 0,
               child: GestureDetector(
-                onTap: () => context.goNamed(RouteNames.home),
+                onTap: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.goNamed(RouteNames.home);
+                  }
+                },
                 child: SizedBox(
                   width: 28,
                   height: 28,

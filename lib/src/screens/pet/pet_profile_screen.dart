@@ -107,7 +107,13 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed(RouteNames.home);
+            }
+          },
         ),
         centerTitle: true,
         title: const Text(

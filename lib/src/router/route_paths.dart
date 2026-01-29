@@ -8,7 +8,7 @@ class RoutePaths {
   static const String signup = '/signup';
   static const String home = '/home';
   static const String weightDetail = '/weight-detail';
-  static const String weightChart = '/weight/chart';
+  static const String weightRecord = '/weight/record';
   static const String weightAddToday = '/weight/add/today';
   static const String weightAdd = '/weight/add/:date';
   static const String petAdd = '/pet/add';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/pet.dart';
+import '../../router/route_names.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../theme/colors.dart';
@@ -134,7 +135,13 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: AppColors.nearBlack,
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed(RouteNames.home);
+            }
+          },
         ),
         title: const Text('AI 백과사전'),
         titleTextStyle: AppTypography.h6.copyWith(

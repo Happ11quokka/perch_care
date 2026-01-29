@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
+import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -178,7 +179,13 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: GestureDetector(
-              onTap: () => context.pop(),
+              onTap: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.goNamed(RouteNames.home);
+                }
+              },
               child: SizedBox(
                 width: 28,
                 height: 28,
@@ -629,7 +636,11 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('저장되었습니다.')),
       );
-      context.pop();
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.goNamed(RouteNames.home);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
