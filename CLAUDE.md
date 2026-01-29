@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**perch_care** is a Flutter application for pet health management with AI-powered health checks and weight tracking. The project uses go_router for navigation, implements a comprehensive Material 3 design system, and integrates with Supabase for backend services.
+**perch_care** is a Flutter application for pet health management with AI-powered health checks and weight tracking. The project uses go_router for navigation, implements a comprehensive Material 3 design system, and integrates with a FastAPI + PostgreSQL backend.
 
 ## Development Commands
 
@@ -56,25 +56,25 @@ Comprehensive design system with Material 3:
 
 Access theme values via `Theme.of(context)` or directly via static constants (e.g., `AppColors.brandPrimary`).
 
-### Backend Integration (Supabase)
-The app uses Supabase for authentication and backend services:
+### Backend Integration (FastAPI + PostgreSQL)
+The app uses a custom FastAPI backend with PostgreSQL database:
 
 #### Environment Configuration
 - **[environment.dart](lib/src/config/environment.dart)** - Environment variable accessor that reads from `.env`
 - **[app_config.dart](lib/src/config/app_config.dart)** - App-wide configuration constants
 - Environment variables are loaded in `main()` using `flutter_dotenv`
-- Required environment variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+- Required environment variables: `API_BASE_URL`
 
 #### Setup Requirements
-1. Copy `.env.example` to `.env` and fill in Supabase credentials
-2. Supabase is initialized in `main()` before app starts
+1. Copy `.env.example` to `.env` and set `API_BASE_URL` (e.g., `http://localhost:8000/api/v1`)
+2. Run backend with `docker compose up -d` in `backend/` directory
 3. Missing environment variables will throw `StateError` at runtime
-4. See [docs/backend/setup_supabase.md](docs/backend/setup_supabase.md) for detailed setup instructions
 
 #### Authentication
-- **[auth_service.dart](lib/src/services/auth/auth_service.dart)** - Wrapper around Supabase auth APIs
-- Supports email/password signup and OAuth (Google, Apple)
-- Deep link scheme: `perchcare://auth-callback` (configured for all auth methods)
+- **[auth_service.dart](lib/src/services/auth/auth_service.dart)** - Auth service using FastAPI backend
+- Supports email/password signup and OAuth (Google, Apple, Kakao)
+- JWT-based authentication with automatic token refresh
+- Deep link scheme: `perchcare://auth-callback` (configured for OAuth callbacks)
 - Platform-specific deep link configuration required in iOS/Android manifests
 
 ### Screen Architecture
@@ -99,15 +99,16 @@ All screens use `flutter_svg` for SVG assets and implement responsive sizing bas
 ### Entry Point
 **[main.dart](lib/main.dart)** - App initialization:
 1. Loads `.env` file with `flutter_dotenv`
-2. Initializes Supabase with environment variables
-3. Launches app with `MaterialApp.router`, theme configuration, and router setup
+2. Initializes social login SDKs (Kakao, Google)
+3. Initializes TokenService and ApiClient
+4. Launches app with `MaterialApp.router`, theme configuration, and router setup
 
 ## Key Dependencies
 - **go_router: ^14.6.2** - Declarative routing
 - **flutter_svg: ^2.0.10+1** - SVG rendering
 - **fl_chart: ^0.68.0** - Chart visualization (used in weight tracking)
-- **supabase_flutter: ^2.5.3** - Supabase backend integration
 - **flutter_dotenv: ^5.1.0** - Environment variable management
+- **flutter_secure_storage** - Secure JWT token storage
 - **cupertino_icons: ^1.0.8** - iOS-style icons
 
 ## Assets
@@ -125,10 +126,10 @@ SVG files are loaded via `SvgPicture.asset()` and PNG via `Image.asset()`.
 ## Development Notes
 
 ### Authentication Setup
-For OAuth providers (Google/Apple), additional platform-specific configuration is required:
+For OAuth providers (Google/Apple/Kakao), additional platform-specific configuration is required:
 - **Google**: Configure OAuth consent screen and client in Google Cloud Console
 - **Apple**: Set up "Sign in with Apple" in Apple Developer account
-- See [docs/backend/setup_supabase.md](docs/backend/setup_supabase.md) for detailed OAuth setup instructions
+- **Kakao**: Configure Kakao Developers app with native app key
 
 ### Deep Linking
 The app uses the custom URL scheme `perchcare://auth-callback` for authentication callbacks. Configure in:

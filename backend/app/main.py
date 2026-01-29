@@ -14,6 +14,11 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     # Ensure upload directory exists
     os.makedirs(settings.upload_dir, exist_ok=True)
+    # Create all tables on startup (if not exist)
+    from app.database import engine
+    from app.models import Base
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     yield
 
 
