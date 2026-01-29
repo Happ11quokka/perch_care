@@ -79,6 +79,69 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     context.goNamed(RouteNames.home);
   }
 
+  /// 소셜 로그인 결과 처리 (signup_required 시 다이얼로그 표시)
+  void _handleSocialLoginResult(SocialLoginResult result) {
+    if (result.success) {
+      _navigateToHomeAfterLogin();
+    } else if (result.signupRequired) {
+      _showSignupRequiredDialog();
+    }
+  }
+
+  /// 회원가입 필요 다이얼로그
+  void _showSignupRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '회원가입 필요',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        content: const Text(
+          '등록되지 않은 계정입니다.\n회원가입 후 소셜 로그인을 이용할 수 있습니다.',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF6B6B6B),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(
+              '닫기',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                color: Color(0xFF97928A),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              context.pushNamed(RouteNames.signup);
+            },
+            child: const Text(
+              '회원가입',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                color: Color(0xFFFF9A42),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   bool get _emailHasValue => _emailController.text.isNotEmpty;
   bool get _passwordHasValue => _passwordController.text.isNotEmpty;
 
@@ -537,8 +600,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       final account = await signIn.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null) throw Exception('idToken is null');
-      await _authService.signInWithGoogle(idToken: idToken);
-      _navigateToHomeAfterLogin();
+      final result = await _authService.signInWithGoogle(idToken: idToken);
+      if (!mounted) return;
+      _handleSocialLoginResult(result);
     } on GoogleSignInException catch (e) {
       if (!mounted) return;
       if (e.code == GoogleSignInExceptionCode.canceled) return;
@@ -564,8 +628,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       );
       final idToken = credential.identityToken;
       if (idToken == null) throw Exception('identityToken is null');
-      await _authService.signInWithApple(idToken: idToken);
-      _navigateToHomeAfterLogin();
+      final result = await _authService.signInWithApple(idToken: idToken);
+      if (!mounted) return;
+      _handleSocialLoginResult(result);
     } on SignInWithAppleAuthorizationException catch (e) {
       if (!mounted) return;
       if (e.code == AuthorizationErrorCode.canceled) return;
@@ -592,8 +657,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       } else {
         token = await UserApi.instance.loginWithKakaoAccount();
       }
-      await _authService.signInWithKakao(accessToken: token.accessToken);
-      _navigateToHomeAfterLogin();
+      final result = await _authService.signInWithKakao(accessToken: token.accessToken);
+      if (!mounted) return;
+      _handleSocialLoginResult(result);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

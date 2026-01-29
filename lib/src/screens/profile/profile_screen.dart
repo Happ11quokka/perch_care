@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -24,6 +27,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int? _selectedPetIndex = 0;
   List<PetProfileCache> _cachedPets = [];
   bool _isLoadingPets = true;
+  List<LinkedSocialAccount> _socialAccounts = [];
+  bool _isLoadingSocial = true;
+  bool _isLinkingSocial = false;
 
   @override
   void initState() {
@@ -35,7 +41,180 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await Future.wait([
       _loadPets(),
       _loadUserProfile(),
+      _loadSocialAccounts(),
     ]);
+  }
+
+  Future<void> _loadSocialAccounts() async {
+    try {
+      final accounts = await _authService.getSocialAccounts();
+      if (!mounted) return;
+      setState(() {
+        _socialAccounts = accounts;
+        _isLoadingSocial = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoadingSocial = false);
+    }
+  }
+
+  bool _isProviderLinked(String provider) {
+    return _socialAccounts.any((a) => a.provider == provider);
+  }
+
+  Future<void> _handleLinkGoogle() async {
+    if (_isLinkingSocial) return;
+    setState(() => _isLinkingSocial = true);
+    try {
+      final signIn = GoogleSignIn.instance;
+      final account = await signIn.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null) throw Exception('idToken is null');
+      await _authService.linkSocialAccount(
+        provider: 'google',
+        providerId: idToken,
+      );
+      await _loadSocialAccounts();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google 계정이 연동되었습니다.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google 계정 연동에 실패했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLinkingSocial = false);
+    }
+  }
+
+  Future<void> _handleLinkApple() async {
+    if (_isLinkingSocial) return;
+    setState(() => _isLinkingSocial = true);
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email],
+      );
+      final idToken = credential.identityToken;
+      if (idToken == null) throw Exception('identityToken is null');
+      await _authService.linkSocialAccount(
+        provider: 'apple',
+        providerId: idToken,
+      );
+      await _loadSocialAccounts();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Apple 계정이 연동되었습니다.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Apple 계정 연동에 실패했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLinkingSocial = false);
+    }
+  }
+
+  Future<void> _handleLinkKakao() async {
+    if (_isLinkingSocial) return;
+    setState(() => _isLinkingSocial = true);
+    try {
+      OAuthToken token;
+      if (await isKakaoTalkInstalled()) {
+        token = await UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
+      await _authService.linkSocialAccount(
+        provider: 'kakao',
+        providerId: token.accessToken,
+      );
+      await _loadSocialAccounts();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('카카오 계정이 연동되었습니다.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('카카오 계정 연동에 실패했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLinkingSocial = false);
+    }
+  }
+
+  Future<void> _handleUnlinkSocial(String provider) async {
+    final providerName = switch (provider) {
+      'google' => 'Google',
+      'apple' => 'Apple',
+      'kakao' => '카카오',
+      _ => provider,
+    };
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '소셜 계정 연동 해제',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        content: Text(
+          '$providerName 계정 연동을 해제하시겠습니까?',
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF6B6B6B),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text(
+              '취소',
+              style: TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text(
+              '해제',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                color: Color(0xFFFF9A42),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await _authService.unlinkSocialAccount(provider);
+      await _loadSocialAccounts();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$providerName 계정 연동이 해제되었습니다.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$providerName 계정 연동 해제에 실패했습니다.')),
+      );
+    }
   }
 
   Future<void> _loadPets() async {
@@ -119,6 +298,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     // 사용자 프로필 섹션
                     _buildUserProfileSection(),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
+                    // 소셜 계정 연동 섹션
+                    _buildSocialAccountsSection(),
 
                     // 구분선
                     Container(
@@ -418,6 +607,129 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 소셜 계정 연동 관리 섹션
+  Widget _buildSocialAccountsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '소셜 계정 연동',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1A1A1A),
+              height: 22 / 16,
+              letterSpacing: 0.08,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_isLoadingSocial)
+            const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          else ...[
+            _buildSocialAccountRow(
+              provider: 'kakao',
+              label: '카카오',
+              icon: SvgPicture.asset(
+                'assets/images/btn_kakao/btn_kakao.svg',
+                width: 24,
+                height: 24,
+              ),
+              isLinked: _isProviderLinked('kakao'),
+              onLink: _handleLinkKakao,
+              onUnlink: () => _handleUnlinkSocial('kakao'),
+            ),
+            const SizedBox(height: 8),
+            _buildSocialAccountRow(
+              provider: 'google',
+              label: 'Google',
+              icon: SvgPicture.asset(
+                'assets/images/btn_google/btn_google.svg',
+                width: 24,
+                height: 24,
+              ),
+              isLinked: _isProviderLinked('google'),
+              onLink: _handleLinkGoogle,
+              onUnlink: () => _handleUnlinkSocial('google'),
+            ),
+            const SizedBox(height: 8),
+            _buildSocialAccountRow(
+              provider: 'apple',
+              label: 'Apple',
+              icon: const Icon(Icons.apple, size: 24, color: Colors.black),
+              isLinked: _isProviderLinked('apple'),
+              onLink: _handleLinkApple,
+              onUnlink: () => _handleUnlinkSocial('apple'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialAccountRow({
+    required String provider,
+    required String label,
+    required Widget icon,
+    required bool isLinked,
+    required VoidCallback onLink,
+    required VoidCallback onUnlink,
+  }) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: isLinked ? AppColors.brandPrimary : const Color(0xFFE7E5E1),
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        color: isLinked ? const Color(0xFFFFF5ED) : Colors.white,
+      ),
+      child: Row(
+        children: [
+          icon,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1A1A1A),
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: _isLinkingSocial ? null : (isLinked ? onUnlink : onLink),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isLinked ? Colors.white : AppColors.brandPrimary,
+                borderRadius: BorderRadius.circular(8),
+                border: isLinked
+                    ? Border.all(color: const Color(0xFFE7E5E1))
+                    : null,
+              ),
+              child: Text(
+                isLinked ? '해제' : '연동',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isLinked ? const Color(0xFF97928A) : Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

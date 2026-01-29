@@ -1,8 +1,10 @@
 from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from app.models.user import User
+from app.models.social_account import SocialAccount
 from app.utils.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 
 
@@ -54,29 +56,34 @@ async def refresh_tokens(db: AsyncSession, refresh_token: str) -> dict:
     }
 
 
-async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: str, nickname: str | None = None) -> dict:
+async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: str | None = None, nickname: str | None = None) -> dict:
+    # Look up by social account
     result = await db.execute(
-        select(User).where(User.oauth_provider == provider, User.oauth_provider_id == provider_id)
+        select(SocialAccount).where(
+            SocialAccount.provider == provider,
+            SocialAccount.provider_id == provider_id,
+        )
     )
-    user = result.scalar_one_or_none()
+    social_account = result.scalar_one_or_none()
 
-    if not user:
-        # Check if email already exists
-        result = await db.execute(select(User).where(User.email == email))
+    if social_account:
+        # Social account found - get user and return tokens
+        result = await db.execute(select(User).where(User.id == social_account.user_id))
         user = result.scalar_one_or_none()
-        if user:
-            # Link OAuth to existing account
-            user.oauth_provider = provider
-            user.oauth_provider_id = provider_id
-        else:
-            # Create new user
-            user = User(email=email, oauth_provider=provider, oauth_provider_id=provider_id, nickname=nickname)
-            db.add(user)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
-    await db.flush()
+        return {
+            "status": "authenticated",
+            "access_token": create_access_token(str(user.id)),
+            "refresh_token": create_refresh_token(str(user.id)),
+            "token_type": "bearer",
+        }
 
+    # Social account not found - return signup_required
     return {
-        "access_token": create_access_token(str(user.id)),
-        "refresh_token": create_refresh_token(str(user.id)),
-        "token_type": "bearer",
+        "status": "signup_required",
+        "provider": provider,
+        "provider_id": provider_id,
+        "provider_email": email,
     }

@@ -26,6 +26,17 @@ class OAuthRequest(BaseModel):
     id_token: str | None = None
     authorization_code: str | None = None
     provider: str | None = None
+    email: str | None = None
+
+
+class OAuthLoginResponse(BaseModel):
+    status: str  # "authenticated" or "signup_required"
+    access_token: str | None = None
+    refresh_token: str | None = None
+    token_type: str | None = None
+    provider: str | None = None
+    provider_id: str | None = None
+    provider_email: str | None = None
 
 
 class ResetPasswordRequest(BaseModel):

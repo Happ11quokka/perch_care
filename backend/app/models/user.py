@@ -14,10 +14,9 @@ class User(Base):
     hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     nickname: Mapped[str | None] = mapped_column(String(100), nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    oauth_provider: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    oauth_provider_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     pets = relationship("Pet", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    social_accounts = relationship("SocialAccount", back_populates="user", cascade="all, delete-orphan")

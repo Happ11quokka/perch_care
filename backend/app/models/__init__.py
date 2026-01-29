@@ -6,5 +6,6 @@ from app.models.daily_record import DailyRecord
 from app.models.ai_health_check import AiHealthCheck
 from app.models.schedule import Schedule
 from app.models.notification import Notification
+from app.models.social_account import SocialAccount
 
-__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "AiHealthCheck", "Schedule", "Notification"]
+__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "AiHealthCheck", "Schedule", "Notification", "SocialAccount"]

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 
 /// 회원가입 화면 - Figma 디자인 기반
@@ -296,6 +297,66 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  /// 회원가입 성공 후 소셜 계정 연동 안내 다이얼로그
+  void _showSocialLinkDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '회원가입 완료',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        content: const Text(
+          '회원가입이 완료되었습니다!\n소셜 계정을 연동하면 간편하게 로그인할 수 있습니다.\n프로필 화면에서 언제든 연동할 수 있습니다.',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF6B6B6B),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              // 홈으로 이동 (이미 로그인된 상태)
+              context.goNamed(RouteNames.home);
+            },
+            child: const Text(
+              '나중에 하기',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                color: Color(0xFF97928A),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              // 프로필 화면으로 이동하여 소셜 연동
+              context.goNamed(RouteNames.profile);
+            },
+            child: const Text(
+              '소셜 계정 연동하기',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                color: Color(0xFFFF9A42),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _handleSignup() async {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
@@ -317,13 +378,8 @@ class _SignupScreenState extends State<SignupScreen> {
         nickname: name,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('가입 메일을 확인하고 인증을 완료해 주세요.'),
-        ),
-      );
-      // 로그인 화면으로 돌아가기
-      context.pop();
+      // 회원가입 성공 후 소셜 계정 연동 안내
+      _showSocialLinkDialog();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
