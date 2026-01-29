@@ -75,9 +75,9 @@ class AuthService {
   }
 
   /// Kakao 로그인
-  Future<void> signInWithKakao({required String authorizationCode}) async {
+  Future<void> signInWithKakao({required String accessToken}) async {
     final response = await _api.post('/auth/oauth/kakao', body: {
-      'authorization_code': authorizationCode,
+      'access_token': accessToken,
     }, auth: false);
 
     await _tokenService.saveTokens(

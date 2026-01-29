@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -530,9 +533,19 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_isGoogleLoading) return;
     setState(() => _isGoogleLoading = true);
     try {
-      // TODO: Google Sign-In SDK로 idToken 획득 후 전달
-      // await _authService.signInWithGoogle(idToken: idToken);
+      final signIn = GoogleSignIn.instance;
+      await signIn.initialize();
+      final account = await signIn.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null) throw Exception('idToken is null');
+      await _authService.signInWithGoogle(idToken: idToken);
       _navigateToHomeAfterLogin();
+    } on GoogleSignInException catch (e) {
+      if (!mounted) return;
+      if (e.code == GoogleSignInExceptionCode.canceled) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -547,9 +560,19 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_isAppleLoading) return;
     setState(() => _isAppleLoading = true);
     try {
-      // TODO: Apple Sign-In SDK로 idToken 획득 후 전달
-      // await _authService.signInWithApple(idToken: idToken);
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email],
+      );
+      final idToken = credential.identityToken;
+      if (idToken == null) throw Exception('identityToken is null');
+      await _authService.signInWithApple(idToken: idToken);
       _navigateToHomeAfterLogin();
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (!mounted) return;
+      if (e.code == AuthorizationErrorCode.canceled) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -564,8 +587,13 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_isKakaoLoading) return;
     setState(() => _isKakaoLoading = true);
     try {
-      // TODO: Kakao SDK로 authorizationCode 획득 후 전달
-      // await _authService.signInWithKakao(authorizationCode: code);
+      OAuthToken token;
+      if (await isKakaoTalkInstalled()) {
+        token = await UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
+      await _authService.signInWithKakao(accessToken: token.accessToken);
       _navigateToHomeAfterLogin();
     } catch (_) {
       if (!mounted) return;

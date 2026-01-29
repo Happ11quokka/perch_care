@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'src/services/api/api_client.dart';
 import 'src/services/api/token_service.dart';
 import 'src/router/app_router.dart';
@@ -8,6 +9,7 @@ import 'src/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
+  KakaoSdk.init(nativeAppKey: '23f9d1f1b79cea8566c54a44ba33b463');
   await TokenService.instance.init();
   ApiClient.initialize();
 
