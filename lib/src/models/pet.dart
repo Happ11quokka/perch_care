@@ -7,6 +7,7 @@ class Pet {
   final String? breed;
   final DateTime? birthDate;
   final String? gender; // 'male', 'female', 'unknown'
+  final String? growthStage; // 'rapid_growth', 'post_growth', 'adult' (새 전용)
   final double? weight; // 체중 (g 단위)
   final DateTime? adoptionDate; // 가족이 된 날
   final String? profileImageUrl;
@@ -22,6 +23,7 @@ class Pet {
     this.breed,
     this.birthDate,
     this.gender,
+    this.growthStage,
     this.weight,
     this.adoptionDate,
     this.profileImageUrl,
@@ -41,6 +43,7 @@ class Pet {
           ? DateTime.parse(json['birth_date'] as String)
           : null,
       gender: json['gender'] as String?,
+      growthStage: json['growth_stage'] as String?,
       weight: (json['weight'] as num?)?.toDouble(),
       adoptionDate: json['adoption_date'] != null
           ? DateTime.parse(json['adoption_date'] as String)
@@ -61,6 +64,7 @@ class Pet {
       'breed': breed,
       'birth_date': birthDate?.toIso8601String().split('T').first,
       'gender': gender,
+      'growth_stage': growthStage,
       if (weight != null) 'weight': weight,
       'adoption_date': adoptionDate?.toIso8601String().split('T').first,
       'profile_image_url': profileImageUrl,
@@ -78,6 +82,7 @@ class Pet {
       if (birthDate != null)
         'birth_date': birthDate!.toIso8601String().split('T').first,
       if (gender != null) 'gender': gender,
+      if (growthStage != null) 'growth_stage': growthStage,
       if (weight != null) 'weight': weight,
       if (adoptionDate != null)
         'adoption_date': adoptionDate!.toIso8601String().split('T').first,
@@ -94,6 +99,7 @@ class Pet {
     String? breed,
     DateTime? birthDate,
     String? gender,
+    String? growthStage,
     double? weight,
     DateTime? adoptionDate,
     String? profileImageUrl,
@@ -109,6 +115,7 @@ class Pet {
       breed: breed ?? this.breed,
       birthDate: birthDate ?? this.birthDate,
       gender: gender ?? this.gender,
+      growthStage: growthStage ?? this.growthStage,
       weight: weight ?? this.weight,
       adoptionDate: adoptionDate ?? this.adoptionDate,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,

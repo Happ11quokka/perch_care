@@ -37,6 +37,7 @@ class PetService {
     String? breed,
     DateTime? birthDate,
     String? gender,
+    String? growthStage,
     double? weight,
     DateTime? adoptionDate,
     String? profileImageUrl,
@@ -48,6 +49,7 @@ class PetService {
       if (birthDate != null)
         'birth_date': birthDate.toIso8601String().split('T').first,
       if (gender != null) 'gender': gender,
+      if (growthStage != null) 'growth_stage': growthStage,
       if (weight != null) 'weight': weight,
       if (adoptionDate != null)
         'adoption_date': adoptionDate.toIso8601String().split('T').first,
@@ -66,6 +68,7 @@ class PetService {
     String? breed,
     DateTime? birthDate,
     String? gender,
+    String? growthStage,
     double? weight,
     DateTime? adoptionDate,
     String? profileImageUrl,
@@ -78,6 +81,7 @@ class PetService {
       updates['birth_date'] = birthDate.toIso8601String().split('T').first;
     }
     if (gender != null) updates['gender'] = gender;
+    if (growthStage != null) updates['growth_stage'] = growthStage;
     if (weight != null) updates['weight'] = weight;
     if (adoptionDate != null) {
       updates['adoption_date'] = adoptionDate.toIso8601String().split('T').first;

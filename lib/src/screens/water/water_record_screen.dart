@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/water/water_record_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/progress_ring.dart';
@@ -19,6 +20,7 @@ class WaterRecordScreen extends StatefulWidget {
 
 class _WaterRecordScreenState extends State<WaterRecordScreen> {
   final _petService = PetService();
+  final _waterService = WaterRecordService();
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
   bool _isLoading = true;
@@ -58,6 +60,27 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
   }
 
   Future<void> _loadRecord() async {
+    // Try loading from backend first
+    if (_activePetId != null) {
+      try {
+        final record = await _waterService.getByDate(
+          _activePetId!,
+          _selectedDate,
+        );
+        if (!mounted) return;
+        if (record != null) {
+          setState(() {
+            _totalMl = record.totalMl;
+            _count = record.count;
+          });
+          return;
+        }
+      } catch (_) {
+        // Fall back to SharedPreferences if backend fails
+      }
+    }
+
+    // Fallback to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey());
     if (raw == null) {
@@ -77,6 +100,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
   }
 
   Future<void> _saveRecord() async {
+    // Save to SharedPreferences first (for offline access)
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
       _storageKey(),
@@ -85,6 +109,21 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
         'count': _count,
       }),
     );
+
+    // Also save to backend
+    if (_activePetId != null) {
+      try {
+        await _waterService.upsert(
+          petId: _activePetId!,
+          recordedDate: _selectedDate,
+          totalMl: _totalMl,
+          targetMl: _goalMl,
+          count: _count,
+        );
+      } catch (_) {
+        // Fail silently if offline - data is already saved to SharedPreferences
+      }
+    }
   }
 
   Future<void> _pickDate() async {

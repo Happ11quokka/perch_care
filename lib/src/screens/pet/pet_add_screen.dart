@@ -32,6 +32,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
   final _imagePicker = ImagePicker();
   File? _selectedImage;
   String? _selectedGender;
+  String? _selectedGrowthStage;
   DateTime? _selectedBirthDate;
   DateTime? _selectedAdoptionDate;
 
@@ -42,6 +43,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
   Pet? _existingPet;
 
   final List<String> _genderOptions = ['수컷', '암컷', '모름'];
+  final List<String> _growthStageOptions = ['빠른성장', '후속성장', '청년'];
 
   @override
   void initState() {
@@ -61,6 +63,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
       _nameController.text = pet.name;
       _speciesController.text = pet.breed ?? '';
       _selectedGender = _mapGenderToDisplay(pet.gender);
+      _selectedGrowthStage = _mapGrowthStageToDisplay(pet.growthStage);
       _selectedBirthDate = pet.birthDate;
 
       if (mounted) setState(() {});
@@ -155,6 +158,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
           : _nameController.text.trim();
       final species = _speciesController.text.trim();
       final gender = _mapGenderValue(_selectedGender);
+      final growthStage = _mapGrowthStageValue(_selectedGrowthStage);
       final weightText = _weightController.text.trim();
       final double? weightValue = weightText.isNotEmpty ? double.tryParse(weightText) : null;
 
@@ -169,6 +173,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
           breed: species.isEmpty ? null : species,
           birthDate: _selectedBirthDate,
           gender: gender,
+          growthStage: growthStage,
           weight: weightValue,
           adoptionDate: _selectedAdoptionDate,
         );
@@ -180,6 +185,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
           breed: species.isEmpty ? null : species,
           birthDate: _selectedBirthDate,
           gender: gender,
+          growthStage: growthStage,
           weight: weightValue,
           adoptionDate: _selectedAdoptionDate,
         );
@@ -212,6 +218,32 @@ class _PetAddScreenState extends State<PetAddScreen> {
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String? _mapGrowthStageToDisplay(String? stage) {
+    switch (stage) {
+      case 'rapid_growth':
+        return '빠른성장';
+      case 'post_growth':
+        return '후속성장';
+      case 'adult':
+        return '청년';
+      default:
+        return null;
+    }
+  }
+
+  String? _mapGrowthStageValue(String? stage) {
+    switch (stage) {
+      case '빠른성장':
+        return 'rapid_growth';
+      case '후속성장':
+        return 'post_growth';
+      case '청년':
+        return 'adult';
+      default:
+        return null;
     }
   }
 
@@ -363,6 +395,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
                         controller: _speciesController,
                         hintText: '종',
                       ),
+                      const SizedBox(height: 16),
+                      // 성장 단계 (새 전용)
+                      _buildGrowthStageDropdown(),
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -509,6 +544,61 @@ class _PetAddScreenState extends State<PetAddScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: value == null
+                      ? const Color(0xFF97928A)
+                      : const Color(0xFF1A1A1A),
+                  letterSpacing: -0.35,
+                ),
+              ),
+              const Icon(
+                Icons.arrow_drop_down,
+                color: Color(0xFF97928A),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGrowthStageDropdown() {
+    return GestureDetector(
+      onTap: () async {
+        final selected = await showDialog<String>(
+          context: context,
+          builder: (context) => SimpleDialog(
+            title: const Text('성장 단계 선택'),
+            children: _growthStageOptions.map((item) {
+              return SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, item),
+                child: Text(item),
+              );
+            }).toList(),
+          ),
+        );
+        if (selected != null) {
+          setState(() => _selectedGrowthStage = selected);
+        }
+      },
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFF97928A), width: 1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _selectedGrowthStage ?? '성장 단계를 선택해 주세요',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: _selectedGrowthStage == null
                       ? const Color(0xFF97928A)
                       : const Color(0xFF1A1A1A),
                   letterSpacing: -0.35,

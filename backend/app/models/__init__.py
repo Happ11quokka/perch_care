@@ -3,9 +3,11 @@ from app.models.user import User
 from app.models.pet import Pet
 from app.models.weight_record import WeightRecord
 from app.models.daily_record import DailyRecord
+from app.models.food_record import FoodRecord
+from app.models.water_record import WaterRecord
 from app.models.ai_health_check import AiHealthCheck
 from app.models.schedule import Schedule
 from app.models.notification import Notification
 from app.models.social_account import SocialAccount
 
-__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "AiHealthCheck", "Schedule", "Notification", "SocialAccount"]
+__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "FoodRecord", "WaterRecord", "AiHealthCheck", "Schedule", "Notification", "SocialAccount"]

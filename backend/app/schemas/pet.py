@@ -9,6 +9,7 @@ class PetCreate(BaseModel):
     breed: str | None = None
     birth_date: date | None = None
     gender: str | None = None
+    growth_stage: str | None = None
     profile_image_url: str | None = None
 
 
@@ -18,6 +19,7 @@ class PetUpdate(BaseModel):
     breed: str | None = None
     birth_date: date | None = None
     gender: str | None = None
+    growth_stage: str | None = None
     profile_image_url: str | None = None
     is_active: bool | None = None
 
@@ -30,6 +32,7 @@ class PetResponse(BaseModel):
     breed: str | None = None
     birth_date: date | None = None
     gender: str | None = None
+    growth_stage: str | None = None
     profile_image_url: str | None = None
     is_active: bool
     created_at: datetime

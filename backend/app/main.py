@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from app.config import get_settings
-from app.routers import auth, users, pets, weights, daily_records, health_checks, schedules, notifications
+from app.routers import auth, users, pets, weights, daily_records, food_records, water_records, health_checks, schedules, notifications, bhi
 
 settings = get_settings()
 
@@ -47,7 +47,10 @@ app.include_router(users.router, prefix=settings.api_v1_prefix)
 app.include_router(pets.router, prefix=settings.api_v1_prefix)
 app.include_router(weights.router, prefix=settings.api_v1_prefix)
 app.include_router(daily_records.router, prefix=settings.api_v1_prefix)
+app.include_router(food_records.router, prefix=settings.api_v1_prefix)
+app.include_router(water_records.router, prefix=settings.api_v1_prefix)
 app.include_router(health_checks.router, prefix=settings.api_v1_prefix)
+app.include_router(bhi.router, prefix=settings.api_v1_prefix)
 app.include_router(schedules.router, prefix=settings.api_v1_prefix)
 app.include_router(notifications.router, prefix=settings.api_v1_prefix)
 

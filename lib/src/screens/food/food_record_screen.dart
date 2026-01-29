@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/food/food_record_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/dashed_border.dart';
@@ -20,6 +21,7 @@ class FoodRecordScreen extends StatefulWidget {
 
 class _FoodRecordScreenState extends State<FoodRecordScreen> {
   final _petService = PetService();
+  final _foodService = FoodRecordService();
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
   bool _isLoading = true;
@@ -56,6 +58,28 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   }
 
   Future<void> _loadEntries() async {
+    // Try to load from backend first
+    if (_activePetId != null) {
+      try {
+        final record = await _foodService.getByDate(_activePetId!, _selectedDate);
+        if (record != null && record.entriesJson != null) {
+          final list = jsonDecode(record.entriesJson!) as List<dynamic>;
+          final entries = list
+              .map((item) => _FoodEntry.fromJson(item as Map<String, dynamic>))
+              .toList();
+          if (!mounted) return;
+          setState(() {
+            _entries = entries;
+          });
+          return;
+        }
+      } catch (e) {
+        // Fall back to SharedPreferences if backend call fails
+        print('Failed to load from backend, falling back to local storage: $e');
+      }
+    }
+
+    // Fallback to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey());
     if (raw == null) {
@@ -76,9 +100,27 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   }
 
   Future<void> _saveEntries() async {
+    // Save to SharedPreferences (for offline access)
     final prefs = await SharedPreferences.getInstance();
     final data = _entries.map((entry) => entry.toJson()).toList();
     await prefs.setString(_storageKey(), jsonEncode(data));
+
+    // Also save to backend
+    if (_activePetId != null && _entries.isNotEmpty) {
+      try {
+        await _foodService.upsert(
+          petId: _activePetId!,
+          recordedDate: _selectedDate,
+          totalGrams: _totalGrams,
+          targetGrams: _targetGrams,
+          count: _entries.length,
+          entriesJson: jsonEncode(data),
+        );
+      } catch (e) {
+        // Don't break if backend save fails (offline mode)
+        print('Failed to save to backend, data saved locally: $e');
+      }
+    }
   }
 
   Future<void> _pickDate() async {

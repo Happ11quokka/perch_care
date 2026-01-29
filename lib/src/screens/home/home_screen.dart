@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/bhi/bhi_service.dart';
 import '../../models/pet.dart';
+import '../../models/bhi_result.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,7 +18,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _petService = PetService();
+  final _bhiService = BhiService();
   Pet? _activePet;
+  BhiResult? _bhiResult;
   bool _isLoading = true;
   bool _isMonthlyView = true; // true: 매월 단위, false: 매주 단위
   int _selectedMonth = DateTime.now().month;
@@ -26,6 +30,18 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _hasWeightData = false;
   bool _hasFoodData = false;
   bool _hasWaterData = false;
+
+  // WCI 레벨 (0: 데이터 없음, 1~5: 각 단계)
+  int _wciLevel = 0;
+
+  // WCI 단계별 설명 텍스트
+  static const Map<int, String> _wciDescriptions = {
+    1: '몸이 가볍고 마른 인상이 강해요.\n식사량이나 컨디션을 한 번 더 살펴보는 게 좋아요.',
+    2: '갈비뼈가 보이지는 않지만 살짝 만지면 쉽게 느껴져요.\n옆에서 봤을 때 배가 쏙 들어간 부분이 보여요.',
+    3: '전체적인 체형은 안정적이에요.\n지금 습관을 유지하면서 가볍게 관찰해 주세요.',
+    4: '몸이 전체적으로 둥글어 보여요.\n식사량과 간식을 한 번 점검해 보세요.',
+    5: '전체적으로 무거운 인상이 들어요.\n건강을 위해 식단과 활동을 조절하는 것이 좋아요.',
+  };
 
   @override
   void initState() {
@@ -47,12 +63,34 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
       }
+
+      // BHI 데이터 로드 (펫이 있을 때만)
+      if (activePet != null) {
+        _loadBhi(activePet.id);
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _loadBhi(String petId) async {
+    try {
+      final bhi = await _bhiService.getBhi(petId);
+      if (mounted) {
+        setState(() {
+          _bhiResult = bhi;
+          _wciLevel = bhi.wciLevel;
+          _hasWeightData = bhi.hasWeightData;
+          _hasFoodData = bhi.hasFoodData;
+          _hasWaterData = bhi.hasWaterData;
+        });
+      }
+    } catch (_) {
+      // BHI 로드 실패 시 기본값 유지
     }
   }
 
@@ -437,44 +475,65 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          // 새 일러스트레이션
-          SvgPicture.asset(
-            'assets/images/home_vector/wci_bird_empty.svg',
-            width: 119,
-            height: 171,
-          ),
+          // 일러스트레이션
+          if (_wciLevel == 0)
+            SvgPicture.asset(
+              'assets/images/home_vector/wci_bird_empty.svg',
+              width: 119,
+              height: 171,
+            )
+          else
+            SvgPicture.asset(
+              'assets/images/home_vector/lv$_wciLevel.svg',
+              width: 160,
+              height: 240,
+            ),
           const SizedBox(height: 13),
           // 설명 텍스트
-          Text(
-            '데이터를 입력해 $petName의',
-            style: const TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF6B6B6B),
-              letterSpacing: -0.35,
-              height: 24 / 14,
+          if (_wciLevel == 0) ...[
+            Text(
+              '데이터를 입력해 $petName의',
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF6B6B6B),
+                letterSpacing: -0.35,
+                height: 24 / 14,
+              ),
             ),
-          ),
-          const Text(
-            '상태를 확인해 보세요.',
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF6B6B6B),
-              letterSpacing: -0.35,
-              height: 24 / 14,
+            const Text(
+              '상태를 확인해 보세요.',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF6B6B6B),
+                letterSpacing: -0.35,
+                height: 24 / 14,
+              ),
             ),
-          ),
+          ] else
+            Text(
+              _wciDescriptions[_wciLevel] ?? '',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF6B6B6B),
+                letterSpacing: -0.35,
+                height: 24 / 14,
+              ),
+            ),
           const SizedBox(height: 24),
           // 진행도 바
           _buildProgressBars(),
           const SizedBox(height: 8),
           // 단계 표시
-          const Text(
-            '0단계',
-            style: TextStyle(
+          Text(
+            '$_wciLevel단계',
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -489,12 +548,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProgressBars() {
+    // 5개 세그먼트: 1,2 | 인디케이터 | 4,5 (3은 중앙 인디케이터)
+    // 레벨에 따른 활성화 매핑: 세그먼트 순서 [1, 2, 3(중앙), 4, 5]
+    final bool seg1Active = _wciLevel >= 1;
+    final bool seg2Active = _wciLevel >= 2;
+    final bool seg3Active = _wciLevel >= 3; // 중앙 인디케이터
+    final bool seg4Active = _wciLevel >= 4;
+    final bool seg5Active = _wciLevel >= 5;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildProgressBar(false),
+        _buildProgressBar(seg1Active),
         const SizedBox(width: 2),
-        _buildProgressBar(false),
+        _buildProgressBar(seg2Active),
         const SizedBox(width: 2),
         // 중앙 인디케이터
         Container(
@@ -503,16 +570,16 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: const Color(0xFFF0F0F0),
+              color: seg3Active ? AppColors.brandPrimary : const Color(0xFFF0F0F0),
               width: 2,
             ),
             color: Colors.white,
           ),
         ),
         const SizedBox(width: 2),
-        _buildProgressBar(false),
+        _buildProgressBar(seg4Active),
         const SizedBox(width: 2),
-        _buildProgressBar(false),
+        _buildProgressBar(seg5Active),
       ],
     );
   }
