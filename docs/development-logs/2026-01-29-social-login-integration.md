@@ -228,3 +228,79 @@ Google SDK → idToken (JWT)
 - `provider_id`에는 provider가 발급한 **유저 고유 식별자**를 저장해야 하며, 토큰 자체를 저장하면 안 된다.
 - Google의 경우 `id_token`(JWT)의 `sub` claim이 유저 고유 ID이다.
 - `audience` 검증을 빠뜨리면 다른 앱에서 발급된 Google 토큰으로도 인증이 통과되는 보안 취약점이 생긴다.
+
+---
+
+## 로그아웃 및 회원 탈퇴 기능 구현
+
+**날짜**: 2026-01-29
+**수정 파일**:
+- [backend/app/services/user_service.py](../../backend/app/services/user_service.py)
+- [backend/app/routers/users.py](../../backend/app/routers/users.py)
+- [lib/src/services/auth/auth_service.dart](../../lib/src/services/auth/auth_service.dart)
+- [lib/src/screens/profile/profile_screen.dart](../../lib/src/screens/profile/profile_screen.dart)
+
+### 구현 목표
+
+- 프로필 화면에서 **로그아웃** 및 **회원 탈퇴** 기능을 제공하여 사용자가 계정을 관리할 수 있도록 한다.
+
+### 주요 변경 사항
+
+#### 1. 백엔드: 회원 탈퇴 API (`DELETE /users/me`)
+
+**`user_service.py`** - `delete_user()` 함수 추가:
+
+```python
+async def delete_user(db: AsyncSession, user_id: UUID) -> None:
+    user = await get_profile(db, user_id)
+    await db.delete(user)
+    await db.flush()
+```
+
+- `User` 모델에 `cascade="all, delete-orphan"`이 설정되어 있으므로, 유저 삭제 시 연관 데이터(pets, social_accounts, notifications)가 자동으로 함께 삭제된다.
+
+**`users.py`** - `DELETE /me` 엔드포인트 추가:
+
+```python
+@router.delete("/me", status_code=204)
+async def delete_my_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await user_service.delete_user(db, current_user.id)
+```
+
+- JWT Bearer 인증 필수 (`get_current_user` 의존성).
+- 성공 시 204 No Content 반환.
+
+#### 2. Flutter: `auth_service.dart` - `deleteAccount()` 메서드 추가
+
+```dart
+Future<void> deleteAccount() async {
+    await _api.delete('/users/me');
+    await _tokenService.clearTokens();
+}
+```
+
+- 백엔드에서 계정 삭제 후 로컬 토큰도 제거.
+
+#### 3. Flutter: `profile_screen.dart` - 계정 관리 UI 추가
+
+소셜 계정 연동 섹션 아래에 "계정 관리" 섹션 추가:
+
+- **로그아웃 버튼**: 회색 텍스트, 확인 다이얼로그 표시 후 `authService.signOut()` 호출 → 로그인 화면으로 이동.
+- **회원 탈퇴 버튼**: 빨간색 텍스트(`#E53935`), 경고 다이얼로그("모든 데이터가 삭제되며 복구할 수 없습니다") 표시 후 `authService.deleteAccount()` 호출 → 로그인 화면으로 이동. 실패 시 SnackBar로 에러 메시지 표시.
+
+### 데이터 흐름
+
+```
+[로그아웃]
+프로필 화면 → 확인 다이얼로그 → signOut() → clearTokens() → 로그인 화면
+
+[회원 탈퇴]
+프로필 화면 → 경고 다이얼로그 → deleteAccount()
+                                  ├─ DELETE /users/me (백엔드)
+                                  │   └─ User + Pets + SocialAccounts + Notifications 삭제
+                                  └─ clearTokens() (로컬)
+                                → 로그인 화면
+```

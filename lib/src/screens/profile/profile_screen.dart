@@ -353,6 +353,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // 소셜 계정 연동 섹션
                     _buildSocialAccountsSection(),
 
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
+                    // 계정 관리 섹션
+                    _buildAccountManagementSection(),
+
                     const SizedBox(height: 100),
                   ],
                 ),
@@ -725,6 +735,192 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: isLinked ? const Color(0xFF97928A) : Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 로그아웃 처리
+  Future<void> _handleLogout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '로그아웃',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        content: const Text(
+          '로그아웃 하시겠습니까?',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF6B6B6B),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text(
+              '취소',
+              style: TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text(
+              '로그아웃',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                color: Color(0xFFFF9A42),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    await _authService.signOut();
+    if (!mounted) return;
+    context.goNamed(RouteNames.login);
+  }
+
+  /// 회원 탈퇴 처리
+  Future<void> _handleDeleteAccount() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '회원 탈퇴',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        content: const Text(
+          '탈퇴하시면 모든 데이터가 삭제되며 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF6B6B6B),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text(
+              '취소',
+              style: TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text(
+              '탈퇴',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                color: Color(0xFFE53935),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    try {
+      await _authService.deleteAccount();
+      if (!mounted) return;
+      context.goNamed(RouteNames.login);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('회원 탈퇴에 실패했습니다. 다시 시도해주세요.')),
+      );
+    }
+  }
+
+  /// 계정 관리 섹션 (로그아웃 + 회원 탈퇴)
+  Widget _buildAccountManagementSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '계정 관리',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1A1A1A),
+              height: 22 / 16,
+              letterSpacing: 0.08,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // 로그아웃 버튼
+          GestureDetector(
+            onTap: _handleLogout,
+            child: Container(
+              width: double.infinity,
+              height: 48,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE7E5E1)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Text(
+                  '로그아웃',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B6B6B),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // 회원 탈퇴 버튼
+          GestureDetector(
+            onTap: _handleDeleteAccount,
+            child: Container(
+              width: double.infinity,
+              height: 48,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE7E5E1)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Text(
+                  '회원 탈퇴',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFFE53935),
+                  ),
                 ),
               ),
             ),

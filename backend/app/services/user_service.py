@@ -68,6 +68,12 @@ async def get_social_accounts(db: AsyncSession, user_id: UUID) -> list[SocialAcc
     return list(result.scalars().all())
 
 
+async def delete_user(db: AsyncSession, user_id: UUID) -> None:
+    user = await get_profile(db, user_id)
+    await db.delete(user)
+    await db.flush()
+
+
 async def unlink_social_account(db: AsyncSession, user_id: UUID, provider: str) -> None:
     result = await db.execute(
         select(SocialAccount).where(

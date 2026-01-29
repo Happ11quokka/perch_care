@@ -222,6 +222,12 @@ class AuthService {
 
   // --- 소셜 계정 연동 관리 ---
 
+  /// 회원 탈퇴
+  Future<void> deleteAccount() async {
+    await _api.delete('/users/me');
+    await _tokenService.clearTokens();
+  }
+
   /// 소셜 계정 연동
   Future<void> linkSocialAccount({
     required String provider,

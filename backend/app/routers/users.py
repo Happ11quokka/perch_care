@@ -70,6 +70,14 @@ async def get_social_accounts(
     return await user_service.get_social_accounts(db, current_user.id)
 
 
+@router.delete("/me", status_code=204)
+async def delete_my_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await user_service.delete_user(db, current_user.id)
+
+
 @router.delete("/me/social-accounts/{provider}", status_code=204)
 async def unlink_social_account(
     provider: str,
