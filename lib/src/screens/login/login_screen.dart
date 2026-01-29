@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth/auth_service.dart';
 
 /// 로그인 화면 - Figma 디자인 기반
@@ -21,29 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
   bool _isKakaoLoading = false;
-  StreamSubscription<AuthState>? _authStateSubscription;
   bool _hasNavigatedAfterLogin = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _authStateSubscription =
-        _authService.authStateChanges.listen(_handleAuthStateChange);
-  }
-
-  @override
-  void dispose() {
-    _authStateSubscription?.cancel();
-    super.dispose();
-  }
-
-  void _handleAuthStateChange(AuthState state) {
-    if (state.session == null) return;
-    if (state.event == AuthChangeEvent.signedIn ||
-        state.event == AuthChangeEvent.initialSession) {
-      _navigateToHomeAfterLogin();
-    }
-  }
 
   void _navigateToHomeAfterLogin() {
     if (!mounted || _hasNavigatedAfterLogin) return;
@@ -55,13 +30,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isGoogleLoading) return;
     setState(() => _isGoogleLoading = true);
     try {
-      await _authService.signInWithGoogle();
+      // TODO: Google Sign-In SDK로 idToken 획득 후 전달
+      // await _authService.signInWithGoogle(idToken: idToken);
       _navigateToHomeAfterLogin();
-    } on AuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,13 +47,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isAppleLoading) return;
     setState(() => _isAppleLoading = true);
     try {
-      await _authService.signInWithApple();
+      // TODO: Apple Sign-In SDK로 idToken 획득 후 전달
+      // await _authService.signInWithApple(idToken: idToken);
       _navigateToHomeAfterLogin();
-    } on AuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

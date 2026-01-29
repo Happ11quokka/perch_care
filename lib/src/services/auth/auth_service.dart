@@ -1,102 +1,106 @@
-import 'package:perch_care/src/config/app_config.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
+import '../api/api_client.dart';
+import '../api/token_service.dart';
 
-/// Wrapper around Supabase auth APIs for dependency injection and testing.
+/// FastAPI 기반 인증 서비스
 class AuthService {
-  AuthService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  AuthService();
 
-  final SupabaseClient _client;
+  final _api = ApiClient.instance;
+  final _tokenService = TokenService.instance;
 
-  /// 현재 로그인한 사용자
-  User? get currentUser => _client.auth.currentUser;
+  /// 현재 로그인 여부
+  bool get isLoggedIn => _tokenService.isLoggedIn;
 
-  /// 로그인 상태 스트림
-  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+  /// 현재 사용자 ID
+  String? get currentUserId => _tokenService.userId;
 
   /// 이메일 회원가입
-  Future<AuthResponse> signUpWithEmail({
+  Future<void> signUpWithEmail({
     required String email,
     required String password,
     String? nickname,
   }) async {
-    final response = await _client.auth.signUp(
-      email: email,
-      password: password,
-      emailRedirectTo: AppConfig.authRedirectUri,
-      data: nickname != null ? {'nickname': nickname} : null,
+    final body = <String, dynamic>{
+      'email': email,
+      'password': password,
+      if (nickname != null) 'nickname': nickname,
+    };
+
+    final response = await _api.post('/auth/signup', body: body, auth: false);
+    await _tokenService.saveTokens(
+      accessToken: response['access_token'],
+      refreshToken: response['refresh_token'],
     );
-
-    // 프로필 닉네임 업데이트 (트리거가 자동 생성하므로 업데이트만)
-    if (response.user != null && nickname != null) {
-      await _client.from('profiles').update({
-        'nickname': nickname,
-      }).eq('id', response.user!.id);
-    }
-
-    return response;
   }
 
   /// 이메일 로그인
-  Future<AuthResponse> signInWithEmailPassword({
+  Future<void> signInWithEmailPassword({
     required String email,
     required String password,
-  }) {
-    return _client.auth.signInWithPassword(
-      email: email,
-      password: password,
+  }) async {
+    final response = await _api.post('/auth/login', body: {
+      'email': email,
+      'password': password,
+    }, auth: false);
+
+    await _tokenService.saveTokens(
+      accessToken: response['access_token'],
+      refreshToken: response['refresh_token'],
     );
   }
 
   /// Google 로그인
-  Future<void> signInWithGoogle() {
-    return _client.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: AppConfig.authRedirectUri,
+  Future<void> signInWithGoogle({required String idToken}) async {
+    final response = await _api.post('/auth/oauth/google', body: {
+      'id_token': idToken,
+    }, auth: false);
+
+    await _tokenService.saveTokens(
+      accessToken: response['access_token'],
+      refreshToken: response['refresh_token'],
     );
   }
 
   /// Apple 로그인
-  Future<void> signInWithApple() {
-    return _client.auth.signInWithOAuth(
-      OAuthProvider.apple,
-      redirectTo: AppConfig.authRedirectUri,
+  Future<void> signInWithApple({required String idToken}) async {
+    final response = await _api.post('/auth/oauth/apple', body: {
+      'id_token': idToken,
+    }, auth: false);
+
+    await _tokenService.saveTokens(
+      accessToken: response['access_token'],
+      refreshToken: response['refresh_token'],
     );
   }
 
   /// Kakao 로그인
-  Future<void> signInWithKakao() {
-    return _client.auth.signInWithOAuth(
-      OAuthProvider.kakao,
-      redirectTo: AppConfig.authRedirectUri,
+  Future<void> signInWithKakao({required String authorizationCode}) async {
+    final response = await _api.post('/auth/oauth/kakao', body: {
+      'authorization_code': authorizationCode,
+    }, auth: false);
+
+    await _tokenService.saveTokens(
+      accessToken: response['access_token'],
+      refreshToken: response['refresh_token'],
     );
   }
 
   /// 로그아웃
-  Future<void> signOut() {
-    return _client.auth.signOut();
+  Future<void> signOut() async {
+    await _tokenService.clearTokens();
   }
 
   /// 비밀번호 재설정 이메일 전송
-  Future<void> resetPassword(String email) {
-    return _client.auth.resetPasswordForEmail(
-      email,
-      redirectTo: AppConfig.authRedirectUri,
-    );
+  Future<void> resetPassword(String email) async {
+    await _api.post('/auth/reset-password', body: {'email': email}, auth: false);
   }
 
   /// 프로필 조회
   Future<Map<String, dynamic>?> getProfile() async {
-    final user = currentUser;
-    if (user == null) return null;
-
-    final response = await _client
-        .from('profiles')
-        .select()
-        .eq('id', user.id)
-        .maybeSingle();
-
-    return response;
+    if (!isLoggedIn) return null;
+    final response = await _api.get('/users/me/profile');
+    return response as Map<String, dynamic>;
   }
 
   /// 프로필 업데이트
@@ -104,15 +108,12 @@ class AuthService {
     String? nickname,
     String? avatarUrl,
   }) async {
-    final user = currentUser;
-    if (user == null) throw Exception('User not logged in');
-
     final updates = <String, dynamic>{};
     if (nickname != null) updates['nickname'] = nickname;
     if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
 
     if (updates.isNotEmpty) {
-      await _client.from('profiles').update(updates).eq('id', user.id);
+      await _api.put('/users/me/profile', body: updates);
     }
   }
 }

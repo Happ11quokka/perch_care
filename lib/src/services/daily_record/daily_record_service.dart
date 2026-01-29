@@ -1,21 +1,15 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/daily_record.dart';
+import '../api/api_client.dart';
 
 /// 일일 건강 기록 서비스 (캘린더용)
 class DailyRecordService {
-  DailyRecordService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  DailyRecordService();
 
-  final SupabaseClient _client;
+  final _api = ApiClient.instance;
 
   /// 특정 펫의 모든 일일 기록 조회
   Future<List<DailyRecord>> getDailyRecords(String petId) async {
-    final response = await _client
-        .from('daily_records')
-        .select()
-        .eq('pet_id', petId)
-        .order('recorded_date', ascending: false);
-
+    final response = await _api.get('/pets/$petId/daily-records/');
     return (response as List)
         .map((json) => DailyRecord.fromJson(json))
         .toList();
@@ -24,14 +18,7 @@ class DailyRecordService {
   /// 특정 날짜의 일일 기록 조회
   Future<DailyRecord?> getRecordByDate(String petId, DateTime date) async {
     final dateStr = _formatDate(date);
-
-    final response = await _client
-        .from('daily_records')
-        .select()
-        .eq('pet_id', petId)
-        .eq('recorded_date', dateStr)
-        .maybeSingle();
-
+    final response = await _api.get('/pets/$petId/daily-records/by-date/$dateStr');
     return response != null ? DailyRecord.fromJson(response) : null;
   }
 
@@ -41,16 +28,13 @@ class DailyRecordService {
     int year,
     int month,
   ) async {
-    final startDate = DateTime(year, month, 1);
-    final endDate = DateTime(year, month + 1, 0); // 해당 월의 마지막 날
-
-    final response = await _client
-        .from('daily_records')
-        .select()
-        .eq('pet_id', petId)
-        .gte('recorded_date', _formatDate(startDate))
-        .lte('recorded_date', _formatDate(endDate))
-        .order('recorded_date', ascending: true);
+    final response = await _api.get(
+      '/pets/$petId/daily-records/by-month',
+      queryParams: {
+        'year': year.toString(),
+        'month': month.toString(),
+      },
+    );
 
     return (response as List)
         .map((json) => DailyRecord.fromJson(json))
@@ -59,31 +43,29 @@ class DailyRecordService {
 
   /// 일일 기록 저장 또는 수정 (Upsert)
   Future<DailyRecord> saveDailyRecord(DailyRecord record) async {
-    final response = await _client
-        .from('daily_records')
-        .upsert(
-          record.toInsertJson(),
-          onConflict: 'pet_id,recorded_date',
-        )
-        .select()
-        .single();
+    final response = await _api.post(
+      '/pets/${record.petId}/daily-records/',
+      body: {
+        'recorded_date': _formatDate(record.recordedDate),
+        if (record.notes != null) 'notes': record.notes,
+        if (record.mood != null) 'mood': record.mood,
+        if (record.activityLevel != null) 'activity_level': record.activityLevel,
+      },
+    );
 
     return DailyRecord.fromJson(response);
   }
 
   /// 일일 기록 삭제
   Future<void> deleteDailyRecord(String recordId) async {
-    await _client.from('daily_records').delete().eq('id', recordId);
+    // pet_id is needed for the URL; pass a placeholder since API identifies by record_id
+    await _api.delete('/pets/_/daily-records/$recordId');
   }
 
   /// 특정 날짜의 일일 기록 삭제
   Future<void> deleteDailyRecordByDate(String petId, DateTime date) async {
     final dateStr = _formatDate(date);
-    await _client
-        .from('daily_records')
-        .delete()
-        .eq('pet_id', petId)
-        .eq('recorded_date', dateStr);
+    await _api.delete('/pets/$petId/daily-records/by-date/$dateStr');
   }
 
   /// 특정 기간의 일일 기록 조회
@@ -92,13 +74,13 @@ class DailyRecordService {
     DateTime start,
     DateTime end,
   ) async {
-    final response = await _client
-        .from('daily_records')
-        .select()
-        .eq('pet_id', petId)
-        .gte('recorded_date', _formatDate(start))
-        .lte('recorded_date', _formatDate(end))
-        .order('recorded_date', ascending: true);
+    final response = await _api.get(
+      '/pets/$petId/daily-records/range',
+      queryParams: {
+        'start': _formatDate(start),
+        'end': _formatDate(end),
+      },
+    );
 
     return (response as List)
         .map((json) => DailyRecord.fromJson(json))

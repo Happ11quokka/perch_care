@@ -1,14 +1,13 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 import '../../models/notification.dart';
+import '../api/api_client.dart';
 
 /// 알림 관리 서비스
-/// Supabase notifications 테이블과 연동
+/// FastAPI notifications 엔드포인트와 연동
 class NotificationService {
-  final _supabase = Supabase.instance.client;
-  static const _tableName = 'notifications';
+  NotificationService();
 
-  /// 현재 로그인한 사용자 ID
-  String? get _currentUserId => _supabase.auth.currentUser?.id;
+  final _api = ApiClient.instance;
 
   /// 알림 생성
   Future<AppNotification> createNotification({
@@ -17,24 +16,12 @@ class NotificationService {
     String message = '',
     String? petId,
   }) async {
-    if (_currentUserId == null) {
-      throw Exception('로그인이 필요합니다.');
-    }
-
-    final data = {
-      'user_id': _currentUserId,
-      'pet_id': petId,
+    final response = await _api.post('/notifications/', body: {
+      if (petId != null) 'pet_id': petId,
       'type': type.name,
       'title': title,
       'message': message,
-      'is_read': false,
-    };
-
-    final response = await _supabase
-        .from(_tableName)
-        .insert(data)
-        .select()
-        .single();
+    });
 
     return AppNotification.fromJson(response);
   }
@@ -44,22 +31,14 @@ class NotificationService {
     int? limit,
     bool unreadOnly = false,
   }) async {
-    if (_currentUserId == null) {
-      return [];
-    }
+    final params = <String, String>{};
+    if (limit != null) params['limit'] = limit.toString();
+    if (unreadOnly) params['unread_only'] = 'true';
 
-    var query = _supabase
-        .from(_tableName)
-        .select()
-        .eq('user_id', _currentUserId!);
-
-    if (unreadOnly) {
-      query = query.eq('is_read', false);
-    }
-
-    final response = await query
-        .order('created_at', ascending: false)
-        .limit(limit ?? 100);
+    final response = await _api.get(
+      '/notifications/',
+      queryParams: params.isNotEmpty ? params : null,
+    );
 
     return (response as List)
         .map((json) => AppNotification.fromJson(json))
@@ -68,77 +47,43 @@ class NotificationService {
 
   /// 읽지 않은 알림 개수 조회
   Future<int> getUnreadCount() async {
-    if (_currentUserId == null) {
-      return 0;
-    }
-
-    final response = await _supabase
-        .from(_tableName)
-        .select('id')
-        .eq('user_id', _currentUserId!)
-        .eq('is_read', false);
-
-    return (response as List).length;
+    final response = await _api.get('/notifications/unread-count');
+    return response['count'] as int;
   }
 
   /// 알림 읽음 처리
   Future<void> markAsRead(String notificationId) async {
-    await _supabase
-        .from(_tableName)
-        .update({'is_read': true})
-        .eq('id', notificationId);
+    await _api.put('/notifications/$notificationId/read');
   }
 
   /// 모든 알림 읽음 처리
   Future<void> markAllAsRead() async {
-    if (_currentUserId == null) return;
-
-    await _supabase
-        .from(_tableName)
-        .update({'is_read': true})
-        .eq('user_id', _currentUserId!)
-        .eq('is_read', false);
+    await _api.put('/notifications/read-all');
   }
 
   /// 알림 삭제
   Future<void> deleteNotification(String notificationId) async {
-    await _supabase
-        .from(_tableName)
-        .delete()
-        .eq('id', notificationId);
+    await _api.delete('/notifications/$notificationId');
   }
 
   /// 모든 알림 삭제
   Future<void> deleteAllNotifications() async {
-    if (_currentUserId == null) return;
-
-    await _supabase
-        .from(_tableName)
-        .delete()
-        .eq('user_id', _currentUserId!);
+    await _api.delete('/notifications/');
   }
 
   /// 특정 펫의 알림 삭제
   Future<void> deleteNotificationsByPetId(String petId) async {
-    await _supabase
-        .from(_tableName)
-        .delete()
-        .eq('pet_id', petId);
+    await _api.delete('/notifications/by-pet/$petId');
   }
 
-  /// 알림 실시간 구독 (Stream)
+  /// 알림 폴링 스트림 (30초 간격)
   Stream<List<AppNotification>> subscribeToNotifications() {
-    if (_currentUserId == null) {
-      return Stream.value([]);
-    }
-
-    return _supabase
-        .from(_tableName)
-        .stream(primaryKey: ['id'])
-        .eq('user_id', _currentUserId!)
-        .order('created_at', ascending: false)
-        .map((data) => data
-            .map((json) => AppNotification.fromJson(json))
-            .toList());
+    return Stream.periodic(const Duration(seconds: 30), (_) async {
+      try {
+        return await fetchNotifications(unreadOnly: true);
+      } catch (_) {
+        return <AppNotification>[];
+      }
+    }).asyncMap((future) => future);
   }
 }

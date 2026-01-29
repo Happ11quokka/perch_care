@@ -99,7 +99,7 @@ class ScheduleRecord {
     return Color(int.parse('FF$hexCode', radix: 16));
   }
 
-  /// Supabase JSON 역직렬화
+  /// JSON 역직렬화
   factory ScheduleRecord.fromJson(Map<String, dynamic> json) {
     return ScheduleRecord(
       id: json['id'] as String,
@@ -113,7 +113,7 @@ class ScheduleRecord {
     );
   }
 
-  /// Supabase JSON 직렬화 (조회용)
+  /// JSON 직렬화 (조회용)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -127,7 +127,7 @@ class ScheduleRecord {
     };
   }
 
-  /// Supabase INSERT용 JSON (id 제외)
+  /// INSERT용 JSON (id 제외)
   Map<String, dynamic> toInsertJson() {
     return {
       'pet_id': petId,

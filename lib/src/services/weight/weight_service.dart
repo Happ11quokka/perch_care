@@ -1,17 +1,16 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../models/weight_record.dart';
+import '../api/api_client.dart';
 
 /// 체중 데이터 관리 서비스
-/// Supabase 테이블 `weight_records`와 연동
+/// FastAPI 백엔드와 연동
 class WeightService {
-  WeightService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  WeightService();
 
-  final SupabaseClient _client;
+  final _api = ApiClient.instance;
 
   static const String _storageKey = 'local_weight_records';
 
@@ -30,23 +29,16 @@ class WeightService {
     return List.unmodifiable(allRecords);
   }
 
-  /// Supabase에서 전체 체중 기록을 불러와 캐시 업데이트
+  /// 서버에서 전체 체중 기록을 불러와 캐시 업데이트
   Future<List<WeightRecord>> fetchAllRecords({String? petId}) async {
     await _ensureInitialized();
 
     if (petId != null) {
-      // Supabase에서 특정 펫의 체중 기록 조회
-      final response = await _client
-          .from('weight_records')
-          .select()
-          .eq('pet_id', petId)
-          .order('recorded_date', ascending: true);
-
+      final response = await _api.get('/pets/$petId/weights/');
       final records = (response as List)
           .map((json) => WeightRecord.fromJson(json))
           .toList();
 
-      // 로컬 캐시 업데이트 (해당 펫 데이터만 교체)
       _recordsByPet[petId] = records
         ..sort((a, b) => a.date.compareTo(b.date));
       await _persistToStorage();
@@ -57,7 +49,7 @@ class WeightService {
     return getWeightRecords();
   }
 
-  /// 로컬 캐시에서 체중 기록 로드 (Supabase 미사용)
+  /// 로컬 캐시에서 체중 기록 로드 (서버 미사용)
   Future<List<WeightRecord>> fetchLocalRecords({String? petId}) async {
     await _ensureInitialized();
     if (petId != null) {
@@ -66,7 +58,7 @@ class WeightService {
     return getWeightRecords();
   }
 
-  /// 특정 날짜의 체중 기록 조회 (캐시 → Supabase 순으로 탐색)
+  /// 특정 날짜의 체중 기록 조회 (캐시 → 서버 순으로 탐색)
   Future<WeightRecord?> fetchRecordByDate(DateTime date, {String? petId}) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(date);
@@ -77,14 +69,10 @@ class WeightService {
       return cached;
     }
 
-    // Cache miss - query Supabase if petId provided
+    // Cache miss - query server if petId provided
     if (petId != null) {
-      final response = await _client
-          .from('weight_records')
-          .select()
-          .eq('pet_id', petId)
-          .eq('recorded_date', _formatDate(normalizedDate))
-          .maybeSingle();
+      final dateStr = _formatDate(normalizedDate);
+      final response = await _api.get('/pets/$petId/weights/by-date/$dateStr');
 
       if (response != null) {
         final record = WeightRecord.fromJson(response);
@@ -97,7 +85,7 @@ class WeightService {
     return null;
   }
 
-  /// 로컬 캐시에서 특정 날짜의 체중 기록 조회 (Supabase 미사용)
+  /// 로컬 캐시에서 특정 날짜의 체중 기록 조회 (서버 미사용)
   Future<WeightRecord?> fetchLocalRecordByDate(
     DateTime date, {
     String? petId,
@@ -131,40 +119,22 @@ class WeightService {
     return null;
   }
 
-  /// 체중 기록 저장 또는 수정
-  /// - 동일 날짜 기록 존재 시 Update
-  /// - 없으면 Insert
+  /// 체중 기록 저장 또는 수정 (Upsert)
   Future<void> saveWeightRecord(WeightRecord record) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(record.date);
 
-    // Supabase에 저장
-    final existingRecord = await _client
-        .from('weight_records')
-        .select()
-        .eq('pet_id', record.petId)
-        .eq('recorded_date', _formatDate(normalizedDate))
-        .maybeSingle();
+    await _api.post('/pets/${record.petId}/weights/', body: {
+      'recorded_date': _formatDate(normalizedDate),
+      'weight': record.weight,
+      if (record.memo != null) 'memo': record.memo,
+    });
 
-    if (existingRecord != null) {
-      // Update existing record
-      await _client
-          .from('weight_records')
-          .update(record.toJson())
-          .eq('id', existingRecord['id']);
-    } else {
-      // Insert new record
-      await _client
-          .from('weight_records')
-          .insert(record.toInsertJson());
-    }
-
-    // 로컬 캐시 업데이트
     _upsertLocal(record.copyWith(date: normalizedDate));
     await _persistToStorage();
   }
 
-  /// 로컬 캐시에 체중 기록 저장 또는 수정 (Supabase 미사용)
+  /// 로컬 캐시에 체중 기록 저장 또는 수정 (서버 미사용)
   Future<void> saveLocalWeightRecord(WeightRecord record) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(record.date);
@@ -176,13 +146,9 @@ class WeightService {
   Future<void> deleteWeightRecord(DateTime date, String petId) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(date);
+    final dateStr = _formatDate(normalizedDate);
 
-    // Supabase에서 삭제
-    await _client
-        .from('weight_records')
-        .delete()
-        .eq('pet_id', petId)
-        .eq('recorded_date', _formatDate(normalizedDate));
+    await _api.delete('/pets/$petId/weights/by-date/$dateStr');
 
     // 로컬 캐시에서 삭제
     final records = _recordsByPet[petId];
@@ -212,49 +178,45 @@ class WeightService {
     DateTime start,
     DateTime end,
   ) async {
-    final response = await _client
-        .from('weight_records')
-        .select()
-        .eq('pet_id', petId)
-        .gte('recorded_date', _formatDate(start))
-        .lte('recorded_date', _formatDate(end))
-        .order('recorded_date', ascending: true);
+    final response = await _api.get('/pets/$petId/weights/range', queryParams: {
+      'start': _formatDate(start),
+      'end': _formatDate(end),
+    });
 
     return (response as List)
         .map((json) => WeightRecord.fromJson(json))
         .toList();
   }
 
-  /// 월별 체중 평균 조회 (DB 함수 호출)
+  /// 월별 체중 평균 조회
   Future<List<Map<String, dynamic>>> getMonthlyAverages(
     String petId, {
     int? year,
   }) async {
-    final response = await _client.rpc(
-      'get_monthly_weight_averages',
-      params: {
-        'p_pet_id': petId,
-        if (year != null) 'p_year': year,
-      },
+    final params = <String, String>{};
+    if (year != null) params['year'] = year.toString();
+
+    final response = await _api.get(
+      '/pets/$petId/weights/monthly-averages',
+      queryParams: params.isNotEmpty ? params : null,
     );
 
     return List<Map<String, dynamic>>.from(response as List);
   }
 
-  /// 주간 체중 데이터 조회 (DB 함수 호출)
+  /// 주간 체중 데이터 조회
   Future<List<Map<String, dynamic>>> getWeeklyData(
     String petId,
     int year,
     int month,
     int week,
   ) async {
-    final response = await _client.rpc(
-      'get_weekly_weight_data',
-      params: {
-        'p_pet_id': petId,
-        'p_year': year,
-        'p_month': month,
-        'p_week': week,
+    final response = await _api.get(
+      '/pets/$petId/weights/weekly-data',
+      queryParams: {
+        'year': year.toString(),
+        'month': month.toString(),
+        'week': week.toString(),
       },
     );
 

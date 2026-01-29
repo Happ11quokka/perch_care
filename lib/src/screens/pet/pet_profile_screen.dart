@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
@@ -17,7 +17,7 @@ class PetProfileScreen extends StatefulWidget {
 
 class _PetProfileScreenState extends State<PetProfileScreen> {
   final _petCache = PetLocalCacheService();
-  final _supabase = Supabase.instance.client;
+  final _authService = AuthService();
   List<PetProfileCache> _cachedPets = [];
   String? _selectedPetId;
   bool _isLoadingPets = true;
@@ -49,18 +49,10 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
 
   Future<void> _loadUserProfile() async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return;
-
-      final response = await _supabase
-          .from('profiles')
-          .select('nickname')
-          .eq('id', userId)
-          .single();
-
-      if (!mounted) return;
+      final profile = await _authService.getProfile();
+      if (profile == null || !mounted) return;
       setState(() {
-        _userNickname = response['nickname'] as String? ?? '사용자';
+        _userNickname = profile['nickname'] as String? ?? '사용자';
       });
     } catch (_) {
       // 프로필 로드 실패 시 기본값 사용

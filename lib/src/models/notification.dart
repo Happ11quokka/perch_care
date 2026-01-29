@@ -58,7 +58,7 @@ class AppNotification {
     }
   }
 
-  /// Supabase JSON 역직렬화
+  /// JSON 역직렬화
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
       id: json['id'] as String,
@@ -75,7 +75,7 @@ class AppNotification {
     );
   }
 
-  /// Supabase JSON 직렬화
+  /// JSON 직렬화
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -88,7 +88,7 @@ class AppNotification {
     };
   }
 
-  /// Supabase INSERT용 JSON (id 제외)
+  /// INSERT용 JSON (id 제외)
   Map<String, dynamic> toInsertJson() {
     return {
       'user_id': userId,

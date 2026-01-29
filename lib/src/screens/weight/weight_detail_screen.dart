@@ -815,7 +815,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
     if (result != null) {
       try {
-        // Supabase에 저장
+        // 서버에 저장
         await _scheduleService.createSchedule(result);
         // 목록 새로고침
         await _loadScheduleData();

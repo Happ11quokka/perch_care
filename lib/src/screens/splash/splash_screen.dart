@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/api/token_service.dart';
 import '../../router/route_paths.dart';
 import '../../theme/colors.dart';
 
@@ -205,9 +205,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToInitialRoute() {
-    final session = Supabase.instance.client.auth.currentSession;
+    final isLoggedIn = TokenService.instance.isLoggedIn;
     final targetRoute =
-        session == null ? RoutePaths.onboarding : RoutePaths.home;
+        !isLoggedIn ? RoutePaths.onboarding : RoutePaths.home;
     if (!mounted) return;
     context.go(targetRoute);
   }

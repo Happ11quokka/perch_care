@@ -17,7 +17,7 @@ class WeightRecord {
     this.updatedAt,
   });
 
-  // Supabase JSON 역직렬화
+  // JSON 역직렬화
   factory WeightRecord.fromJson(Map<String, dynamic> json) {
     return WeightRecord(
       id: json['id'] as String?,
@@ -34,7 +34,7 @@ class WeightRecord {
     );
   }
 
-  // Supabase JSON 직렬화
+  // JSON 직렬화
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,

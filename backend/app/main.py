@@ -1,0 +1,52 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
+
+from app.config import get_settings
+from app.routers import auth, users, pets, weights, daily_records, health_checks, schedules, notifications
+
+settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure upload directory exists
+    os.makedirs(settings.upload_dir, exist_ok=True)
+    yield
+
+
+app = FastAPI(
+    title="Perch Care API",
+    description="Pet health management backend API",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Static files for uploads
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+
+# Routers
+app.include_router(auth.router, prefix=settings.api_v1_prefix)
+app.include_router(users.router, prefix=settings.api_v1_prefix)
+app.include_router(pets.router, prefix=settings.api_v1_prefix)
+app.include_router(weights.router, prefix=settings.api_v1_prefix)
+app.include_router(daily_records.router, prefix=settings.api_v1_prefix)
+app.include_router(health_checks.router, prefix=settings.api_v1_prefix)
+app.include_router(schedules.router, prefix=settings.api_v1_prefix)
+app.include_router(notifications.router, prefix=settings.api_v1_prefix)
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}

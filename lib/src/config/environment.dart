@@ -4,8 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Environment {
   Environment._();
 
-  static String get supabaseUrl => _require('SUPABASE_URL');
-  static String get supabaseAnonKey => _require('SUPABASE_ANON_KEY');
+  static String get apiBaseUrl => _require('API_BASE_URL');
 
   static String _require(String key) {
     final value = dotenv.maybeGet(key);

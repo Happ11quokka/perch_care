@@ -1,9 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -32,7 +29,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   bool _obscurePassword = true;
   bool _emailHasFocus = false;
   bool _passwordHasFocus = false;
-  StreamSubscription<AuthState>? _authStateSubscription;
   bool _hasNavigatedAfterLogin = false;
 
   // 아이콘 에셋 경로
@@ -49,8 +45,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     super.initState();
     _emailFocusNode.addListener(_onEmailFocusChange);
     _passwordFocusNode.addListener(_onPasswordFocusChange);
-    _authStateSubscription =
-        _authService.authStateChanges.listen(_handleAuthStateChange);
   }
 
   @override
@@ -61,7 +55,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     _passwordFocusNode.removeListener(_onPasswordFocusChange);
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
-    _authStateSubscription?.cancel();
     super.dispose();
   }
 
@@ -75,14 +68,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     setState(() {
       _passwordHasFocus = _passwordFocusNode.hasFocus;
     });
-  }
-
-  void _handleAuthStateChange(AuthState state) {
-    if (state.session == null) return;
-    if (state.event == AuthChangeEvent.signedIn ||
-        state.event == AuthChangeEvent.initialSession) {
-      _navigateToHomeAfterLogin();
-    }
   }
 
   void _navigateToHomeAfterLogin() {
@@ -541,11 +526,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         password: password,
       );
       _navigateToHomeAfterLogin();
-    } on AuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -560,13 +540,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_isGoogleLoading) return;
     setState(() => _isGoogleLoading = true);
     try {
-      await _authService.signInWithGoogle();
+      // TODO: Google Sign-In SDK로 idToken 획득 후 전달
+      // await _authService.signInWithGoogle(idToken: idToken);
       _navigateToHomeAfterLogin();
-    } on AuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -581,13 +557,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_isAppleLoading) return;
     setState(() => _isAppleLoading = true);
     try {
-      await _authService.signInWithApple();
+      // TODO: Apple Sign-In SDK로 idToken 획득 후 전달
+      // await _authService.signInWithApple(idToken: idToken);
       _navigateToHomeAfterLogin();
-    } on AuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -602,13 +574,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_isKakaoLoading) return;
     setState(() => _isKakaoLoading = true);
     try {
-      await _authService.signInWithKakao();
+      // TODO: Kakao SDK로 authorizationCode 획득 후 전달
+      // await _authService.signInWithKakao(authorizationCode: code);
       _navigateToHomeAfterLogin();
-    } on AuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
