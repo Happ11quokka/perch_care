@@ -341,28 +341,29 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         letterSpacing: -0.4,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 24),
                     GestureDetector(
                       onTap: _openWeightEditor,
                       child: Column(
                         children: [
                           SizedBox(
-                            width: 180,
-                            height: 100,
+                            width: 240,
+                            height: 130,
                             child: CustomPaint(
                               painter: _WciGaugePainter(
                                 progress: progress,
                                 activeColor: AppColors.brandPrimary,
                                 trackColor: const Color(0xFFEDEDED),
+                                hasData: hasData,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 16),
                           Text(
                             '${(current?.weight ?? 0).toStringAsFixed(2)}g',
                             style: TextStyle(
                               fontFamily: 'Pretendard',
-                              fontSize: 28,
+                              fontSize: 32,
                               fontWeight: FontWeight.w700,
                               color:
                                   hasData ? AppColors.nearBlack : AppColors.gray400,
@@ -375,19 +376,19 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Text(
                       hasData ? level.title : 'Level 0',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.nearBlack,
+                        color: hasData ? AppColors.nearBlack : AppColors.mediumGray,
                         letterSpacing: -0.35,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       level.description,
                       textAlign: TextAlign.center,
@@ -400,7 +401,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         letterSpacing: -0.3,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -531,37 +532,42 @@ class _WciGaugePainter extends CustomPainter {
   final double progress;
   final Color activeColor;
   final Color trackColor;
+  final bool hasData;
 
   _WciGaugePainter({
     required this.progress,
     required this.activeColor,
     required this.trackColor,
+    this.hasData = false,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final strokeWidth = 10.0;
-    final radius = size.width / 2;
-    final center = Offset(size.width / 2, size.height);
+    final strokeWidth = 12.0;
+    final radius = (size.width - strokeWidth) / 2;
+    final center = Offset(size.width / 2, size.height - 4);
     final rect = Rect.fromCircle(center: center, radius: radius);
 
+    // 배경 트랙 (회색 반원)
     final trackPaint = Paint()
       ..color = trackColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    final activePaint = Paint()
-      ..color = activeColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
     final startAngle = math.pi;
-    final sweepAngle = -math.pi;
+    final sweepAngle = math.pi;
 
     canvas.drawArc(rect, startAngle, sweepAngle, false, trackPaint);
-    if (progress > 0) {
+
+    // 활성 아크 (오렌지)
+    if (hasData && progress > 0) {
+      final activePaint = Paint()
+        ..color = activeColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
       canvas.drawArc(
         rect,
         startAngle,
@@ -571,21 +577,40 @@ class _WciGaugePainter extends CustomPainter {
       );
     }
 
+    // 포인터 위치 계산
     final pointerAngle = startAngle + sweepAngle * progress;
-    final pointerRadius = radius - strokeWidth / 2;
-    final pointerOffset = Offset(
-      center.dx + pointerRadius * math.cos(pointerAngle),
-      center.dy + pointerRadius * math.sin(pointerAngle),
-    );
-    final dotPaint = Paint()..color = activeColor;
-    canvas.drawCircle(center, 4, dotPaint);
-    canvas.drawLine(center, pointerOffset, dotPaint..strokeWidth = 2);
+    final pointerX = center.dx + radius * math.cos(pointerAngle);
+    final pointerY = center.dy + radius * math.sin(pointerAngle);
+    final pointerOffset = Offset(pointerX, pointerY);
+
+    if (hasData) {
+      // 데이터 있을 때: 바늘 + 중심 원 + 포인터 원
+      final needlePaint = Paint()
+        ..color = activeColor
+        ..strokeWidth = 2.5
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawLine(center, pointerOffset, needlePaint);
+
+      // 중심 원
+      final centerDotPaint = Paint()..color = activeColor;
+      canvas.drawCircle(center, 6, centerDotPaint);
+
+      // 포인터 끝 원 (아크 위의 현재 위치)
+      canvas.drawCircle(pointerOffset, 7, Paint()..color = activeColor);
+      canvas.drawCircle(pointerOffset, 4, Paint()..color = Colors.white);
+    } else {
+      // 데이터 없을 때: 상단 중앙에 작은 오렌지 점만
+      final topCenter = Offset(center.dx, center.dy - radius);
+      canvas.drawCircle(topCenter, 5, Paint()..color = activeColor);
+    }
   }
 
   @override
   bool shouldRepaint(covariant _WciGaugePainter oldDelegate) {
     return oldDelegate.progress != progress ||
         oldDelegate.activeColor != activeColor ||
-        oldDelegate.trackColor != trackColor;
+        oldDelegate.trackColor != trackColor ||
+        oldDelegate.hasData != hasData;
   }
 }

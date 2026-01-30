@@ -616,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconPath: 'assets/images/home_vector/weight.svg',
                 hasData: _hasWeightData,
                 onTap: () async {
-                  await context.pushNamed(RouteNames.weightDetail);
+                  await context.pushNamed(RouteNames.weightRecord);
                   if (_activePet != null) _loadBhi(_activePet!.id);
                 },
               ),

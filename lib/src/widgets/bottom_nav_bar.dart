@@ -43,7 +43,7 @@ class BottomNavBar extends StatelessWidget {
               context: context,
               index: 1,
               iconPath: 'assets/images/calender.svg',
-              onTap: () => context.goNamed(RouteNames.weightRecord),
+              onTap: () => context.goNamed(RouteNames.weightDetail),
             ),
             _buildNavItem(
               context: context,
