@@ -57,42 +57,60 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
 
   Future<void> _loadExistingPet() async {
     try {
-      final activePet = await _petCache.getActivePet();
-      if (activePet == null) {
-        if (mounted) setState(() => _isLoadingData = false);
-        return;
-      }
-
-      _existingPetId = activePet.id;
-
-      // 서버에서 최신 데이터 로드
-      final pet = await _petService.getPetById(activePet.id);
+      // API에서 활성 펫 조회 (UUID 형식 보장)
+      final apiPet = await _petService.getActivePet();
       if (!mounted) return;
 
-      if (pet != null) {
+      if (apiPet != null) {
+        _existingPetId = apiPet.id;
+
+        // 로컬 캐시도 동기화
+        await _petCache.upsertPet(
+          PetProfileCache(
+            id: apiPet.id,
+            name: apiPet.name,
+            species: apiPet.breed,
+            gender: apiPet.gender,
+            birthDate: apiPet.birthDate,
+          ),
+          setActive: true,
+        );
+
         setState(() {
-          _nameController.text = pet.name;
-          _speciesController.text = pet.breed ?? '';
-          _selectedGender = _mapGenderToDisplay(pet.gender);
-          _birthday = pet.birthDate;
-          _adoptionDate = pet.adoptionDate;
-          if (pet.weight != null) {
-            _weightController.text = pet.weight.toString();
+          _nameController.text = apiPet.name;
+          _speciesController.text = apiPet.breed ?? '';
+          _selectedGender = _mapGenderToDisplay(apiPet.gender);
+          _birthday = apiPet.birthDate;
+          _adoptionDate = apiPet.adoptionDate;
+          if (apiPet.weight != null) {
+            _weightController.text = apiPet.weight.toString();
           }
           _isLoadingData = false;
         });
       } else {
-        // 서버에 없으면 로컬 캐시 데이터 사용
-        setState(() {
-          _nameController.text = activePet.name;
-          _speciesController.text = activePet.species ?? '';
-          _selectedGender = _mapGenderToDisplay(activePet.gender);
-          _birthday = activePet.birthDate;
-          _isLoadingData = false;
-        });
+        // API에 활성 펫 없으면 신규 등록 모드
+        if (mounted) setState(() => _isLoadingData = false);
       }
     } catch (_) {
-      if (mounted) setState(() => _isLoadingData = false);
+      // API 실패 시 로컬 캐시 폴백
+      try {
+        final activePet = await _petCache.getActivePet();
+        if (!mounted) return;
+        if (activePet != null) {
+          _existingPetId = activePet.id;
+          setState(() {
+            _nameController.text = activePet.name;
+            _speciesController.text = activePet.species ?? '';
+            _selectedGender = _mapGenderToDisplay(activePet.gender);
+            _birthday = activePet.birthDate;
+            _isLoadingData = false;
+          });
+        } else {
+          setState(() => _isLoadingData = false);
+        }
+      } catch (_) {
+        if (mounted) setState(() => _isLoadingData = false);
+      }
     }
   }
 

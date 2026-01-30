@@ -18,6 +18,7 @@ class RoutePaths {
   static const String profile = '/profile';
   static const String aiEncyclopedia = '/ai-encyclopedia';
   static const String wciIndex = '/wci/index';
+  static const String bhiDetail = '/bhi/detail';
   static const String foodRecord = '/food/record';
   static const String waterRecord = '/water/record';
   static const String emailLogin = '/email-login';

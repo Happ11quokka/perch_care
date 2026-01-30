@@ -127,10 +127,9 @@ class ScheduleRecord {
     };
   }
 
-  /// INSERT용 JSON (id 제외)
+  /// INSERT용 JSON (id, pet_id 제외 — pet_id는 URL path로 전달)
   Map<String, dynamic> toInsertJson() {
     return {
-      'pet_id': petId,
       'start_time': startTime.toIso8601String(),
       'end_time': endTime.toIso8601String(),
       'title': title,

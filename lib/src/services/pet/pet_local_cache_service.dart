@@ -60,6 +60,13 @@ class PetLocalCacheService {
     }
   }
 
+  /// 모든 로컬 캐시 삭제
+  Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_petsKey);
+    await prefs.remove(_activePetIdKey);
+  }
+
   Future<void> _savePets(List<PetProfileCache> pets) async {
     final prefs = await SharedPreferences.getInstance();
     final data = pets.map((pet) => pet.toJson()).toList();

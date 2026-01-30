@@ -8,6 +8,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/pet/pet_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/dashed_border.dart';
 
@@ -22,6 +23,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   static const Color _unselectedCardColor = Color(0xFFE7E5E1);
   final _petCache = PetLocalCacheService();
+  final _petService = PetService();
   final _authService = AuthService();
   String _userName = '';
   int? _selectedPetIndex = 0;
@@ -218,15 +220,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadPets() async {
-    final pets = await _petCache.getPets();
-    if (!mounted) return;
-    setState(() {
-      _cachedPets = pets;
-      _isLoadingPets = false;
-      if (_cachedPets.isNotEmpty) {
-        _selectedPetIndex = 0;
+    try {
+      // API에서 펫 목록 조회 (UUID 형식 보장)
+      final apiPets = await _petService.getMyPets();
+      if (!mounted) return;
+
+      for (final pet in apiPets) {
+        await _petCache.upsertPet(
+          PetProfileCache(
+            id: pet.id,
+            name: pet.name,
+            species: pet.breed,
+            gender: pet.gender,
+            birthDate: pet.birthDate,
+          ),
+          setActive: false,
+        );
       }
-    });
+
+      final activePet = await _petService.getActivePet();
+      if (activePet != null) {
+        await _petCache.setActivePetId(activePet.id);
+      }
+
+      final cachedPets = await _petCache.getPets();
+      if (!mounted) return;
+      setState(() {
+        _cachedPets = cachedPets;
+        _isLoadingPets = false;
+        if (_cachedPets.isNotEmpty) {
+          _selectedPetIndex = 0;
+        }
+      });
+    } catch (_) {
+      // API 실패 시 로컬 캐시 폴백
+      final pets = await _petCache.getPets();
+      if (!mounted) return;
+      setState(() {
+        _cachedPets = pets;
+        _isLoadingPets = false;
+        if (_cachedPets.isNotEmpty) {
+          _selectedPetIndex = 0;
+        }
+      });
+    }
   }
 
   Future<void> _loadUserProfile() async {

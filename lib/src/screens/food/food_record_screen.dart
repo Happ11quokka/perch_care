@@ -9,7 +9,6 @@ import '../../services/food/food_record_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/dashed_border.dart';
-import '../../widgets/progress_ring.dart';
 import '../../router/route_names.dart';
 
 class FoodRecordScreen extends StatefulWidget {
@@ -372,20 +371,13 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ProgressRing(
-                      value: _progress,
-                      size: 140,
-                      strokeWidth: 10,
-                      activeColor: AppColors.brandPrimary,
-                      trackColor: const Color(0xFFEDEDED),
-                      child: SvgPicture.asset(
-                        'assets/images/home_vector/eat.svg',
-                        width: 34,
-                        height: 34,
-                        colorFilter: ColorFilter.mode(
-                          hasData ? AppColors.brandPrimary : AppColors.gray300,
-                          BlendMode.srcIn,
-                        ),
+                    SvgPicture.asset(
+                      'assets/images/home_vector/eat.svg',
+                      width: 80,
+                      height: 80,
+                      colorFilter: ColorFilter.mode(
+                        hasData ? AppColors.brandPrimary : AppColors.gray300,
+                        BlendMode.srcIn,
                       ),
                     ),
                     const SizedBox(height: 12),

@@ -16,6 +16,8 @@ import '../screens/profile/profile_screen.dart';
 import '../screens/profile/pet_profile_detail_screen.dart';
 import '../screens/ai_encyclopedia/ai_encyclopedia_screen.dart';
 import '../screens/wci/wci_index_screen.dart';
+import '../screens/bhi/bhi_detail_screen.dart';
+import '../models/bhi_result.dart';
 import '../screens/food/food_record_screen.dart';
 import '../screens/water/water_record_screen.dart';
 import '../screens/forgot_password/forgot_password_method_screen.dart';
@@ -172,6 +174,15 @@ class AppRouter {
         path: RoutePaths.wciIndex,
         name: RouteNames.wciIndex,
         builder: (context, state) => const WciIndexScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.bhiDetail,
+        name: RouteNames.bhiDetail,
+        builder: (context, state) {
+          final extra = state.extra;
+          final bhiResult = extra is BhiResult ? extra : null;
+          return BhiDetailScreen(bhiResult: bhiResult);
+        },
       ),
       GoRoute(
         path: RoutePaths.emailLogin,

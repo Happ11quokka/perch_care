@@ -7,6 +7,7 @@ import '../../models/schedule_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/schedule/schedule_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/pet/pet_service.dart';
 import '../../router/route_names.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
@@ -22,6 +23,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final _weightService = WeightService();
   final _scheduleService = ScheduleService();
   final _petCache = PetLocalCacheService();
+  final _petService = PetService();
 
   bool _isWeeklyView = true; // true: 주, false: 월
   int _selectedYear = DateTime.now().year;
@@ -45,12 +47,36 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Future<void> _loadActivePet() async {
     try {
-      final activePet = await _petCache.getActivePet();
+      // API에서 활성 펫 조회 (UUID 형식 보장)
+      final apiPet = await _petService.getActivePet();
       if (!mounted) return;
-      setState(() {
-        _activePetId = activePet?.id;
-        _petName = activePet?.name ?? _petName;
-      });
+
+      if (apiPet != null) {
+        // 로컬 캐시도 동기화
+        await _petCache.upsertPet(
+          PetProfileCache(
+            id: apiPet.id,
+            name: apiPet.name,
+            species: apiPet.breed,
+            gender: apiPet.gender,
+            birthDate: apiPet.birthDate,
+          ),
+          setActive: true,
+        );
+        setState(() {
+          _activePetId = apiPet.id;
+          _petName = apiPet.name;
+        });
+      } else {
+        // API 실패 시 로컬 캐시 폴백
+        final cachedPet = await _petCache.getActivePet();
+        if (!mounted) return;
+        setState(() {
+          _activePetId = cachedPet?.id;
+          _petName = cachedPet?.name ?? _petName;
+        });
+      }
+
       if (_activePetId != null) {
         await Future.wait([
           _loadWeightData(),
@@ -58,7 +84,23 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         ]);
       }
     } catch (_) {
-      // Handle error
+      // API 실패 시 로컬 캐시 폴백
+      try {
+        final cachedPet = await _petCache.getActivePet();
+        if (!mounted) return;
+        setState(() {
+          _activePetId = cachedPet?.id;
+          _petName = cachedPet?.name ?? _petName;
+        });
+        if (_activePetId != null) {
+          await Future.wait([
+            _loadWeightData(),
+            _loadScheduleData(),
+          ]);
+        }
+      } catch (_) {
+        // Handle error
+      }
     } finally {
       if (mounted) {
         setState(() {

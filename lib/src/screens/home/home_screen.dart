@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadBhi(String petId) async {
     try {
-      final bhi = await _bhiService.getBhi(petId);
+      final bhi = await _bhiService.getBhi(petId, targetDate: DateTime.now());
       if (mounted) {
         setState(() {
           _bhiResult = bhi;
@@ -89,8 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _hasWaterData = bhi.hasWaterData;
         });
       }
-    } catch (_) {
-      // BHI 로드 실패 시 기본값 유지
+    } catch (e) {
+      debugPrint('[HomeScreen] BHI 로드 실패: $e');
     }
   }
 
@@ -483,8 +483,8 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 171,
             )
           else
-            SvgPicture.asset(
-              'assets/images/home_vector/lv$_wciLevel.svg',
+            Image.asset(
+              'assets/images/home_vector/lv$_wciLevel.png',
               width: 160,
               height: 240,
             ),
@@ -548,39 +548,43 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProgressBars() {
-    // 5개 세그먼트: 1,2 | 인디케이터 | 4,5 (3은 중앙 인디케이터)
-    // 레벨에 따른 활성화 매핑: 세그먼트 순서 [1, 2, 3(중앙), 4, 5]
-    final bool seg1Active = _wciLevel >= 1;
-    final bool seg2Active = _wciLevel >= 2;
-    final bool seg3Active = _wciLevel >= 3; // 중앙 인디케이터
-    final bool seg4Active = _wciLevel >= 4;
-    final bool seg5Active = _wciLevel >= 5;
+    // 5개 슬롯: 동그라미가 현재 레벨 위치로 이동
+    // lv0: 중앙(3번) 회색 동그라미, 바 없음(전부 회색)
+    // lv1: 1번 동그라미
+    // lv2: 1번 바(주황) + 2번 동그라미
+    // lv3: 1~2번 바(주황) + 3번 동그라미
+    // lv4: 1~3번 바(주황) + 4번 동그라미
+    // lv5: 1~4번 바(주황) + 5번 동그라미
+    final int circlePos = _wciLevel == 0 ? 3 : _wciLevel; // 0이면 중앙(3)
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildProgressBar(seg1Active),
-        const SizedBox(width: 2),
-        _buildProgressBar(seg2Active),
-        const SizedBox(width: 2),
-        // 중앙 인디케이터
-        Container(
+    final List<Widget> children = [];
+    for (int i = 1; i <= 5; i++) {
+      if (i > 1) children.add(const SizedBox(width: 2));
+
+      if (i == circlePos) {
+        // 동그라미
+        children.add(Container(
           width: 22,
           height: 22,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: seg3Active ? AppColors.brandPrimary : const Color(0xFFF0F0F0),
+              color: _wciLevel > 0 ? AppColors.brandPrimary : const Color(0xFFF0F0F0),
               width: 2,
             ),
             color: Colors.white,
           ),
-        ),
-        const SizedBox(width: 2),
-        _buildProgressBar(seg4Active),
-        const SizedBox(width: 2),
-        _buildProgressBar(seg5Active),
-      ],
+        ));
+      } else {
+        // 바: 동그라미 왼쪽이면 채움, 오른쪽이면 비움
+        final bool filled = _wciLevel > 0 && i < circlePos;
+        children.add(_buildProgressBar(filled));
+      }
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: children,
     );
   }
 
@@ -611,8 +615,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 subtitle: '체중을 입력해주세요',
                 iconPath: 'assets/images/home_vector/weight.svg',
                 hasData: _hasWeightData,
-                onTap: () {
-                  context.pushNamed(RouteNames.weightDetail);
+                onTap: () async {
+                  await context.pushNamed(RouteNames.weightDetail);
+                  if (_activePet != null) _loadBhi(_activePet!.id);
                 },
               ),
             ),
@@ -623,8 +628,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 subtitle: '취식량을 입력해주세요',
                 iconPath: 'assets/images/home_vector/eat.svg',
                 hasData: _hasFoodData,
-                onTap: () {
-                  context.pushNamed(RouteNames.foodRecord);
+                onTap: () async {
+                  await context.pushNamed(RouteNames.foodRecord);
+                  if (_activePet != null) _loadBhi(_activePet!.id);
                 },
               ),
             ),
@@ -640,8 +646,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 subtitle: '음수량을 입력해주세요',
                 iconPath: 'assets/images/home_vector/water.svg',
                 hasData: _hasWaterData,
-                onTap: () {
-                  context.pushNamed(RouteNames.waterRecord);
+                onTap: () async {
+                  await context.pushNamed(RouteNames.waterRecord);
+                  if (_activePet != null) _loadBhi(_activePet!.id);
                 },
               ),
             ),
@@ -731,7 +738,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHealthSignalCard() {
     return GestureDetector(
       onTap: () {
-        context.pushNamed(RouteNames.aiEncyclopedia);
+        context.pushNamed(
+          RouteNames.bhiDetail,
+          extra: _bhiResult,
+        );
       },
       child: Container(
         height: 170,

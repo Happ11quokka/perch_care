@@ -133,7 +133,14 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         weight: weight,
       );
 
+      // 로컬 캐시에 먼저 저장
       await _weightService.saveLocalWeightRecord(record);
+      // 백엔드 API에도 저장
+      try {
+        await _weightService.saveWeightRecord(record);
+      } catch (_) {
+        debugPrint('[WeightAdd] 백엔드 저장 실패, 로컬에만 저장됨');
+      }
 
       if (mounted) {
         // 성공 메시지

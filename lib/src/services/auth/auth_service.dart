@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../api/api_client.dart';
 import '../api/token_service.dart';
+import '../pet/pet_local_cache_service.dart';
 
 /// 소셜 로그인 결과
 class SocialLoginResult {
@@ -62,6 +63,7 @@ class AuthService {
 
   final _api = ApiClient.instance;
   final _tokenService = TokenService.instance;
+  final _petCache = PetLocalCacheService();
 
   /// 현재 로그인 여부
   bool get isLoggedIn => _tokenService.isLoggedIn;
@@ -154,6 +156,7 @@ class AuthService {
 
   /// 로그아웃
   Future<void> signOut() async {
+    await _petCache.clearAll();
     await _tokenService.clearTokens();
   }
 
@@ -225,6 +228,7 @@ class AuthService {
   /// 회원 탈퇴
   Future<void> deleteAccount() async {
     await _api.delete('/users/me');
+    await _petCache.clearAll();
     await _tokenService.clearTokens();
   }
 

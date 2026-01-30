@@ -5,6 +5,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/pet/pet_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 /// 반려동물 프로필 목록 화면
@@ -17,6 +18,7 @@ class PetProfileScreen extends StatefulWidget {
 
 class _PetProfileScreenState extends State<PetProfileScreen> {
   final _petCache = PetLocalCacheService();
+  final _petService = PetService();
   final _authService = AuthService();
   List<PetProfileCache> _cachedPets = [];
   String? _selectedPetId;
@@ -37,14 +39,49 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
   }
 
   Future<void> _loadPets() async {
-    final pets = await _petCache.getPets();
-    final activePet = await _petCache.getActivePet();
-    if (!mounted) return;
-    setState(() {
-      _cachedPets = pets;
-      _selectedPetId = activePet?.id;
-      _isLoadingPets = false;
-    });
+    try {
+      // API에서 펫 목록 조회 (UUID 형식 보장)
+      final apiPets = await _petService.getMyPets();
+      if (!mounted) return;
+
+      // 로컬 캐시 동기화
+      for (final pet in apiPets) {
+        await _petCache.upsertPet(
+          PetProfileCache(
+            id: pet.id,
+            name: pet.name,
+            species: pet.breed,
+            gender: pet.gender,
+            birthDate: pet.birthDate,
+          ),
+          setActive: false,
+        );
+      }
+
+      // 활성 펫 확인
+      final activePet = await _petService.getActivePet();
+      if (activePet != null) {
+        await _petCache.setActivePetId(activePet.id);
+      }
+
+      final cachedPets = await _petCache.getPets();
+      if (!mounted) return;
+      setState(() {
+        _cachedPets = cachedPets;
+        _selectedPetId = activePet?.id;
+        _isLoadingPets = false;
+      });
+    } catch (_) {
+      // API 실패 시 로컬 캐시 폴백
+      final pets = await _petCache.getPets();
+      final activePet = await _petCache.getActivePet();
+      if (!mounted) return;
+      setState(() {
+        _cachedPets = pets;
+        _selectedPetId = activePet?.id;
+        _isLoadingPets = false;
+      });
+    }
   }
 
   Future<void> _loadUserProfile() async {

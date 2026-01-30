@@ -138,7 +138,7 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
         from fastapi import HTTPException, status
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pet not found")
 
-    growth_stage = pet.growth_stage
+    growth_stage = pet.growth_stage or 'adult'
 
     weight_score, has_weight = await _calc_weight_score(db, pet_id, target_date, growth_stage)
     food_score, has_food = await _calc_food_score(db, pet_id, target_date)
