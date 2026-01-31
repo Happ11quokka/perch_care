@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 비밀번호 찾기 - 이메일 입력 화면
 class ForgotPasswordMethodScreen extends StatefulWidget {
@@ -256,9 +257,7 @@ class _ForgotPasswordMethodScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('코드 전송 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: '코드 전송 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isSending = false);
     }

@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     upload_dir: str = "uploads"
     max_upload_size: int = 10 * 1024 * 1024  # 10MB
 
+    # OpenAI
+    openai_api_key: str = ""
+
+    # LangSmith
+    langsmith_api_key: str = ""
+    langsmith_project: str = "perch-care"
+
     # Server
     api_v1_prefix: str = "/api/v1"
     cors_origins: list[str] = ["*"]

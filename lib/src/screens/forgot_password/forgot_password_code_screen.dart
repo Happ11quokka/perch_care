@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 비밀번호 찾기 - 코드 입력 화면
 class ForgotPasswordCodeScreen extends StatefulWidget {
@@ -326,9 +327,7 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('코드가 올바르지 않습니다. 다시 확인해 주세요.')),
-      );
+      AppSnackBar.warning(context, message: '코드가 올바르지 않습니다. 다시 확인해 주세요.');
       for (final controller in _controllers) {
         controller.clear();
       }
@@ -354,14 +353,10 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
       // 타이머 재시작
       _startTimer();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('코드가 다시 전송되었습니다.')),
-      );
+      AppSnackBar.info(context, message: '코드가 다시 전송되었습니다.');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('코드 전송 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: '코드 전송 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isResending = false);
     }

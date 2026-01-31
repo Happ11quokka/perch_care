@@ -5,7 +5,7 @@ import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/notification.dart';
 import '../../services/notification/notification_service.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 알림 화면
 class NotificationScreen extends StatefulWidget {
@@ -89,9 +89,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('오류가 발생했습니다.')),
-        );
+        AppSnackBar.error(context, message: '오류가 발생했습니다.');
       }
     }
   }
@@ -104,9 +102,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('삭제 중 오류가 발생했습니다.')),
-        );
+        AppSnackBar.error(context, message: '삭제 중 오류가 발생했습니다.');
       }
     }
   }
@@ -175,7 +171,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     );
                   },
                 ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 

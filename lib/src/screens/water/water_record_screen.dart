@@ -7,8 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/water/water_record_service.dart';
 import '../../theme/colors.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../router/route_names.dart';
+import '../../widgets/app_snack_bar.dart';
 
 class WaterRecordScreen extends StatefulWidget {
   const WaterRecordScreen({super.key});
@@ -18,7 +18,7 @@ class WaterRecordScreen extends StatefulWidget {
 }
 
 class _WaterRecordScreenState extends State<WaterRecordScreen> {
-  final _petService = PetService();
+  final _petService = PetService.instance;
   final _waterService = WaterRecordService();
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
@@ -457,9 +457,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                       onTap: () async {
                         await _saveRecord();
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('저장되었습니다.')),
-                        );
+                        AppSnackBar.success(context, message: '저장되었습니다.');
                       },
                       child: Container(
                         height: 56,
@@ -489,7 +487,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 

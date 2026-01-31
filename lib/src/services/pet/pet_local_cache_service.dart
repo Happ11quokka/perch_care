@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PetLocalCacheService {
+  PetLocalCacheService._();
+  static final instance = PetLocalCacheService._();
+
   static const String _petsKey = 'local_pet_profiles';
   static const String _activePetIdKey = 'local_active_pet_id';
 

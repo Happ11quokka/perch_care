@@ -9,7 +9,7 @@ import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 반려동물 프로필 상세/편집 화면
 class PetProfileDetailScreen extends StatefulWidget {
@@ -21,8 +21,8 @@ class PetProfileDetailScreen extends StatefulWidget {
 
 class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _petCache = PetLocalCacheService();
-  final _petService = PetService();
+  final _petCache = PetLocalCacheService.instance;
+  final _petService = PetService.instance;
   final _imagePicker = ImagePicker();
   File? _selectedImage;
 
@@ -182,7 +182,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: -1),
     );
   }
 
@@ -651,9 +650,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장되었습니다.')),
-      );
+      AppSnackBar.success(context, message: '저장되었습니다.');
       if (context.canPop()) {
         context.pop();
       } else {
@@ -661,9 +658,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('저장 중 오류가 발생했습니다: $e')),
-      );
+      AppSnackBar.error(context, message: '저장 중 오류가 발생했습니다: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

@@ -5,6 +5,8 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/api/token_service.dart';
+import '../../widgets/app_snack_bar.dart';
+import '../../widgets/terms_agreement_section.dart';
 
 /// 회원가입 화면 - Figma 디자인 기반
 class SignupScreen extends StatefulWidget {
@@ -26,6 +28,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _isLoading = false;
   bool _hasNavigatedAfterSignup = false;
+  bool _allRequiredTermsAgreed = false;
   bool _nameHasFocus = false;
   bool _emailHasFocus = false;
   bool _passwordHasFocus = false;
@@ -164,7 +167,17 @@ class _SignupScreenState extends State<SignupScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
+                        // 약관 동의
+                        TermsAgreementSection(
+                          onChanged: (allRequiredAgreed, marketingAgreed) {
+                            setState(() {
+                              _allRequiredTermsAgreed = allRequiredAgreed;
+                            });
+                          },
+                          termsRouteName: RouteNames.termsDetailPublic,
+                        ),
+                        const SizedBox(height: 24),
                         // 회원가입 버튼
                         _buildSignupButton(),
                       ],
@@ -311,16 +324,20 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildSignupButton() {
+    final isEnabled = _allRequiredTermsAgreed && !_isLoading;
     return GestureDetector(
-      onTap: _isLoading ? null : _handleSignup,
+      onTap: isEnabled ? _handleSignup : null,
       child: Container(
         height: 60,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
-          ),
+          gradient: isEnabled
+              ? const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                )
+              : null,
+          color: isEnabled ? null : const Color(0xFFE7E5E1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
@@ -422,9 +439,7 @@ class _SignupScreenState extends State<SignupScreen> {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
       // 유효성 검사 실패 시 에러 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('입력 정보를 확인해 주세요')),
-      );
+      AppSnackBar.warning(context, message: '입력 정보를 확인해 주세요');
       return;
     }
     if (_isLoading) return;
@@ -443,11 +458,7 @@ class _SignupScreenState extends State<SignupScreen> {
       _showSocialLinkDialog();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('예상치 못한 오류가 발생했습니다. 다시 시도해 주세요.'),
-        ),
-      );
+      AppSnackBar.error(context, message: '예상치 못한 오류가 발생했습니다. 다시 시도해 주세요.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

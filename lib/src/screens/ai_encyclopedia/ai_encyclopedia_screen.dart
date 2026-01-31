@@ -9,6 +9,7 @@ import '../../theme/colors.dart';
 import '../../theme/radius.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
+import '../../widgets/app_snack_bar.dart';
 
 class AIEncyclopediaScreen extends StatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -21,7 +22,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _inputController = TextEditingController();
   final AiEncyclopediaService _aiService = AiEncyclopediaService();
-  final PetService _petService = PetService();
+  final PetService _petService = PetService.instance;
   final List<_Message> _messages = [
     _Message(
       role: MessageRole.assistant,
@@ -81,6 +82,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
       final answer = await _aiService.ask(
         query: text,
         history: history,
+        petId: _activePet?.id,
         petProfileContext: _buildPetProfileContext(),
       );
 
@@ -98,9 +100,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
         );
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('AI 호출 실패: $e')),
-        );
+        AppSnackBar.error(context, message: 'AI 호출 실패: $e');
       }
     } finally {
       if (mounted) {
@@ -239,7 +239,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
     });
   }
 
-  /// Perplexity는 user/assistant가 번갈아 나와야 하므로 히스토리를 정리한다.
+  /// user/assistant가 번갈아 나와야 하므로 히스토리를 정리한다.
   List<Map<String, String>> _buildCleanHistory() {
     final filtered = <_Message>[];
 

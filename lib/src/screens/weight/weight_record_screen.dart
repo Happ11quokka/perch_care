@@ -7,7 +7,6 @@ import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/weight/weight_service.dart';
 import '../../theme/colors.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../router/route_names.dart';
 
 class WeightRecordScreen extends StatefulWidget {
@@ -19,8 +18,8 @@ class WeightRecordScreen extends StatefulWidget {
 
 class _WeightRecordScreenState extends State<WeightRecordScreen> {
   final _weightService = WeightService();
-  final _petCache = PetLocalCacheService();
-  final _petService = PetService();
+  final _petCache = PetLocalCacheService.instance;
+  final _petService = PetService.instance;
 
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
@@ -513,7 +512,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 

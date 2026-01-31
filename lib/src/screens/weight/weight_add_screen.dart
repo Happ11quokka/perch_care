@@ -9,7 +9,7 @@ import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/app_snack_bar.dart';
 
 class WeightAddScreen extends StatefulWidget {
   final DateTime date;
@@ -27,7 +27,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   final _weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _weightService = WeightService();
-  final _petCache = PetLocalCacheService();
+  final _petCache = PetLocalCacheService.instance;
   bool _isLoading = false;
   double _sheetHeight = 0;
   final double _peekHeight = 260.0;
@@ -109,15 +109,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     }
 
     if (_activePetId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '활성 펫을 찾을 수 없습니다.',
-            style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackBar.warning(context, message: '활성 펫을 찾을 수 없습니다.');
       return;
     }
 
@@ -144,31 +136,14 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
       if (mounted) {
         // 성공 메시지
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '오늘의 체중이 기록되었습니다!',
-              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: AppColors.brandPrimary,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        AppSnackBar.success(context, message: '오늘의 체중이 기록되었습니다!');
 
         // 이전 화면으로 돌아가며 refresh 신호 전달
         context.pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '저장에 실패했습니다. 다시 시도해 주세요.',
-              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackBar.error(context, message: '저장에 실패했습니다. 다시 시도해 주세요.');
       }
     } finally {
       if (mounted) {
@@ -240,7 +215,6 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           },
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 

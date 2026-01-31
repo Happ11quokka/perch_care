@@ -64,7 +64,7 @@ class AuthService {
 
   final _api = ApiClient.instance;
   final _tokenService = TokenService.instance;
-  final _petCache = PetLocalCacheService();
+  final _petCache = PetLocalCacheService.instance;
 
   /// 현재 로그인 여부
   bool get isLoggedIn => _tokenService.isLoggedIn;

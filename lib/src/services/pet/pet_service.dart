@@ -3,7 +3,8 @@ import '../api/api_client.dart';
 
 /// 반려동물 CRUD 서비스
 class PetService {
-  PetService();
+  PetService._();
+  static final instance = PetService._();
 
   final _api = ApiClient.instance;
 

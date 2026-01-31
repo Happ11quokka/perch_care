@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 비밀번호 찾기 - 새 비밀번호 입력 화면
 class ForgotPasswordResetScreen extends StatefulWidget {
@@ -319,30 +320,22 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (newPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('새로운 비밀번호를 입력해 주세요.')),
-      );
+      AppSnackBar.warning(context, message: '새로운 비밀번호를 입력해 주세요.');
       return;
     }
 
     if (confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호를 다시 입력해 주세요.')),
-      );
+      AppSnackBar.warning(context, message: '비밀번호를 다시 입력해 주세요.');
       return;
     }
 
     if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
-      );
+      AppSnackBar.warning(context, message: '비밀번호가 일치하지 않습니다.');
       return;
     }
 
     if (newPassword.length < 8) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호는 8자 이상이어야 합니다.')),
-      );
+      AppSnackBar.warning(context, message: '비밀번호는 8자 이상이어야 합니다.');
       return;
     }
 
@@ -356,15 +349,11 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
       );
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호가 성공적으로 변경되었습니다.')),
-      );
+      AppSnackBar.success(context, message: '비밀번호가 성공적으로 변경되었습니다.');
       context.goNamed(RouteNames.login);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호 변경 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: '비밀번호 변경 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

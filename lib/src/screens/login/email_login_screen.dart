@@ -7,6 +7,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 이메일 로그인 화면 - Figma 디자인 기반
 class EmailLoginScreen extends StatefulWidget {
@@ -570,16 +571,12 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     final password = _passwordController.text;
 
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이메일을 입력해 주세요.')),
-      );
+      AppSnackBar.warning(context, message: '이메일을 입력해 주세요.');
       return;
     }
 
     if (password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호를 입력해 주세요.')),
-      );
+      AppSnackBar.warning(context, message: '비밀번호를 입력해 주세요.');
       return;
     }
 
@@ -593,9 +590,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       _navigateAfterLogin();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: '로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -615,14 +610,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     } on GoogleSignInException catch (e) {
       if (!mounted) return;
       if (e.code == GoogleSignInExceptionCode.canceled) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Google 로그인 중 오류가 발생했습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Google 로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -643,14 +634,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     } on SignInWithAppleAuthorizationException catch (e) {
       if (!mounted) return;
       if (e.code == AuthorizationErrorCode.canceled) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);
     }
@@ -671,9 +658,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       _handleSocialLoginResult(result);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kakao 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Kakao 로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isKakaoLoading = false);
     }

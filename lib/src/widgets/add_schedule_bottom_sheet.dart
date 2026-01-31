@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../models/schedule_record.dart';
 import 'analog_time_picker.dart';
+import 'app_snack_bar.dart';
 
 class AddScheduleBottomSheet extends StatefulWidget {
   final DateTime initialDate;
@@ -94,9 +95,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
   void _save() {
     // Validation: Check petId
     if (widget.petId == null || widget.petId!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('펫 정보가 없습니다.')),
-      );
+      AppSnackBar.warning(context, message: '펫 정보가 없습니다.');
       return;
     }
 
@@ -122,9 +121,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
 
     // Validation: Check endDateTime is after startDateTime
     if (endDateTime.isBefore(startDateTime) || endDateTime.isAtSameMomentAs(startDateTime)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('종료 시간은 시작 시간 이후여야 합니다.')),
-      );
+      AppSnackBar.warning(context, message: '종료 시간은 시작 시간 이후여야 합니다.');
       return;
     }
 

@@ -10,11 +10,12 @@ import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import '../../data/terms_content.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/api/token_service.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
 class ProfileScreen extends StatefulWidget {
@@ -26,8 +27,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   static const Color _unselectedCardColor = Color(0xFFE7E5E1);
-  final _petCache = PetLocalCacheService();
-  final _petService = PetService();
+  final _petCache = PetLocalCacheService.instance;
+  final _petService = PetService.instance;
   final _authService = AuthService();
   String _userName = '';
   int? _selectedPetIndex = 0;
@@ -83,14 +84,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       await _loadSocialAccounts();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google 계정이 연동되었습니다.')),
-      );
+      AppSnackBar.success(context, message: 'Google 계정이 연동되었습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google 계정 연동에 실패했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Google 계정 연동에 실패했습니다.');
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
     }
@@ -111,14 +108,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       await _loadSocialAccounts();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Apple 계정이 연동되었습니다.')),
-      );
+      AppSnackBar.success(context, message: 'Apple 계정이 연동되었습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Apple 계정 연동에 실패했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Apple 계정 연동에 실패했습니다.');
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
     }
@@ -140,14 +133,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       await _loadSocialAccounts();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('카카오 계정이 연동되었습니다.')),
-      );
+      AppSnackBar.success(context, message: '카카오 계정이 연동되었습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('카카오 계정 연동에 실패했습니다.')),
-      );
+      AppSnackBar.error(context, message: '카카오 계정 연동에 실패했습니다.');
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
     }
@@ -212,14 +201,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await _authService.unlinkSocialAccount(provider);
       await _loadSocialAccounts();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$providerName 계정 연동이 해제되었습니다.')),
-      );
+      AppSnackBar.success(context, message: '$providerName 계정 연동이 해제되었습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$providerName 계정 연동 해제에 실패했습니다.')),
-      );
+      AppSnackBar.error(context, message: '$providerName 계정 연동 해제에 실패했습니다.');
     }
   }
 
@@ -409,6 +394,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: const Color(0xFFF0F0F0),
                     ),
 
+                    // 약관 및 정책 섹션
+                    _buildTermsPolicySection(),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
                     // 계정 관리 섹션
                     _buildAccountManagementSection(),
 
@@ -420,13 +415,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: -1, // 선택 상태 없음
-        onTap: (index) {
-          // 쉘 라우트의 탭으로 이동
-          final routes = [RouteNames.home, RouteNames.weightDetail, RouteNames.aiEncyclopedia];
-          context.goNamed(routes[index]);
-        },
+    );
+  }
+
+  /// 약관 및 정책 섹션
+  Widget _buildTermsPolicySection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '약관 및 정책',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1A1A1A),
+              height: 22 / 16,
+              letterSpacing: 0.08,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildTermsRow(
+            label: '이용약관',
+            onTap: () => context.pushNamed(
+              RouteNames.termsDetail,
+              extra: TermsType.termsOfService,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildTermsRow(
+            label: '개인정보처리방침',
+            onTap: () => context.pushNamed(
+              RouteNames.termsDetail,
+              extra: TermsType.privacyPolicy,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTermsRow({required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE7E5E1)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: Color(0xFF97928A),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -938,9 +999,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context.goNamed(RouteNames.login);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('회원 탈퇴에 실패했습니다. 다시 시도해주세요.')),
-      );
+      AppSnackBar.error(context, message: '회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
     }
   }
 

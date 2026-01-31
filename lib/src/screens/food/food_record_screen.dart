@@ -7,9 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/food/food_record_service.dart';
 import '../../theme/colors.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/dashed_border.dart';
 import '../../router/route_names.dart';
+import '../../widgets/app_snack_bar.dart';
 
 class FoodRecordScreen extends StatefulWidget {
   const FoodRecordScreen({super.key});
@@ -19,7 +19,7 @@ class FoodRecordScreen extends StatefulWidget {
 }
 
 class _FoodRecordScreenState extends State<FoodRecordScreen> {
-  final _petService = PetService();
+  final _petService = PetService.instance;
   final _foodService = FoodRecordService();
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
@@ -447,9 +447,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       onTap: () async {
                         await _saveEntries();
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('저장되었습니다.')),
-                        );
+                        AppSnackBar.success(context, message: '저장되었습니다.');
                       },
                       child: Container(
                         height: 56,
@@ -479,7 +477,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 

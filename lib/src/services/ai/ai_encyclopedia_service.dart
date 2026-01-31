@@ -10,7 +10,7 @@ class AiEncyclopediaService {
   Future<String> ask({
     required String query,
     List<Map<String, String>> history = const [],
-    String? model,
+    String? petId,
     double temperature = 0.2,
     int maxTokens = 512,
     String? petProfileContext,
@@ -18,7 +18,7 @@ class AiEncyclopediaService {
     final body = <String, dynamic>{
       'query': query,
       'history': history,
-      if (model != null) 'model': model,
+      if (petId != null) 'pet_id': petId,
       'temperature': temperature,
       'max_tokens': maxTokens,
       if (petProfileContext != null) 'pet_profile_context': petProfileContext,

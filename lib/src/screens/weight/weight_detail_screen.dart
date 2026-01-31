@@ -12,6 +12,7 @@ import '../../services/pet/pet_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
 import '../../router/route_names.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
+import '../../widgets/app_snack_bar.dart';
 
 class WeightDetailScreen extends StatefulWidget {
   const WeightDetailScreen({super.key});
@@ -23,8 +24,8 @@ class WeightDetailScreen extends StatefulWidget {
 class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final _weightService = WeightService();
   final _scheduleService = ScheduleService();
-  final _petCache = PetLocalCacheService();
-  final _petService = PetService();
+  final _petCache = PetLocalCacheService.instance;
+  final _petService = PetService.instance;
 
   bool _isWeeklyView = true; // true: 주, false: 월
   int _selectedYear = DateTime.now().year;
@@ -1082,9 +1083,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         await _loadScheduleData();
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('일정 저장 중 오류가 발생했습니다.')),
-          );
+          AppSnackBar.error(context, message: '일정 저장 중 오류가 발생했습니다.');
         }
       }
     }
@@ -1476,9 +1475,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 await _loadScheduleData();
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('일정 저장 중 오류가 발생했습니다.')),
-                  );
+                  AppSnackBar.error(context, message: '일정 저장 중 오류가 발생했습니다.');
                 }
               }
             }

@@ -25,6 +25,8 @@ import '../screens/forgot_password/forgot_password_code_screen.dart';
 import '../screens/forgot_password/forgot_password_reset_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/profile_setup/profile_setup_complete_screen.dart';
+import '../screens/terms/terms_detail_screen.dart';
+import '../data/terms_content.dart';
 import '../services/api/token_service.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'route_names.dart';
@@ -40,6 +42,7 @@ const _publicPaths = {
   RoutePaths.forgotPasswordMethod,
   RoutePaths.forgotPasswordCode,
   RoutePaths.forgotPasswordReset,
+  RoutePaths.termsDetailPublic,
 };
 
 /// 앱의 라우터 설정
@@ -107,115 +110,173 @@ class AppRouter {
           );
         },
         branches: [
+          // Branch 0: 홈 탭 및 홈에서 접근하는 상세 화면들
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: RoutePaths.home,
                 name: RouteNames.home,
-                builder: (context, state) => const HomeScreen(),
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: HomeScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'notification',
+                    name: RouteNames.notification,
+                    builder: (context, state) => const NotificationScreen(),
+                  ),
+                  GoRoute(
+                    path: 'profile',
+                    name: RouteNames.profile,
+                    builder: (context, state) => const ProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: 'pet/profile/detail',
+                    name: RouteNames.petProfileDetail,
+                    builder: (context, state) =>
+                        const PetProfileDetailScreen(),
+                  ),
+                  GoRoute(
+                    path: 'pet/add',
+                    name: RouteNames.petAdd,
+                    builder: (context, state) {
+                      final extra = state.extra;
+                      final map =
+                          extra is Map<String, dynamic> ? extra : null;
+                      return PetAddScreen(
+                        petId: map?['petId'],
+                        isInitialSetup: map?['isInitialSetup'] == true,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: 'pet/profile',
+                    name: RouteNames.petProfile,
+                    builder: (context, state) => const PetProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: 'food/record',
+                    name: RouteNames.foodRecord,
+                    builder: (context, state) => const FoodRecordScreen(),
+                  ),
+                  GoRoute(
+                    path: 'water/record',
+                    name: RouteNames.waterRecord,
+                    builder: (context, state) => const WaterRecordScreen(),
+                  ),
+                  GoRoute(
+                    path: 'wci/index',
+                    name: RouteNames.wciIndex,
+                    builder: (context, state) => const WciIndexScreen(),
+                  ),
+                  GoRoute(
+                    path: 'bhi/detail',
+                    name: RouteNames.bhiDetail,
+                    builder: (context, state) {
+                      final extra = state.extra;
+                      final bhiResult =
+                          extra is BhiResult ? extra : null;
+                      return BhiDetailScreen(bhiResult: bhiResult);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'terms/detail',
+                    name: RouteNames.termsDetail,
+                    builder: (context, state) {
+                      final termsType = state.extra is TermsType
+                          ? state.extra as TermsType
+                          : TermsType.termsOfService;
+                      return TermsDetailScreen(termsType: termsType);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/setup',
+                    name: RouteNames.profileSetup,
+                    builder: (context, state) =>
+                        const ProfileSetupScreen(),
+                  ),
+                  GoRoute(
+                    path: 'profile/setup/complete',
+                    name: RouteNames.profileSetupComplete,
+                    builder: (context, state) {
+                      final extra = state.extra;
+                      final map =
+                          extra is Map<String, dynamic> ? extra : null;
+                      return ProfileSetupCompleteScreen(
+                        petName: map?['petName'] ?? '점점이',
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
+          // Branch 1: 체중 탭 및 체중 관련 상세 화면들
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: RoutePaths.weightDetail,
                 name: RouteNames.weightDetail,
-                builder: (context, state) => const WeightDetailScreen(),
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: WeightDetailScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'record',
+                    name: RouteNames.weightRecord,
+                    builder: (context, state) =>
+                        const WeightRecordScreen(),
+                  ),
+                  GoRoute(
+                    path: 'add/today',
+                    name: RouteNames.weightAddToday,
+                    builder: (context, state) =>
+                        WeightAddScreen(date: DateTime.now()),
+                  ),
+                  GoRoute(
+                    path: 'add/:date',
+                    name: RouteNames.weightAdd,
+                    builder: (context, state) {
+                      final dateStr = state.pathParameters['date'];
+                      DateTime date;
+                      try {
+                        date = DateTime.parse(dateStr ?? '');
+                      } catch (_) {
+                        date = DateTime.now();
+                      }
+                      return WeightAddScreen(date: date);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
+          // Branch 2: AI 백과사전 탭
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: RoutePaths.aiEncyclopedia,
                 name: RouteNames.aiEncyclopedia,
-                builder: (context, state) => const AIEncyclopediaScreen(),
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: AIEncyclopediaScreen(),
+                ),
               ),
             ],
           ),
         ],
       ),
+      // 약관 상세 (Shell 바깥 - 회원가입에서 접근, 비로그인 허용)
       GoRoute(
-        path: RoutePaths.weightRecord,
-        name: RouteNames.weightRecord,
-        builder: (context, state) => const WeightRecordScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.weightAddToday,
-        name: RouteNames.weightAddToday,
-        builder: (context, state) => WeightAddScreen(date: DateTime.now()),
-      ),
-      GoRoute(
-        path: RoutePaths.weightAdd,
-        name: RouteNames.weightAdd,
+        path: RoutePaths.termsDetailPublic,
+        name: RouteNames.termsDetailPublic,
         builder: (context, state) {
-          final dateStr = state.pathParameters['date'];
-          DateTime date;
-          try {
-            date = DateTime.parse(dateStr ?? '');
-          } catch (_) {
-            date = DateTime.now();
-          }
-          return WeightAddScreen(date: date);
+          final termsType = state.extra is TermsType
+              ? state.extra as TermsType
+              : TermsType.termsOfService;
+          return TermsDetailScreen(termsType: termsType);
         },
       ),
-      GoRoute(
-        path: RoutePaths.foodRecord,
-        name: RouteNames.foodRecord,
-        builder: (context, state) => const FoodRecordScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.waterRecord,
-        name: RouteNames.waterRecord,
-        builder: (context, state) => const WaterRecordScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.petAdd,
-        name: RouteNames.petAdd,
-        builder: (context, state) {
-          final extra = state.extra;
-          final map = extra is Map<String, dynamic> ? extra : null;
-          return PetAddScreen(
-            petId: map?['petId'],
-            isInitialSetup: map?['isInitialSetup'] == true,
-          );
-        },
-      ),
-      GoRoute(
-        path: RoutePaths.petProfile,
-        name: RouteNames.petProfile,
-        builder: (context, state) => const PetProfileScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.notification,
-        name: RouteNames.notification,
-        builder: (context, state) => const NotificationScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.profile,
-        name: RouteNames.profile,
-        builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.petProfileDetail,
-        name: RouteNames.petProfileDetail,
-        builder: (context, state) => const PetProfileDetailScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.wciIndex,
-        name: RouteNames.wciIndex,
-        builder: (context, state) => const WciIndexScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.bhiDetail,
-        name: RouteNames.bhiDetail,
-        builder: (context, state) {
-          final extra = state.extra;
-          final bhiResult = extra is BhiResult ? extra : null;
-          return BhiDetailScreen(bhiResult: bhiResult);
-        },
-      ),
+      // 인증 관련 라우트 (Shell 바깥 - 하단 네비게이션 없음)
       GoRoute(
         path: RoutePaths.emailLogin,
         name: RouteNames.emailLogin,
@@ -248,22 +309,6 @@ class AppRouter {
             identifier: map?['identifier'] ?? '',
             code: map?['code'] ?? '',
             method: map?['method'] ?? 'email',
-          );
-        },
-      ),
-      GoRoute(
-        path: RoutePaths.profileSetup,
-        name: RouteNames.profileSetup,
-        builder: (context, state) => const ProfileSetupScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.profileSetupComplete,
-        name: RouteNames.profileSetupComplete,
-        builder: (context, state) {
-          final extra = state.extra;
-          final map = extra is Map<String, dynamic> ? extra : null;
-          return ProfileSetupCompleteScreen(
-            petName: map?['petName'] ?? '점점이',
           );
         },
       ),

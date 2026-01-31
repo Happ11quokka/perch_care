@@ -8,6 +8,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
 import '../../services/auth/auth_service.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 로그인 화면 - Figma 디자인 기반
 class LoginScreen extends StatefulWidget {
@@ -107,14 +108,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } on GoogleSignInException catch (e) {
       if (!mounted) return;
       if (e.code == GoogleSignInExceptionCode.canceled) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Google 로그인 중 오류가 발생했습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Google 로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -135,14 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } on SignInWithAppleAuthorizationException catch (e) {
       if (!mounted) return;
       if (e.code == AuthorizationErrorCode.canceled) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Apple 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);
     }
@@ -163,9 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _handleSocialLoginResult(result);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kakao 로그인 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: 'Kakao 로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isKakaoLoading = false);
     }

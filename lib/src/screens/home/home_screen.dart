@@ -20,9 +20,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _petService = PetService();
-  final _petCache = PetLocalCacheService();
-  final _bhiService = BhiService();
+  final _petService = PetService.instance;
+  final _petCache = PetLocalCacheService.instance;
+  final _bhiService = BhiService.instance;
   Pet? _activePet;
   BhiResult? _bhiResult;
   bool _isLoading = true;
@@ -81,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _activePet = pet;
         });
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[HomeScreen] 펫 정보 로드 실패, 로컬 캐시 복원 시도: $e');
       // 서버 실패 시 로컬 캐시에서 펫 이름만이라도 복원
       try {
         final cached = await _petCache.getActivePet();
@@ -98,7 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           });
         }
-      } catch (_) {}
+      } catch (cacheError) {
+        debugPrint('[HomeScreen] 로컬 캐시 복원도 실패: $cacheError');
+      }
     }
 
     // BHI 로드 (새 펫 데이터로 덮어쓰기)
@@ -125,7 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (activePet != null) {
         _loadBhi(activePet.id);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[HomeScreen] 펫 목록 로드 실패: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -146,7 +150,9 @@ class _HomeScreenState extends State<HomeScreen> {
           _hasWaterData = bhi.hasWaterData;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[HomeScreen] BHI 로드 실패: $e');
+    }
   }
 
   @override

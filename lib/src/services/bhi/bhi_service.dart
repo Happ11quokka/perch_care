@@ -3,7 +3,8 @@ import '../api/api_client.dart';
 
 /// BHI (Bird Health Index) 조회 서비스
 class BhiService {
-  BhiService();
+  BhiService._();
+  static final instance = BhiService._();
 
   final _api = ApiClient.instance;
 

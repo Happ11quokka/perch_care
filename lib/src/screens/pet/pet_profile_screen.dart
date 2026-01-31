@@ -7,7 +7,6 @@ import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
-import '../../widgets/bottom_nav_bar.dart';
 
 /// 반려동물 프로필 목록 화면
 class PetProfileScreen extends StatefulWidget {
@@ -18,8 +17,8 @@ class PetProfileScreen extends StatefulWidget {
 }
 
 class _PetProfileScreenState extends State<PetProfileScreen> {
-  final _petCache = PetLocalCacheService();
-  final _petService = PetService();
+  final _petCache = PetLocalCacheService.instance;
+  final _petService = PetService.instance;
   final _authService = AuthService();
   List<PetProfileCache> _cachedPets = [];
   String? _selectedPetId;
@@ -214,7 +213,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }
 

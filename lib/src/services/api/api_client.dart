@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../config/environment.dart';
 import 'token_service.dart';
@@ -113,7 +113,10 @@ class ApiClient {
         );
         return true;
       }
-    } catch (_) {}
+      debugPrint('[ApiClient] Token refresh failed: ${response.statusCode}');
+    } catch (e) {
+      debugPrint('[ApiClient] Token refresh error: $e');
+    }
 
     // 갱신 실패 시 토큰 삭제
     await _tokenService.clearTokens();

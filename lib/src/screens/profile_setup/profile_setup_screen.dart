@@ -12,6 +12,7 @@ import '../../services/auth/auth_service.dart';
 import '../../services/api/token_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import 'widgets/country_selector_bottom_sheet.dart';
+import '../../widgets/app_snack_bar.dart';
 
 /// 프로필 설정 화면
 class ProfileSetupScreen extends StatefulWidget {
@@ -673,9 +674,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('프로필 저장 중 오류가 발생했습니다.')),
-      );
+      AppSnackBar.error(context, message: '프로필 저장 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
