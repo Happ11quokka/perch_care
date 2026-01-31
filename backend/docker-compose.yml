@@ -25,16 +25,21 @@ services:
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
       KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID:-}
       KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       UPLOAD_DIR: /app/uploads
     volumes:
       - uploads:/app/uploads
+      - ./app:/app/app:ro
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
     command: >
-      uvicorn app.main:app --host 0.0.0.0 --port 8000
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   nginx:
     image: nginx:alpine

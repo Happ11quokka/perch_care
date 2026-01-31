@@ -1,6 +1,7 @@
 from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from app.models.user import User
 from app.models.social_account import SocialAccount
@@ -21,7 +22,14 @@ async def update_profile(db: AsyncSession, user_id: UUID, nickname: str | None =
     if avatar_url is not None:
         user.avatar_url = avatar_url
     await db.flush()
-    return user
+
+    # social_accounts 관계를 eagerly load (ProfileResponse 직렬화에 필요)
+    result = await db.execute(
+        select(User)
+        .where(User.id == user_id)
+        .options(selectinload(User.social_accounts))
+    )
+    return result.scalar_one()
 
 
 async def link_social_account(

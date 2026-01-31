@@ -6,6 +6,7 @@ import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/pet/active_pet_notifier.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 /// 반려동물 프로필 목록 화면
@@ -272,14 +273,19 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
     final isSelected = pet['id'] == _selectedPetId;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedPetId = pet['id'] as String?;
-        });
+      onTap: () async {
         final petId = pet['id'] as String?;
-        if (petId != null) {
-          _petCache.setActivePetId(petId);
-        }
+        if (petId == null) return;
+        setState(() {
+          _selectedPetId = petId;
+        });
+        _petCache.setActivePetId(petId);
+        // 서버에 활성 펫 변경 저장
+        try {
+          await _petService.setActivePet(petId);
+        } catch (_) {}
+        // 서버 저장 후 다른 화면에 알림
+        ActivePetNotifier.instance.notify(petId);
       },
       child: Container(
       margin: const EdgeInsets.only(left: 32, right: 32, bottom: 12),

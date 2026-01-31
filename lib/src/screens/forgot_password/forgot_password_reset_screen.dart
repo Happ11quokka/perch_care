@@ -186,7 +186,7 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
     final isActive = hasFocus || hasValue;
     final borderColor =
         isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
-    final bgColor = isActive
+    final bgColor = (hasFocus && hasValue)
         ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
         : Colors.transparent;
     final iconColor =
@@ -202,12 +202,12 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF97928A),
-            letterSpacing: -0.35,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 8),
         Container(
-          height: 60,
+          height: 64,
           decoration: BoxDecoration(
             color: bgColor,
             border: Border.all(color: borderColor, width: 1),
@@ -217,11 +217,9 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
             children: [
               const SizedBox(width: 20),
               SvgPicture.asset(
-                isActive
-                    ? 'assets/images/lock_orange_icon.svg'
-                    : 'assets/images/lock_filled_icon.svg',
-                width: 24,
-                height: 24,
+                'assets/images/signup_vector/password.svg',
+                width: 20,
+                height: 20,
                 colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
               ),
               const SizedBox(width: 12),
@@ -245,11 +243,13 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
-                      letterSpacing: -0.35,
+                      letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),

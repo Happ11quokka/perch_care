@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/weight_record.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/pet/pet_service.dart';
 import '../../services/weight/weight_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -19,6 +20,7 @@ class WeightRecordScreen extends StatefulWidget {
 class _WeightRecordScreenState extends State<WeightRecordScreen> {
   final _weightService = WeightService();
   final _petCache = PetLocalCacheService();
+  final _petService = PetService();
 
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
@@ -33,16 +35,36 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
 
   Future<void> _loadActivePet() async {
     try {
-      final pet = await _petCache.getActivePet();
+      // API 우선 조회
+      final apiPet = await _petService.getActivePet();
       if (!mounted) return;
-      setState(() {
-        _activePetId = pet?.id;
-      });
+      if (apiPet != null) {
+        setState(() {
+          _activePetId = apiPet.id;
+        });
+      } else {
+        // 로컬 캐시 폴백
+        final cachedPet = await _petCache.getActivePet();
+        if (!mounted) return;
+        setState(() {
+          _activePetId = cachedPet?.id;
+        });
+      }
       if (_activePetId != null) {
         await _loadRecords();
       }
     } catch (_) {
-      if (!mounted) return;
+      // API 실패 시 로컬 캐시 폴백
+      try {
+        final cachedPet = await _petCache.getActivePet();
+        if (!mounted) return;
+        setState(() {
+          _activePetId = cachedPet?.id;
+        });
+        if (_activePetId != null) {
+          await _loadRecords();
+        }
+      } catch (_) {}
     } finally {
       if (mounted) {
         setState(() {

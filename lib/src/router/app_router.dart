@@ -26,6 +26,7 @@ import '../screens/forgot_password/forgot_password_reset_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/profile_setup/profile_setup_complete_screen.dart';
 import '../services/api/token_service.dart';
+import '../widgets/bottom_nav_bar.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -92,15 +93,48 @@ class AppRouter {
         name: RouteNames.signup,
         builder: (context, state) => const SignupScreen(),
       ),
-      GoRoute(
-        path: RoutePaths.home,
-        name: RouteNames.home,
-        builder: (context, state) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.weightDetail,
-        name: RouteNames.weightDetail,
-        builder: (context, state) => const WeightDetailScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return Scaffold(
+            body: navigationShell,
+            bottomNavigationBar: BottomNavBar(
+              currentIndex: navigationShell.currentIndex,
+              onTap: (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
+              ),
+            ),
+          );
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RoutePaths.home,
+                name: RouteNames.home,
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RoutePaths.weightDetail,
+                name: RouteNames.weightDetail,
+                builder: (context, state) => const WeightDetailScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RoutePaths.aiEncyclopedia,
+                name: RouteNames.aiEncyclopedia,
+                builder: (context, state) => const AIEncyclopediaScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: RoutePaths.weightRecord,
@@ -164,11 +198,6 @@ class AppRouter {
         path: RoutePaths.petProfileDetail,
         name: RouteNames.petProfileDetail,
         builder: (context, state) => const PetProfileDetailScreen(),
-      ),
-      GoRoute(
-        path: RoutePaths.aiEncyclopedia,
-        name: RouteNames.aiEncyclopedia,
-        builder: (context, state) => const AIEncyclopediaScreen(),
       ),
       GoRoute(
         path: RoutePaths.wciIndex,

@@ -2,6 +2,7 @@ import 'dart:async';
 import '../api/api_client.dart';
 import '../api/token_service.dart';
 import '../pet/pet_local_cache_service.dart';
+import '../storage/local_image_storage_service.dart';
 
 /// 소셜 로그인 결과
 class SocialLoginResult {
@@ -157,6 +158,7 @@ class AuthService {
   /// 로그아웃
   Future<void> signOut() async {
     await _petCache.clearAll();
+    await LocalImageStorageService.instance.clearAll();
     await _tokenService.clearTokens();
   }
 
@@ -229,6 +231,7 @@ class AuthService {
   Future<void> deleteAccount() async {
     await _api.delete('/users/me');
     await _petCache.clearAll();
+    await LocalImageStorageService.instance.clearAll();
     await _tokenService.clearTokens();
   }
 

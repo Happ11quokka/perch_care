@@ -19,7 +19,7 @@ WaterScore: Δd = (d_t - d0) / d0
 """
 from uuid import UUID
 from datetime import date, timedelta
-from sqlalchemy import select
+from sqlalchemy import select, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.pet import Pet
 from app.models.weight_record import WeightRecord
@@ -48,6 +48,7 @@ def _bhi_to_wci_level(bhi_score: float) -> int:
 
 
 async def _get_weight_on_date(db: AsyncSession, pet_id: UUID, target_date: date) -> float | None:
+    """target_date의 체중 기록 반환. 없으면 None."""
     result = await db.execute(
         select(WeightRecord.weight).where(
             WeightRecord.pet_id == pet_id,
@@ -58,15 +59,41 @@ async def _get_weight_on_date(db: AsyncSession, pet_id: UUID, target_date: date)
     return float(row) if row is not None else None
 
 
+async def _get_weight_near_date(db: AsyncSession, pet_id: UUID, target_date: date, window_days: int = 3) -> float | None:
+    """target_date 근처(±window_days) 가장 가까운 체중 기록 반환. 정확한 날짜를 우선."""
+    exact = await _get_weight_on_date(db, pet_id, target_date)
+    if exact is not None:
+        return exact
+
+    # 정확한 날짜에 없으면 ±window_days 범위에서 가장 가까운 기록 (날짜 차이 오름차순)
+    start = target_date - timedelta(days=window_days)
+    end = target_date + timedelta(days=window_days)
+    result = await db.execute(
+        select(WeightRecord.weight, WeightRecord.recorded_date)
+        .where(
+            WeightRecord.pet_id == pet_id,
+            WeightRecord.recorded_date >= start,
+            WeightRecord.recorded_date <= end,
+        )
+    )
+    rows = result.all()
+    if not rows:
+        return None
+
+    # 가장 가까운 날짜의 기록 선택
+    best = min(rows, key=lambda r: abs((r.recorded_date - target_date).days))
+    return float(best.weight)
+
+
 async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, growth_stage: str | None) -> tuple[float, bool]:
     """WeightScore 계산. (score, has_data) 반환."""
     if not growth_stage:
         return 0.0, False
 
     if growth_stage in ('adult', 'post_growth'):
-        # 7일 기반 WCI
+        # 7일 기반 WCI (비교 체중은 ±3일 범위에서 탐색)
         w_t = await _get_weight_on_date(db, pet_id, target_date)
-        w_t7 = await _get_weight_on_date(db, pet_id, target_date - timedelta(days=7))
+        w_t7 = await _get_weight_near_date(db, pet_id, target_date - timedelta(days=7), window_days=3)
         if w_t is None or w_t7 is None or w_t7 == 0:
             return 0.0, False
 
@@ -82,9 +109,9 @@ async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, 
         return score, True
 
     elif growth_stage == 'rapid_growth':
-        # 1일 기반 WCI (성장 보상)
+        # 1일 기반 WCI (비교 체중은 ±1일 범위에서 탐색)
         w_t = await _get_weight_on_date(db, pet_id, target_date)
-        w_t1 = await _get_weight_on_date(db, pet_id, target_date - timedelta(days=1))
+        w_t1 = await _get_weight_near_date(db, pet_id, target_date - timedelta(days=1), window_days=1)
         if w_t is None or w_t1 is None or w_t1 == 0:
             return 0.0, False
 
@@ -129,8 +156,27 @@ async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -
     return score, True
 
 
+async def _find_latest_record_date(db: AsyncSession, pet_id: UUID, up_to: date) -> date | None:
+    """pet_id의 가장 최근 기록 날짜를 반환 (weight/food/water 중 가장 최신)."""
+    q_weight = select(WeightRecord.recorded_date.label("d")).where(
+        WeightRecord.pet_id == pet_id, WeightRecord.recorded_date <= up_to
+    )
+    q_food = select(FoodRecord.recorded_date.label("d")).where(
+        FoodRecord.pet_id == pet_id, FoodRecord.recorded_date <= up_to
+    )
+    q_water = select(WaterRecord.recorded_date.label("d")).where(
+        WaterRecord.pet_id == pet_id, WaterRecord.recorded_date <= up_to
+    )
+    combined = union_all(q_weight, q_food, q_water).subquery()
+    result = await db.execute(
+        select(combined.c.d).order_by(combined.c.d.desc()).limit(1)
+    )
+    row = result.scalar_one_or_none()
+    return row
+
+
 async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BHIResponse:
-    """주어진 날짜의 BHI 점수를 계산."""
+    """주어진 날짜의 BHI 점수를 계산. 해당 날짜에 데이터가 없으면 가장 최근 기록 날짜로 폴백."""
     # 펫 정보 조회
     result = await db.execute(select(Pet).where(Pet.id == pet_id))
     pet = result.scalar_one_or_none()
@@ -144,6 +190,17 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
     food_score, has_food = await _calc_food_score(db, pet_id, target_date)
     water_score, has_water = await _calc_water_score(db, pet_id, target_date)
 
+    effective_date = target_date
+
+    # 요청 날짜에 데이터가 전혀 없으면 가장 최근 기록 날짜로 폴백
+    if not has_weight and not has_food and not has_water:
+        latest = await _find_latest_record_date(db, pet_id, target_date)
+        if latest is not None and latest != target_date:
+            effective_date = latest
+            weight_score, has_weight = await _calc_weight_score(db, pet_id, effective_date, growth_stage)
+            food_score, has_food = await _calc_food_score(db, pet_id, effective_date)
+            water_score, has_water = await _calc_water_score(db, pet_id, effective_date)
+
     bhi_score = weight_score + food_score + water_score
     wci_level = _bhi_to_wci_level(bhi_score)
 
@@ -154,7 +211,7 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
         water_score=round(water_score, 2),
         wci_level=wci_level,
         growth_stage=growth_stage,
-        target_date=target_date,
+        target_date=effective_date,
         has_weight_data=has_weight,
         has_food_data=has_food,
         has_water_data=has_water,

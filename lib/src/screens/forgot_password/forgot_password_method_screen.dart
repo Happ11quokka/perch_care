@@ -5,7 +5,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 
-/// 비밀번호 찾기 - 방법 선택 화면
+/// 비밀번호 찾기 - 이메일 입력 화면
 class ForgotPasswordMethodScreen extends StatefulWidget {
   const ForgotPasswordMethodScreen({super.key});
 
@@ -17,39 +17,21 @@ class ForgotPasswordMethodScreen extends StatefulWidget {
 class _ForgotPasswordMethodScreenState
     extends State<ForgotPasswordMethodScreen> {
   final _authService = AuthService();
-
-  // 선택된 방법: 'phone' 또는 'email'
-  String _selectedMethod = 'phone';
-
-  // 사용자 연락처 (프로필에서 로드)
-  String _phoneNumber = '';
-  String _email = '';
-  bool _isLoadingProfile = true;
+  final _emailController = TextEditingController();
+  final _emailFocusNode = FocusNode();
 
   bool _isSending = false;
+  String? _emailError;
 
   @override
-  void initState() {
-    super.initState();
-    _loadUserContact();
+  void dispose() {
+    _emailController.dispose();
+    _emailFocusNode.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadUserContact() async {
-    try {
-      final profile = await _authService.getProfile();
-      if (!mounted) return;
-      setState(() {
-        _email = profile?['email'] as String? ?? '';
-        _phoneNumber = profile?['phone'] as String? ?? '';
-        _isLoadingProfile = false;
-        // phone 정보가 없으면 email을 기본 선택
-        if (_phoneNumber.isEmpty) {
-          _selectedMethod = 'email';
-        }
-      });
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingProfile = false);
-    }
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(email);
   }
 
   @override
@@ -85,9 +67,7 @@ class _ForgotPasswordMethodScreenState
         ),
       ),
       body: SafeArea(
-        child: _isLoadingProfile
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
+        child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
@@ -97,9 +77,8 @@ class _ForgotPasswordMethodScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                      // 안내 문구
                       const Text(
-                        '암호를 재설정하는 데 필요한 코드번호를 받으실 방법을 선택해 주세요.',
+                        '가입 시 사용한 이메일을 입력해 주세요.\n비밀번호 재설정 코드를 보내드립니다.',
                         style: TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
@@ -110,26 +89,88 @@ class _ForgotPasswordMethodScreenState
                         ),
                       ),
                       const SizedBox(height: 32),
-                      // 휴대폰 번호 옵션 (번호가 있을 때만 표시)
-                      if (_phoneNumber.isNotEmpty) ...[
-                        _buildMethodOption(
-                          method: 'phone',
-                          icon: 'assets/images/phone_icon.svg',
-                          label: '휴대폰 번호',
-                          value: _phoneNumber,
-                          isSelected: _selectedMethod == 'phone',
+                      // 이메일 입력 필드
+                      const Text(
+                        '이메일',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.35,
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _emailController,
+                        focusNode: _emailFocusNode,
+                        keyboardType: TextInputType.emailAddress,
+                        style: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.4,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'example@email.com',
+                          hintStyle: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFFD1CCC3),
+                            letterSpacing: -0.4,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: _emailError != null
+                                  ? const Color(0xFFE53935)
+                                  : const Color(0xFFE8E3DA),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFFF9A42),
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE53935),
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE53935),
+                            ),
+                          ),
+                        ),
+                        onChanged: (_) {
+                          if (_emailError != null) {
+                            setState(() => _emailError = null);
+                          }
+                        },
+                      ),
+                      if (_emailError != null) ...[
                         const SizedBox(height: 8),
-                      ],
-                      // 이메일 옵션
-                      if (_email.isNotEmpty)
-                        _buildMethodOption(
-                          method: 'email',
-                          icon: 'assets/images/mail_gray_icon.svg',
-                          label: '이메일',
-                          value: _email,
-                          isSelected: _selectedMethod == 'email',
+                        Text(
+                          _emailError!,
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFFE53935),
+                            letterSpacing: -0.3,
+                          ),
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -140,103 +181,6 @@ class _ForgotPasswordMethodScreenState
               padding: const EdgeInsets.fromLTRB(32, 16, 32, 50),
               child: _buildSendCodeButton(),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMethodOption({
-    required String method,
-    required String icon,
-    required String label,
-    required String value,
-    required bool isSelected,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedMethod = method;
-        });
-      },
-      child: Container(
-        height: 112,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFFFF9A42)
-                : const Color(0xFF97928A),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 20),
-            // 아이콘 원형 배경
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFFFF9A42).withValues(alpha: 0.3)
-                    : Colors.transparent,
-                shape: BoxShape.circle,
-                border: isSelected
-                    ? null
-                    : Border.all(
-                        color: const Color(0xFF97928A),
-                        width: 1,
-                      ),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  icon,
-                  width: 28,
-                  height: 28,
-                  colorFilter: ColorFilter.mode(
-                    isSelected
-                        ? const Color(0xFFFF9A42)
-                        : const Color(0xFF97928A),
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // 텍스트 영역
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
-                      letterSpacing: -0.35,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? const Color(0xFF1A1A1A)
-                          : const Color(0xFF97928A),
-                      letterSpacing: -0.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 20),
           ],
         ),
       ),
@@ -284,24 +228,30 @@ class _ForgotPasswordMethodScreenState
   Future<void> _handleSendCode() async {
     if (_isSending) return;
 
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() => _emailError = '이메일을 입력해 주세요.');
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      setState(() => _emailError = '올바른 이메일 형식을 입력해 주세요.');
+      return;
+    }
+
     setState(() => _isSending = true);
 
-    final destination = _selectedMethod == 'phone' ? _phoneNumber : _email;
-
     try {
-      if (_selectedMethod == 'email') {
-        await _authService.resetPassword(destination);
-      } else {
-        await _authService.resetPasswordByPhone(destination);
-      }
+      await _authService.resetPassword(email);
 
       if (!mounted) return;
 
       context.pushNamed(
         RouteNames.forgotPasswordCode,
         extra: {
-          'method': _selectedMethod,
-          'destination': destination,
+          'method': 'email',
+          'destination': email,
         },
       );
     } catch (e) {

@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     kakao_client_id: str = ""
     kakao_client_secret: str = ""
 
+    # SMTP
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+
     # File upload
     upload_dir: str = "uploads"
     max_upload_size: int = 10 * 1024 * 1024  # 10MB

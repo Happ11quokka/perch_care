@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../models/pet.dart';
 import '../../models/weight_record.dart';
 import '../../models/schedule_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/schedule/schedule_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/pet/active_pet_notifier.dart';
 import '../../router/route_names.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
 
 class WeightDetailScreen extends StatefulWidget {
@@ -34,6 +35,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   String _petName = '사랑이';
   String? _activePetId;
   bool _isLoading = true;
+  List<Pet> _petList = [];
 
   // Cached calculation results
   Map<DateTime, double>? _cachedMonthlyAverages;
@@ -43,13 +45,44 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   void initState() {
     super.initState();
     _loadActivePet();
+    ActivePetNotifier.instance.addListener(_onActivePetChanged);
+  }
+
+  @override
+  void dispose() {
+    ActivePetNotifier.instance.removeListener(_onActivePetChanged);
+    super.dispose();
+  }
+
+  void _onActivePetChanged() {
+    final petId = ActivePetNotifier.instance.activePetId;
+    if (petId != null && petId != _activePetId) {
+      // petList에서 해당 펫을 찾아 _switchPet 호출
+      final pet = _petList.where((p) => p.id == petId).firstOrNull;
+      if (pet != null) {
+        _switchPet(pet);
+      } else {
+        // petList에 없으면 전체 리로드
+        _loadActivePet();
+      }
+    }
   }
 
   Future<void> _loadActivePet() async {
     try {
-      // API에서 활성 펫 조회 (UUID 형식 보장)
-      final apiPet = await _petService.getActivePet();
+      // 펫 목록 + 활성 펫 동시 로드
+      final results = await Future.wait([
+        _petService.getMyPets(),
+        _petService.getActivePet(),
+      ]);
       if (!mounted) return;
+
+      final pets = results[0] as List<Pet>;
+      final apiPet = results[1] as Pet?;
+
+      setState(() {
+        _petList = pets;
+      });
 
       if (apiPet != null) {
         // 로컬 캐시도 동기화
@@ -110,6 +143,30 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     }
   }
 
+  Future<void> _switchPet(Pet pet) async {
+    if (pet.id == _activePetId) return;
+    setState(() {
+      _activePetId = pet.id;
+      _petName = pet.name;
+      _weightRecords = [];
+      _scheduleRecords = [];
+      _cachedMonthlyAverages = null;
+      _cachedWeeklyData = null;
+    });
+    _petCache.setActivePetId(pet.id);
+    try {
+      await _petService.setActivePet(pet.id);
+    } catch (_) {}
+    try {
+      await Future.wait([
+        _loadWeightData(),
+        _loadScheduleData(),
+      ]);
+    } catch (_) {
+      // 개별 로드 함수 내부에서 에러 처리
+    }
+  }
+
   Future<void> _loadScheduleData() async {
     if (_activePetId == null) return;
     try {
@@ -130,14 +187,28 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Future<void> _loadWeightData() async {
     if (_activePetId == null) return;
-    final records = await _weightService.fetchLocalRecords(petId: _activePetId);
-    if (mounted) {
-      setState(() {
-        _weightRecords = records;
-        // Invalidate caches when weight records change
-        _cachedMonthlyAverages = null;
-        _cachedWeeklyData = null;
-      });
+    try {
+      // 서버에서 전체 기록 로드 (로컬 캐시도 자동 업데이트됨)
+      final records = await _weightService.fetchAllRecords(petId: _activePetId);
+      if (mounted) {
+        setState(() {
+          _weightRecords = records;
+          _cachedMonthlyAverages = null;
+          _cachedWeeklyData = null;
+        });
+      }
+    } catch (_) {
+      // 서버 실패 시 로컬 캐시 폴백
+      try {
+        final records = await _weightService.fetchLocalRecords(petId: _activePetId);
+        if (mounted) {
+          setState(() {
+            _weightRecords = records;
+            _cachedMonthlyAverages = null;
+            _cachedWeeklyData = null;
+          });
+        }
+      } catch (_) {}
     }
   }
 
@@ -164,7 +235,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         backgroundColor: Colors.white,
         appBar: _buildAppBar(),
         body: const Center(child: CircularProgressIndicator()),
-        bottomNavigationBar: const BottomNavBar(currentIndex: 1),
       );
     }
 
@@ -175,7 +245,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         body: const Center(
           child: Text('활성화된 펫이 없습니다. 펫을 먼저 추가해주세요.'),
         ),
-        bottomNavigationBar: const BottomNavBar(currentIndex: 1),
       );
     }
 
@@ -188,6 +257,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  if (_petList.length > 1) ...[
+                    const SizedBox(height: 12),
+                    _buildPetSelector(),
+                  ],
                   const SizedBox(height: 24),
                   _buildHeaderText(),
                   const SizedBox(height: 24),
@@ -199,6 +272,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   const SizedBox(height: 16),
                   _buildCalendarCard(),
                   const SizedBox(height: 16),
+                  _buildWeightRecordsList(),
+                  const SizedBox(height: 16),
                   _buildScheduleList(),
                   const SizedBox(height: 24),
                 ],
@@ -208,7 +283,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           _buildAddRecordButton(),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 
@@ -365,177 +439,291 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildChart() {
     return SizedBox(
-      height: 220,
-      // 주: 월별 데이터 차트, 월: 주간(일~토) 데이터 차트
-      child: _isWeeklyView ? _buildMonthlyOverviewChart() : _buildWeeklyDaysChart(),
+      height: 260,
+      child: _isWeeklyView
+          ? _buildMonthlyOverviewChart()
+          : _buildWeeklyDaysChart(),
+    );
+  }
+
+  /// fl_chart 데이터 좌표를 픽셀 좌표로 변환 (X축)
+  double _dataXToPixel(double dataX, double minX, double maxX, double width) {
+    return (dataX - minX) / (maxX - minX) * width;
+  }
+
+  /// fl_chart 데이터 좌표를 픽셀 좌표로 변환 (Y축, 화면 좌표계는 위가 0)
+  double _dataYToPixel(double dataY, double minY, double maxY, double height) {
+    return height - (dataY - minY) / (maxY - minY) * height;
+  }
+
+  /// 공통 pill + dashed-line 차트 빌더
+  Widget _buildPillChart({
+    required List<FlSpot> spots,
+    required int selectedSpotIndex,
+    required double selectedValue,
+    required double minX,
+    required double maxX,
+    required double minY,
+    required double maxY,
+    required int totalLabels,
+    required List<String> labels,
+    required int selectedLabelIdx,
+  }) {
+    if (spots.isEmpty) {
+      return const Center(
+        child: Text(
+          '데이터가 없습니다',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            color: AppColors.mediumGray,
+          ),
+        ),
+      );
+    }
+
+    const pillWidth = 56.0;
+    const pillHeight = 180.0;
+    const dotSize = 20.0;
+    const labelHeight = 28.0;
+    const totalHeight = 260.0;
+    const chartAreaHeight = totalHeight - labelHeight;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final chartWidth = constraints.maxWidth;
+
+          // 선택된 데이터 포인트의 픽셀 좌표 계산 (fl_chart와 동일한 공식)
+          final selectedSpot = spots[selectedSpotIndex];
+          final dotPixelX = _dataXToPixel(selectedSpot.x, minX, maxX, chartWidth);
+          final dotPixelY = _dataYToPixel(selectedSpot.y, minY, maxY, chartAreaHeight);
+
+          // pill 위치: dot 중심을 기준으로 pill 배치
+          // dot은 pill 내에서 상단 텍스트(~35px) 아래, 세로 중앙~약간 위에 위치
+          // pill top = dotY - (dot이 pill 상단에서 떨어진 거리)
+          const dotOffsetFromPillTop = pillHeight * 0.55;
+          var pillTop = dotPixelY - dotOffsetFromPillTop;
+
+          // pill이 차트 영역을 벗어나지 않도록 클램핑
+          if (pillTop < 0) pillTop = 0;
+          if (pillTop + pillHeight > chartAreaHeight) {
+            pillTop = chartAreaHeight - pillHeight;
+          }
+
+          // dot의 pill 내부 상대 위치 (pill top 기준)
+          final dotRelativeY = dotPixelY - pillTop;
+
+          return SizedBox(
+            height: totalHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // 1) 오렌지 pill 배경
+                Positioned(
+                  left: dotPixelX - pillWidth / 2,
+                  top: pillTop,
+                  child: SizedBox(
+                    width: pillWidth,
+                    height: pillHeight,
+                    child: Stack(
+                      children: [
+                        // pill 배경
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22),
+                              gradient: const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // 값 텍스트 (pill 상단)
+                        Positioned(
+                          top: 14,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Text(
+                              '${selectedValue.toStringAsFixed(1)} g',
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ),
+                        ),
+                        // 도트 (데이터 포인트와 정확히 일치하는 Y 위치)
+                        Positioned(
+                          top: dotRelativeY - dotSize / 2,
+                          left: (pillWidth - dotSize) / 2,
+                          child: Container(
+                            width: dotSize,
+                            height: dotSize,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              border: Border.all(
+                                color: AppColors.brandPrimary,
+                                width: 3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // 2) 라인 차트 (점선 + 도트)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: labelHeight,
+                  child: LineChart(
+                    LineChartData(
+                      minX: minX,
+                      maxX: maxX,
+                      minY: minY,
+                      maxY: maxY,
+                      clipData: const FlClipData.none(),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          curveSmoothness: 0.4,
+                          color: const Color(0xFFBBBBBB),
+                          barWidth: 2,
+                          isStrokeCapRound: true,
+                          dashArray: [6, 4],
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) {
+                              if (index == selectedSpotIndex) {
+                                return FlDotCirclePainter(
+                                  radius: 0,
+                                  color: Colors.transparent,
+                                  strokeWidth: 0,
+                                  strokeColor: Colors.transparent,
+                                );
+                              }
+                              return FlDotCirclePainter(
+                                radius: 4,
+                                color: const Color(0xFFBBBBBB),
+                                strokeWidth: 0,
+                              );
+                            },
+                          ),
+                          belowBarData: BarAreaData(show: false),
+                        ),
+                      ],
+                      titlesData: const FlTitlesData(show: false),
+                      gridData: const FlGridData(show: false),
+                      borderData: FlBorderData(show: false),
+                      lineTouchData: const LineTouchData(enabled: false),
+                    ),
+                  ),
+                ),
+                // 3) 라벨 (하단)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: labelHeight,
+                  child: Stack(
+                    children: List.generate(totalLabels, (index) {
+                      final labelCenterX = _dataXToPixel(
+                        index.toDouble(), minX, maxX, chartWidth,
+                      );
+                      final isSelected = index == selectedLabelIdx;
+                      return Positioned(
+                        left: labelCenterX - 20,
+                        top: 0,
+                        child: SizedBox(
+                          width: 40,
+                          height: labelHeight,
+                          child: Center(
+                            child: Text(
+                              labels[index],
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppColors.mediumGray,
+                                letterSpacing: -0.13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildMonthlyOverviewChart() {
-    // 최근 6개월 데이터 표시
     final months = _generateDisplayMonths();
     final monthlyAverages = _calculateMonthlyAverages();
+    final spots = _getChartSpots(months, monthlyAverages);
 
-    // 현재 월의 인덱스 (마지막 = 현재 월)
-    final selectedIndex = months.length - 1;
-    final selectedMonth = months[selectedIndex];
-    final selectedValue = monthlyAverages[selectedMonth] ?? 0;
+    final selectedSpotIndex = spots.isNotEmpty ? spots.length - 1 : 0;
+    final selectedMonthIdx = spots.isNotEmpty ? spots.last.x.toInt() : (months.length - 1);
+    final selectedValue = spots.isNotEmpty ? spots.last.y : 0.0;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Stack(
-        children: [
-          // 차트 배경 및 선택 표시
-          CustomPaint(
-            size: const Size(double.infinity, 180),
-            painter: _WeeklyChartBackgroundPainter(
-              months: months,
-              selectedIndex: selectedIndex,
-              selectedValue: selectedValue,
-            ),
-          ),
-          // 라인 차트
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 20, bottom: 40, left: 20, right: 20),
-              child: LineChart(
-                LineChartData(
-                  minX: -0.5,
-                  maxX: 5.5,
-                  minY: _getMinY(monthlyAverages, months),
-                  maxY: _getMaxY(monthlyAverages, months),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: _getChartSpots(months, monthlyAverages),
-                      isCurved: true,
-                      curveSmoothness: 0.4,
-                      color: AppColors.lightGray,
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(
-                        show: true,
-                        getDotPainter: (spot, percent, barData, index) {
-                          if (index == selectedIndex && selectedValue > 0) {
-                            return FlDotCirclePainter(
-                              radius: 8,
-                              color: Colors.white,
-                              strokeWidth: 3,
-                              strokeColor: AppColors.brandPrimary,
-                            );
-                          }
-                          return FlDotCirclePainter(
-                            radius: 5,
-                            color: AppColors.lightGray,
-                          );
-                        },
-                      ),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
-                  titlesData: const FlTitlesData(show: false),
-                  gridData: const FlGridData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineTouchData: const LineTouchData(enabled: false),
-                ),
-              ),
-            ),
-          ),
-          // 월 라벨
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(months.length, (index) {
-                final isSelected = index == selectedIndex;
-                return Text(
-                  '${months[index].month}월',
-                  style: TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: isSelected ? Colors.white : AppColors.mediumGray,
-                    letterSpacing: -0.13,
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
-      ),
+    final labels = months.map((m) => '${m.month}월').toList();
+
+    return _buildPillChart(
+      spots: spots,
+      selectedSpotIndex: selectedSpotIndex,
+      selectedValue: selectedValue,
+      minX: -0.5,
+      maxX: 5.5,
+      minY: _getMinY(monthlyAverages, months),
+      maxY: _getMaxY(monthlyAverages, months),
+      totalLabels: 6,
+      labels: labels,
+      selectedLabelIdx: selectedMonthIdx,
     );
   }
 
   Widget _buildWeeklyDaysChart() {
-    // 주간 차트 - 요일별 데이터 표시
     final weekdays = ['일', '월', '화', '수', '목', '금', '토'];
     final weeklyData = _calculateWeeklyData();
+    final spots = weeklyData.entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value))
+        .toList()
+      ..sort((a, b) => a.x.compareTo(b.x));
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          Expanded(
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: 6,
-                minY: _getMinYFromMap(weeklyData),
-                maxY: _getMaxYFromMap(weeklyData),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: weeklyData.entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList(),
-                    isCurved: true,
-                    curveSmoothness: 0.4,
-                    color: AppColors.lightGray,
-                    barWidth: 2,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, barData, index) {
-                        return FlDotCirclePainter(
-                          radius: 5,
-                          color: AppColors.lightGray,
-                        );
-                      },
-                    ),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                ],
-                titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        if (index < 0 || index >= weekdays.length) return const SizedBox();
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            weekdays[index],
-                            style: const TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontSize: 13,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.mediumGray,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-              ),
-            ),
-          ),
-        ],
-      ),
+    final selectedSpotIndex = spots.isNotEmpty ? spots.length - 1 : 0;
+    final selectedDayIdx = spots.isNotEmpty ? spots.last.x.toInt() : 0;
+    final selectedValue = spots.isNotEmpty ? spots.last.y : 0.0;
+
+    return _buildPillChart(
+      spots: spots,
+      selectedSpotIndex: selectedSpotIndex,
+      selectedValue: selectedValue,
+      minX: -0.5,
+      maxX: 6.5,
+      minY: _getMinYFromMap(weeklyData),
+      maxY: _getMaxYFromMap(weeklyData),
+      totalLabels: 7,
+      labels: weekdays,
+      selectedLabelIdx: selectedDayIdx,
     );
   }
 
@@ -1130,6 +1318,146 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 
+  Widget _buildPetSelector() {
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        itemCount: _petList.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final pet = _petList[index];
+          final isSelected = pet.id == _activePetId;
+          return GestureDetector(
+            onTap: () => _switchPet(pet),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.brandPrimary : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? AppColors.brandPrimary : const Color(0xFFE0E0E0),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  pet.name,
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : AppColors.mediumGray,
+                    letterSpacing: -0.35,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildWeightRecordsList() {
+    final monthRecords = _weightRecords.where((record) =>
+        record.date.year == _selectedYear &&
+        record.date.month == _selectedMonth).toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    if (monthRecords.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.monitor_weight_outlined,
+                size: 48,
+                color: AppColors.mediumGray.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '이번 달 체중 기록이 없습니다',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$_selectedMonth월 체중 기록',
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.nearBlack,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...monthRecords.map((record) {
+            final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+            final weekday = weekdays[(record.date.weekday - 1) % 7];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE8E8E8)),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    '${record.date.month}/${record.date.day} ($weekday)',
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.nearBlack,
+                      letterSpacing: -0.35,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${record.weight.toStringAsFixed(1)} g',
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.brandPrimary,
+                      letterSpacing: -0.35,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAddRecordButton() {
     return SafeArea(
       top: false,
@@ -1199,80 +1527,3 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 }
 
-class _WeeklyChartBackgroundPainter extends CustomPainter {
-  final List<DateTime> months;
-  final int selectedIndex;
-  final double selectedValue;
-
-  _WeeklyChartBackgroundPainter({
-    required this.months,
-    required this.selectedIndex,
-    required this.selectedValue,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (months.isEmpty) return;
-
-    final itemWidth = size.width / months.length;
-    final selectedX = itemWidth * selectedIndex + itemWidth / 2;
-
-    // Draw selected column background
-    const pillWidth = 53.0;
-    const pillHeight = 169.0;
-    final pillRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(selectedX, size.height / 2),
-        width: pillWidth,
-        height: pillHeight,
-      ),
-      const Radius.circular(20),
-    );
-
-    // Gradient paint
-    final gradient = const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
-    );
-
-    final rect = Rect.fromLTWH(
-      selectedX - pillWidth / 2,
-      (size.height - pillHeight) / 2,
-      pillWidth,
-      pillHeight,
-    );
-
-    final paint = Paint()..shader = gradient.createShader(rect);
-    canvas.drawRRect(pillRect, paint);
-
-    // Draw value text
-    if (selectedValue > 0) {
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: '${selectedValue.toStringAsFixed(1)} g',
-          style: const TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            height: 2.3,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-
-      textPainter.paint(
-        canvas,
-        Offset(selectedX - textPainter.width / 2, (size.height - pillHeight) / 2 + 7),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _WeeklyChartBackgroundPainter oldDelegate) {
-    return months != oldDelegate.months ||
-        selectedIndex != oldDelegate.selectedIndex ||
-        selectedValue != oldDelegate.selectedValue;
-  }
-}

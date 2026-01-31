@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,6 +9,7 @@ import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/storage/local_image_storage_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 /// 반려동물 등록/수정 화면 - Figma 디자인 기반
@@ -31,6 +33,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
   final _imagePicker = ImagePicker();
   File? _selectedImage;
+  Uint8List? _savedImageBytes;
   String? _selectedGender;
   String? _selectedGrowthStage;
   DateTime? _selectedBirthDate;
@@ -65,6 +68,13 @@ class _PetAddScreenState extends State<PetAddScreen> {
       _selectedGender = _mapGenderToDisplay(pet.gender);
       _selectedGrowthStage = _mapGrowthStageToDisplay(pet.growthStage);
       _selectedBirthDate = pet.birthDate;
+
+      // 로컬 저장된 펫 이미지 로드
+      final imageBytes = await LocalImageStorageService.instance.getImage(
+        ownerType: ImageOwnerType.petProfile,
+        ownerId: pet.id,
+      );
+      _savedImageBytes = imageBytes;
 
       if (mounted) setState(() {});
     } catch (e) {
@@ -191,6 +201,16 @@ class _PetAddScreenState extends State<PetAddScreen> {
         );
       }
 
+      // 이미지를 SQLite에 저장
+      if (_selectedImage != null) {
+        final bytes = await _selectedImage!.readAsBytes();
+        await LocalImageStorageService.instance.saveImage(
+          ownerType: ImageOwnerType.petProfile,
+          ownerId: savedPet.id,
+          imageBytes: bytes,
+        );
+      }
+
       // 로컬 캐시도 업데이트
       await _petCache.upsertPet(
         PetProfileCache(
@@ -311,9 +331,14 @@ class _PetAddScreenState extends State<PetAddScreen> {
                                       image: FileImage(_selectedImage!),
                                       fit: BoxFit.cover,
                                     )
-                                  : null,
+                                  : _savedImageBytes != null
+                                      ? DecorationImage(
+                                          image: MemoryImage(_savedImageBytes!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
                             ),
-                            child: _selectedImage == null
+                            child: _selectedImage == null && _savedImageBytes == null
                                 ? Center(
                                     child: SvgPicture.asset(
                                       'assets/images/pet_profile.svg',

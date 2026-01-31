@@ -41,3 +41,14 @@ class OAuthLoginResponse(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     email: str
+
+
+class VerifyResetCodeRequest(BaseModel):
+    email: str | None = None
+    code: str
+
+
+class UpdatePasswordRequest(BaseModel):
+    email: str | None = None
+    code: str
+    new_password: str

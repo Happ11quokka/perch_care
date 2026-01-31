@@ -4,10 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/pet/active_pet_notifier.dart';
 import '../../services/bhi/bhi_service.dart';
+import '../../services/storage/local_image_storage_service.dart';
+import '../../widgets/local_image_avatar.dart';
 import '../../models/pet.dart';
 import '../../models/bhi_result.dart';
-import '../../widgets/bottom_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _petService = PetService();
+  final _petCache = PetLocalCacheService();
   final _bhiService = BhiService();
   Pet? _activePet;
   BhiResult? _bhiResult;
@@ -47,6 +51,59 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadPets();
+    ActivePetNotifier.instance.addListener(_onActivePetChanged);
+  }
+
+  @override
+  void dispose() {
+    ActivePetNotifier.instance.removeListener(_onActivePetChanged);
+    super.dispose();
+  }
+
+  void _onActivePetChanged() {
+    final petId = ActivePetNotifier.instance.activePetId;
+    if (petId != null) {
+      _refreshForPet(petId);
+    }
+  }
+
+  /// 특정 petId로 펫 정보 + BHI를 서버에서 새로 로드
+  Future<void> _refreshForPet(String petId) async {
+    // 이미 같은 펫이면 무시
+    if (_activePet?.id == petId) return;
+
+    // 펫 정보 로드
+    try {
+      final pet = await _petService.getPetById(petId);
+      if (!mounted) return;
+      if (pet != null) {
+        setState(() {
+          _activePet = pet;
+        });
+      }
+    } catch (_) {
+      // 서버 실패 시 로컬 캐시에서 펫 이름만이라도 복원
+      try {
+        final cached = await _petCache.getActivePet();
+        if (!mounted) return;
+        if (cached != null && cached.id == petId) {
+          setState(() {
+            _activePet = Pet(
+              id: cached.id,
+              userId: '',
+              name: cached.name,
+              species: cached.species ?? '',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+          });
+        }
+      } catch (_) {}
+    }
+
+    // BHI 로드 (새 펫 데이터로 덮어쓰기)
+    if (!mounted) return;
+    _loadBhi(petId);
   }
 
   Future<void> _loadPets() async {
@@ -68,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (activePet != null) {
         _loadBhi(activePet.id);
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -89,9 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _hasWaterData = bhi.hasWaterData;
         });
       }
-    } catch (e) {
-      debugPrint('[HomeScreen] BHI 로드 실패: $e');
-    }
+    } catch (_) {}
   }
 
   @override
@@ -136,7 +191,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 
@@ -161,25 +215,78 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            // 토글 버튼과 프로필 아이콘
+            // 토글 버튼, 펫 이름, 프로필 아이콘
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Stack(
-                alignment: Alignment.center,
+              child: Row(
                 children: [
-                  // 토글 버튼 (중앙 정렬)
+                  // 토글 버튼 (왼쪽)
                   _buildViewToggle(),
-                  // 프로필 아이콘 (오른쪽 정렬)
-                  Positioned(
-                    right: 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        context.pushNamed(RouteNames.profile);
-                      },
-                      child: const Icon(
-                        Icons.person_outline,
-                        size: 24,
-                        color: Color(0xFF6B6B6B),
+                  const Spacer(),
+                  // 펫 이름 칩
+                  GestureDetector(
+                    onTap: () {
+                      context.pushNamed(RouteNames.profile);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                        left: 4,
+                        right: 14,
+                        top: 4,
+                        bottom: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF7F7F7),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: const Color(0xFFE8E8E8),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 펫 아바타
+                          if (_activePet != null)
+                            LocalImageAvatar(
+                              ownerType: ImageOwnerType.petProfile,
+                              ownerId: _activePet!.id,
+                              size: 28,
+                              placeholder: ClipOval(
+                                child: SvgPicture.asset(
+                                  'assets/images/profile/pet_profile_placeholder.svg',
+                                  width: 28,
+                                  height: 28,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          else
+                            ClipOval(
+                              child: SvgPicture.asset(
+                                'assets/images/profile/pet_profile_placeholder.svg',
+                                width: 28,
+                                height: 28,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          // 이름
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 80),
+                            child: Text(
+                              _activePet?.name ?? '',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1A1A1A),
+                                letterSpacing: -0.35,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -217,16 +324,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildViewToggle() {
-    return Center(
-      child: Container(
-        width: 170,
-        height: 48,
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF0F0F0),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Stack(
+    return Container(
+      width: 170,
+      height: 48,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F0),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Stack(
           children: [
             // 애니메이션되는 배경 pill
             AnimatedPositioned(
@@ -300,7 +406,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

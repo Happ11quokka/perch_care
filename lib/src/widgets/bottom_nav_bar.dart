@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
-import '../router/route_names.dart';
 
 /// 하단 네비게이션 바 위젯
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
+  final ValueChanged<int>? onTap;
 
   const BottomNavBar({
     super.key,
     required this.currentIndex,
+    this.onTap,
   });
 
   @override
@@ -37,19 +37,19 @@ class BottomNavBar extends StatelessWidget {
               context: context,
               index: 0,
               iconPath: 'assets/images/home.svg',
-              onTap: () => context.goNamed(RouteNames.home),
+              onTap: () => onTap?.call(0),
             ),
             _buildNavItem(
               context: context,
               index: 1,
               iconPath: 'assets/images/calender.svg',
-              onTap: () => context.goNamed(RouteNames.weightDetail),
+              onTap: () => onTap?.call(1),
             ),
             _buildNavItem(
               context: context,
               index: 2,
               iconPath: 'assets/images/chat.svg',
-              onTap: () => context.goNamed(RouteNames.aiEncyclopedia),
+              onTap: () => onTap?.call(2),
             ),
           ],
         ),

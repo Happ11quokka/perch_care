@@ -9,8 +9,12 @@ import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/pet/active_pet_notifier.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/dashed_border.dart';
+import '../../widgets/local_image_avatar.dart';
+import '../../services/storage/local_image_storage_service.dart';
+import '../../services/api/token_service.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
 class ProfileScreen extends StatefulWidget {
@@ -248,18 +252,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _cachedPets = cachedPets;
         _isLoadingPets = false;
-        if (_cachedPets.isNotEmpty) {
+        // 활성 펫의 인덱스를 찾아서 선택
+        if (activePet != null) {
+          final idx = _cachedPets.indexWhere((p) => p.id == activePet.id);
+          _selectedPetIndex = idx >= 0 ? idx : 0;
+        } else if (_cachedPets.isNotEmpty) {
           _selectedPetIndex = 0;
         }
       });
     } catch (_) {
       // API 실패 시 로컬 캐시 폴백
       final pets = await _petCache.getPets();
+      final cachedActive = await _petCache.getActivePet();
       if (!mounted) return;
       setState(() {
         _cachedPets = pets;
         _isLoadingPets = false;
-        if (_cachedPets.isNotEmpty) {
+        if (cachedActive != null) {
+          final idx = _cachedPets.indexWhere((p) => p.id == cachedActive.id);
+          _selectedPetIndex = idx >= 0 ? idx : 0;
+        } else if (_cachedPets.isNotEmpty) {
           _selectedPetIndex = 0;
         }
       });
@@ -408,7 +420,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: -1), // 선택 상태 없음
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: -1, // 선택 상태 없음
+        onTap: (index) {
+          // 쉘 라우트의 탭으로 이동
+          final routes = [RouteNames.home, RouteNames.weightDetail, RouteNames.aiEncyclopedia];
+          context.goNamed(routes[index]);
+        },
+      ),
     );
   }
 
@@ -479,11 +498,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 clipBehavior: Clip.none,
                 children: [
                   // 프로필 아이콘
-                  SvgPicture.asset(
-                    'assets/images/profile/profile.svg',
-                    width: 50,
-                    height: 50,
-                  ),
+                  if (TokenService.instance.userId != null)
+                    LocalImageAvatar(
+                      ownerType: ImageOwnerType.userProfile,
+                      ownerId: TokenService.instance.userId!,
+                      size: 50,
+                      placeholder: SvgPicture.asset(
+                        'assets/images/profile/profile.svg',
+                        width: 50,
+                        height: 50,
+                      ),
+                    )
+                  else
+                    SvgPicture.asset(
+                      'assets/images/profile/profile.svg',
+                      width: 50,
+                      height: 50,
+                    ),
                   // 편집 아이콘
                   Positioned(
                     right: -4,
@@ -537,13 +568,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isSelected = index == _selectedPetIndex;
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         setState(() {
           _selectedPetIndex = index;
         });
         final petId = pet['id'] as String?;
         if (petId != null) {
           _petCache.setActivePetId(petId);
+          // 서버에 활성 펫 변경 저장
+          try {
+            await _petService.setActivePet(petId);
+          } catch (_) {}
+          // 서버 저장 후 다른 화면에 알림
+          ActivePetNotifier.instance.notify(petId);
         }
       },
       child: Container(
@@ -561,10 +598,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(
           children: [
             // 프로필 이미지
-            SvgPicture.asset(
-              'assets/images/profile/pet_profile_placeholder.svg',
-              width: 62.64,
-              height: 62.64,
+            LocalImageAvatar(
+              ownerType: ImageOwnerType.petProfile,
+              ownerId: pet['id'] as String? ?? '',
+              size: 62.64,
+              placeholder: SvgPicture.asset(
+                'assets/images/profile/pet_profile_placeholder.svg',
+                width: 62.64,
+                height: 62.64,
+              ),
             ),
 
             const SizedBox(width: 15),

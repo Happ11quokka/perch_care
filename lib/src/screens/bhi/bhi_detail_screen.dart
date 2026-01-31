@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../models/bhi_result.dart';
@@ -114,7 +115,7 @@ class BhiDetailScreen extends StatelessWidget {
           const SizedBox(height: 12),
 
           _buildScoreBreakdownCard(
-            icon: Icons.monitor_weight_outlined,
+            iconPath: 'assets/images/home_vector/weight.svg',
             title: '체중',
             score: bhi.weightScore,
             maxScore: 60,
@@ -122,7 +123,7 @@ class BhiDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildScoreBreakdownCard(
-            icon: Icons.restaurant_outlined,
+            iconPath: 'assets/images/home_vector/eat.svg',
             title: '사료',
             score: bhi.foodScore,
             maxScore: 25,
@@ -130,7 +131,7 @@ class BhiDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildScoreBreakdownCard(
-            icon: Icons.water_drop_outlined,
+            iconPath: 'assets/images/home_vector/water.svg',
             title: '수분',
             score: bhi.waterScore,
             maxScore: 15,
@@ -247,7 +248,7 @@ class BhiDetailScreen extends StatelessWidget {
 
   /// 점수 구성 카드
   Widget _buildScoreBreakdownCard({
-    required IconData icon,
+    required String iconPath,
     required String title,
     required double score,
     required double maxScore,
@@ -270,22 +271,19 @@ class BhiDetailScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
+              SvgPicture.asset(
+                iconPath,
                 width: 32,
                 height: 32,
-                decoration: BoxDecoration(
-                  color: hasData
-                      ? AppColors.brandPrimary.withValues(alpha: 0.1)
-                      : const Color(0xFFF0F0F0),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 18,
-                  color: hasData
-                      ? AppColors.brandPrimary
-                      : const Color(0xFFBDBDBD),
-                ),
+                colorFilter: hasData
+                    ? const ColorFilter.mode(
+                        AppColors.brandPrimary,
+                        BlendMode.srcIn,
+                      )
+                    : const ColorFilter.mode(
+                        Color(0xFFBDBDBD),
+                        BlendMode.srcIn,
+                      ),
               ),
               const SizedBox(width: 10),
               Text(
@@ -497,35 +495,40 @@ class BhiDetailScreen extends StatelessWidget {
     );
   }
 
-  /// 5단계 WCI 프로그레스 바 (홈 화면 패턴 재사용)
+  /// 5단계 WCI 프로그레스 바 (홈 화면과 동일한 동적 위치 방식)
   Widget _buildWciProgressBars(int wciLevel) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildSegment(wciLevel >= 1),
-        const SizedBox(width: 2),
-        _buildSegment(wciLevel >= 2),
-        const SizedBox(width: 2),
-        // 중앙 인디케이터
-        Container(
+    final int circlePos = wciLevel == 0 ? 3 : wciLevel;
+
+    final List<Widget> children = [];
+    for (int i = 1; i <= 5; i++) {
+      if (i > 1) children.add(const SizedBox(width: 2));
+
+      if (i == circlePos) {
+        // 동그라미
+        children.add(Container(
           width: 22,
           height: 22,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: wciLevel >= 3
+              color: wciLevel > 0
                   ? AppColors.brandPrimary
                   : const Color(0xFFF0F0F0),
               width: 2,
             ),
             color: Colors.white,
           ),
-        ),
-        const SizedBox(width: 2),
-        _buildSegment(wciLevel >= 4),
-        const SizedBox(width: 2),
-        _buildSegment(wciLevel >= 5),
-      ],
+        ));
+      } else {
+        // 바: 동그라미 왼쪽이면 채움, 오른쪽이면 비움
+        final bool filled = wciLevel > 0 && i < circlePos;
+        children.add(_buildSegment(filled));
+      }
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: children,
     );
   }
 

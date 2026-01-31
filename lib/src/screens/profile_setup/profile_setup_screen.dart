@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../services/api/token_service.dart';
+import '../../services/storage/local_image_storage_service.dart';
 import 'widgets/country_selector_bottom_sheet.dart';
 
 /// 프로필 설정 화면
@@ -32,6 +35,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _authService = AuthService();
   final _imagePicker = ImagePicker();
   File? _selectedImage;
+  Uint8List? _savedImageBytes;
   bool _isSaving = false;
 
   String? _selectedGender;
@@ -43,6 +47,38 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     _nameFocusNode.addListener(() => setState(() {}));
     _emailFocusNode.addListener(() => setState(() {}));
     _phoneFocusNode.addListener(() => setState(() {}));
+    _loadUserEmail();
+    _loadSavedImage();
+  }
+
+  Future<void> _loadSavedImage() async {
+    final userId = TokenService.instance.userId;
+    if (userId == null) return;
+    try {
+      final bytes = await LocalImageStorageService.instance.getImage(
+        ownerType: ImageOwnerType.userProfile,
+        ownerId: userId,
+      );
+      if (bytes != null && mounted) {
+        setState(() => _savedImageBytes = bytes);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadUserEmail() async {
+    try {
+      final profile = await _authService.getProfile();
+      if (profile != null && mounted) {
+        final email = profile['email'] as String?;
+        if (email != null && email.isNotEmpty) {
+          setState(() {
+            _emailController.text = email;
+          });
+        }
+      }
+    } catch (_) {
+      // 이메일 로드 실패 시 무시
+    }
   }
 
   @override
@@ -150,9 +186,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       image: FileImage(_selectedImage!),
                       fit: BoxFit.cover,
                     )
-                  : null,
+                  : _savedImageBytes != null
+                      ? DecorationImage(
+                          image: MemoryImage(_savedImageBytes!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
             ),
-            child: _selectedImage == null
+            child: _selectedImage == null && _savedImageBytes == null
                 ? Center(
                     child: Icon(
                       Icons.person,
@@ -282,10 +323,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Widget _buildEmailField() {
+    final hasEmail = _emailController.text.isNotEmpty;
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: hasEmail ? const Color(0xFFF5F5F5) : Colors.white,
         border: Border.all(
           color: _fieldBorderColor,
           width: 1,
@@ -304,11 +346,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           controller: _emailController,
           focusNode: _emailFocusNode,
           keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(
+          readOnly: hasEmail,
+          enabled: !hasEmail,
+          style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF1A1A1A),
+            color: hasEmail ? const Color(0xFF97928A) : const Color(0xFF1A1A1A),
             letterSpacing: -0.35,
           ),
           decoration: InputDecoration(
@@ -506,8 +550,20 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       imageQuality: 80,
     );
     if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      final bytes = await file.readAsBytes();
+      final userId = TokenService.instance.userId;
+      if (userId != null) {
+        await LocalImageStorageService.instance.saveImage(
+          ownerType: ImageOwnerType.userProfile,
+          ownerId: userId,
+          imageBytes: bytes,
+        );
+      }
+      if (!mounted) return;
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectedImage = file;
+        _savedImageBytes = bytes;
       });
     }
   }
