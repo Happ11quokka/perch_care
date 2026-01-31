@@ -7,7 +7,7 @@ from app.schemas.auth import (
     ResetPasswordRequest, VerifyResetCodeRequest, UpdatePasswordRequest,
 )
 from app.services import auth_service
-from app.utils.security import verify_google_id_token, verify_kakao_access_token
+from app.utils.security import verify_google_id_token, verify_kakao_access_token, verify_apple_id_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -38,6 +38,12 @@ async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = D
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google ID token")
         provider_id = google_info["sub"]
         email = email or google_info.get("email")
+    elif provider == "apple" and request.id_token:
+        apple_info = verify_apple_id_token(request.id_token)
+        if not apple_info:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Apple ID token")
+        provider_id = apple_info["sub"]
+        email = email or apple_info.get("email")
     elif provider == "kakao" and request.access_token:
         kakao_info = verify_kakao_access_token(request.access_token)
         if not kakao_info:
@@ -45,7 +51,7 @@ async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = D
         provider_id = kakao_info["sub"]
         email = email or kakao_info.get("email")
     else:
-        provider_id = request.authorization_code or ""
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported provider or missing credentials")
 
     if not provider_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing provider credentials")

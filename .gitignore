@@ -1,3 +1,7 @@
+# Environment variables
+.env
+backend/.env
+
 # Miscellaneous
 *.class
 *.log

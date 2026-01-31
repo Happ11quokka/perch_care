@@ -1,15 +1,21 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
+import '../../services/api/token_service.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/storage/local_image_storage_service.dart';
 import '../../theme/colors.dart';
 import '../../theme/radius.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/local_image_avatar.dart';
 
 class AIEncyclopediaScreen extends StatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -18,30 +24,72 @@ class AIEncyclopediaScreen extends StatefulWidget {
   State<AIEncyclopediaScreen> createState() => _AIEncyclopediaScreenState();
 }
 
-class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
+class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
+    with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _inputController = TextEditingController();
   final AiEncyclopediaService _aiService = AiEncyclopediaService();
   final PetService _petService = PetService.instance;
-  final List<_Message> _messages = [
-    _Message(
-      role: MessageRole.assistant,
-      text: '앵무새 케어에 대해 무엇이든 물어보세요.\n'
-          '예: "모이 섞을 때 비율이 어떻게 돼?"',
-      timestamp: DateTime.now(),
-    ),
-  ];
+  final List<_Message> _messages = [];
   Pet? _activePet;
   bool _isSending = false;
+  bool _isTyping = false;
+
+  // 둥둥 떠다니는 breathing 애니메이션
+  late final AnimationController _floatController;
+  late final Animation<double> _floatAnimation;
+
+  // 타이핑 시 살짝 커지는 반응 애니메이션
+  late final AnimationController _peekController;
+  late final Animation<double> _peekScale;
+
+  bool get _hasUserMessages =>
+      _messages.any((m) => m.role == MessageRole.user);
 
   @override
   void initState() {
     super.initState();
     _loadActivePet();
+
+    // 부드럽게 위아래로 떠다니는 애니메이션 (무한 반복)
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
+
+    _floatAnimation = Tween<double>(begin: -6.0, end: 6.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+
+    // 타자 칠 때 살짝 커지는 애니메이션
+    _peekController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _peekScale = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _peekController, curve: Curves.easeOutBack),
+    );
+
+    _inputController.addListener(_onInputChanged);
+  }
+
+  void _onInputChanged() {
+    final typing = _inputController.text.trim().isNotEmpty;
+    if (typing == _isTyping) return;
+    _isTyping = typing;
+    if (typing) {
+      _peekController.forward();
+    } else {
+      _peekController.reverse();
+    }
   }
 
   @override
   void dispose() {
+    _inputController.removeListener(_onInputChanged);
+    _floatController.dispose();
+    _peekController.dispose();
     _scrollController.dispose();
     _inputController.dispose();
     super.dispose();
@@ -127,10 +175,11 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.gray50,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: AppColors.nearBlack,
@@ -142,7 +191,8 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
             }
           },
         ),
-        title: const Text('AI 백과사전'),
+        centerTitle: true,
+        title: const Text('챗봇'),
         titleTextStyle: AppTypography.h6.copyWith(
           fontWeight: FontWeight.w700,
           color: AppColors.nearBlack,
@@ -151,16 +201,376 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeroCard(),
-            _buildRecommendedQuestions(),
-            const SizedBox(height: AppSpacing.sm),
-            Expanded(child: _buildMessages()),
+            Expanded(
+              child: _hasUserMessages
+                  ? _buildMessages()
+                  : _buildWelcomeView(),
+            ),
+            if (!_hasUserMessages) _buildSuggestionChips(),
             _buildInputArea(),
           ],
         ),
       ),
     );
   }
+
+  // ── Welcome view (initial state) ──────────────────────────────────
+
+  Widget _buildWelcomeView() {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildAvatarWithGlow(size: 160),
+            const SizedBox(height: AppSpacing.xxl),
+            Text(
+              '안녕하세요! 앵박사입니다!',
+              style: AppTypography.h2.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.nearBlack,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              '앵무새에 대해 궁금한 점이 있다면\n무엇이든 물어보세요!',
+              style: AppTypography.bodyLarge.copyWith(
+                color: AppColors.gray500,
+                height: 1.6,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Avatar with blur glow (Flutter-rendered) ──────────────────────
+
+  Widget _buildAvatarWithGlow({required double size}) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_floatAnimation, _peekScale]),
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _floatAnimation.value),
+          child: Transform.scale(
+            scale: _peekScale.value,
+            child: child,
+          ),
+        );
+      },
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // 블러 글로우 배경
+            ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+              child: Container(
+                width: size * 0.55,
+                height: size * 0.55,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFFF5C2F),
+                      AppColors.brandPrimary,
+                      Color(0xFFFFE812),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // 앵무새 아이콘
+            SvgPicture.asset(
+              'assets/images/chatbot_icon.svg',
+              width: size * 0.55,
+              height: size * 0.55,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Small bot avatar for message bubbles ───────────────────────────
+
+  Widget _buildSmallBotAvatar() {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFF5C2F),
+                    AppColors.brandPrimary,
+                    Color(0xFFFFE812),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SvgPicture.asset(
+            'assets/images/chatbot_icon.svg',
+            width: 22,
+            height: 22,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Small user avatar for message bubbles ──────────────────────────
+
+  Widget _buildSmallUserAvatar() {
+    final userId = TokenService.instance.userId;
+    if (userId != null) {
+      return LocalImageAvatar(
+        ownerType: ImageOwnerType.userProfile,
+        ownerId: userId,
+        size: 36,
+        placeholder: SvgPicture.asset(
+          'assets/images/profile/profile.svg',
+          width: 36,
+          height: 36,
+        ),
+      );
+    }
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFFD9D9D9),
+      ),
+      child: const Icon(Icons.person, size: 20, color: Colors.white),
+    );
+  }
+
+  // ── Suggestion chips ──────────────────────────────────────────────
+
+  Widget _buildSuggestionChips() {
+    const samples = [
+      '초기 비타민 섭취량',
+      '털 갈이 때 돌봄 방법',
+      '건강검진 주기 추천',
+      '체중 기록 팁',
+    ];
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
+      child: Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        children: samples
+            .map(
+              (q) => GestureDetector(
+                onTap: () {
+                  _inputController.text = q;
+                  _handleSend();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.gray100,
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                  ),
+                  child: Text(
+                    q,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.nearBlack,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  // ── Messages list ─────────────────────────────────────────────────
+
+  Widget _buildMessages() {
+    return ListView.separated(
+      controller: _scrollController,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      itemBuilder: (context, index) {
+        final message = _messages[index];
+        final isUser = message.role == MessageRole.user;
+        return _buildMessageBubble(message, isUser);
+      },
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.md),
+      itemCount: _messages.length,
+    );
+  }
+
+  Widget _buildMessageBubble(_Message message, bool isUser) {
+    if (isUser) {
+      // 사용자 메시지: 오른쪽 정렬 + 프로필 사진
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.gray100,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(AppRadius.lg),
+                  topRight: Radius.circular(AppRadius.lg),
+                  bottomLeft: Radius.circular(AppRadius.lg),
+                  bottomRight: Radius.circular(AppRadius.xs),
+                ),
+              ),
+              child: Text(
+                message.text,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.nearBlack,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _buildSmallUserAvatar(),
+        ],
+      );
+    }
+
+    // Assistant 메시지: 왼쪽 정렬 + 봇 아바타
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSmallBotAvatar(),
+        const SizedBox(width: AppSpacing.sm),
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            decoration: const BoxDecoration(
+              color: AppColors.gray100,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(AppRadius.xs),
+                topRight: Radius.circular(AppRadius.lg),
+                bottomLeft: Radius.circular(AppRadius.lg),
+                bottomRight: Radius.circular(AppRadius.lg),
+              ),
+            ),
+            child: Text(
+              message.text,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.nearBlack,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Input area ────────────────────────────────────────────────────
+
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: AppColors.gray100,
+                borderRadius: BorderRadius.circular(AppRadius.full),
+              ),
+              child: TextField(
+                controller: _inputController,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: '궁금한 점을 입력하세요',
+                ),
+                style: AppTypography.bodyMedium,
+                minLines: 1,
+                maxLines: 3,
+                onSubmitted: (_) => _handleSend(),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          GestureDetector(
+            onTap: _isSending ? null : _handleSend,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: AppColors.brandPrimary,
+                shape: BoxShape.circle,
+              ),
+              child: _isSending
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.arrow_upward_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────
 
   String? _buildPetProfileContext() {
     final pet = _activePet;
@@ -244,11 +654,9 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
     final filtered = <_Message>[];
 
     for (final m in _messages) {
-      // 맨 앞의 assistant-only 메시지는 건너뛴다.
       if (filtered.isEmpty && m.role == MessageRole.assistant) {
         continue;
       }
-      // 같은 role이 연속되면 마지막만 유지한다.
       if (filtered.isNotEmpty && filtered.last.role == m.role) {
         filtered[filtered.length - 1] = m;
         continue;
@@ -256,7 +664,6 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
       filtered.add(m);
     }
 
-    // 최근 10개(5쌍)만 사용해 토큰을 절약
     const maxMessages = 10;
     final truncated = filtered.length > maxMessages
         ? filtered.sublist(filtered.length - maxMessages)
@@ -270,267 +677,6 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen> {
           },
         )
         .toList();
-  }
-
-  Widget _buildHeroCard() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.sm,
-      ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.gradientTop, AppColors.gradientBottom],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '앵무새 AI 백과',
-                  style: AppTypography.h5.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '사료, 체중, 환경 관리까지 궁금한 걸 질문해 주세요.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Text('🦜', style: TextStyle(fontSize: 34)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecommendedQuestions() {
-    const samples = [
-      '초기 비타민 섭취량',
-      '털 갈이 때 돌봄 방법',
-      '건강검진 주기 추천',
-      '체중 기록 팁',
-    ];
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '추천 질문',
-            style: AppTypography.bodyMedium.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.nearBlack,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: samples
-                .map(
-                  (q) => GestureDetector(
-                    onTap: () {
-                      _inputController.text = q;
-                      _handleSend();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.gray100,
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                      ),
-                      child: Text(
-                        q,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.nearBlack,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessages() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: ListView.separated(
-        controller: _scrollController,
-        padding: const EdgeInsets.only(
-          top: AppSpacing.md,
-          bottom: AppSpacing.md,
-        ),
-        itemBuilder: (context, index) {
-          final message = _messages[index];
-          final isUser = message.role == MessageRole.user;
-          return Align(
-            alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 320),
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: isUser
-                      ? AppColors.brandPrimary
-                      : Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(AppRadius.lg),
-                    topRight: const Radius.circular(AppRadius.lg),
-                    bottomLeft: Radius.circular(
-                      isUser ? AppRadius.lg : AppRadius.sm,
-                    ),
-                    bottomRight: Radius.circular(
-                      isUser ? AppRadius.sm : AppRadius.lg,
-                    ),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  message.text,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: isUser ? Colors.white : AppColors.nearBlack,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-        separatorBuilder: (context, index) =>
-            const SizedBox(height: AppSpacing.md),
-        itemCount: _messages.length,
-      ),
-    );
-  }
-
-  Widget _buildInputArea() {
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          AppSpacing.sm,
-          AppSpacing.lg,
-          AppSpacing.lg,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: AppColors.gray100,
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                ),
-                child: TextField(
-                  controller: _inputController,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: '궁금한 점을 입력하세요',
-                  ),
-                  minLines: 1,
-                  maxLines: 3,
-                  onSubmitted: (_) => _handleSend(),
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            SizedBox(
-              height: 48,
-              width: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.brandPrimary,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                ),
-                onPressed: _isSending ? null : _handleSend,
-                child: _isSending
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Icon(Icons.send_rounded, size: 20),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
+from jose.utils import base64url_decode
 import bcrypt
 import httpx
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.hazmat.backends import default_backend
 from app.config import get_settings
 
 settings = get_settings()
@@ -59,6 +62,51 @@ def verify_kakao_access_token(token: str) -> dict | None:
         if kakao_account and kakao_account.get("has_email"):
             email = kakao_account.get("email")
         return {"sub": user_id, "email": email}
+    except Exception:
+        return None
+
+
+def _get_apple_public_key(kid: str):
+    """Fetch Apple's public keys and return the matching RSA public key."""
+    resp = httpx.get("https://appleid.apple.com/auth/keys", timeout=10)
+    resp.raise_for_status()
+    keys = resp.json().get("keys", [])
+    for key_data in keys:
+        if key_data["kid"] == kid:
+            n = int.from_bytes(base64url_decode(key_data["n"]), "big")
+            e = int.from_bytes(base64url_decode(key_data["e"]), "big")
+            return RSAPublicNumbers(e, n).public_key(default_backend())
+    return None
+
+
+def verify_apple_id_token(token: str) -> dict | None:
+    """Verify Apple ID token and return user info (sub, email).
+
+    Returns dict with 'sub' (Apple user id) and 'email' on success, None on failure.
+    """
+    try:
+        headers = jwt.get_unverified_header(token)
+        kid = headers.get("kid")
+        if not kid:
+            return None
+
+        public_key = _get_apple_public_key(kid)
+        if not public_key:
+            return None
+
+        payload = jwt.decode(
+            token,
+            public_key,
+            algorithms=["RS256"],
+            audience=settings.apple_client_id,
+            issuer="https://appleid.apple.com",
+        )
+
+        sub = payload.get("sub")
+        if not sub:
+            return None
+
+        return {"sub": sub, "email": payload.get("email")}
     except Exception:
         return None
 
