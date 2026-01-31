@@ -73,16 +73,25 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     });
   }
 
-  void _navigateToHomeAfterLogin() {
+  Future<void> _navigateAfterLogin() async {
     if (!mounted || _hasNavigatedAfterLogin) return;
     _hasNavigatedAfterLogin = true;
-    context.goNamed(RouteNames.home);
+
+    // 펫 유무 확인 — 없으면 첫 로그인으로 간주하여 프로필 설정으로
+    final hasPets = await _authService.hasPets();
+    if (!mounted) return;
+
+    if (hasPets) {
+      context.goNamed(RouteNames.home);
+    } else {
+      context.goNamed(RouteNames.profileSetup);
+    }
   }
 
   /// 소셜 로그인 결과 처리 (signup_required 시 다이얼로그 표시)
-  void _handleSocialLoginResult(SocialLoginResult result) {
+  Future<void> _handleSocialLoginResult(SocialLoginResult result) async {
     if (result.success) {
-      _navigateToHomeAfterLogin();
+      await _navigateAfterLogin();
     } else if (result.signupRequired) {
       _showSignupRequiredDialog();
     }
@@ -581,7 +590,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         email: email,
         password: password,
       );
-      _navigateToHomeAfterLogin();
+      _navigateAfterLogin();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

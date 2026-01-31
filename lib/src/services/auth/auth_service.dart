@@ -225,6 +225,17 @@ class AuthService {
     }
   }
 
+  /// 펫 보유 여부 확인 (첫 로그인 판별용)
+  Future<bool> hasPets() async {
+    try {
+      final response = await _api.get('/pets/');
+      final list = response as List<dynamic>;
+      return list.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // --- 소셜 계정 연동 관리 ---
 
   /// 회원 탈퇴
@@ -239,12 +250,14 @@ class AuthService {
   Future<void> linkSocialAccount({
     required String provider,
     String? idToken,
+    String? accessToken,
     String? providerId,
     String? providerEmail,
   }) async {
     await _api.post('/users/me/social-accounts', body: {
       'provider': provider,
       if (idToken != null) 'id_token': idToken,
+      if (accessToken != null) 'access_token': accessToken,
       if (providerId != null) 'provider_id': providerId,
       if (providerEmail != null) 'provider_email': providerEmail,
     });

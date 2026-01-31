@@ -7,7 +7,7 @@ from app.schemas.auth import (
     ResetPasswordRequest, VerifyResetCodeRequest, UpdatePasswordRequest,
 )
 from app.services import auth_service
-from app.utils.security import verify_google_id_token
+from app.utils.security import verify_google_id_token, verify_kakao_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -38,6 +38,12 @@ async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = D
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google ID token")
         provider_id = google_info["sub"]
         email = email or google_info.get("email")
+    elif provider == "kakao" and request.access_token:
+        kakao_info = verify_kakao_access_token(request.access_token)
+        if not kakao_info:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Kakao access token")
+        provider_id = kakao_info["sub"]
+        email = email or kakao_info.get("email")
     else:
         provider_id = request.authorization_code or ""
 

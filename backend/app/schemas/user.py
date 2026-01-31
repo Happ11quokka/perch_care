@@ -16,6 +16,7 @@ class SocialAccountResponse(BaseModel):
 class SocialAccountLinkRequest(BaseModel):
     provider: str
     id_token: str | None = None
+    access_token: str | None = None
     provider_id: str | None = None
     provider_email: str | None = None
 

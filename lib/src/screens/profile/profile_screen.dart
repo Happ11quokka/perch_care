@@ -136,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       await _authService.linkSocialAccount(
         provider: 'kakao',
-        providerId: token.accessToken,
+        accessToken: token.accessToken,
       );
       await _loadSocialAccounts();
       if (!mounted) return;

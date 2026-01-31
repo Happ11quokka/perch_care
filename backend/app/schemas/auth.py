@@ -24,6 +24,7 @@ class RefreshRequest(BaseModel):
 
 class OAuthRequest(BaseModel):
     id_token: str | None = None
+    access_token: str | None = None
     authorization_code: str | None = None
     provider: str | None = None
     email: str | None = None

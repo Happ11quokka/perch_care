@@ -7,7 +7,7 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.user import ProfileResponse, ProfileUpdateRequest, SocialAccountResponse, SocialAccountLinkRequest
 from app.services import user_service
-from app.utils.security import verify_google_id_token
+from app.utils.security import verify_google_id_token, verify_kakao_access_token
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -49,6 +49,12 @@ async def link_social_account(
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google ID token")
         provider_id = google_info["sub"]
         provider_email = provider_email or google_info.get("email")
+    elif request.provider == "kakao" and request.access_token:
+        kakao_info = verify_kakao_access_token(request.access_token)
+        if not kakao_info:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Kakao access token")
+        provider_id = kakao_info["sub"]
+        provider_email = provider_email or kakao_info.get("email")
 
     if not provider_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing provider_id or id_token")

@@ -176,7 +176,10 @@ class AppRouter {
         builder: (context, state) {
           final extra = state.extra;
           final map = extra is Map<String, dynamic> ? extra : null;
-          return PetAddScreen(petId: map?['petId']);
+          return PetAddScreen(
+            petId: map?['petId'],
+            isInitialSetup: map?['isInitialSetup'] == true,
+          );
         },
       ),
       GoRoute(

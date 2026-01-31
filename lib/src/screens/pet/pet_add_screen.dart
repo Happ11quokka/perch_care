@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
+import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
@@ -15,10 +15,12 @@ import '../../widgets/bottom_nav_bar.dart';
 /// 반려동물 등록/수정 화면 - Figma 디자인 기반
 class PetAddScreen extends StatefulWidget {
   final String? petId; // null이면 등록, 값이 있으면 수정
+  final bool isInitialSetup; // 첫 로그인 설정 플로우 여부
 
   const PetAddScreen({
     super.key,
     this.petId,
+    this.isInitialSetup = false,
   });
 
   @override
@@ -30,6 +32,14 @@ class _PetAddScreenState extends State<PetAddScreen> {
   final _nameController = TextEditingController();
   final _weightController = TextEditingController();
   final _speciesController = TextEditingController();
+
+  final _nameFocusNode = FocusNode();
+  final _weightFocusNode = FocusNode();
+  final _speciesFocusNode = FocusNode();
+
+  bool _nameHasFocus = false;
+  bool _weightHasFocus = false;
+  bool _speciesHasFocus = false;
 
   final _imagePicker = ImagePicker();
   File? _selectedImage;
@@ -51,6 +61,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
   @override
   void initState() {
     super.initState();
+    _nameFocusNode.addListener(() => setState(() => _nameHasFocus = _nameFocusNode.hasFocus));
+    _weightFocusNode.addListener(() => setState(() => _weightHasFocus = _weightFocusNode.hasFocus));
+    _speciesFocusNode.addListener(() => setState(() => _speciesHasFocus = _speciesFocusNode.hasFocus));
     if (widget.petId != null) {
       _loadExistingPet();
     }
@@ -106,6 +119,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
     _nameController.dispose();
     _weightController.dispose();
     _speciesController.dispose();
+    _nameFocusNode.dispose();
+    _weightFocusNode.dispose();
+    _speciesFocusNode.dispose();
     super.dispose();
   }
 
@@ -230,7 +246,12 @@ class _PetAddScreenState extends State<PetAddScreen> {
             content:
                 Text(_existingPet != null ? '수정되었습니다.' : '등록되었습니다.')),
       );
-      context.pop(true); // 결과 반환하여 이전 화면에서 새로고침 가능하게
+
+      if (widget.isInitialSetup) {
+        context.goNamed(RouteNames.home);
+      } else {
+        context.pop(true); // 결과 반환하여 이전 화면에서 새로고침 가능하게
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -288,10 +309,13 @@ class _PetAddScreenState extends State<PetAddScreen> {
         backgroundColor: AppColors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => context.pop(),
-        ),
+        leading: widget.isInitialSetup
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+                onPressed: () => context.pop(),
+              ),
+        automaticallyImplyLeading: !widget.isInitialSetup,
         centerTitle: true,
         title: const Text(
           '프로필',
@@ -339,12 +363,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
                                       : null,
                             ),
                             child: _selectedImage == null && _savedImageBytes == null
-                                ? Center(
-                                    child: SvgPicture.asset(
-                                      'assets/images/pet_profile.svg',
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.contain,
+                                ? const Center(
+                                    child: Icon(
+                                      Icons.pets,
+                                      size: 60,
+                                      color: Color(0xFF6B6B6B),
                                     ),
                                   )
                                 : null,
@@ -375,6 +398,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
                       // 이름
                       _buildTextField(
                         controller: _nameController,
+                        focusNode: _nameFocusNode,
+                        hasFocus: _nameHasFocus,
                         hintText: '이름을 입력해 주세요',
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -397,6 +422,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
                       // 몸무게
                       _buildTextField(
                         controller: _weightController,
+                        focusNode: _weightFocusNode,
+                        hasFocus: _weightHasFocus,
                         hintText: '몸무게',
                         keyboardType: TextInputType.number,
                       ),
@@ -418,6 +445,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
                       // 종
                       _buildTextField(
                         controller: _speciesController,
+                        focusNode: _speciesFocusNode,
+                        hasFocus: _speciesHasFocus,
                         hintText: '종',
                       ),
                       const SizedBox(height: 16),
@@ -472,21 +501,32 @@ class _PetAddScreenState extends State<PetAddScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
+      bottomNavigationBar: widget.isInitialSetup
+          ? null
+          : const BottomNavBar(currentIndex: 2),
     );
   }
 
   Widget _buildTextField({
     required TextEditingController controller,
+    required FocusNode focusNode,
+    required bool hasFocus,
     required String hintText,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
+    final hasValue = controller.text.isNotEmpty;
+    final isActive = hasFocus || hasValue;
+    final borderColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final bgColor = (hasFocus && hasValue)
+        ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
+        : Colors.white;
+
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFF97928A), width: 1),
+        color: bgColor,
+        border: Border.all(color: borderColor, width: 1),
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
@@ -494,8 +534,10 @@ class _PetAddScreenState extends State<PetAddScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: TextFormField(
           controller: controller,
+          focusNode: focusNode,
           keyboardType: keyboardType,
           validator: validator,
+          onChanged: (_) => setState(() {}),
           style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
@@ -517,6 +559,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
             focusedBorder: InputBorder.none,
             errorBorder: InputBorder.none,
             focusedErrorBorder: InputBorder.none,
+            filled: false,
+            fillColor: Colors.transparent,
             contentPadding: EdgeInsets.zero,
             errorStyle: const TextStyle(height: 0, fontSize: 0),
           ),
@@ -531,6 +575,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
+    final hasValue = value != null;
+    final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+
     return GestureDetector(
       onTap: () async {
         final selected = await showDialog<String>(
@@ -553,7 +600,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
         height: 60,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: const Color(0xFF97928A), width: 1),
+          border: Border.all(color: borderColor, width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         clipBehavior: Clip.antiAlias,
@@ -568,15 +615,15 @@ class _PetAddScreenState extends State<PetAddScreen> {
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: value == null
-                      ? const Color(0xFF97928A)
-                      : const Color(0xFF1A1A1A),
+                  color: hasValue
+                      ? const Color(0xFF1A1A1A)
+                      : const Color(0xFF97928A),
                   letterSpacing: -0.35,
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_drop_down,
-                color: Color(0xFF97928A),
+                color: hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A),
               ),
             ],
           ),
@@ -586,6 +633,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
   }
 
   Widget _buildGrowthStageDropdown() {
+    final hasValue = _selectedGrowthStage != null;
+    final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+
     return GestureDetector(
       onTap: () async {
         final selected = await showDialog<String>(
@@ -608,7 +658,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
         height: 60,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: const Color(0xFF97928A), width: 1),
+          border: Border.all(color: borderColor, width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         clipBehavior: Clip.antiAlias,
@@ -623,15 +673,15 @@ class _PetAddScreenState extends State<PetAddScreen> {
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: _selectedGrowthStage == null
-                      ? const Color(0xFF97928A)
-                      : const Color(0xFF1A1A1A),
+                  color: hasValue
+                      ? const Color(0xFF1A1A1A)
+                      : const Color(0xFF97928A),
                   letterSpacing: -0.35,
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_drop_down,
-                color: Color(0xFF97928A),
+                color: hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A),
               ),
             ],
           ),
@@ -645,13 +695,16 @@ class _PetAddScreenState extends State<PetAddScreen> {
     required DateTime? selectedDate,
     required VoidCallback onTap,
   }) {
+    final hasValue = selectedDate != null;
+    final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 60,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: const Color(0xFF97928A), width: 1),
+          border: Border.all(color: borderColor, width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         clipBehavior: Clip.antiAlias,
@@ -668,9 +721,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: selectedDate == null
-                      ? const Color(0xFF97928A)
-                      : const Color(0xFF1A1A1A),
+                  color: hasValue
+                      ? const Color(0xFF1A1A1A)
+                      : const Color(0xFF97928A),
                   letterSpacing: -0.35,
                 ),
               ),

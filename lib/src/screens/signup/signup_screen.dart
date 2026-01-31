@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../services/api/token_service.dart';
 
 /// 회원가입 화면 - Figma 디자인 기반
 class SignupScreen extends StatefulWidget {
@@ -19,8 +20,15 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  final _nameFocusNode = FocusNode();
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+
   bool _isLoading = false;
   bool _hasNavigatedAfterSignup = false;
+  bool _nameHasFocus = false;
+  bool _emailHasFocus = false;
+  bool _passwordHasFocus = false;
   final AuthService _authService = AuthService();
 
   // 아이콘 에셋 경로
@@ -29,12 +37,34 @@ class _SignupScreenState extends State<SignupScreen> {
   static const String _lockIconPath = 'assets/images/signup_vector/password.svg';
 
   @override
+  void initState() {
+    super.initState();
+    _nameFocusNode.addListener(_onNameFocusChange);
+    _emailFocusNode.addListener(_onEmailFocusChange);
+    _passwordFocusNode.addListener(_onPasswordFocusChange);
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _nameFocusNode.removeListener(_onNameFocusChange);
+    _emailFocusNode.removeListener(_onEmailFocusChange);
+    _passwordFocusNode.removeListener(_onPasswordFocusChange);
+    _nameFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
+
+  void _onNameFocusChange() => setState(() => _nameHasFocus = _nameFocusNode.hasFocus);
+  void _onEmailFocusChange() => setState(() => _emailHasFocus = _emailFocusNode.hasFocus);
+  void _onPasswordFocusChange() => setState(() => _passwordHasFocus = _passwordFocusNode.hasFocus);
+
+  bool get _nameHasValue => _nameController.text.isNotEmpty;
+  bool get _emailHasValue => _emailController.text.isNotEmpty;
+  bool get _passwordHasValue => _passwordController.text.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +107,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         _buildInputField(
                           label: '이름',
                           controller: _nameController,
+                          focusNode: _nameFocusNode,
                           hintText: '이름을 입력해 주세요',
                           iconPath: _personIconPath,
+                          hasFocus: _nameHasFocus,
+                          hasValue: _nameHasValue,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return '이름을 입력해 주세요';
@@ -91,8 +124,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         _buildInputField(
                           label: '이메일',
                           controller: _emailController,
+                          focusNode: _emailFocusNode,
                           hintText: '이메일을 입력해 주세요',
                           iconPath: _emailIconPath,
+                          hasFocus: _emailHasFocus,
+                          hasValue: _emailHasValue,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -112,8 +148,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         _buildInputField(
                           label: '비밀번호',
                           controller: _passwordController,
+                          focusNode: _passwordFocusNode,
                           hintText: '비밀번호를 입력해 주세요',
                           iconPath: _lockIconPath,
+                          hasFocus: _passwordHasFocus,
+                          hasValue: _passwordHasValue,
                           obscureText: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -178,12 +217,23 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget _buildInputField({
     required String label,
     required TextEditingController controller,
+    required FocusNode focusNode,
     required String hintText,
     required String iconPath,
+    required bool hasFocus,
+    required bool hasValue,
     TextInputType? keyboardType,
     bool obscureText = false,
     String? Function(String?)? validator,
   }) {
+    // 활성 상태: 포커스가 있거나 값이 있을 때
+    final isActive = hasFocus || hasValue;
+    final borderColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final bgColor = (hasFocus && hasValue)
+        ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
+        : Colors.transparent;
+    final iconColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -201,7 +251,8 @@ class _SignupScreenState extends State<SignupScreen> {
         Container(
           height: 64,
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF97928A), width: 1),
+            color: bgColor,
+            border: Border.all(color: borderColor, width: 1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -211,19 +262,18 @@ class _SignupScreenState extends State<SignupScreen> {
                 iconPath,
                 width: 20,
                 height: 20,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF97928A),
-                  BlendMode.srcIn,
-                ),
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
               ),
               const SizedBox(width: 6),
               Expanded(
                 child: TextFormField(
                   controller: controller,
+                  focusNode: focusNode,
                   keyboardType: keyboardType,
                   obscureText: obscureText,
                   validator: validator,
                   textInputAction: TextInputAction.next,
+                  onChanged: (_) => setState(() {}),
                   style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
@@ -245,7 +295,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     focusedBorder: InputBorder.none,
                     errorBorder: InputBorder.none,
                     focusedErrorBorder: InputBorder.none,
-                    filled: false, // 테마 기본 배경색 제거
+                    filled: false,
                     fillColor: Colors.transparent,
                     contentPadding: EdgeInsets.zero,
                     errorStyle: const TextStyle(height: 0, fontSize: 0),
@@ -315,7 +365,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
         content: const Text(
-          '회원가입이 완료되었습니다!\n소셜 계정을 연동하면 간편하게 로그인할 수 있습니다.\n프로필 화면에서 언제든 연동할 수 있습니다.',
+          '회원가입이 완료되었습니다!\n로그인 후 서비스를 이용할 수 있습니다.',
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
@@ -329,7 +379,11 @@ class _SignupScreenState extends State<SignupScreen> {
               if (_hasNavigatedAfterSignup) return;
               _hasNavigatedAfterSignup = true;
               Navigator.pop(dialogContext);
-              context.goNamed(RouteNames.home);
+              // 가입 시 자동 저장된 토큰 제거 후 로그인 페이지로 이동
+              TokenService.instance.clearTokens().then((_) {
+                if (!context.mounted) return;
+                context.goNamed(RouteNames.login);
+              });
             },
             child: const Text(
               '나중에 하기',
@@ -344,11 +398,14 @@ class _SignupScreenState extends State<SignupScreen> {
               if (_hasNavigatedAfterSignup) return;
               _hasNavigatedAfterSignup = true;
               Navigator.pop(dialogContext);
-              context.goNamed(RouteNames.home);
-              context.pushNamed(RouteNames.profile);
+              // 가입 시 자동 저장된 토큰 제거 후 로그인 페이지로 이동
+              TokenService.instance.clearTokens().then((_) {
+                if (!context.mounted) return;
+                context.goNamed(RouteNames.login);
+              });
             },
             child: const Text(
-              '소셜 계정 연동하기',
+              '확인',
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFFFF9A42),

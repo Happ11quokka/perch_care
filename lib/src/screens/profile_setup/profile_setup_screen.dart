@@ -47,7 +47,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     _nameFocusNode.addListener(() => setState(() {}));
     _emailFocusNode.addListener(() => setState(() {}));
     _phoneFocusNode.addListener(() => setState(() {}));
-    _loadUserEmail();
+    _loadUserProfile();
     _loadSavedImage();
   }
 
@@ -65,19 +65,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     } catch (_) {}
   }
 
-  Future<void> _loadUserEmail() async {
+  Future<void> _loadUserProfile() async {
     try {
       final profile = await _authService.getProfile();
       if (profile != null && mounted) {
-        final email = profile['email'] as String?;
-        if (email != null && email.isNotEmpty) {
-          setState(() {
+        setState(() {
+          final email = profile['email'] as String?;
+          if (email != null && email.isNotEmpty) {
             _emailController.text = email;
-          });
-        }
+          }
+          final nickname = profile['nickname'] as String?;
+          if (nickname != null && nickname.isNotEmpty) {
+            _nameController.text = nickname;
+          }
+        });
       }
     } catch (_) {
-      // 이메일 로드 실패 시 무시
+      // 프로필 로드 실패 시 무시
     }
   }
 
@@ -650,8 +654,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   void _handleSkip() {
-    // 다음에 - 완료 화면으로 이동하지 않고 홈으로 이동
-    context.goNamed(RouteNames.home);
+    // 다음에 - 펫 등록 화면으로 이동 (초기 설정 플로우)
+    context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
   }
 
   Future<void> _handleComplete() async {
@@ -665,10 +669,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             : null,
       );
       if (!mounted) return;
-      context.goNamed(
-        RouteNames.profileSetupComplete,
-        extra: {'petName': _nameController.text.isNotEmpty ? _nameController.text : '점점이'},
-      );
+      // 프로필 저장 후 펫 등록 화면으로 이동 (초기 설정 플로우)
+      context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
