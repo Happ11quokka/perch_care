@@ -16,16 +16,23 @@ backend/.env
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# IDE & Editor
 *.iml
 *.ipr
 *.iws
 .idea/
+.vscode/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# Claude Code
+.claude/
+CLAUDE.md
+
+# MCP
+.mcp.json
+
+# Flutter metadata & devtools
+.metadata
+devtools_options.yaml
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -47,3 +54,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Xcode export artifacts
+ios/Runner\ */
+*.ipa
+
+# Python virtual environment
+backend/venv/
+backend/__pycache__/
+**/__pycache__/
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
