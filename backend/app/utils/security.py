@@ -1,7 +1,7 @@
+import base64
 import logging
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
-from jose.utils import base64url_decode
 import bcrypt
 import httpx
 from google.oauth2 import id_token as google_id_token
@@ -12,6 +12,15 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+
+def _base64url_decode(data: str) -> bytes:
+    """Base64 URL-safe decode with padding fix."""
+    # Add padding if needed
+    padding = 4 - len(data) % 4
+    if padding != 4:
+        data += "=" * padding
+    return base64.urlsafe_b64decode(data)
 
 
 def hash_password(password: str) -> str:
@@ -75,8 +84,8 @@ def _get_apple_public_key(kid: str):
     keys = resp.json().get("keys", [])
     for key_data in keys:
         if key_data["kid"] == kid:
-            n = int.from_bytes(base64url_decode(key_data["n"]), "big")
-            e = int.from_bytes(base64url_decode(key_data["e"]), "big")
+            n = int.from_bytes(_base64url_decode(key_data["n"]), "big")
+            e = int.from_bytes(_base64url_decode(key_data["e"]), "big")
             return RSAPublicNumbers(e, n).public_key(default_backend())
     return None
 
