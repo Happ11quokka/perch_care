@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from jose.utils import base64url_decode
@@ -9,6 +10,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.backends import default_backend
 from app.config import get_settings
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
@@ -85,13 +87,20 @@ def verify_apple_id_token(token: str) -> dict | None:
     Returns dict with 'sub' (Apple user id) and 'email' on success, None on failure.
     """
     try:
+        # APPLE_CLIENT_ID 설정 확인
+        if not settings.apple_client_id:
+            logger.error("APPLE_CLIENT_ID is not configured in environment variables")
+            return None
+
         headers = jwt.get_unverified_header(token)
         kid = headers.get("kid")
         if not kid:
+            logger.warning("Apple ID token missing 'kid' header")
             return None
 
         public_key = _get_apple_public_key(kid)
         if not public_key:
+            logger.warning(f"Could not find Apple public key for kid: {kid}")
             return None
 
         payload = jwt.decode(
@@ -104,10 +113,19 @@ def verify_apple_id_token(token: str) -> dict | None:
 
         sub = payload.get("sub")
         if not sub:
+            logger.warning("Apple ID token missing 'sub' claim")
             return None
 
+        logger.info(f"Apple ID token verified successfully for sub: {sub[:8]}...")
         return {"sub": sub, "email": payload.get("email")}
-    except Exception:
+    except jwt.ExpiredSignatureError:
+        logger.warning("Apple ID token has expired")
+        return None
+    except jwt.JWTClaimsError as e:
+        logger.warning(f"Apple ID token claims error: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error verifying Apple ID token: {e}")
         return None
 
 

@@ -117,9 +117,17 @@ class AuthService {
   }
 
   /// Apple 로그인 (회원가입 필요 여부 확인)
-  Future<SocialLoginResult> signInWithApple({required String idToken}) async {
+  Future<SocialLoginResult> signInWithApple({
+    required String idToken,
+    String? userIdentifier,
+    String? fullName,
+    String? email,
+  }) async {
     final response = await _api.post('/auth/oauth/apple', body: {
       'id_token': idToken,
+      if (userIdentifier != null) 'user_identifier': userIdentifier,
+      if (fullName != null) 'full_name': fullName,
+      if (email != null) 'email': email,
     }, auth: false);
 
     return _handleOAuthResponse(response);

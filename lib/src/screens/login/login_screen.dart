@@ -122,19 +122,39 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isAppleLoading = true);
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [AppleIDAuthorizationScopes.email],
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
       );
       final idToken = credential.identityToken;
       if (idToken == null) throw Exception('identityToken is null');
-      final result = await _authService.signInWithApple(idToken: idToken);
+
+      // fullName 조합 (Apple은 최초 로그인 시에만 이름 제공)
+      String? fullName;
+      if (credential.givenName != null || credential.familyName != null) {
+        fullName =
+            '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
+                .trim();
+        if (fullName.isEmpty) fullName = null;
+      }
+
+      final result = await _authService.signInWithApple(
+        idToken: idToken,
+        userIdentifier: credential.userIdentifier,
+        fullName: fullName,
+        email: credential.email,
+      );
       if (!mounted) return;
       _handleSocialLoginResult(result);
     } on SignInWithAppleAuthorizationException catch (e) {
       if (!mounted) return;
       if (e.code == AuthorizationErrorCode.canceled) return;
+      debugPrint('Apple Sign In Error: ${e.code} - ${e.message}');
       AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+      debugPrint('Apple Sign In Error: $e');
       AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);

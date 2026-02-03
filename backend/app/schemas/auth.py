@@ -28,6 +28,8 @@ class OAuthRequest(BaseModel):
     authorization_code: str | None = None
     provider: str | None = None
     email: str | None = None
+    user_identifier: str | None = None  # Apple userIdentifier
+    full_name: str | None = None  # Apple fullName (첫 로그인 시에만 제공됨)
 
 
 class OAuthLoginResponse(BaseModel):

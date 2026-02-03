@@ -98,19 +98,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLinkingSocial = true);
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [AppleIDAuthorizationScopes.email],
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
       );
       final idToken = credential.identityToken;
       if (idToken == null) throw Exception('identityToken is null');
       await _authService.linkSocialAccount(
         provider: 'apple',
         idToken: idToken,
+        providerId: credential.userIdentifier,
+        providerEmail: credential.email,
       );
       await _loadSocialAccounts();
       if (!mounted) return;
       AppSnackBar.success(context, message: 'Apple 계정이 연동되었습니다.');
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+      debugPrint('Apple Link Error: $e');
       AppSnackBar.error(context, message: 'Apple 계정 연동에 실패했습니다.');
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
