@@ -53,12 +53,14 @@ class AppRouter {
     initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final isLoggedIn = TokenService.instance.isLoggedIn;
       final currentPath = state.uri.path;
       final isPublicRoute = _publicPaths.contains(currentPath);
 
-      // 스플래시는 항상 접근 가능 (초기 진입점)
+      // 스플래시는 항상 접근 가능 (초기 진입점) - TokenService 초기화 전
       if (currentPath == RoutePaths.splash) return null;
+
+      // TokenService가 초기화되지 않았으면 스플래시로 리다이렉트
+      final isLoggedIn = TokenService.instance.isLoggedIn;
 
       // 비로그인 사용자가 보호된 라우트에 접근 시 로그인으로 리다이렉트
       if (!isLoggedIn && !isPublicRoute) {

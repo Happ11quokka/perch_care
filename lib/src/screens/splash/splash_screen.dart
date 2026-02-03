@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
+import '../../services/storage/local_image_storage_service.dart';
 import '../../router/route_paths.dart';
 import '../../theme/colors.dart';
 
@@ -20,6 +23,9 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _middleCircleScale;
   late Animation<double> _outerCircleScale;
   late Animation<double> _logoOpacity;
+
+  bool _animationCompleted = false;
+  bool _servicesInitialized = false;
 
   @override
   void initState() {
@@ -62,19 +68,60 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // 애니메이션 완료 후 인증 상태에 맞는 화면으로 자동 전환
+    // 애니메이션 완료 후 플래그 설정
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // 애니메이션 완료 후 0.5초 대기 후 적절한 화면으로 이동
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            _navigateToInitialRoute();
-          }
-        });
+        _animationCompleted = true;
+        _tryNavigate();
       }
     });
 
     _controller.forward();
+
+    // 서비스 초기화 (애니메이션과 병렬로 실행)
+    _initializeServices();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      await TokenService.instance.init();
+    } catch (e) {
+      debugPrint('TokenService init error: $e');
+    }
+
+    try {
+      ApiClient.initialize();
+    } catch (e) {
+      debugPrint('ApiClient init error: $e');
+    }
+
+    try {
+      await GoogleSignIn.instance.initialize(
+        clientId: '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
+      );
+    } catch (e) {
+      debugPrint('GoogleSignIn init error: $e');
+    }
+
+    try {
+      await LocalImageStorageService.instance.init();
+    } catch (e) {
+      debugPrint('LocalImageStorageService init error: $e');
+    }
+
+    _servicesInitialized = true;
+    _tryNavigate();
+  }
+
+  void _tryNavigate() {
+    // 애니메이션과 서비스 초기화가 모두 완료되면 네비게이션
+    if (_animationCompleted && _servicesInitialized && mounted) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _navigateToInitialRoute();
+        }
+      });
+    }
   }
 
   @override

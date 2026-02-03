@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// JWT 토큰 관리 서비스
@@ -11,15 +12,27 @@ class TokenService {
 
   TokenService._();
 
-  final _secureStorage = const FlutterSecureStorage();
+  final _secureStorage = const FlutterSecureStorage(
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock,
+    ),
+  );
   String? _accessToken;
   String? _refreshToken;
   bool _initialized = false;
 
   Future<void> init() async {
     if (_initialized) return;
-    _accessToken = await _secureStorage.read(key: _accessTokenKey);
-    _refreshToken = await _secureStorage.read(key: _refreshTokenKey);
+    try {
+      _accessToken = await _secureStorage.read(key: _accessTokenKey);
+      _refreshToken = await _secureStorage.read(key: _refreshTokenKey);
+      debugPrint('TokenService init success: hasAccessToken=${_accessToken != null}');
+    } catch (e, stackTrace) {
+      debugPrint('TokenService init error: $e');
+      debugPrint('TokenService stackTrace: $stackTrace');
+      _accessToken = null;
+      _refreshToken = null;
+    }
     _initialized = true;
   }
 
