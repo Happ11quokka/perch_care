@@ -1,7 +1,7 @@
 name: perch_care
 description: "AI 기반 반려동물 건강 관리 앱"
 publish_to: "none"
-version: 1.0.0+6
+version: 1.0.1+1
 
 environment:
   sdk: ^3.8.1
