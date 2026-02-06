@@ -31,6 +31,7 @@ async def refresh(request: RefreshRequest, db: AsyncSession = Depends(get_db)):
 async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = Depends(get_db)):
     provider_id: str | None = None
     email = request.email
+    nickname = request.full_name  # Apple provides full_name on first login
 
     if provider == "google" and request.id_token:
         google_info = verify_google_id_token(request.id_token)
@@ -38,18 +39,21 @@ async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = D
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google ID token")
         provider_id = google_info["sub"]
         email = email or google_info.get("email")
+        nickname = nickname or google_info.get("name")  # Extract name from Google ID token
     elif provider == "apple" and request.id_token:
         apple_info = verify_apple_id_token(request.id_token)
         if not apple_info:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Apple ID token")
         provider_id = apple_info["sub"]
         email = email or apple_info.get("email")
+        # nickname already set from request.full_name for Apple
     elif provider == "kakao" and request.access_token:
         kakao_info = verify_kakao_access_token(request.access_token)
         if not kakao_info:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Kakao access token")
         provider_id = kakao_info["sub"]
         email = email or kakao_info.get("email")
+        nickname = nickname or kakao_info.get("nickname")  # Extract nickname from Kakao
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported provider or missing credentials")
 
@@ -61,7 +65,7 @@ async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = D
         provider=provider,
         provider_id=provider_id,
         email=email,
-        nickname=None,
+        nickname=nickname,
     )
 
 

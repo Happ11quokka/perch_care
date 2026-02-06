@@ -85,12 +85,58 @@ async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: 
             "token_type": "bearer",
         }
 
-    # Social account not found - return signup_required
+    # === Auto-create user for new OAuth users ===
+
+    # Email is required for account creation
+    if not email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required for account creation")
+
+    # Check if user with this email already exists
+    result = await db.execute(select(User).where(User.email == email))
+    existing_user = result.scalar_one_or_none()
+
+    if existing_user:
+        # Link social account to existing user
+        new_social = SocialAccount(
+            user_id=existing_user.id,
+            provider=provider,
+            provider_id=provider_id,
+            provider_email=email,
+        )
+        db.add(new_social)
+        await db.flush()
+
+        return {
+            "status": "authenticated",
+            "access_token": create_access_token(str(existing_user.id)),
+            "refresh_token": create_refresh_token(str(existing_user.id)),
+            "token_type": "bearer",
+        }
+
+    # Create new user + social account
+    final_nickname = nickname or email.split('@')[0]
+    new_user = User(
+        email=email,
+        hashed_password=None,  # OAuth users don't have password
+        nickname=final_nickname,
+    )
+    db.add(new_user)
+    await db.flush()
+
+    new_social = SocialAccount(
+        user_id=new_user.id,
+        provider=provider,
+        provider_id=provider_id,
+        provider_email=email,
+    )
+    db.add(new_social)
+    await db.flush()
+
     return {
-        "status": "signup_required",
-        "provider": provider,
-        "provider_id": provider_id,
-        "provider_email": email,
+        "status": "authenticated",
+        "access_token": create_access_token(str(new_user.id)),
+        "refresh_token": create_refresh_token(str(new_user.id)),
+        "token_type": "bearer",
     }
 
 

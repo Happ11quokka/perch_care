@@ -89,67 +89,14 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     }
   }
 
-  /// 소셜 로그인 결과 처리 (signup_required 시 다이얼로그 표시)
+  /// 소셜 로그인 결과 처리
   Future<void> _handleSocialLoginResult(SocialLoginResult result) async {
     if (result.success) {
       await _navigateAfterLogin();
     } else if (result.signupRequired) {
-      _showSignupRequiredDialog();
+      // This should no longer occur - backend now auto-creates accounts
+      AppSnackBar.error(context, message: '로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
-  }
-
-  /// 회원가입 필요 다이얼로그
-  void _showSignupRequiredDialog() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '회원가입 필요',
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
-          ),
-        ),
-        content: const Text(
-          '등록되지 않은 계정입니다.\n회원가입 후 소셜 로그인을 이용할 수 있습니다.',
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              '닫기',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFF97928A),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.pushNamed(RouteNames.signup);
-            },
-            child: const Text(
-              '회원가입',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFFFF9A42),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   bool get _emailHasValue => _emailController.text.isNotEmpty;
