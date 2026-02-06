@@ -87,9 +87,18 @@ async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: 
 
     # === Auto-create user for new OAuth users ===
 
-    # Email is required for account creation
+    # Handle missing email
     if not email:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required for account creation")
+        # Kakao requires business app for email - return signup_required
+        if provider == "kakao":
+            return {
+                "status": "signup_required",
+                "provider": provider,
+                "provider_id": provider_id,
+                "provider_email": None,
+            }
+        # Apple/Google should always provide email, but fallback just in case
+        email = f"{provider}_{provider_id[:16]}@oauth.placeholder"
 
     # Check if user with this email already exists
     result = await db.execute(select(User).where(User.email == email))
