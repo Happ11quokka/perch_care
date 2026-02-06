@@ -50,8 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint('[HomeScreen] initState called');
     _loadPets();
+    debugPrint('[HomeScreen] _loadPets() called');
     ActivePetNotifier.instance.addListener(_onActivePetChanged);
+    debugPrint('[HomeScreen] ActivePetNotifier listener added');
   }
 
   @override
@@ -110,12 +113,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadPets() async {
+    debugPrint('[HomeScreen] _loadPets() started');
     setState(() {
       _isLoading = true;
     });
 
     try {
+      debugPrint('[HomeScreen] Calling _petService.getActivePet()...');
       final activePet = await _petService.getActivePet();
+      debugPrint('[HomeScreen] getActivePet() returned: ${activePet?.name}');
 
       if (mounted) {
         setState(() {

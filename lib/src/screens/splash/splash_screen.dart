@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
@@ -26,6 +28,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   bool _animationCompleted = false;
   bool _servicesInitialized = false;
+  bool _disposed = false;
 
   @override
   void initState() {
@@ -69,12 +72,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     // 애니메이션 완료 후 플래그 설정
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _animationCompleted = true;
-        _tryNavigate();
-      }
-    });
+    _controller.addStatusListener(_onAnimationStatus);
 
     _controller.forward();
 
@@ -82,42 +80,80 @@ class _SplashScreenState extends State<SplashScreen>
     _initializeServices();
   }
 
+  void _onAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _animationCompleted = true;
+      _tryNavigate();
+    }
+  }
+
   Future<void> _initializeServices() async {
+    // 1. 환경 변수 로드 (다른 서비스들이 의존)
+    debugPrint('[Splash] 1. dotenv loading...');
+    try {
+      await dotenv.load(fileName: '.env');
+      debugPrint('[Splash] 1. dotenv loaded');
+    } catch (e) {
+      debugPrint('[Splash] 1. dotenv load error: $e');
+    }
+
+    // 2. SDK 초기화 (비동기 아님)
+    debugPrint('[Splash] 2. KakaoSdk initializing...');
+    try {
+      KakaoSdk.init(nativeAppKey: '23f9d1f1b79cea8566c54a44ba33b463');
+      debugPrint('[Splash] 2. KakaoSdk initialized');
+    } catch (e) {
+      debugPrint('[Splash] 2. KakaoSdk init error: $e');
+    }
+
+    // 3. 토큰 서비스 초기화
+    debugPrint('[Splash] 3. TokenService initializing...');
     try {
       await TokenService.instance.init();
+      debugPrint('[Splash] 3. TokenService initialized');
     } catch (e) {
-      debugPrint('TokenService init error: $e');
+      debugPrint('[Splash] 3. TokenService init error: $e');
     }
 
+    // 4. API 클라이언트 초기화
+    debugPrint('[Splash] 4. ApiClient initializing...');
     try {
       ApiClient.initialize();
+      debugPrint('[Splash] 4. ApiClient initialized');
     } catch (e) {
-      debugPrint('ApiClient init error: $e');
+      debugPrint('[Splash] 4. ApiClient init error: $e');
     }
 
+    // 5. Google Sign-In 초기화
+    debugPrint('[Splash] 5. GoogleSignIn initializing...');
     try {
       await GoogleSignIn.instance.initialize(
         clientId: '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
       );
+      debugPrint('[Splash] 5. GoogleSignIn initialized');
     } catch (e) {
-      debugPrint('GoogleSignIn init error: $e');
+      debugPrint('[Splash] 5. GoogleSignIn init error: $e');
     }
 
+    // 6. 로컬 이미지 저장소 초기화
+    debugPrint('[Splash] 6. LocalImageStorageService initializing...');
     try {
       await LocalImageStorageService.instance.init();
+      debugPrint('[Splash] 6. LocalImageStorageService initialized');
     } catch (e) {
-      debugPrint('LocalImageStorageService init error: $e');
+      debugPrint('[Splash] 6. LocalImageStorageService init error: $e');
     }
 
+    debugPrint('[Splash] All services initialized, navigating...');
     _servicesInitialized = true;
     _tryNavigate();
   }
 
   void _tryNavigate() {
     // 애니메이션과 서비스 초기화가 모두 완료되면 네비게이션
-    if (_animationCompleted && _servicesInitialized && mounted) {
+    if (_animationCompleted && _servicesInitialized && mounted && !_disposed) {
       Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
+        if (mounted && !_disposed) {
           _navigateToInitialRoute();
         }
       });
@@ -126,6 +162,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _disposed = true;
+    _controller.removeStatusListener(_onAnimationStatus);
     _controller.dispose();
     super.dispose();
   }
@@ -255,7 +293,9 @@ class _SplashScreenState extends State<SplashScreen>
     final isLoggedIn = TokenService.instance.isLoggedIn;
     final targetRoute =
         !isLoggedIn ? RoutePaths.onboarding : RoutePaths.home;
+    debugPrint('[Splash] Navigating to: $targetRoute (isLoggedIn: $isLoggedIn)');
     if (!mounted) return;
     context.go(targetRoute);
+    debugPrint('[Splash] Navigation called');
   }
 }
