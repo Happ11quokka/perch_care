@@ -85,17 +85,50 @@ async def _get_weight_near_date(db: AsyncSession, pet_id: UUID, target_date: dat
     return float(best.weight)
 
 
+async def _get_previous_weight(db: AsyncSession, pet_id: UUID, before_date: date) -> float | None:
+    """before_date 이전의 가장 최근 체중 기록 반환."""
+    result = await db.execute(
+        select(WeightRecord.weight)
+        .where(
+            WeightRecord.pet_id == pet_id,
+            WeightRecord.recorded_date < before_date,
+        )
+        .order_by(WeightRecord.recorded_date.desc())
+        .limit(1)
+    )
+    row = result.scalar_one_or_none()
+    return float(row) if row is not None else None
+
+
 async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, growth_stage: str | None) -> tuple[float, bool]:
     """WeightScore 계산. (score, has_data) 반환."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if not growth_stage:
+        return 0.0, False
+
+    # 오늘 체중 확인
+    w_t = await _get_weight_on_date(db, pet_id, target_date)
+    logger.info(f"[BHI DEBUG] weight for {pet_id} on {target_date}: w_t={w_t}")
+
+    if w_t is None:
         return 0.0, False
 
     if growth_stage in ('adult', 'post_growth'):
         # 7일 기반 WCI (비교 체중은 ±3일 범위에서 탐색)
-        w_t = await _get_weight_on_date(db, pet_id, target_date)
         w_t7 = await _get_weight_near_date(db, pet_id, target_date - timedelta(days=7), window_days=3)
-        if w_t is None or w_t7 is None or w_t7 == 0:
-            return 0.0, False
+
+        # 7일 전 데이터가 없으면 이전 기록 중 가장 최근 것 사용
+        if w_t7 is None:
+            w_t7 = await _get_previous_weight(db, pet_id, target_date)
+
+        logger.info(f"[BHI DEBUG] weight comparison: w_t={w_t}, w_t7={w_t7}")
+
+        # 비교 체중이 없으면 (첫 기록) 만점 부여
+        if w_t7 is None or w_t7 == 0:
+            logger.info(f"[BHI DEBUG] weight: first record, giving full score")
+            return 60.0, True
 
         wci_7 = (w_t - w_t7) / w_t7
 
@@ -106,14 +139,20 @@ async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, 
             # post_growth: 체중 감소만 페널티 (성장 중이므로 증가는 OK)
             score = 60 * (1 - _clamp(abs(min(wci_7, 0)) / 0.10, 0, 1))
 
+        logger.info(f"[BHI DEBUG] weight: wci_7={wci_7:.4f}, score={score:.2f}")
         return score, True
 
     elif growth_stage == 'rapid_growth':
         # 1일 기반 WCI (비교 체중은 ±1일 범위에서 탐색)
-        w_t = await _get_weight_on_date(db, pet_id, target_date)
         w_t1 = await _get_weight_near_date(db, pet_id, target_date - timedelta(days=1), window_days=1)
-        if w_t is None or w_t1 is None or w_t1 == 0:
-            return 0.0, False
+
+        # 1일 전 데이터가 없으면 이전 기록 사용
+        if w_t1 is None:
+            w_t1 = await _get_previous_weight(db, pet_id, target_date)
+
+        # 비교 체중이 없으면 (첫 기록) 만점 부여
+        if w_t1 is None or w_t1 == 0:
+            return 60.0, True
 
         wci_1 = (w_t - w_t1) / w_t1
         score = 60 * _clamp(min(wci_1, 0.1) / 0.10, 0, 1)
