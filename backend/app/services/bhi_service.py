@@ -180,7 +180,8 @@ async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) ->
         return 0.0, False, None, None
 
     delta_f = (record.total_grams - record.target_grams) / record.target_grams
-    score = 25 * (1 - _clamp(abs(min(delta_f, 0)) / 0.30, 0, 1))
+    # 허용 범위를 0.30 → 0.50으로 완화 (50% 이상 섭취 시 점수 획득)
+    score = 25 * (1 - _clamp(abs(min(delta_f, 0)) / 0.50, 0, 1))
     logger.info(f"[BHI DEBUG] food: total={record.total_grams}, target={record.target_grams}, delta_f={delta_f:.3f}, score={score:.2f}")
     return score, True, float(record.total_grams), float(record.target_grams)
 
@@ -204,7 +205,8 @@ async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -
         return 0.0, False, None, None
 
     delta_d = (record.total_ml - record.target_ml) / record.target_ml
-    score = 15 * (1 - _clamp(abs(delta_d) / 0.40, 0, 1))
+    # 허용 범위를 0.40 → 0.60으로 완화 (40-160% 범위 내 점수 획득)
+    score = 15 * (1 - _clamp(abs(delta_d) / 0.60, 0, 1))
     logger.info(f"[BHI DEBUG] water: total={record.total_ml}, target={record.target_ml}, delta_d={delta_d:.3f}, score={score:.2f}")
     return score, True, float(record.total_ml), float(record.target_ml)
 
