@@ -20,6 +20,9 @@ class BhiService {
         : '';
 
     final response = await _api.get('/pets/$petId/bhi/$queryString');
-    return BhiResult.fromJson(response);
+    print('[BHI DEBUG] API Response: $response');
+    final result = BhiResult.fromJson(response);
+    print('[BHI DEBUG] Parsed: bhiScore=${result.bhiScore}, foodScore=${result.foodScore}, waterScore=${result.waterScore}, hasFoodData=${result.hasFoodData}, hasWaterData=${result.hasWaterData}');
+    return result;
   }
 }

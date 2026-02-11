@@ -265,7 +265,14 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
       date: _selectedDate,
       weight: weight,
     );
+    // 로컬 캐시에 먼저 저장
     await _weightService.saveLocalWeightRecord(record);
+    // 백엔드 API에도 저장
+    try {
+      await _weightService.saveWeightRecord(record);
+    } catch (e) {
+      debugPrint('[WeightRecord] 백엔드 저장 실패: $e');
+    }
     await _loadRecords();
   }
 

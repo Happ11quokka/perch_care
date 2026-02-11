@@ -124,6 +124,9 @@ async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, 
 
 async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool]:
     """FoodScore 계산. (score, has_data) 반환."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     result = await db.execute(
         select(FoodRecord).where(
             FoodRecord.pet_id == pet_id,
@@ -131,16 +134,23 @@ async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) ->
         )
     )
     record = result.scalar_one_or_none()
+    logger.info(f"[BHI DEBUG] food_record for {pet_id} on {target_date}: exists={record is not None}")
+
     if record is None or record.target_grams == 0:
+        logger.info(f"[BHI DEBUG] food: no record or target_grams=0")
         return 0.0, False
 
     delta_f = (record.total_grams - record.target_grams) / record.target_grams
     score = 25 * (1 - _clamp(abs(min(delta_f, 0)) / 0.30, 0, 1))
+    logger.info(f"[BHI DEBUG] food: total={record.total_grams}, target={record.target_grams}, delta_f={delta_f:.3f}, score={score:.2f}")
     return score, True
 
 
 async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool]:
     """WaterScore 계산. (score, has_data) 반환."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     result = await db.execute(
         select(WaterRecord).where(
             WaterRecord.pet_id == pet_id,
@@ -148,11 +158,15 @@ async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -
         )
     )
     record = result.scalar_one_or_none()
+    logger.info(f"[BHI DEBUG] water_record for {pet_id} on {target_date}: exists={record is not None}")
+
     if record is None or record.target_ml == 0:
+        logger.info(f"[BHI DEBUG] water: no record or target_ml=0")
         return 0.0, False
 
     delta_d = (record.total_ml - record.target_ml) / record.target_ml
     score = 15 * (1 - _clamp(abs(delta_d) / 0.40, 0, 1))
+    logger.info(f"[BHI DEBUG] water: total={record.total_ml}, target={record.target_ml}, delta_d={delta_d:.3f}, score={score:.2f}")
     return score, True
 
 
