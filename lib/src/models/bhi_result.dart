@@ -10,6 +10,11 @@ class BhiResult {
   final bool hasWeightData;
   final bool hasFoodData;
   final bool hasWaterData;
+  // Debug fields
+  final double? debugFoodTotal;
+  final double? debugFoodTarget;
+  final double? debugWaterTotal;
+  final double? debugWaterTarget;
 
   const BhiResult({
     required this.bhiScore,
@@ -22,6 +27,10 @@ class BhiResult {
     required this.hasWeightData,
     required this.hasFoodData,
     required this.hasWaterData,
+    this.debugFoodTotal,
+    this.debugFoodTarget,
+    this.debugWaterTotal,
+    this.debugWaterTarget,
   });
 
   factory BhiResult.fromJson(Map<String, dynamic> json) {
@@ -36,6 +45,10 @@ class BhiResult {
       hasWeightData: json['has_weight_data'] as bool,
       hasFoodData: json['has_food_data'] as bool,
       hasWaterData: json['has_water_data'] as bool,
+      debugFoodTotal: (json['debug_food_total'] as num?)?.toDouble(),
+      debugFoodTarget: (json['debug_food_target'] as num?)?.toDouble(),
+      debugWaterTotal: (json['debug_water_total'] as num?)?.toDouble(),
+      debugWaterTarget: (json['debug_water_target'] as num?)?.toDouble(),
     );
   }
 }

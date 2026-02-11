@@ -161,8 +161,8 @@ async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, 
     return 0.0, False
 
 
-async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool]:
-    """FoodScore 계산. (score, has_data) 반환."""
+async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool, float | None, float | None]:
+    """FoodScore 계산. (score, has_data, total, target) 반환."""
     import logging
     logger = logging.getLogger(__name__)
 
@@ -177,16 +177,16 @@ async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) ->
 
     if record is None or record.target_grams == 0:
         logger.info(f"[BHI DEBUG] food: no record or target_grams=0")
-        return 0.0, False
+        return 0.0, False, None, None
 
     delta_f = (record.total_grams - record.target_grams) / record.target_grams
     score = 25 * (1 - _clamp(abs(min(delta_f, 0)) / 0.30, 0, 1))
     logger.info(f"[BHI DEBUG] food: total={record.total_grams}, target={record.target_grams}, delta_f={delta_f:.3f}, score={score:.2f}")
-    return score, True
+    return score, True, float(record.total_grams), float(record.target_grams)
 
 
-async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool]:
-    """WaterScore 계산. (score, has_data) 반환."""
+async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool, float | None, float | None]:
+    """WaterScore 계산. (score, has_data, total, target) 반환."""
     import logging
     logger = logging.getLogger(__name__)
 
@@ -201,12 +201,12 @@ async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -
 
     if record is None or record.target_ml == 0:
         logger.info(f"[BHI DEBUG] water: no record or target_ml=0")
-        return 0.0, False
+        return 0.0, False, None, None
 
     delta_d = (record.total_ml - record.target_ml) / record.target_ml
     score = 15 * (1 - _clamp(abs(delta_d) / 0.40, 0, 1))
     logger.info(f"[BHI DEBUG] water: total={record.total_ml}, target={record.target_ml}, delta_d={delta_d:.3f}, score={score:.2f}")
-    return score, True
+    return score, True, float(record.total_ml), float(record.target_ml)
 
 
 async def _find_latest_record_date(db: AsyncSession, pet_id: UUID, up_to: date) -> date | None:
@@ -240,8 +240,8 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
     growth_stage = pet.growth_stage or 'adult'
 
     weight_score, has_weight = await _calc_weight_score(db, pet_id, target_date, growth_stage)
-    food_score, has_food = await _calc_food_score(db, pet_id, target_date)
-    water_score, has_water = await _calc_water_score(db, pet_id, target_date)
+    food_score, has_food, food_total, food_target = await _calc_food_score(db, pet_id, target_date)
+    water_score, has_water, water_total, water_target = await _calc_water_score(db, pet_id, target_date)
 
     effective_date = target_date
 
@@ -251,8 +251,8 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
         if latest is not None and latest != target_date:
             effective_date = latest
             weight_score, has_weight = await _calc_weight_score(db, pet_id, effective_date, growth_stage)
-            food_score, has_food = await _calc_food_score(db, pet_id, effective_date)
-            water_score, has_water = await _calc_water_score(db, pet_id, effective_date)
+            food_score, has_food, food_total, food_target = await _calc_food_score(db, pet_id, effective_date)
+            water_score, has_water, water_total, water_target = await _calc_water_score(db, pet_id, effective_date)
 
     bhi_score = weight_score + food_score + water_score
     wci_level = _bhi_to_wci_level(bhi_score)
@@ -268,4 +268,8 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
         has_weight_data=has_weight,
         has_food_data=has_food,
         has_water_data=has_water,
+        debug_food_total=food_total,
+        debug_food_target=food_target,
+        debug_water_total=water_total,
+        debug_water_target=water_target,
     )
