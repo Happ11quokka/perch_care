@@ -351,6 +351,7 @@
       "stage": {"type": "int"}
     }
   },
+  "bhi_accuracyHint": "기록을 오래 할수록 더 정확한 건강 점수를 확인할 수 있어요.",
   "bhi_baseDate": "기준 날짜: {date}",
   "@bhi_baseDate": {
     "placeholders": {

@@ -1420,6 +1420,12 @@ abstract class AppLocalizations {
   /// **'{stage}단계'**
   String bhi_stageNumber(int stage);
 
+  /// No description provided for @bhi_accuracyHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록을 오래 할수록 더 정확한 건강 점수를 확인할 수 있어요.'**
+  String get bhi_accuracyHint;
+
   /// No description provided for @bhi_baseDate.
   ///
   /// In ko, this message translates to:

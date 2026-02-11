@@ -729,6 +729,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get bhi_accuracyHint =>
+      'The longer you keep records, the more accurate your health score will be.';
+
+  @override
   String bhi_baseDate(String date) {
     return 'Date: $date';
   }

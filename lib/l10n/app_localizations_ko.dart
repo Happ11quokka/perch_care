@@ -716,6 +716,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get bhi_accuracyHint => '기록을 오래 할수록 더 정확한 건강 점수를 확인할 수 있어요.';
+
+  @override
   String bhi_baseDate(String date) {
     return '기준 날짜: $date';
   }

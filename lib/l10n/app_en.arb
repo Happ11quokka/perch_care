@@ -242,6 +242,7 @@
   "bhi_wciLevel": "WCI Level",
   "bhi_growthStage": "Growth Stage",
   "bhi_stageNumber": "Stage {stage}",
+  "bhi_accuracyHint": "The longer you keep records, the more accurate your health score will be.",
   "bhi_baseDate": "Date: {date}",
   "bhi_statusHealthy": "Healthy",
   "bhi_statusStable": "Stable",

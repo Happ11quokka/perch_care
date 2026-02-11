@@ -150,6 +150,45 @@ class BhiDetailScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
+          // 안내 메시지
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8F3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.brandPrimary.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: AppColors.brandPrimary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l10n.bhi_accuracyHint,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF6B6B6B),
+                      letterSpacing: -0.3,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
           // 기준 날짜
           Center(
             child: Text(

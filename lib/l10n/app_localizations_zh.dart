@@ -710,6 +710,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get bhi_accuracyHint => '记录时间越长，健康分数越准确。';
+
+  @override
   String bhi_baseDate(String date) {
     return '基准日期: $date';
   }

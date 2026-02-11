@@ -341,6 +341,7 @@
   "bhi_wciLevel": "WCI 等级",
   "bhi_growthStage": "成长阶段",
   "bhi_stageNumber": "第{stage}阶段",
+  "bhi_accuracyHint": "记录时间越长，健康分数越准确。",
   "bhi_baseDate": "基准日期: {date}",
   "bhi_statusHealthy": "健康状态",
   "bhi_statusStable": "稳定状态",
