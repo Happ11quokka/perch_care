@@ -5,6 +5,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 비밀번호 찾기 - 새 비밀번호 입력 화면
 class ForgotPasswordResetScreen extends StatefulWidget {
@@ -73,6 +74,7 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -92,8 +94,8 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
           onPressed: () => context.pop(),
         ),
         centerTitle: true,
-        title: const Text(
-          '새로운 비밀번호',
+        title: Text(
+          l10n.forgot_newPasswordTitle,
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 20,
@@ -115,8 +117,8 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                     children: [
                       const SizedBox(height: 24),
                       // 안내 문구
-                      const Text(
-                        '새로운 비밀번호를 입력해 주세요,\n이전에 사용하신 비밀번호는 사용 하실 수 없습니다.',
+                      Text(
+                        l10n.forgot_newPasswordDescription,
                         style: TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
@@ -129,7 +131,7 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                       const SizedBox(height: 32),
                       // 새로운 비밀번호 필드
                       _buildPasswordField(
-                        label: '새로운 비밀번호',
+                        label: l10n.input_newPassword,
                         controller: _newPasswordController,
                         focusNode: _newPasswordFocusNode,
                         hintText: '비밀번호를 입력해 주세요',
@@ -145,7 +147,7 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                       const SizedBox(height: 20),
                       // 비밀번호 재입력 필드
                       _buildPasswordField(
-                        label: '비밀번호 재입력',
+                        label: l10n.input_confirmPassword,
                         controller: _confirmPasswordController,
                         focusNode: _confirmPasswordFocusNode,
                         hintText: '비밀번호를 입력해 주세요',
@@ -278,6 +280,7 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
   }
 
   Widget _buildResetButton() {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: _isLoading ? null : _handleResetPassword,
       child: Container(
@@ -300,8 +303,8 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text(
-                  '재설정 완료',
+              : Text(
+                  l10n.btn_resetComplete,
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 18,
@@ -316,26 +319,27 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
   }
 
   Future<void> _handleResetPassword() async {
+    final l10n = AppLocalizations.of(context);
     final newPassword = _newPasswordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
     if (newPassword.isEmpty) {
-      AppSnackBar.warning(context, message: '새로운 비밀번호를 입력해 주세요.');
+      AppSnackBar.warning(context, message: l10n.validation_enterNewPassword);
       return;
     }
 
     if (confirmPassword.isEmpty) {
-      AppSnackBar.warning(context, message: '비밀번호를 다시 입력해 주세요.');
+      AppSnackBar.warning(context, message: l10n.validation_confirmPassword);
       return;
     }
 
     if (newPassword != confirmPassword) {
-      AppSnackBar.warning(context, message: '비밀번호가 일치하지 않습니다.');
+      AppSnackBar.warning(context, message: l10n.validation_passwordMismatch);
       return;
     }
 
     if (newPassword.length < 8) {
-      AppSnackBar.warning(context, message: '비밀번호는 8자 이상이어야 합니다.');
+      AppSnackBar.warning(context, message: l10n.validation_passwordMin8);
       return;
     }
 
@@ -349,11 +353,13 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
       );
       if (!mounted) return;
 
-      AppSnackBar.success(context, message: '비밀번호가 성공적으로 변경되었습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.success(context, message: l10n.snackbar_passwordChanged);
       context.goNamed(RouteNames.login);
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '비밀번호 변경 중 오류가 발생했습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.error(context, message: l10n.error_passwordChange);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

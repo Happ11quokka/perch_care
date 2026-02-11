@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../l10n/app_localizations.dart';
+import '../../models/chat_message.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
 import '../../services/api/token_service.dart';
 import '../../services/pet/pet_service.dart';
+import '../../services/storage/chat_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../theme/colors.dart';
 import '../../theme/radius.dart';
@@ -30,10 +33,12 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   final TextEditingController _inputController = TextEditingController();
   final AiEncyclopediaService _aiService = AiEncyclopediaService();
   final PetService _petService = PetService.instance;
-  final List<_Message> _messages = [];
+  final ChatStorageService _chatStorage = ChatStorageService.instance;
+  final List<ChatMessage> _messages = [];
   Pet? _activePet;
   bool _isSending = false;
   bool _isTyping = false;
+  bool _isLoadingMessages = true;
 
   // 둥둥 떠다니는 breathing 애니메이션
   late final AnimationController _floatController;
@@ -49,7 +54,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   @override
   void initState() {
     super.initState();
-    _loadActivePet();
+    _initializeChat();
 
     // 부드럽게 위아래로 떠다니는 애니메이션 (무한 반복)
     _floatController = AnimationController(
@@ -72,6 +77,12 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     );
 
     _inputController.addListener(_onInputChanged);
+  }
+
+  /// 채팅 초기화: 펫 로드 후 해당 펫의 대화 내역 로드
+  Future<void> _initializeChat() async {
+    await _loadActivePet();
+    await _loadMessages();
   }
 
   void _onInputChanged() {
@@ -100,21 +111,22 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     final text = _inputController.text.trim();
     if (text.isEmpty) return;
 
+    final l10n = AppLocalizations.of(context);
     final history = _buildCleanHistory();
 
     setState(() {
       _isSending = true;
       _messages.add(
-        _Message(
+        ChatMessage(
           role: MessageRole.user,
           text: text,
           timestamp: DateTime.now(),
         ),
       );
       _messages.add(
-        _Message(
+        ChatMessage(
           role: MessageRole.assistant,
-          text: '답변을 준비하고 있어요...',
+          text: l10n.chatbot_preparingAnswer,
           timestamp: DateTime.now(),
         ),
       );
@@ -140,15 +152,19 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
           timestamp: DateTime.now(),
         );
       });
+
+      // AI 응답 성공 시 대화 저장
+      await _saveMessages();
     } catch (e) {
-      setState(() {
-        _messages[_messages.length - 1] = _messages.last.copyWith(
-          text: 'AI 응답에 실패했어요. 잠시 후 다시 시도해 주세요.',
-          timestamp: DateTime.now(),
-        );
-      });
       if (mounted) {
-        AppSnackBar.error(context, message: 'AI 호출 실패: $e');
+        final l10nErr = AppLocalizations.of(context);
+        setState(() {
+          _messages[_messages.length - 1] = _messages.last.copyWith(
+            text: l10nErr.chatbot_aiError,
+            timestamp: DateTime.now(),
+          );
+        });
+        AppSnackBar.error(context, message: l10nErr.chatbot_aiCallFailed(e.toString()));
       }
     } finally {
       if (mounted) {
@@ -172,8 +188,74 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     }
   }
 
+  /// 저장된 대화 내역 로드
+  Future<void> _loadMessages() async {
+    setState(() {
+      _isLoadingMessages = true;
+    });
+
+    try {
+      final messages = await _chatStorage.loadMessages(_activePet?.id);
+      if (!mounted) return;
+      setState(() {
+        _messages.clear();
+        _messages.addAll(messages);
+        _isLoadingMessages = false;
+      });
+      _scrollToBottom();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingMessages = false;
+        });
+      }
+    }
+  }
+
+  /// 대화 내역 저장
+  Future<void> _saveMessages() async {
+    await _chatStorage.saveMessages(_activePet?.id, _messages);
+  }
+
+  /// 대화 내역 삭제
+  Future<void> _clearMessages() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.chatbot_clearHistory),
+        content: Text(l10n.chatbot_clearHistoryConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.common_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: Text(l10n.common_delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _chatStorage.clearMessages(_activePet?.id);
+      if (mounted) {
+        setState(() {
+          _messages.clear();
+        });
+        AppSnackBar.success(context, message: l10n.chatbot_historyCleared);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -192,21 +274,48 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
           },
         ),
         centerTitle: true,
-        title: const Text('챗봇'),
+        title: Text(l10n.chatbot_title),
         titleTextStyle: AppTypography.h6.copyWith(
           fontWeight: FontWeight.w700,
           color: AppColors.nearBlack,
         ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(
+              Icons.more_vert,
+              color: AppColors.nearBlack,
+            ),
+            onSelected: (value) {
+              if (value == 'clear') {
+                _clearMessages();
+              }
+            },
+            itemBuilder: (menuContext) => [
+              PopupMenuItem(
+                value: 'clear',
+                child: Row(
+                  children: [
+                    const Icon(Icons.delete_outline, size: 20),
+                    const SizedBox(width: 8),
+                    Text(l10n.chatbot_clearHistory),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
-              child: _hasUserMessages
-                  ? _buildMessages()
-                  : _buildWelcomeView(),
+              child: _isLoadingMessages
+                  ? const Center(child: CircularProgressIndicator())
+                  : _hasUserMessages
+                      ? _buildMessages()
+                      : _buildWelcomeView(),
             ),
-            if (!_hasUserMessages) _buildSuggestionChips(),
+            if (!_hasUserMessages && !_isLoadingMessages) _buildSuggestionChips(),
             _buildInputArea(),
           ],
         ),
@@ -217,6 +326,8 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   // ── Welcome view (initial state) ──────────────────────────────────
 
   Widget _buildWelcomeView() {
+    final l10n = AppLocalizations.of(context);
+
     return Center(
       child: SingleChildScrollView(
         child: Column(
@@ -225,7 +336,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
             _buildAvatarWithGlow(size: 160),
             const SizedBox(height: AppSpacing.xxl),
             Text(
-              '안녕하세요! 앵박사입니다!',
+              l10n.chatbot_welcomeTitle,
               style: AppTypography.h2.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColors.nearBlack,
@@ -234,7 +345,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              '앵무새에 대해 궁금한 점이 있다면\n무엇이든 물어보세요!',
+              l10n.chatbot_welcomeDescription,
               style: AppTypography.bodyLarge.copyWith(
                 color: AppColors.gray500,
                 height: 1.6,
@@ -367,11 +478,12 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   // ── Suggestion chips ──────────────────────────────────────────────
 
   Widget _buildSuggestionChips() {
-    const samples = [
-      '초기 비타민 섭취량',
-      '털 갈이 때 돌봄 방법',
-      '건강검진 주기 추천',
-      '체중 기록 팁',
+    final l10n = AppLocalizations.of(context);
+    final samples = [
+      l10n.chatbot_suggestion1,
+      l10n.chatbot_suggestion2,
+      l10n.chatbot_suggestion3,
+      l10n.chatbot_suggestion4,
     ];
 
     return Container(
@@ -435,7 +547,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     );
   }
 
-  Widget _buildMessageBubble(_Message message, bool isUser) {
+  Widget _buildMessageBubble(ChatMessage message, bool isUser) {
     if (isUser) {
       // 사용자 메시지: 오른쪽 정렬 + 프로필 사진
       return Row(
@@ -507,6 +619,8 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   // ── Input area ────────────────────────────────────────────────────
 
   Widget _buildInputArea() {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -528,9 +642,9 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
               ),
               child: TextField(
                 controller: _inputController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: '궁금한 점을 입력하세요',
+                  hintText: l10n.chatbot_inputHint,
                 ),
                 style: AppTypography.bodyMedium,
                 minLines: 1,
@@ -651,7 +765,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
 
   /// user/assistant가 번갈아 나와야 하므로 히스토리를 정리한다.
   List<Map<String, String>> _buildCleanHistory() {
-    final filtered = <_Message>[];
+    final filtered = <ChatMessage>[];
 
     for (final m in _messages) {
       if (filtered.isEmpty && m.role == MessageRole.assistant) {
@@ -677,31 +791,5 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
           },
         )
         .toList();
-  }
-}
-
-enum MessageRole { user, assistant }
-
-class _Message {
-  _Message({
-    required this.role,
-    required this.text,
-    required this.timestamp,
-  });
-
-  final MessageRole role;
-  final String text;
-  final DateTime timestamp;
-
-  _Message copyWith({
-    MessageRole? role,
-    String? text,
-    DateTime? timestamp,
-  }) {
-    return _Message(
-      role: role ?? this.role,
-      text: text ?? this.text,
-      timestamp: timestamp ?? this.timestamp,
-    );
   }
 }

@@ -6,6 +6,7 @@ import '../../theme/radius.dart';
 import '../../models/notification.dart';
 import '../../services/notification/notification_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 알림 화면
 class NotificationScreen extends StatefulWidget {
@@ -89,7 +90,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
       });
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, message: '오류가 발생했습니다.');
+        final l10n = AppLocalizations.of(context);
+        AppSnackBar.error(context, message: l10n.notification_deleteError);
       }
     }
   }
@@ -102,13 +104,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
       });
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, message: '삭제 중 오류가 발생했습니다.');
+        final l10n = AppLocalizations.of(context);
+        AppSnackBar.error(context, message: l10n.notification_deleteError);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.gray50,
       appBar: AppBar(
@@ -120,8 +124,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          '알림',
+        title: Text(
+          l10n.notification_title,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -134,8 +138,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             TextButton(
               onPressed: _markAllAsRead,
               child: Text(
-                '모두 읽음',
-                style: TextStyle(
+                l10n.notification_markAllRead,
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.brandPrimary,
                 ),
@@ -175,6 +179,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -186,8 +191,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            '알림이 없습니다',
-            style: TextStyle(
+            l10n.notification_empty,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: AppColors.gray600,
@@ -211,7 +216,7 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeAgo = _getTimeAgo(notification.timestamp);
+    final timeAgo = _getTimeAgo(notification.timestamp, context);
 
     return InkWell(
       onTap: onTap,
@@ -317,18 +322,19 @@ class _NotificationCard extends StatelessWidget {
     );
   }
 
-  String _getTimeAgo(DateTime timestamp) {
+  String _getTimeAgo(DateTime timestamp, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {
-      return '방금 전';
+      return l10n.notification_justNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}분 전';
+      return l10n.notification_minutesAgo(difference.inMinutes);
     } else if (difference.inHours < 24) {
-      return '${difference.inHours}시간 전';
+      return l10n.notification_hoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}일 전';
+      return l10n.notification_daysAgo(difference.inDays);
     } else {
       final year = timestamp.year;
       final month = timestamp.month.toString().padLeft(2, '0');

@@ -5,6 +5,7 @@ import '../../theme/colors.dart';
 import '../../models/bhi_result.dart';
 import '../../router/route_names.dart';
 import '../../widgets/progress_ring.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// BHI (Bird Health Index) 건강 점수 상세 화면
 class BhiDetailScreen extends StatelessWidget {
@@ -14,6 +15,7 @@ class BhiDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -31,9 +33,9 @@ class BhiDetailScreen extends StatelessWidget {
           },
         ),
         centerTitle: true,
-        title: const Text(
-          '건강 점수',
-          style: TextStyle(
+        title: Text(
+          l10n.bhi_title,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -44,13 +46,13 @@ class BhiDetailScreen extends StatelessWidget {
       ),
       body: SafeArea(
         top: false,
-        child: bhiResult == null ? _buildEmptyState() : _buildContent(),
+        child: bhiResult == null ? _buildEmptyState(l10n) : _buildContent(l10n),
       ),
     );
   }
 
   /// 데이터 없음 상태
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -61,9 +63,9 @@ class BhiDetailScreen extends StatelessWidget {
             color: const Color(0xFFBDBDBD),
           ),
           const SizedBox(height: 16),
-          const Text(
-            '건강 데이터가 아직 없습니다',
-            style: TextStyle(
+          Text(
+            l10n.bhi_noDataTitle,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -72,9 +74,9 @@ class BhiDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '체중, 사료, 수분 데이터를 입력해주세요',
-            style: TextStyle(
+          Text(
+            l10n.bhi_noDataSubtitle,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -88,7 +90,7 @@ class BhiDetailScreen extends StatelessWidget {
   }
 
   /// 메인 컨텐츠
-  Widget _buildContent() {
+  Widget _buildContent(AppLocalizations l10n) {
     final bhi = bhiResult!;
 
     return SingleChildScrollView(
@@ -97,14 +99,14 @@ class BhiDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // BHI 총점 영역
-          _buildScoreHero(bhi),
+          _buildScoreHero(bhi, l10n),
 
           const SizedBox(height: 28),
 
           // 점수 구성 섹션
-          const Text(
-            '점수 구성',
-            style: TextStyle(
+          Text(
+            l10n.bhi_scoreComposition,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -116,39 +118,42 @@ class BhiDetailScreen extends StatelessWidget {
 
           _buildScoreBreakdownCard(
             iconPath: 'assets/images/home_vector/weight.svg',
-            title: '체중',
+            title: l10n.home_weight,
             score: bhi.weightScore,
             maxScore: 60,
             hasData: bhi.hasWeightData,
+            noDataText: l10n.bhi_noData,
           ),
           const SizedBox(height: 8),
           _buildScoreBreakdownCard(
             iconPath: 'assets/images/home_vector/eat.svg',
-            title: '사료',
+            title: l10n.home_food,
             score: bhi.foodScore,
             maxScore: 25,
             hasData: bhi.hasFoodData,
+            noDataText: l10n.bhi_noData,
           ),
           const SizedBox(height: 8),
           _buildScoreBreakdownCard(
             iconPath: 'assets/images/home_vector/water.svg',
-            title: '수분',
+            title: l10n.home_water,
             score: bhi.waterScore,
             maxScore: 15,
             hasData: bhi.hasWaterData,
+            noDataText: l10n.bhi_noData,
           ),
 
           const SizedBox(height: 28),
 
           // WCI 레벨 & 성장 단계
-          _buildInfoSection(bhi),
+          _buildInfoSection(bhi, l10n),
 
           const SizedBox(height: 20),
 
           // 기준 날짜
           Center(
             child: Text(
-              '기준 날짜: ${bhi.targetDate.year}.${bhi.targetDate.month.toString().padLeft(2, '0')}.${bhi.targetDate.day.toString().padLeft(2, '0')}',
+              l10n.bhi_baseDate('${bhi.targetDate.year}.${bhi.targetDate.month.toString().padLeft(2, '0')}.${bhi.targetDate.day.toString().padLeft(2, '0')}'),
               style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 12,
@@ -164,7 +169,7 @@ class BhiDetailScreen extends StatelessWidget {
   }
 
   /// BHI 총점 영역 (원형 게이지)
-  Widget _buildScoreHero(BhiResult bhi) {
+  Widget _buildScoreHero(BhiResult bhi, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
@@ -174,9 +179,9 @@ class BhiDetailScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Text(
-            'BHI 건강 점수',
-            style: TextStyle(
+          Text(
+            l10n.bhi_healthScore,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -205,9 +210,9 @@ class BhiDetailScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  '/100',
-                  style: TextStyle(
+                Text(
+                  l10n.bhi_scoreMax,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -219,7 +224,7 @@ class BhiDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            _getScoreLabel(bhi.bhiScore),
+            _getScoreLabel(bhi.bhiScore, l10n),
             style: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -230,7 +235,7 @@ class BhiDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            _getScoreDescription(bhi.bhiScore),
+            _getScoreDescription(bhi.bhiScore, l10n),
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontFamily: 'Pretendard',
@@ -253,6 +258,7 @@ class BhiDetailScreen extends StatelessWidget {
     required double score,
     required double maxScore,
     required bool hasData,
+    required String noDataText,
   }) {
     final ratio = hasData ? (score / maxScore).clamp(0.0, 1.0) : 0.0;
 
@@ -308,9 +314,9 @@ class BhiDetailScreen extends StatelessWidget {
                         letterSpacing: -0.35,
                       ),
                     )
-                  : const Text(
-                      '데이터 없음',
-                      style: TextStyle(
+                  : Text(
+                      noDataText,
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
@@ -363,8 +369,8 @@ class BhiDetailScreen extends StatelessWidget {
   }
 
   /// WCI 레벨 & 성장 단계 섹션
-  Widget _buildInfoSection(BhiResult bhi) {
-    final growthStageLabel = _mapGrowthStage(bhi.growthStage);
+  Widget _buildInfoSection(BhiResult bhi, AppLocalizations l10n) {
+    final growthStageLabel = _mapGrowthStage(bhi.growthStage, l10n);
 
     return Container(
       width: double.infinity,
@@ -383,9 +389,9 @@ class BhiDetailScreen extends StatelessWidget {
           // WCI 레벨 헤더
           Row(
             children: [
-              const Text(
-                'WCI 레벨',
-                style: TextStyle(
+              Text(
+                l10n.bhi_wciLevel,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -434,7 +440,7 @@ class BhiDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              bhi.wciLevel > 0 ? '${bhi.wciLevel}단계' : '-',
+              bhi.wciLevel > 0 ? l10n.bhi_stageNumber(bhi.wciLevel) : '-',
               style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
@@ -456,9 +462,9 @@ class BhiDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text(
-                  '성장 단계',
-                  style: TextStyle(
+                Text(
+                  l10n.bhi_growthStage,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -556,30 +562,30 @@ class BhiDetailScreen extends StatelessWidget {
     return const Color(0xFFFF572D);
   }
 
-  String _getScoreLabel(double score) {
-    if (score >= 80) return '건강한 상태';
-    if (score >= 60) return '안정적인 상태';
-    if (score >= 40) return '주의가 필요해요';
-    if (score > 0) return '관리가 필요해요';
-    return '데이터 부족';
+  String _getScoreLabel(double score, AppLocalizations l10n) {
+    if (score >= 80) return l10n.bhi_statusHealthy;
+    if (score >= 60) return l10n.bhi_statusStable;
+    if (score >= 40) return l10n.bhi_statusCaution;
+    if (score > 0) return l10n.bhi_statusManagement;
+    return l10n.bhi_statusInsufficient;
   }
 
-  String _getScoreDescription(double score) {
-    if (score >= 80) return '체중, 식사, 수분 모두 양호합니다.\n지금 습관을 유지해 주세요.';
-    if (score >= 60) return '전반적으로 괜찮지만\n일부 항목을 확인해 보세요.';
-    if (score >= 40) return '몇 가지 항목에서 변화가 감지되었어요.\n데이터를 확인해 보세요.';
-    if (score > 0) return '건강 지표가 낮은 편이에요.\n식사량과 수분을 점검해 주세요.';
-    return '데이터를 입력하면 건강 점수를 확인할 수 있어요.';
+  String _getScoreDescription(double score, AppLocalizations l10n) {
+    if (score >= 80) return l10n.bhi_descHealthy;
+    if (score >= 60) return l10n.bhi_descStable;
+    if (score >= 40) return l10n.bhi_descCaution;
+    if (score > 0) return l10n.bhi_descManagement;
+    return l10n.bhi_descInsufficient;
   }
 
-  String? _mapGrowthStage(String? stage) {
+  String? _mapGrowthStage(String? stage, AppLocalizations l10n) {
     switch (stage) {
       case 'adult':
-        return '성체 (청년기)';
+        return l10n.bhi_growthAdult;
       case 'post_growth':
-        return '후속 성장기';
+        return l10n.bhi_growthPostGrowth;
       case 'rapid_growth':
-        return '빠른 성장기';
+        return l10n.bhi_growthRapidGrowth;
       default:
         return null;
     }

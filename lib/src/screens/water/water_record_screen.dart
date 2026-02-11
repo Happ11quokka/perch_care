@@ -9,6 +9,7 @@ import '../../services/water/water_record_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WaterRecordScreen extends StatefulWidget {
   const WaterRecordScreen({super.key});
@@ -147,6 +148,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
   double get _perDrink => _count == 0 ? 0 : _totalMl / _count;
 
   Future<void> _openEditor() async {
+    final l10n = AppLocalizations.of(context);
     final totalController = TextEditingController(
       text: _totalMl == 0 ? '' : _totalMl.toStringAsFixed(0),
     );
@@ -173,9 +175,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '음수량 입력',
-                style: TextStyle(
+              Text(
+                l10n.water_inputTitle,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -187,18 +189,18 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
               TextField(
                 controller: totalController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: '총 음수량(ml)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.water_totalIntake,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: countController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '섭취 횟수(회)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.water_intakeCount,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
@@ -207,7 +209,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('취소'),
+                      child: Text(l10n.common_cancel),
                     ),
                   ),
                   Expanded(
@@ -221,7 +223,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                           _WaterEditResult(totalMl: total, count: count),
                         );
                       },
-                      child: const Text('저장'),
+                      child: Text(l10n.btn_save),
                     ),
                   ),
                 ],
@@ -250,6 +252,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final hasData = _totalMl > 0;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -262,9 +265,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
           onPressed: _handleBack,
         ),
         centerTitle: true,
-        title: const Text(
-          '수분',
-          style: TextStyle(
+        title: Text(
+          l10n.water_title,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -309,8 +312,8 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '수분 섭취 루틴',
-                        style: TextStyle(
+                        l10n.water_routine,
+                        style: const TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -321,8 +324,8 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      '물',
-                      style: TextStyle(
+                      l10n.water_water,
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -377,9 +380,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  '1일 목표 음수량',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.water_dailyTarget,
+                                  style: const TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -389,7 +392,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '권장 음수량: ${_goalMl.toStringAsFixed(0)}ml/일',
+                                  l10n.water_recommendedRange(_goalMl.toStringAsFixed(0)),
                                   style: const TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 12,
@@ -399,9 +402,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                const Text(
-                                  '1일 섭취 횟수',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.water_dailyCount,
+                                  style: const TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -411,7 +414,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '1회 당: ${_perDrink.toStringAsFixed(0)}ml씩',
+                                  l10n.water_perDrink(_perDrink.toStringAsFixed(0)),
                                   style: const TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 12,
@@ -438,7 +441,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                               ),
                               const SizedBox(height: 24),
                               Text(
-                                '${_count}회',
+                                l10n.water_timesCount(_count),
                                 style: const TextStyle(
                                   fontFamily: 'Pretendard',
                                   fontSize: 18,
@@ -457,7 +460,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                       onTap: () async {
                         await _saveRecord();
                         if (!mounted) return;
-                        AppSnackBar.success(context, message: '저장되었습니다.');
+                        AppSnackBar.success(context, message: l10n.snackbar_saved);
                       },
                       child: Container(
                         height: 56,
@@ -469,10 +472,10 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                             colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            '저장',
-                            style: TextStyle(
+                            l10n.btn_save,
+                            style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -491,9 +494,18 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
   }
 
   String _formatDate(DateTime date) {
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+    final l10n = AppLocalizations.of(context);
+    final weekdays = [
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+      l10n.datetime_weekday_sun,
+    ];
     final weekday = weekdays[date.weekday - 1];
-    return '${date.year}년 ${date.month}월 ${date.day}일 ($weekday)';
+    return l10n.datetime_dateFormat(date.year, date.month, date.day, weekday);
   }
 
   String _formatDateKey(DateTime date) {

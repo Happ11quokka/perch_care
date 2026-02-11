@@ -8,6 +8,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 비밀번호 찾기 - 코드 입력 화면
 class ForgotPasswordCodeScreen extends StatefulWidget {
@@ -75,9 +76,13 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
   }
 
   String get _formattedTime {
+    final l10n = AppLocalizations.of(context);
     final minutes = _remainingSeconds ~/ 60;
     final seconds = _remainingSeconds % 60;
-    return '${minutes > 0 ? '$minutes분 ' : ''}$seconds초';
+    if (minutes > 0) {
+      return '${l10n.datetime_minutes(minutes)} ${l10n.datetime_seconds(seconds)}';
+    }
+    return l10n.datetime_seconds(seconds);
   }
 
   bool get _isCodeComplete {
@@ -86,6 +91,7 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -105,8 +111,8 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
           onPressed: () => context.pop(),
         ),
         centerTitle: true,
-        title: const Text(
-          '코드 입력',
+        title: Text(
+          l10n.forgot_codeTitle,
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 20,
@@ -128,8 +134,8 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                     children: [
                       const SizedBox(height: 24),
                       // 안내 문구
-                      const Text(
-                        '복구 코드가 귀하에게 전달되었습니다.\n전달 받은 코드를 2분안에 입력 하시길 바랍니다.',
+                      Text(
+                        l10n.forgot_codeDescription,
                         style: TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
@@ -141,25 +147,14 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                       ),
                       const SizedBox(height: 12),
                       // 전송 대상 정보
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF97928A),
-                            letterSpacing: -0.35,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: widget.destination,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1A1A1A),
-                              ),
-                            ),
-                            const TextSpan(text: ' 코드를 보냈습니다.'),
-                          ],
+                      Text(
+                        l10n.forgot_codeSentTo(widget.destination),
+                        style: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF97928A),
+                          letterSpacing: -0.35,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -168,26 +163,14 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                       const SizedBox(height: 16),
                       // 남은 시간
                       Center(
-                        child: RichText(
-                          text: TextSpan(
-                            style: const TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xFF97928A),
-                              letterSpacing: -0.35,
-                            ),
-                            children: [
-                              const TextSpan(text: '코드 입력까지 '),
-                              TextSpan(
-                                text: _formattedTime,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFFFF9A42),
-                                ),
-                              ),
-                              const TextSpan(text: ' 남았습니다.'),
-                            ],
+                        child: Text(
+                          l10n.forgot_timeRemaining(_formattedTime),
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF97928A),
+                            letterSpacing: -0.35,
                           ),
                         ),
                       ),
@@ -271,6 +254,7 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
   }
 
   Widget _buildResendButton() {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: _isResending ? null : _handleResendCode,
       child: Container(
@@ -293,8 +277,8 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text(
-                  '코드 다시 보내기',
+              : Text(
+                  l10n.btn_resendCode,
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 18,
@@ -327,7 +311,8 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.warning(context, message: '코드가 올바르지 않습니다. 다시 확인해 주세요.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.warning(context, message: l10n.error_invalidCode);
       for (final controller in _controllers) {
         controller.clear();
       }
@@ -353,10 +338,12 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
       // 타이머 재시작
       _startTimer();
       if (!mounted) return;
-      AppSnackBar.info(context, message: '코드가 다시 전송되었습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.info(context, message: l10n.snackbar_codeResent);
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '코드 전송 중 오류가 발생했습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.error(context, message: l10n.error_sendCode);
     } finally {
       if (mounted) setState(() => _isResending = false);
     }

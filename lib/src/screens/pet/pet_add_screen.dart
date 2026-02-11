@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
@@ -55,8 +56,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
   final _petService = PetService.instance;
   Pet? _existingPet;
 
-  final List<String> _genderOptions = ['수컷', '암컷', '모름'];
-  final List<String> _growthStageOptions = ['빠른성장', '후속성장', '청년'];
+  // Raw values for gender and growth stage
+  static const List<String> _genderValues = ['male', 'female', 'unknown'];
+  static const List<String> _growthStageValues = ['rapid_growth', 'post_growth', 'adult'];
 
   @override
   void initState() {
@@ -78,8 +80,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
       _existingPet = pet;
       _nameController.text = pet.name;
       _speciesController.text = pet.breed ?? '';
-      _selectedGender = _mapGenderToDisplay(pet.gender);
-      _selectedGrowthStage = _mapGrowthStageToDisplay(pet.growthStage);
+      _selectedGender = pet.gender;
+      _selectedGrowthStage = pet.growthStage;
       _selectedBirthDate = pet.birthDate;
 
       // 로컬 저장된 펫 이미지 로드
@@ -92,21 +94,22 @@ class _PetAddScreenState extends State<PetAddScreen> {
       if (mounted) setState(() {});
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, message: '펫 정보를 불러오는데 실패했습니다.');
+        final l10n = AppLocalizations.of(context);
+        AppSnackBar.error(context, message: l10n.pet_loadError);
       }
     } finally {
       if (mounted) setState(() => _isLoadingData = false);
     }
   }
 
-  String? _mapGenderToDisplay(String? gender) {
+  String? _mapGenderToDisplay(String? gender, AppLocalizations l10n) {
     switch (gender) {
       case 'male':
-        return '수컷';
+        return l10n.pet_genderMale;
       case 'female':
-        return '암컷';
+        return l10n.pet_genderFemale;
       case 'unknown':
-        return '모름';
+        return l10n.pet_genderUnknown;
       default:
         return null;
     }
@@ -176,13 +179,15 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
     setState(() => _isLoading = true);
 
+    final l10n = AppLocalizations.of(context);
+
     try {
       final petName = _nameController.text.trim().isEmpty
-          ? '새'
+          ? l10n.pet_defaultName
           : _nameController.text.trim();
       final species = _speciesController.text.trim();
-      final gender = _mapGenderValue(_selectedGender);
-      final growthStage = _mapGrowthStageValue(_selectedGrowthStage);
+      final gender = _selectedGender;
+      final growthStage = _selectedGrowthStage;
       final weightText = _weightController.text.trim();
       final double? weightValue = weightText.isNotEmpty ? double.tryParse(weightText) : null;
 
@@ -205,7 +210,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
         // 새 펫 생성
         savedPet = await _petService.createPet(
           name: petName,
-          species: species.isEmpty ? '새' : species,
+          species: species.isEmpty ? l10n.pet_defaultName : species,
           breed: species.isEmpty ? null : species,
           birthDate: _selectedBirthDate,
           gender: gender,
@@ -239,7 +244,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
       if (!mounted) return;
 
-      AppSnackBar.success(context, message: _existingPet != null ? '수정되었습니다.' : '등록되었습니다.');
+      AppSnackBar.success(context, message: _existingPet != null ? l10n.common_updated : l10n.common_registered);
 
       if (widget.isInitialSetup) {
         context.goNamed(RouteNames.home);
@@ -248,46 +253,20 @@ class _PetAddScreenState extends State<PetAddScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '저장 중 오류가 발생했습니다: $e');
+      AppSnackBar.error(context, message: l10n.common_saveError(e.toString()));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  String? _mapGrowthStageToDisplay(String? stage) {
+  String? _mapGrowthStageToDisplay(String? stage, AppLocalizations l10n) {
     switch (stage) {
       case 'rapid_growth':
-        return '빠른성장';
+        return l10n.pet_growthRapid;
       case 'post_growth':
-        return '후속성장';
+        return l10n.pet_growthPost;
       case 'adult':
-        return '청년';
-      default:
-        return null;
-    }
-  }
-
-  String? _mapGrowthStageValue(String? stage) {
-    switch (stage) {
-      case '빠른성장':
-        return 'rapid_growth';
-      case '후속성장':
-        return 'post_growth';
-      case '청년':
-        return 'adult';
-      default:
-        return null;
-    }
-  }
-
-  String? _mapGenderValue(String? gender) {
-    switch (gender) {
-      case '수컷':
-        return 'male';
-      case '암컷':
-        return 'female';
-      case '모름':
-        return 'unknown';
+        return l10n.pet_growthAdult;
       default:
         return null;
     }
@@ -295,6 +274,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -309,9 +289,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
               ),
         automaticallyImplyLeading: !widget.isInitialSetup,
         centerTitle: true,
-        title: const Text(
-          '프로필',
-          style: TextStyle(
+        title: Text(
+          l10n.pet_profile,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
@@ -392,44 +372,37 @@ class _PetAddScreenState extends State<PetAddScreen> {
                         controller: _nameController,
                         focusNode: _nameFocusNode,
                         hasFocus: _nameHasFocus,
-                        hintText: '이름을 입력해 주세요',
+                        hintText: l10n.pet_name_hint,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '이름을 입력해 주세요';
+                            return l10n.pet_name_hint;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
                       // 성별
-                      _buildDropdownField(
-                        value: _selectedGender,
-                        hint: '성별을 선택해 주세요',
-                        items: _genderOptions,
-                        onChanged: (value) {
-                          setState(() => _selectedGender = value);
-                        },
-                      ),
+                      _buildGenderDropdown(l10n),
                       const SizedBox(height: 16),
                       // 몸무게
                       _buildTextField(
                         controller: _weightController,
                         focusNode: _weightFocusNode,
                         hasFocus: _weightHasFocus,
-                        hintText: '몸무게',
+                        hintText: l10n.pet_weight_hint,
                         keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 16),
                       // 생일
                       _buildDateField(
-                        hint: '생일',
+                        hint: l10n.pet_birthday_hint,
                         selectedDate: _selectedBirthDate,
                         onTap: () => _selectDate(context, true),
                       ),
                       const SizedBox(height: 16),
                       // 가족이 된 날
                       _buildDateField(
-                        hint: '가족이 된 날',
+                        hint: l10n.pet_adoptionDate_hint,
                         selectedDate: _selectedAdoptionDate,
                         onTap: () => _selectDate(context, false),
                       ),
@@ -439,11 +412,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
                         controller: _speciesController,
                         focusNode: _speciesFocusNode,
                         hasFocus: _speciesHasFocus,
-                        hintText: '종',
+                        hintText: l10n.pet_species_hint,
                       ),
                       const SizedBox(height: 16),
                       // 성장 단계 (새 전용)
-                      _buildGrowthStageDropdown(),
+                      _buildGrowthStageDropdown(l10n),
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -477,9 +450,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Text(
-                          '저장',
-                          style: TextStyle(
+                      : Text(
+                          l10n.common_save,
+                          style: const TextStyle(
                             fontFamily: 'Pretendard',
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -558,13 +531,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
     );
   }
 
-  Widget _buildDropdownField({
-    required String? value,
-    required String hint,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    final hasValue = value != null;
+  Widget _buildGenderDropdown(AppLocalizations l10n) {
+    final displayValue = _mapGenderToDisplay(_selectedGender, l10n);
+    final hasValue = _selectedGender != null;
     final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
 
     return GestureDetector(
@@ -572,17 +541,18 @@ class _PetAddScreenState extends State<PetAddScreen> {
         final selected = await showDialog<String>(
           context: context,
           builder: (context) => SimpleDialog(
-            title: const Text('성별 선택'),
-            children: items.map((item) {
+            title: Text(l10n.dialog_selectGender),
+            children: _genderValues.map((rawValue) {
+              final displayText = _mapGenderToDisplay(rawValue, l10n) ?? rawValue;
               return SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, item),
-                child: Text(item),
+                onPressed: () => Navigator.pop(context, rawValue),
+                child: Text(displayText),
               );
             }).toList(),
           ),
         );
         if (selected != null) {
-          onChanged(selected);
+          setState(() => _selectedGender = selected);
         }
       },
       child: Container(
@@ -599,7 +569,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                value ?? hint,
+                displayValue ?? l10n.pet_gender_hint,
                 style: TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
@@ -621,7 +591,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
     );
   }
 
-  Widget _buildGrowthStageDropdown() {
+  Widget _buildGrowthStageDropdown(AppLocalizations l10n) {
+    final displayValue = _mapGrowthStageToDisplay(_selectedGrowthStage, l10n);
     final hasValue = _selectedGrowthStage != null;
     final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
 
@@ -630,11 +601,12 @@ class _PetAddScreenState extends State<PetAddScreen> {
         final selected = await showDialog<String>(
           context: context,
           builder: (context) => SimpleDialog(
-            title: const Text('성장 단계 선택'),
-            children: _growthStageOptions.map((item) {
+            title: Text(l10n.dialog_selectGrowthStage),
+            children: _growthStageValues.map((rawValue) {
+              final displayText = _mapGrowthStageToDisplay(rawValue, l10n) ?? rawValue;
               return SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, item),
-                child: Text(item),
+                onPressed: () => Navigator.pop(context, rawValue),
+                child: Text(displayText),
               );
             }).toList(),
           ),
@@ -657,7 +629,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _selectedGrowthStage ?? '성장 단계를 선택해 주세요',
+                displayValue ?? l10n.pet_growthStage_hint,
                 style: TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,

@@ -10,6 +10,7 @@ import '../../theme/colors.dart';
 import '../../widgets/dashed_border.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 class FoodRecordScreen extends StatefulWidget {
   const FoodRecordScreen({super.key});
@@ -150,6 +151,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   }
 
   Future<void> _openEntryEditor({int? index}) async {
+    final l10n = AppLocalizations.of(context);
     final existing = index != null ? _entries[index] : null;
     final nameController =
         TextEditingController(text: existing?.name ?? '');
@@ -183,7 +185,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                existing == null ? '사료 추가' : '사료 수정',
+                existing == null ? l10n.food_addTitle : l10n.food_editTitle,
                 style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 16,
@@ -195,36 +197,36 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: '사료 이름',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.food_nameLabel,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: totalController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: '총 섭취량(g)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.food_totalIntake,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: targetController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: '목표 사료량(g)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.food_targetAmount,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: countController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '섭취 횟수(회)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.food_intakeCount,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
@@ -233,7 +235,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('취소'),
+                      child: Text(l10n.common_cancel),
                     ),
                   ),
                   Expanded(
@@ -256,7 +258,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           ),
                         );
                       },
-                      child: const Text('저장'),
+                      child: Text(l10n.common_save),
                     ),
                   ),
                 ],
@@ -290,6 +292,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final hasData = _entries.isNotEmpty;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -302,9 +305,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           onPressed: _handleBack,
         ),
         centerTitle: true,
-        title: const Text(
-          '사료',
-          style: TextStyle(
+        title: Text(
+          l10n.food_title,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -334,7 +337,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: Text(
-                          _formatDate(_selectedDate),
+                          _formatDate(_selectedDate, l10n),
                           style: const TextStyle(
                             fontFamily: 'Pretendard',
                             fontSize: 14,
@@ -349,7 +352,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '사료 섭취 루틴',
+                        l10n.food_routine,
                         style: TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
@@ -361,7 +364,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      '사료',
+                      l10n.food_title,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 16,
@@ -394,7 +397,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     const SizedBox(height: 24),
                     if (hasData) ...[
                       ..._entries.asMap().entries.map((entry) {
-                        return _buildFoodCard(entry.key, entry.value);
+                        return _buildFoodCard(entry.key, entry.value, l10n);
                       }),
                       const SizedBox(height: 12),
                     ],
@@ -427,9 +430,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
-                                '취식 중인 음식 등록하기',
-                                style: TextStyle(
+                              Text(
+                                l10n.food_addFood,
+                                style: const TextStyle(
                                   fontFamily: 'Pretendard',
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -447,7 +450,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       onTap: () async {
                         await _saveEntries();
                         if (!mounted) return;
-                        AppSnackBar.success(context, message: '저장되었습니다.');
+                        AppSnackBar.success(context, message: l10n.snackbar_saved);
                       },
                       child: Container(
                         height: 56,
@@ -459,10 +462,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                             colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            '저장',
-                            style: TextStyle(
+                            l10n.common_save,
+                            style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -480,7 +483,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     );
   }
 
-  Widget _buildFoodCard(int index, _FoodEntry entry) {
+  Widget _buildFoodCard(int index, _FoodEntry entry, AppLocalizations l10n) {
     return GestureDetector(
       onTap: () => _openEntryEditor(index: index),
       child: Container(
@@ -519,9 +522,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '1일 목표 사료량',
-                          style: TextStyle(
+                        Text(
+                          l10n.food_dailyTarget,
+                          style: const TextStyle(
                             fontFamily: 'Pretendard',
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -531,7 +534,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '권장 사료량: ${entry.recommendedMin.toStringAsFixed(0)}~${entry.recommendedMax.toStringAsFixed(0)}g/일',
+                          l10n.food_recommendedRange(entry.recommendedMin.toInt(), entry.recommendedMax.toInt()),
                           style: const TextStyle(
                             fontFamily: 'Pretendard',
                             fontSize: 12,
@@ -541,9 +544,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Text(
-                          '1일 섭취 횟수',
-                          style: TextStyle(
+                        Text(
+                          l10n.food_dailyCount,
+                          style: const TextStyle(
                             fontFamily: 'Pretendard',
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -553,7 +556,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '1회 당: ${entry.perMeal.toStringAsFixed(0)}g씩',
+                          l10n.food_perMeal(entry.perMeal.toInt()),
                           style: const TextStyle(
                             fontFamily: 'Pretendard',
                             fontSize: 12,
@@ -580,7 +583,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        '${entry.count}회',
+                        l10n.food_timesCount(entry.count),
                         style: const TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 18,
@@ -600,10 +603,18 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+  String _formatDate(DateTime date, AppLocalizations l10n) {
+    final weekdays = [
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+      l10n.datetime_weekday_sun,
+    ];
     final weekday = weekdays[date.weekday - 1];
-    return '${date.year}년 ${date.month}월 ${date.day}일 ($weekday)';
+    return l10n.datetime_dateFormat(date.year, date.month, date.day, weekday);
   }
 
   String _formatDateKey(DateTime date) {

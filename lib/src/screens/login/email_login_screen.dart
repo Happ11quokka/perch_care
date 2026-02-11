@@ -8,6 +8,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 이메일 로그인 화면 - Figma 디자인 기반
 class EmailLoginScreen extends StatefulWidget {
@@ -98,24 +99,26 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         _showKakaoSignupRequiredDialog();
       } else {
         // Apple/Google은 발생 안함
-        AppSnackBar.error(context, message: '로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+        final l10n = AppLocalizations.of(context)!;
+        AppSnackBar.error(context, message: l10n.error_loginRetry);
       }
     }
   }
 
   /// 카카오 로그인 안내 다이얼로그
   void _showKakaoSignupRequiredDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.info_outline, color: Color(0xFFFF9A42), size: 24),
-            SizedBox(width: 8),
+            const Icon(Icons.info_outline, color: Color(0xFFFF9A42), size: 24),
+            const SizedBox(width: 8),
             Text(
-              '카카오 로그인 안내',
-              style: TextStyle(
+              l10n.dialog_kakaoLoginTitle,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -124,23 +127,23 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
             ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '카카오 정책으로 인해 바로 로그인할 수 없습니다.',
-              style: TextStyle(
+              l10n.dialog_kakaoLoginContent1,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF1A1A1A),
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              '먼저 이메일로 회원가입 후, 마이페이지에서 카카오 계정을 연동하시면 다음부터 카카오 로그인을 사용할 수 있습니다.',
-              style: TextStyle(
+              l10n.dialog_kakaoLoginContent2,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
@@ -153,9 +156,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              '닫기',
-              style: TextStyle(
+            child: Text(
+              l10n.common_close,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFF97928A),
               ),
@@ -166,9 +169,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               Navigator.pop(dialogContext);
               context.pushNamed(RouteNames.signup);
             },
-            child: const Text(
-              '회원가입하기',
-              style: TextStyle(
+            child: Text(
+              l10n.dialog_goSignup,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFFFF9A42),
                 fontWeight: FontWeight.w600,
@@ -185,6 +188,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -196,9 +200,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           onPressed: () => context.pop(),
         ),
         centerTitle: true,
-        title: const Text(
-          '로그인',
-          style: TextStyle(
+        title: Text(
+          l10n.login_title,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
@@ -222,10 +226,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                         const SizedBox(height: 43),
                         // 이메일 필드
                         _buildInputField(
-                          label: '이메일',
+                          label: l10n.input_email,
                           controller: _emailController,
                           focusNode: _emailFocusNode,
-                          hintText: '이메일을 입력해 주세요',
+                          hintText: l10n.input_email_hint,
                           iconPath: _emailIconPath,
                           hasFocus: _emailHasFocus,
                           hasValue: _emailHasValue,
@@ -234,10 +238,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                         const SizedBox(height: 20),
                         // 비밀번호 필드
                         _buildInputField(
-                          label: '비밀번호',
+                          label: l10n.input_password,
                           controller: _passwordController,
                           focusNode: _passwordFocusNode,
-                          hintText: '비밀번호를 입력해 주세요',
+                          hintText: l10n.input_password_hint,
                           iconPath: _lockIconPath,
                           hasFocus: _passwordHasFocus,
                           hasValue: _passwordHasValue,
@@ -265,9 +269,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    '아직 회원이 아니신가요?',
-                    style: TextStyle(
+                  Text(
+                    l10n.login_notMember,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -278,9 +282,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => context.pushNamed(RouteNames.signup),
-                    child: const Text(
-                      '회원가입',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.login_signup,
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -413,6 +417,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   }
 
   Widget _buildOptionsRow() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -455,9 +460,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                       ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                '아이디 저장',
-                style: TextStyle(
+              Text(
+                l10n.login_saveId,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -473,9 +478,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           onTap: () {
             context.pushNamed(RouteNames.forgotPasswordMethod);
           },
-          child: const Text(
-            '아이디/비밀번호 찾기',
-            style: TextStyle(
+          child: Text(
+            l10n.login_findIdPassword,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -489,6 +494,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   }
 
   Widget _buildLoginButton() {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: _isLoading ? null : _handleLogin,
       child: Container(
@@ -511,9 +517,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text(
-                  '로그인',
-                  style: TextStyle(
+              : Text(
+                  l10n.login_button,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -594,17 +600,18 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
 
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
+    final l10n = AppLocalizations.of(context)!;
 
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     if (email.isEmpty) {
-      AppSnackBar.warning(context, message: '이메일을 입력해 주세요.');
+      AppSnackBar.warning(context, message: l10n.validation_enterEmail);
       return;
     }
 
     if (password.isEmpty) {
-      AppSnackBar.warning(context, message: '비밀번호를 입력해 주세요.');
+      AppSnackBar.warning(context, message: l10n.validation_enterPassword);
       return;
     }
 
@@ -618,7 +625,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       _navigateAfterLogin();
     } catch (_) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '로그인 중 오류가 발생했습니다.');
+      AppSnackBar.error(context, message: l10n.error_login);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -627,21 +634,30 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   Future<void> _handleGoogleLogin() async {
     if (_isGoogleLoading) return;
     setState(() => _isGoogleLoading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
+      debugPrint('[Google] Starting login...');
       final signIn = GoogleSignIn.instance;
+      debugPrint('[Google] Calling authenticate...');
       final account = await signIn.authenticate();
+      debugPrint('[Google] Got account: ${account.email}');
       final idToken = account.authentication.idToken;
+      debugPrint('[Google] Got idToken: ${idToken?.substring(0, 20)}...');
       if (idToken == null) throw Exception('idToken is null');
       final result = await _authService.signInWithGoogle(idToken: idToken);
+      debugPrint('[Google] API result: success=${result.success}');
       if (!mounted) return;
       _handleSocialLoginResult(result);
     } on GoogleSignInException catch (e) {
+      debugPrint('[Google] GoogleSignInException: code=${e.code}');
       if (!mounted) return;
       if (e.code == GoogleSignInExceptionCode.canceled) return;
-      AppSnackBar.error(context, message: 'Google 로그인 중 오류가 발생했습니다.');
-    } catch (_) {
+      AppSnackBar.error(context, message: l10n.error_googleLogin);
+    } catch (e, stackTrace) {
+      debugPrint('[Google] Error: $e');
+      debugPrint('[Google] StackTrace: $stackTrace');
       if (!mounted) return;
-      AppSnackBar.error(context, message: 'Google 로그인 중 오류가 발생했습니다.');
+      AppSnackBar.error(context, message: l10n.error_googleLogin);
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -650,6 +666,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   Future<void> _handleAppleLogin() async {
     if (_isAppleLoading) return;
     setState(() => _isAppleLoading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -681,11 +698,11 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       if (!mounted) return;
       if (e.code == AuthorizationErrorCode.canceled) return;
       debugPrint('Apple Sign In Error: ${e.code} - ${e.message}');
-      AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
+      AppSnackBar.error(context, message: l10n.error_appleLogin);
     } catch (e) {
       if (!mounted) return;
       debugPrint('Apple Sign In Error: $e');
-      AppSnackBar.error(context, message: 'Apple 로그인 중 오류가 발생했습니다.');
+      AppSnackBar.error(context, message: l10n.error_appleLogin);
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);
     }
@@ -694,6 +711,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   Future<void> _handleKakaoLogin() async {
     if (_isKakaoLoading) return;
     setState(() => _isKakaoLoading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       OAuthToken token;
       if (await isKakaoTalkInstalled()) {
@@ -706,7 +724,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       _handleSocialLoginResult(result);
     } catch (_) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: 'Kakao 로그인 중 오류가 발생했습니다.');
+      AppSnackBar.error(context, message: l10n.error_kakaoLogin);
     } finally {
       if (mounted) setState(() => _isKakaoLoading = false);
     }

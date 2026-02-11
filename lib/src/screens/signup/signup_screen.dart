@@ -7,6 +7,7 @@ import '../../services/auth/auth_service.dart';
 import '../../services/api/token_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/terms_agreement_section.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 회원가입 화면 - Figma 디자인 기반
 class SignupScreen extends StatefulWidget {
@@ -71,6 +72,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -82,9 +84,9 @@ class _SignupScreenState extends State<SignupScreen> {
           onPressed: () => context.pop(),
         ),
         centerTitle: true,
-        title: const Text(
-          '가입하기',
-          style: TextStyle(
+        title: Text(
+          l10n.signup_title,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
@@ -108,16 +110,16 @@ class _SignupScreenState extends State<SignupScreen> {
                         const SizedBox(height: 43),
                         // 이름 필드
                         _buildInputField(
-                          label: '이름',
+                          label: l10n.input_name,
                           controller: _nameController,
                           focusNode: _nameFocusNode,
-                          hintText: '이름을 입력해 주세요',
+                          hintText: l10n.input_name_hint,
                           iconPath: _personIconPath,
                           hasFocus: _nameHasFocus,
                           hasValue: _nameHasValue,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return '이름을 입력해 주세요';
+                              return l10n.input_name_hint;
                             }
                             return null;
                           },
@@ -125,23 +127,23 @@ class _SignupScreenState extends State<SignupScreen> {
                         const SizedBox(height: 30),
                         // 이메일 필드
                         _buildInputField(
-                          label: '이메일',
+                          label: l10n.input_email,
                           controller: _emailController,
                           focusNode: _emailFocusNode,
-                          hintText: '이메일을 입력해 주세요',
+                          hintText: l10n.input_email_hint,
                           iconPath: _emailIconPath,
                           hasFocus: _emailHasFocus,
                           hasValue: _emailHasValue,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return '이메일을 입력해 주세요';
+                              return l10n.input_email_hint;
                             }
                             final emailRegex = RegExp(
                               r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
                             );
                             if (!emailRegex.hasMatch(value)) {
-                              return '올바른 이메일 형식을 입력해 주세요';
+                              return l10n.validation_invalidEmail;
                             }
                             return null;
                           },
@@ -149,20 +151,20 @@ class _SignupScreenState extends State<SignupScreen> {
                         const SizedBox(height: 30),
                         // 비밀번호 필드
                         _buildInputField(
-                          label: '비밀번호',
+                          label: l10n.input_password,
                           controller: _passwordController,
                           focusNode: _passwordFocusNode,
-                          hintText: '비밀번호를 입력해 주세요',
+                          hintText: l10n.input_password_hint,
                           iconPath: _lockIconPath,
                           hasFocus: _passwordHasFocus,
                           hasValue: _passwordHasValue,
                           obscureText: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return '비밀번호를 입력해 주세요';
+                              return l10n.input_password_hint;
                             }
                             if (value.length < 8) {
-                              return '비밀번호는 8자 이상이어야 합니다';
+                              return l10n.validation_passwordMin8;
                             }
                             return null;
                           },
@@ -192,9 +194,9 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    '이미 계정이 있으신가요?',
-                    style: TextStyle(
+                  Text(
+                    l10n.signup_alreadyMember,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -205,9 +207,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => context.pop(),
-                    child: const Text(
-                      '로그인',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.login_button,
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -324,6 +326,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildSignupButton() {
+    final l10n = AppLocalizations.of(context)!;
     final isEnabled = _allRequiredTermsAgreed && !_isLoading;
     return GestureDetector(
       onTap: isEnabled ? _handleSignup : null,
@@ -350,9 +353,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text(
-                  '회원가입',
-                  style: TextStyle(
+              : Text(
+                  l10n.signup_button,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -367,23 +370,24 @@ class _SignupScreenState extends State<SignupScreen> {
 
   /// 회원가입 성공 후 소셜 계정 연동 안내 다이얼로그
   void _showSocialLinkDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '회원가입 완료',
-          style: TextStyle(
+        title: Text(
+          l10n.signup_completeTitle,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
           ),
         ),
-        content: const Text(
-          '회원가입이 완료되었습니다!\n로그인 후 서비스를 이용할 수 있습니다.',
-          style: TextStyle(
+        content: Text(
+          l10n.signup_completeMessage,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -402,9 +406,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 context.goNamed(RouteNames.login);
               });
             },
-            child: const Text(
-              '나중에 하기',
-              style: TextStyle(
+            child: Text(
+              l10n.common_later,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFF97928A),
               ),
@@ -421,9 +425,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 context.goNamed(RouteNames.login);
               });
             },
-            child: const Text(
-              '확인',
-              style: TextStyle(
+            child: Text(
+              l10n.common_confirm,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFFFF9A42),
                 fontWeight: FontWeight.w600,
@@ -436,10 +440,11 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _handleSignup() async {
+    final l10n = AppLocalizations.of(context)!;
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
       // 유효성 검사 실패 시 에러 메시지 표시
-      AppSnackBar.warning(context, message: '입력 정보를 확인해 주세요');
+      AppSnackBar.warning(context, message: l10n.validation_checkInput);
       return;
     }
     if (_isLoading) return;
@@ -458,7 +463,7 @@ class _SignupScreenState extends State<SignupScreen> {
       _showSocialLinkDialog();
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '예상치 못한 오류가 발생했습니다. 다시 시도해 주세요.');
+      AppSnackBar.error(context, message: l10n.error_unexpected);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

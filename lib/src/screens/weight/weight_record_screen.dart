@@ -8,6 +8,7 @@ import '../../services/pet/pet_service.dart';
 import '../../services/weight/weight_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WeightRecordScreen extends StatefulWidget {
   const WeightRecordScreen({super.key});
@@ -135,45 +136,46 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
   }
 
   _WciLevel _resolveLevel(double? wci) {
+    final l10n = AppLocalizations.of(context);
     if (wci == null) {
-      return const _WciLevel(
+      return _WciLevel(
         level: 0,
-        title: 'Level 0',
-        description: '몸무게를 입력해 주세요',
+        title: l10n.weight_level0Title,
+        description: l10n.weight_level0Desc,
       );
     }
     if (wci <= -7) {
-      return const _WciLevel(
+      return _WciLevel(
         level: 1,
-        title: 'Level 1 | 가벼운 상태',
-        description: '몸이 많이 가벼워요. 식사량과 컨디션을 점검해 주세요.',
+        title: l10n.weight_level1Title,
+        description: l10n.weight_level1Desc,
       );
     }
     if (wci <= -3) {
-      return const _WciLevel(
+      return _WciLevel(
         level: 2,
-        title: 'Level 2 | 약간 가벼운 상태',
-        description: '슬림한 편이에요. 현재 습관을 유지하며 관찰하세요.',
+        title: l10n.weight_level2Title,
+        description: l10n.weight_level2Desc,
       );
     }
     if (wci < 3) {
-      return const _WciLevel(
+      return _WciLevel(
         level: 3,
-        title: 'Level 3 | 이상적인 상태',
-        description: '체중 균형이 가장 좋은 범위에 있어요. 현재 상태를 유지하는 것이 좋아요.',
+        title: l10n.weight_level3Title,
+        description: l10n.weight_level3Desc,
       );
     }
     if (wci < 8) {
-      return const _WciLevel(
+      return _WciLevel(
         level: 4,
-        title: 'Level 4 | 약간 무거운 상태',
-        description: '몸이 조금 묵직해 보여요. 식사 균형을 점검해 보세요.',
+        title: l10n.weight_level4Title,
+        description: l10n.weight_level4Desc,
       );
     }
-    return const _WciLevel(
+    return _WciLevel(
       level: 5,
-      title: 'Level 5 | 무거운 상태',
-      description: '체중이 많이 늘었어요. 식단과 활동 조절이 필요해요.',
+      title: l10n.weight_level5Title,
+      description: l10n.weight_level5Desc,
     );
   }
 
@@ -187,6 +189,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
 
   Future<void> _openWeightEditor() async {
     if (_activePetId == null) return;
+    final l10n = AppLocalizations.of(context);
     final current = _recordForDate(_selectedDate);
     final controller = TextEditingController(
       text: current != null ? current.weight.toStringAsFixed(1) : '',
@@ -210,9 +213,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '체중 입력',
-                style: TextStyle(
+              Text(
+                l10n.weight_inputWeight,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -224,9 +227,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
               TextField(
                 controller: controller,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  hintText: '예: 58.3',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: l10n.weight_inputHint,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
@@ -235,7 +238,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('취소'),
+                      child: Text(l10n.common_cancel),
                     ),
                   ),
                   Expanded(
@@ -245,7 +248,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         if (value == null) return;
                         Navigator.pop(context, value);
                       },
-                      child: const Text('저장'),
+                      child: Text(l10n.btn_save),
                     ),
                   ),
                 ],
@@ -276,6 +279,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final current = _recordForDate(_selectedDate);
     final baseline = _baselineRecord(_selectedDate);
     final wci = _calculateWci(current, baseline);
@@ -294,8 +298,8 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
           onPressed: _handleBack,
         ),
         centerTitle: true,
-        title: const Text(
-          '체중',
+        title: Text(
+          l10n.weight_title,
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
@@ -341,8 +345,8 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'WCI 건강 상태',
-                        style: TextStyle(
+                        l10n.weight_wciHealthStatus,
+                        style: const TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -353,8 +357,8 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '체중',
-                      style: TextStyle(
+                      l10n.weight_title,
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -433,9 +437,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '계산 공식',
-                            style: TextStyle(
+                          Text(
+                            l10n.weight_formula,
+                            style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -444,9 +448,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'WCI(%) = (현재 체중 - 기준 체중) ÷ 기준 체중 × 100',
-                            style: TextStyle(
+                          Text(
+                            l10n.weight_formulaText,
+                            style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
@@ -456,9 +460,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            '계산 과정',
-                            style: TextStyle(
+                          Text(
+                            l10n.weight_calculation,
+                            style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -494,10 +498,10 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                             colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            '저장',
-                            style: TextStyle(
+                            l10n.btn_save,
+                            style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -520,8 +524,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
     WeightRecord? baseline,
     double? wci,
   ) {
+    final l10n = AppLocalizations.of(context);
     if (current == null || baseline == null || wci == null) {
-      return '데이터가 없습니다.';
+      return l10n.weight_noData;
     }
     final currentValue = current.weight.toStringAsFixed(1);
     final baseValue = baseline.weight.toStringAsFixed(1);
@@ -530,9 +535,18 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
   }
 
   String _formatDate(DateTime date) {
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+    final l10n = AppLocalizations.of(context);
+    final weekdays = [
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+      l10n.datetime_weekday_sun,
+    ];
     final weekday = weekdays[date.weekday - 1];
-    return '${date.year}년 ${date.month}월 ${date.day}일 ($weekday)';
+    return l10n.datetime_dateFormat(date.year, date.month, date.day, weekday);
   }
 }
 
@@ -541,7 +555,7 @@ class _WciLevel {
   final String title;
   final String description;
 
-  const _WciLevel({
+  _WciLevel({
     required this.level,
     required this.title,
     required this.description,

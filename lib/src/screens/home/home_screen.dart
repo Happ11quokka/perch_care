@@ -11,6 +11,7 @@ import '../../services/storage/local_image_storage_service.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../models/pet.dart';
 import '../../models/bhi_result.dart';
+import '../../../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,13 +39,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // WCI 레벨 (0: 데이터 없음, 1~5: 각 단계)
   int _wciLevel = 0;
 
-  // WCI 단계별 설명 텍스트
-  static const Map<int, String> _wciDescriptions = {
-    1: '몸이 가볍고 마른 인상이 강해요.\n식사량이나 컨디션을 한 번 더 살펴보는 게 좋아요.',
-    2: '갈비뼈가 보이지는 않지만 살짝 만지면 쉽게 느껴져요.\n옆에서 봤을 때 배가 쏙 들어간 부분이 보여요.',
-    3: '전체적인 체형은 안정적이에요.\n지금 습관을 유지하면서 가볍게 관찰해 주세요.',
-    4: '몸이 전체적으로 둥글어 보여요.\n식사량과 간식을 한 번 점검해 보세요.',
-    5: '전체적으로 무거운 인상이 들어요.\n건강을 위해 식단과 활동을 조절하는 것이 좋아요.',
+  // WCI 단계별 설명 텍스트를 가져오는 메소드
+  Map<int, String> _getWciDescriptions(AppLocalizations l10n) => {
+    1: l10n.wci_level1,
+    2: l10n.wci_level2,
+    3: l10n.wci_level3,
+    4: l10n.wci_level4,
+    5: l10n.wci_level5,
   };
 
   @override
@@ -336,6 +337,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildViewToggle() {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       width: 170,
       height: 48,
@@ -384,7 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: _isMonthlyView ? Colors.white : const Color(0xFF97928A),
                           letterSpacing: -0.35,
                         ),
-                        child: const Text('매월 단위'),
+                        child: Text(l10n.home_monthlyUnit),
                       ),
                     ),
                   ),
@@ -409,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: !_isMonthlyView ? Colors.white : const Color(0xFF97928A),
                           letterSpacing: -0.35,
                         ),
-                        child: const Text('매주 단위'),
+                        child: Text(l10n.home_weeklyUnit),
                       ),
                     ),
                   ),
@@ -422,6 +425,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMonthSelector() {
+    final l10n = AppLocalizations.of(context);
+
     // Generate 7 months centered around current month
     final currentMonth = DateTime.now().month;
     final months = <int>[];
@@ -455,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               alignment: Alignment.center,
               child: Text(
-                '$month월',
+                l10n.home_monthFormat(month),
                 style: TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 12,
@@ -472,6 +477,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWeekSelector() {
+    final l10n = AppLocalizations.of(context);
     final weeks = [1, 2, 3, 4, 5];
 
     return SizedBox(
@@ -497,7 +503,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               alignment: Alignment.center,
               child: Text(
-                '$week주',
+                l10n.home_weekFormat(week),
                 style: TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 12,
@@ -514,7 +520,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWCICard() {
+    final l10n = AppLocalizations.of(context);
     final petName = _activePet?.name ?? '사랑이';
+    final wciDescriptions = _getWciDescriptions(l10n);
 
     return Container(
       width: double.infinity,
@@ -555,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: AppColors.brandPrimary,
                           ),
                         ),
-                        const TextSpan(text: ' 건강 상태'),
+                        TextSpan(text: ' ${l10n.home_wciHealthStatus.replaceAll('WCI* ', '')}'),
                       ],
                     ),
                   ),
@@ -568,9 +576,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Color(0xFF97928A),
                     ),
                     const SizedBox(width: 4),
-                    const Text(
-                      '0분 전에 업데이트됨',
-                      style: TextStyle(
+                    Text(
+                      l10n.home_updatedAgo(0),
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -609,7 +617,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // 설명 텍스트
           if (_wciLevel == 0) ...[
             Text(
-              '데이터를 입력해 $petName의',
+              l10n.home_enterDataPrompt(petName),
               style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
@@ -619,9 +627,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 24 / 14,
               ),
             ),
-            const Text(
-              '상태를 확인해 보세요.',
-              style: TextStyle(
+            Text(
+              l10n.home_checkStatus,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
@@ -632,7 +640,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ] else
             Text(
-              _wciDescriptions[_wciLevel] ?? '',
+              wciDescriptions[_wciLevel] ?? '',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: 'Pretendard',
@@ -649,7 +657,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           // 단계 표시
           Text(
-            '$_wciLevel단계',
+            l10n.home_level(_wciLevel),
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -721,6 +729,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBottomCards() {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         // 첫 번째 행: 체중, 사료
@@ -728,8 +738,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: _buildDataCard(
-                title: '체중',
-                subtitle: '체중을 입력해주세요',
+                title: l10n.home_weight,
+                subtitle: l10n.home_weightHint,
                 iconPath: 'assets/images/home_vector/weight.svg',
                 hasData: _hasWeightData,
                 onTap: () async {
@@ -741,8 +751,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 6),
             Expanded(
               child: _buildDataCard(
-                title: '사료',
-                subtitle: '취식량을 입력해주세요',
+                title: l10n.home_food,
+                subtitle: l10n.home_foodHint,
                 iconPath: 'assets/images/home_vector/eat.svg',
                 hasData: _hasFoodData,
                 onTap: () async {
@@ -759,8 +769,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: _buildDataCard(
-                title: '수분',
-                subtitle: '음수량을 입력해주세요',
+                title: l10n.home_water,
+                subtitle: l10n.home_waterHint,
                 iconPath: 'assets/images/home_vector/water.svg',
                 hasData: _hasWaterData,
                 onTap: () async {
@@ -853,6 +863,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHealthSignalCard() {
+    final l10n = AppLocalizations.of(context);
+
     return GestureDetector(
       onTap: () {
         context.pushNamed(
@@ -886,12 +898,12 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '오늘의',
-                      style: TextStyle(
+                      l10n.home_todayHealthSignal,
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -901,8 +913,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Text(
-                      '건강 신호',
-                      style: TextStyle(
+                      l10n.home_healthSignal,
+                      style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

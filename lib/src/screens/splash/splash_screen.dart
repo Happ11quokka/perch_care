@@ -129,10 +129,12 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       await GoogleSignIn.instance.initialize(
         clientId: '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
+        serverClientId: '351000470573-ivirja6bvfpqk0rsg1shd048erdk1tv4.apps.googleusercontent.com',
       );
-      debugPrint('[Splash] 5. GoogleSignIn initialized');
-    } catch (e) {
+      debugPrint('[Splash] 5. GoogleSignIn initialized successfully');
+    } catch (e, stackTrace) {
       debugPrint('[Splash] 5. GoogleSignIn init error: $e');
+      debugPrint('[Splash] 5. GoogleSignIn init stackTrace: $stackTrace');
     }
 
     // 6. 로컬 이미지 저장소 초기화

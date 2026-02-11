@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -42,14 +43,14 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
     _loadExistingPet();
   }
 
-  String? _mapGenderToDisplay(String? gender) {
+  String? _mapGenderToDisplay(String? gender, AppLocalizations l10n) {
     switch (gender) {
       case 'male':
-        return '수컷';
+        return l10n.pet_genderMale;
       case 'female':
-        return '암컷';
+        return l10n.pet_genderFemale;
       case 'unknown':
-        return '모름';
+        return l10n.pet_genderUnknown;
       default:
         return null;
     }
@@ -79,7 +80,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
         setState(() {
           _nameController.text = apiPet.name;
           _speciesController.text = apiPet.breed ?? '';
-          _selectedGender = _mapGenderToDisplay(apiPet.gender);
+          _selectedGender = apiPet.gender;
           _birthday = apiPet.birthDate;
           _adoptionDate = apiPet.adoptionDate;
           if (apiPet.weight != null) {
@@ -101,7 +102,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           setState(() {
             _nameController.text = activePet.name;
             _speciesController.text = activePet.species ?? '';
-            _selectedGender = _mapGenderToDisplay(activePet.gender);
+            _selectedGender = activePet.gender;
             _birthday = activePet.birthDate;
             _isLoadingData = false;
           });
@@ -138,6 +139,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -146,7 +148,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
             : Column(
           children: [
             // 상단 앱바
-            _buildAppBar(),
+            _buildAppBar(l10n),
 
             // 스크롤 가능한 컨텐츠
             Expanded(
@@ -163,14 +165,14 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
                       const SizedBox(height: 32),
 
                       // 입력 필드들
-                      _buildInputFields(),
+                      _buildInputFields(l10n),
 
                       const SizedBox(height: 32),
 
                       // 저장 버튼
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: _buildSaveButton(),
+                        child: _buildSaveButton(l10n),
                       ),
 
                       const SizedBox(height: 32),
@@ -186,7 +188,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   }
 
   /// 상단 앱바
-  Widget _buildAppBar() {
+  Widget _buildAppBar(AppLocalizations l10n) {
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -216,7 +218,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           // 제목
           Center(
             child: Text(
-              '프로필',
+              l10n.pet_profile,
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 20,
@@ -292,7 +294,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   }
 
   /// 입력 필드들
-  Widget _buildInputFields() {
+  Widget _buildInputFields(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
@@ -300,20 +302,20 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           // 이름
           _buildTextField(
             controller: _nameController,
-            hintText: '이름을 입력해 주세요',
+            hintText: l10n.pet_name_hint,
           ),
 
           const SizedBox(height: 16),
 
           // 성별
-          _buildGenderSelector(),
+          _buildGenderSelector(l10n),
 
           const SizedBox(height: 16),
 
           // 몸무게
           _buildTextField(
             controller: _weightController,
-            hintText: '몸무게',
+            hintText: l10n.pet_weight_hint,
             keyboardType: TextInputType.number,
           ),
 
@@ -321,7 +323,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
 
           // 생일
           _buildDateSelector(
-            hintText: '생일',
+            hintText: l10n.pet_birthday_hint,
             selectedDate: _birthday,
             onTap: () => _selectDate(context, isAdoptionDate: false),
           ),
@@ -330,7 +332,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
 
           // 가족이 된 날
           _buildDateSelector(
-            hintText: '가족이 된 날',
+            hintText: l10n.pet_adoptionDate_hint,
             selectedDate: _adoptionDate,
             onTap: () => _selectDate(context, isAdoptionDate: true),
           ),
@@ -340,7 +342,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           // 종
           _buildTextField(
             controller: _speciesController,
-            hintText: '종',
+            hintText: l10n.pet_species_hint,
           ),
         ],
       ),
@@ -408,9 +410,10 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   }
 
   /// 성별 선택기
-  Widget _buildGenderSelector() {
+  Widget _buildGenderSelector(AppLocalizations l10n) {
+    final displayGender = _mapGenderToDisplay(_selectedGender, l10n);
     return GestureDetector(
-      onTap: () => _showGenderPicker(),
+      onTap: () => _showGenderPicker(l10n),
       child: Container(
         height: 60,
         decoration: BoxDecoration(
@@ -427,12 +430,12 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              _selectedGender ?? '성별을 선택해 주세요',
+              displayGender ?? l10n.pet_gender_hint,
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: _selectedGender != null
+                color: displayGender != null
                     ? const Color(0xFF1A1A1A)
                     : const Color(0xFF97928A),
                 height: 20 / 14,
@@ -494,7 +497,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   }
 
   /// 저장 버튼
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       height: 60,
@@ -520,7 +523,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
                     ),
                   )
                 : Text(
-                    '저장',
+                    l10n.common_save,
                     style: TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 18,
@@ -537,7 +540,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   }
 
   /// 성별 선택 모달
-  void _showGenderPicker() {
+  void _showGenderPicker(AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -550,19 +553,19 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: const Text('수컷'),
+              title: Text(l10n.pet_genderMale),
               onTap: () {
                 setState(() {
-                  _selectedGender = '수컷';
+                  _selectedGender = 'male';
                 });
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              title: const Text('암컷'),
+              title: Text(l10n.pet_genderFemale),
               onTap: () {
                 setState(() {
-                  _selectedGender = '암컷';
+                  _selectedGender = 'female';
                 });
                 Navigator.pop(context);
               },
@@ -601,12 +604,14 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
 
+    final l10n = AppLocalizations.of(context);
+
     try {
       final petName = _nameController.text.trim().isEmpty
-          ? '새'
+          ? l10n.pet_defaultName
           : _nameController.text.trim();
       final species = _speciesController.text.trim();
-      final gender = _mapGenderValue(_selectedGender);
+      final gender = _selectedGender;
       final weightText = _weightController.text.trim();
       final double? weightValue = weightText.isNotEmpty ? double.tryParse(weightText) : null;
 
@@ -628,7 +633,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
         // 서버에 생성
         savedPet = await _petService.createPet(
           name: petName,
-          species: species.isEmpty ? '새' : species,
+          species: species.isEmpty ? l10n.pet_defaultName : species,
           breed: species.isEmpty ? null : species,
           birthDate: _birthday,
           gender: gender,
@@ -650,7 +655,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       );
 
       if (!mounted) return;
-      AppSnackBar.success(context, message: '저장되었습니다.');
+      AppSnackBar.success(context, message: l10n.common_saveSuccess);
       if (context.canPop()) {
         context.pop();
       } else {
@@ -658,20 +663,9 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '저장 중 오류가 발생했습니다: $e');
+      AppSnackBar.error(context, message: l10n.common_saveError(e.toString()));
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  String? _mapGenderValue(String? gender) {
-    switch (gender) {
-      case '수컷':
-        return 'male';
-      case '암컷':
-        return 'female';
-      default:
-        return null;
     }
   }
 }

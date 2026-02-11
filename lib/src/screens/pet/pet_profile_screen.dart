@@ -7,6 +7,7 @@ import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 반려동물 프로필 목록 화면
 class PetProfileScreen extends StatefulWidget {
@@ -101,17 +102,19 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
   }
 
   Map<String, dynamic> _mapCacheToDisplay(PetProfileCache pet) {
+    final l10n = AppLocalizations.of(context);
     return {
       'id': pet.id,
       'name': pet.name,
-      'species': pet.species?.isNotEmpty == true ? pet.species! : '종 정보 없음',
+      'species': pet.species?.isNotEmpty == true ? pet.species! : l10n.profile_noSpecies,
       'age': _formatAge(pet.birthDate),
       'gender': pet.gender,
     };
   }
 
   String _formatAge(DateTime? birthDate) {
-    if (birthDate == null) return '나이 정보 없음';
+    final l10n = AppLocalizations.of(context);
+    if (birthDate == null) return l10n.profile_noAge;
     final now = DateTime.now();
     int years = now.year - birthDate.year;
     int months = now.month - birthDate.month;
@@ -128,14 +131,15 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
     }
 
     final segments = <String>[];
-    if (years > 0) segments.add('${years}년');
-    if (months > 0) segments.add('${months}개월');
-    if (days > 0) segments.add('${days}일');
-    return segments.isEmpty ? '0일' : segments.join(' ');
+    if (years > 0) segments.add('$years년');
+    if (months > 0) segments.add('$months개월');
+    if (days > 0) segments.add('$days일');
+    return segments.isEmpty ? l10n.profile_zeroDay : segments.join(' ');
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -153,8 +157,8 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           },
         ),
         centerTitle: true,
-        title: const Text(
-          '프로필',
+        title: Text(
+          l10n.profile_title,
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 20,
@@ -181,10 +185,10 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                   ),
                   const SizedBox(height: 20),
                   // 나의 반려가족
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
-                      '나의 반려가족',
+                      l10n.profile_myPets,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 16,
@@ -217,6 +221,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
   }
 
   Widget _buildProfileSection() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 7, 32, 20),
       child: Row(
@@ -241,7 +246,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           const SizedBox(width: 16),
           // 닉네임
           Text(
-            _userNickname.isEmpty ? '사용자' : '$_userNickname님',
+            _userNickname.isEmpty ? l10n.profile_user : '$_userNickname${l10n.profile_userSuffix}',
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -403,6 +408,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
   }
 
   Widget _buildAddPetButton() {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () async {
         await context.pushNamed(RouteNames.petAdd);
@@ -435,8 +441,8 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            const Text(
-              '새로운 아이 등록하기',
+            Text(
+              l10n.profile_addNewPet,
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 16,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 
@@ -8,6 +9,8 @@ class WciIndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -25,9 +28,9 @@ class WciIndexScreen extends StatelessWidget {
           },
         ),
         centerTitle: true,
-        title: const Text(
-          'WCI 지수란?',
-          style: TextStyle(
+        title: Text(
+          l10n.wciIndex_title,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -54,9 +57,9 @@ class WciIndexScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '섭취 습관의 변화가 체중에 어떤 영향을 주고 있는지를\n백분율로 보여주는 건강 지표입니다.',
-                style: TextStyle(
+              Text(
+                l10n.wciIndex_description,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -66,9 +69,9 @@ class WciIndexScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                '계산 방법',
-                style: TextStyle(
+              Text(
+                l10n.wciIndex_calculationMethod,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -77,9 +80,9 @@ class WciIndexScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'WCI(%) = (현재 체중 - 기준 체중) ÷ 기준 체중 × 100',
-                style: TextStyle(
+              Text(
+                l10n.weight_formulaText,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -89,9 +92,9 @@ class WciIndexScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'WCI 5단계 기준',
-                style: TextStyle(
+              Text(
+                l10n.wciIndex_levelCriteria,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -110,33 +113,33 @@ class WciIndexScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildLevel(
-                      title: 'Level 1 | 가벼운 상태',
+                      title: l10n.weight_level1Title,
                       range: 'WCI <= -7%',
-                      description: '몸이 많이 가벼워요. 식사량과 컨디션을 점검해 주세요.',
+                      description: l10n.weight_level1Desc,
                     ),
                     const SizedBox(height: 16),
                     _buildLevel(
-                      title: 'Level 2 | 약간 가벼운 상태',
+                      title: l10n.weight_level2Title,
                       range: '-7% < WCI <= -3%',
-                      description: '슬림한 편이에요. 현재 습관을 유지하며 관찰하세요.',
+                      description: l10n.weight_level2Desc,
                     ),
                     const SizedBox(height: 16),
                     _buildLevel(
-                      title: 'Level 3 | 이상적인 상태',
+                      title: l10n.weight_level3Title,
                       range: '-3% < WCI < +3%',
-                      description: '균형이 가장 좋아요. 지금 상태를 유지하는 것이 좋아요.',
+                      description: l10n.weight_level3Desc,
                     ),
                     const SizedBox(height: 16),
                     _buildLevel(
-                      title: 'Level 4 | 약간 무거운 상태',
+                      title: l10n.weight_level4Title,
                       range: '+3% <= WCI < +8%',
-                      description: '몸이 조금 묵직해 보여요. 식사 균형을 점검해 보세요.',
+                      description: l10n.weight_level4Desc,
                     ),
                     const SizedBox(height: 16),
                     _buildLevel(
-                      title: 'Level 5 | 무거운 상태',
+                      title: l10n.weight_level5Title,
                       range: 'WCI >= +8%',
-                      description: '체중이 많이 늘었어요. 식단과 활동 조절이 필요해요.',
+                      description: l10n.weight_level5Desc,
                     ),
                   ],
                 ),

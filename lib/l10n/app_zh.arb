@@ -1,0 +1,504 @@
+{
+  "@@locale": "zh",
+
+  "common_save": "保存",
+  "common_cancel": "取消",
+  "common_confirm": "确认",
+  "common_close": "关闭",
+  "common_delete": "删除",
+  "common_edit": "编辑",
+  "common_later": "稍后再说",
+  "common_view": "查看",
+  "common_noData": "暂无数据",
+  "common_loading": "加载中...",
+  "common_saveSuccess": "已保存成功。",
+  "common_saveError": "保存时发生错误: {error}",
+  "common_updated": "修改成功。",
+  "common_registered": "注册成功。",
+  "pet_loadError": "加载宠物信息失败。",
+
+  "onboarding_title": "很高兴认识你！",
+  "onboarding_description": "不仅仅是简单的记录，\n通过AI分析更深入地了解鹦鹉的状态。",
+  "btn_start": "开始使用",
+
+  "login_title": "登录",
+  "login_kakao": "使用Kakao登录",
+  "login_google": "使用Google登录",
+  "login_apple": "使用Apple登录",
+  "login_button": "登录",
+  "login_notMember": "还不是会员？",
+  "login_signup": "注册",
+  "login_saveId": "记住账号",
+  "login_findIdPassword": "找回账号/密码",
+
+  "input_email": "邮箱",
+  "input_email_hint": "请输入邮箱",
+  "input_password": "密码",
+  "input_password_hint": "请输入密码",
+  "input_name": "姓名",
+  "input_name_hint": "请输入姓名",
+
+  "dialog_kakaoLoginTitle": "Kakao登录说明",
+  "dialog_kakaoLoginContent1": "由于Kakao政策限制，无法直接登录。",
+  "dialog_kakaoLoginContent2": "请先使用邮箱注册，然后在个人中心绑定Kakao账号，之后即可使用Kakao登录。",
+  "dialog_goSignup": "去注册",
+
+  "signup_title": "注册",
+  "signup_button": "注册",
+  "signup_alreadyMember": "已有账号？",
+  "signup_completeTitle": "注册成功",
+  "signup_completeMessage": "注册成功！\n登录后即可使用服务。",
+
+  "terms_agreeAll": "全部同意",
+  "terms_requiredTerms": "[必选] 同意服务条款",
+  "terms_requiredPrivacy": "[必选] 同意隐私政策",
+  "terms_optionalMarketing": "[可选] 同意接收营销信息",
+  "terms_termsOfService": "服务条款",
+  "terms_privacyPolicy": "隐私政策",
+  "terms_sectionTitle": "条款与政策",
+
+  "forgot_title": "找回密码",
+  "forgot_description": "请输入注册时使用的邮箱。\n我们将发送密码重置验证码。",
+  "btn_sendCode": "发送验证码",
+  "forgot_codeTitle": "输入验证码",
+  "forgot_codeDescription": "验证码已发送给您。\n请在2分钟内输入收到的验证码。",
+  "forgot_codeSentTo": "验证码已发送至{destination}。",
+  "@forgot_codeSentTo": {
+    "placeholders": {
+      "destination": {"type": "String"}
+    }
+  },
+  "forgot_timeRemaining": "剩余时间：{time}",
+  "@forgot_timeRemaining": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "btn_resendCode": "重新发送验证码",
+  "forgot_newPasswordTitle": "设置新密码",
+  "forgot_newPasswordDescription": "请输入新密码，\n不能使用之前使用过的密码。",
+  "input_newPassword": "新密码",
+  "input_confirmPassword": "确认密码",
+  "btn_resetComplete": "完成重置",
+
+  "home_monthlyUnit": "月度",
+  "home_weeklyUnit": "周度",
+  "home_wciHealthStatus": "WCI* 健康状态",
+  "home_updatedAgo": "{minutes}分钟前更新",
+  "@home_updatedAgo": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "home_enterDataPrompt": "输入数据查看{petName}的",
+  "@home_enterDataPrompt": {
+    "placeholders": {
+      "petName": {"type": "String"}
+    }
+  },
+  "home_checkStatus": "健康状态。",
+  "home_level": "第{level}级",
+  "@home_level": {
+    "placeholders": {
+      "level": {"type": "int"}
+    }
+  },
+  "home_weight": "体重",
+  "home_weightHint": "请输入体重",
+  "home_food": "食物",
+  "home_foodHint": "请输入进食量",
+  "home_water": "饮水",
+  "home_waterHint": "请输入饮水量",
+  "home_todayHealthSignal": "今日",
+  "home_healthSignal": "健康信号",
+  "home_monthFormat": "{month}月",
+  "@home_monthFormat": {
+    "placeholders": {
+      "month": {"type": "int"}
+    }
+  },
+  "home_weekFormat": "第{week}周",
+  "@home_weekFormat": {
+    "placeholders": {
+      "week": {"type": "int"}
+    }
+  },
+
+  "wci_level1": "身体较轻且偏瘦。\n建议检查一下食量和身体状况。",
+  "wci_level2": "肋骨不可见，但轻触可感觉到。\n侧面看腹部略显凹陷。",
+  "wci_level3": "整体体型稳定。\n保持现有习惯并继续观察。",
+  "wci_level4": "身体整体看起来较圆润。\n建议检查一下食量和零食。",
+  "wci_level5": "整体看起来较重。\n建议调整饮食和活动量。",
+
+  "weight_title": "体重",
+  "weight_wciHealthStatus": "WCI 健康状态",
+  "weight_inputWeight": "输入体重",
+  "weight_inputHint": "例如: 58.3",
+  "weight_formula": "计算公式",
+  "weight_formulaText": "WCI(%) = (当前体重 - 基准体重) ÷ 基准体重 × 100",
+  "weight_calculation": "计算过程",
+  "weight_noData": "暂无数据。",
+  "weight_level0Title": "Level 0",
+  "weight_level0Desc": "请输入体重",
+  "weight_level1Title": "Level 1 | 偏轻",
+  "weight_level1Desc": "身体很轻。请检查食量和身体状况。",
+  "weight_level2Title": "Level 2 | 略轻",
+  "weight_level2Desc": "体型偏瘦。保持现有习惯并观察。",
+  "weight_level3Title": "Level 3 | 理想状态",
+  "weight_level3Desc": "体重处于最佳范围。建议保持当前状态。",
+  "weight_level4Title": "Level 4 | 略重",
+  "weight_level4Desc": "身体看起来有些沉重。请检查饮食平衡。",
+  "weight_level5Title": "Level 5 | 偏重",
+  "weight_level5Desc": "体重增加较多。需要调整饮食和活动。",
+  "weight_unitGram": "克",
+
+  "weightDetail_title": "记录",
+  "weightDetail_headerLine1": "坚持记录",
+  "weightDetail_headerLine2": "一眼查看{petName}的体重变化！",
+  "@weightDetail_headerLine2": {
+    "placeholders": {
+      "petName": {"type": "String"}
+    }
+  },
+  "weightDetail_subLine1": "立即记录，",
+  "weightDetail_subLine2": "轻松管理宝贝的健康状态。",
+  "weightDetail_toggleWeek": "周",
+  "weightDetail_toggleMonth": "月",
+  "weightDetail_recordSummary": "{petName}共记录{days}天体重",
+  "@weightDetail_recordSummary": {
+    "placeholders": {
+      "petName": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "weightDetail_yearMonth": "{year}年{month}月",
+  "@weightDetail_yearMonth": {
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
+  },
+  "weightDetail_noPet": "暂无活跃的宠物。请先添加宠物。",
+  "weightDetail_noSchedule": "暂无日程",
+  "weightDetail_addScheduleHint": "点击下方按钮添加日程",
+  "weightDetail_monthSchedule": "本月日程",
+  "weightDetail_noWeightRecord": "本月暂无体重记录",
+  "weightDetail_monthWeightRecord": "{month}月体重记录",
+  "@weightDetail_monthWeightRecord": {
+    "placeholders": {
+      "month": {"type": "int"}
+    }
+  },
+  "btn_addRecord": "添加记录",
+  "weightDetail_today": "今天",
+
+  "profile_title": "个人中心",
+  "profile_myPets": "我的宠物",
+  "profile_addNewPet": "添加新宠物",
+  "profile_socialAccounts": "社交账号绑定",
+  "profile_link": "绑定",
+  "profile_unlink": "解绑",
+  "profile_accountManagement": "账号管理",
+  "profile_logout": "退出登录",
+  "profile_deleteAccount": "注销账号",
+  "profile_noSpecies": "无品种信息",
+  "profile_noAge": "无年龄信息",
+  "profile_ageFormat": "{years}年{months}月{days}天",
+  "@profile_ageFormat": {
+    "placeholders": {
+      "years": {"type": "int"},
+      "months": {"type": "int"},
+      "days": {"type": "int"}
+    }
+  },
+
+  "dialog_unlinkTitle": "解绑社交账号",
+  "dialog_unlinkContent": "确定要解绑{provider}账号吗？",
+  "@dialog_unlinkContent": {
+    "placeholders": {
+      "provider": {"type": "String"}
+    }
+  },
+  "dialog_logoutTitle": "退出登录",
+  "dialog_logoutContent": "确定要退出登录吗？",
+  "dialog_deleteAccountTitle": "注销账号",
+  "dialog_deleteAccountContent": "注销后所有数据将被删除且无法恢复。\n确定要注销吗？",
+  "dialog_delete": "注销",
+
+  "pet_profile": "宠物资料",
+  "pet_name_hint": "请输入名字",
+  "pet_gender_hint": "请选择性别",
+  "pet_weight_hint": "体重",
+  "pet_birthday_hint": "生日",
+  "pet_adoptionDate_hint": "成为家人的日子",
+  "pet_species_hint": "品种",
+  "pet_growthStage_hint": "请选择成长阶段",
+  "pet_genderMale": "雄性",
+  "pet_genderFemale": "雌性",
+  "pet_genderUnknown": "未知",
+  "pet_growthRapid": "快速成长期",
+  "pet_growthPost": "后续成长期",
+  "pet_growthAdult": "成年期",
+  "dialog_selectGender": "选择性别",
+  "dialog_selectGrowthStage": "选择成长阶段",
+
+  "error_googleLogin": "Google登录时发生错误。",
+  "error_appleLogin": "Apple登录时发生错误。",
+  "error_kakaoLogin": "Kakao登录时发生错误。",
+  "error_login": "登录时发生错误。",
+  "error_loginRetry": "登录时发生错误，请重试。",
+  "error_sendCode": "发送验证码时发生错误。",
+  "error_invalidCode": "验证码不正确，请重新确认。",
+  "error_passwordChange": "修改密码时发生错误。",
+  "error_unexpected": "发生意外错误，请重试。",
+  "error_saveFailed": "保存时发生错误：{error}",
+  "@error_saveFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "error_loadPet": "加载宠物信息失败。",
+  "error_deleteAccount": "注销失败，请重试。",
+  "error_linkGoogle": "绑定Google账号失败。",
+  "error_linkApple": "绑定Apple账号失败。",
+  "error_linkKakao": "绑定Kakao账号失败。",
+  "error_unlinkFailed": "解绑{provider}账号失败。",
+  "@error_unlinkFailed": {
+    "placeholders": {
+      "provider": {"type": "String"}
+    }
+  },
+
+  "snackbar_codeResent": "验证码已重新发送。",
+  "snackbar_passwordChanged": "密码修改成功。",
+  "snackbar_saved": "已保存。",
+  "snackbar_updated": "已更新。",
+  "snackbar_registered": "已注册。",
+  "snackbar_googleLinked": "Google账号已绑定。",
+  "snackbar_appleLinked": "Apple账号已绑定。",
+  "snackbar_kakaoLinked": "Kakao账号已绑定。",
+  "snackbar_unlinked": "{provider}账号已解绑。",
+  "@snackbar_unlinked": {
+    "placeholders": {
+      "provider": {"type": "String"}
+    }
+  },
+
+  "validation_enterEmail": "请输入邮箱。",
+  "validation_invalidEmail": "请输入正确的邮箱格式。",
+  "validation_enterPassword": "请输入密码。",
+  "validation_passwordMin8": "密码至少需要8个字符",
+  "validation_enterName": "请输入姓名",
+  "validation_checkInput": "请检查输入信息",
+  "validation_enterNewPassword": "请输入新密码。",
+  "validation_confirmPassword": "请再次输入密码。",
+  "validation_passwordMismatch": "密码不一致。",
+
+  "datetime_weekday_mon": "一",
+  "datetime_weekday_tue": "二",
+  "datetime_weekday_wed": "三",
+  "datetime_weekday_thu": "四",
+  "datetime_weekday_fri": "五",
+  "datetime_weekday_sat": "六",
+  "datetime_weekday_sun": "日",
+  "datetime_dateFormat": "{year}年{month}月{day}日（周{weekday}）",
+  "@datetime_dateFormat": {
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"},
+      "day": {"type": "int"},
+      "weekday": {"type": "String"}
+    }
+  },
+  "datetime_dateShort": "{month}/{day}（周{weekday}）",
+  "@datetime_dateShort": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"},
+      "weekday": {"type": "String"}
+    }
+  },
+
+  "social_kakao": "Kakao",
+  "social_google": "Google",
+  "social_apple": "Apple",
+
+  "profile_user": "用户",
+  "profile_userSuffix": "",
+  "profile_languageSettings": "语言设置",
+  "profile_languageSelect": "选择语言",
+  "profile_deviceDefault": "设备默认",
+  "profile_deviceDefaultSubtitle": "跟随系统语言",
+  "profile_zeroDay": "0天",
+
+  "bhi_title": "健康分数",
+  "bhi_noDataTitle": "暂无健康数据",
+  "bhi_noDataSubtitle": "请输入体重、食物和饮水数据",
+  "bhi_scoreComposition": "分数构成",
+  "bhi_healthScore": "BHI 健康分数",
+  "bhi_scoreMax": "/100",
+  "bhi_noData": "无数据",
+  "bhi_wciLevel": "WCI 等级",
+  "bhi_growthStage": "成长阶段",
+  "bhi_stageNumber": "第{stage}阶段",
+  "bhi_baseDate": "基准日期: {date}",
+  "bhi_statusHealthy": "健康状态",
+  "bhi_statusStable": "稳定状态",
+  "bhi_statusCaution": "需要注意",
+  "bhi_statusManagement": "需要护理",
+  "bhi_statusInsufficient": "数据不足",
+  "bhi_descHealthy": "体重、食物、饮水都很好。\n请保持当前习惯。",
+  "bhi_descStable": "整体还可以，但\n请检查一些项目。",
+  "bhi_descCaution": "某些项目检测到变化。\n请检查数据。",
+  "bhi_descManagement": "健康指标偏低。\n请检查食物和饮水量。",
+  "bhi_descInsufficient": "输入数据后可查看健康分数。",
+  "bhi_growthAdult": "成年期",
+  "bhi_growthPostGrowth": "后续成长期",
+  "bhi_growthRapidGrowth": "快速成长期",
+
+  "food_title": "食物",
+  "food_addTitle": "添加食物",
+  "food_editTitle": "编辑食物",
+  "food_nameLabel": "食物名称",
+  "food_totalIntake": "总摄入量(g)",
+  "food_targetAmount": "目标量(g)",
+  "food_intakeCount": "摄入次数",
+  "food_routine": "喂食习惯",
+  "food_addFood": "登记正在吃的食物",
+  "food_dailyTarget": "每日目标",
+  "food_recommendedRange": "推荐: {min}~{max}g/天",
+  "food_dailyCount": "每日摄入次数",
+  "food_perMeal": "每次: {amount}g",
+  "food_timesCount": "{count}次",
+
+  "pet_defaultName": "鸟",
+
+  "wciIndex_title": "什么是WCI？",
+  "wciIndex_description": "一个健康指标，以百分比形式显示\n饮食习惯变化对体重的影响。",
+  "wciIndex_calculationMethod": "计算方法",
+  "wciIndex_levelCriteria": "WCI 5级标准",
+
+  "chatbot_title": "智能助手",
+  "chatbot_clearHistory": "清除聊天记录",
+  "chatbot_clearHistoryConfirm": "所有聊天记录将被删除。是否继续？",
+  "chatbot_historyCleared": "聊天记录已清除。",
+  "chatbot_welcomeTitle": "你好！我是鹦鹉博士！",
+  "chatbot_welcomeDescription": "如果您对鹦鹉有任何疑问，\n请随时问我！",
+  "chatbot_preparingAnswer": "正在准备回答...",
+  "chatbot_aiError": "AI响应失败，请稍后重试。",
+  "chatbot_inputHint": "请输入您的问题",
+  "chatbot_suggestion1": "初期维生素摄入量",
+  "chatbot_suggestion2": "换羽期护理方法",
+  "chatbot_suggestion3": "健康检查频率",
+  "chatbot_suggestion4": "体重记录技巧",
+  "chatbot_aiCallFailed": "AI调用失败：{error}",
+  "@chatbot_aiCallFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "water_title": "饮水",
+  "water_inputTitle": "饮水量输入",
+  "water_totalIntake": "总饮水量(ml)",
+  "water_intakeCount": "饮水次数",
+  "water_routine": "饮水习惯",
+  "water_water": "水",
+  "water_dailyTarget": "每日饮水目标",
+  "water_recommendedRange": "推荐：{amount}ml/天",
+  "@water_recommendedRange": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "water_dailyCount": "每日饮水次数",
+  "water_perDrink": "每次：{amount}ml",
+  "@water_perDrink": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "water_timesCount": "{count}次",
+  "@water_timesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "weight_bodyWeight": "体重*",
+  "weight_addStickerHint": "点击这里添加贴纸。",
+  "weight_inputLabel": "输入体重 (g)",
+  "weight_recordSuccess": "今日体重已记录！",
+  "weight_bcs1": "骨骼容易触摸到，侧面看非常瘦。\n请增加营养。",
+  "weight_bcs2": "肋骨容易触摸到，体型较瘦。\n体重偏低，建议增加食量。",
+  "weight_bcs3": "肋骨不可见但轻触可感觉到。\n侧面看腹部略显凹陷。",
+  "weight_bcs4": "可以摸到肋骨但有轻微脂肪层。\n侧面看起来较圆润，体重略有增加。",
+  "weight_bcs5": "肋骨难以触摸，侧面看起来圆润。\n请减少食量并增加活动量。",
+
+  "validation_enterWeight": "请输入体重。",
+  "validation_enterValidNumber": "请输入正确的数字。",
+  "validation_weightGreaterThanZero": "体重必须大于0。",
+  "error_noPetFound": "未找到活跃的宠物。",
+
+  "datetime_lunar": "农历{month}月{day}日",
+  "@datetime_lunar": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
+  "datetime_weekdayFull_sun": "星期日",
+  "datetime_weekdayFull_mon": "星期一",
+  "datetime_weekdayFull_tue": "星期二",
+  "datetime_weekdayFull_wed": "星期三",
+  "datetime_weekdayFull_thu": "星期四",
+  "datetime_weekdayFull_fri": "星期五",
+  "datetime_weekdayFull_sat": "星期六",
+  "datetime_minutes": "{minutes}分钟",
+  "@datetime_minutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "datetime_seconds": "{seconds}秒",
+  "@datetime_seconds": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+
+  "notification_title": "通知",
+  "notification_markAllRead": "全部已读",
+  "notification_empty": "暂无通知",
+  "notification_deleteError": "删除时发生错误。",
+  "notification_justNow": "刚刚",
+  "notification_minutesAgo": "{minutes}分钟前",
+  "@notification_minutesAgo": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "notification_hoursAgo": "{hours}小时前",
+  "@notification_hoursAgo": {
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "notification_daysAgo": "{days}天前",
+  "@notification_daysAgo": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "schedule_saveError": "保存日程时发生错误。",
+  "schedule_reminderMinutes": "{minutes}分钟前",
+  "@schedule_reminderMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+
+  "btn_save": "保存",
+  "btn_saveRecord": "保存记录"
+}

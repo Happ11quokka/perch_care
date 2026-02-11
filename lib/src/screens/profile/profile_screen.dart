@@ -16,6 +16,8 @@ import '../../widgets/local_image_avatar.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/api/token_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../providers/locale_provider.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
 class ProfileScreen extends StatefulWidget {
@@ -84,10 +86,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       await _loadSocialAccounts();
       if (!mounted) return;
-      AppSnackBar.success(context, message: 'Google 계정이 연동되었습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.success(context, message: l10n.snackbar_googleLinked);
     } catch (_) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: 'Google 계정 연동에 실패했습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.error(context, message: l10n.error_linkGoogle);
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
     }
@@ -113,11 +117,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       await _loadSocialAccounts();
       if (!mounted) return;
-      AppSnackBar.success(context, message: 'Apple 계정이 연동되었습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.success(context, message: l10n.snackbar_appleLinked);
     } catch (e) {
       if (!mounted) return;
       debugPrint('Apple Link Error: $e');
-      AppSnackBar.error(context, message: 'Apple 계정 연동에 실패했습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.error(context, message: l10n.error_linkApple);
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
     }
@@ -139,20 +145,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       await _loadSocialAccounts();
       if (!mounted) return;
-      AppSnackBar.success(context, message: '카카오 계정이 연동되었습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.success(context, message: l10n.snackbar_kakaoLinked);
     } catch (_) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '카카오 계정 연동에 실패했습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.error(context, message: l10n.error_linkKakao);
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
     }
   }
 
   Future<void> _handleUnlinkSocial(String provider) async {
+    final l10n = AppLocalizations.of(context);
     final providerName = switch (provider) {
-      'google' => 'Google',
-      'apple' => 'Apple',
-      'kakao' => '카카오',
+      'google' => l10n.social_google,
+      'apple' => l10n.social_apple,
+      'kakao' => l10n.social_kakao,
       _ => provider,
     };
 
@@ -160,9 +169,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '소셜 계정 연동 해제',
-          style: TextStyle(
+        title: Text(
+          l10n.dialog_unlinkTitle,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -170,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         content: Text(
-          '$providerName 계정 연동을 해제하시겠습니까?',
+          l10n.dialog_unlinkContent(providerName),
           style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
@@ -181,16 +190,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text(
-              '취소',
-              style: TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+            child: Text(
+              l10n.common_cancel,
+              style: const TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text(
-              '해제',
-              style: TextStyle(
+            child: Text(
+              l10n.profile_unlink,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFFFF9A42),
                 fontWeight: FontWeight.w600,
@@ -207,10 +216,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await _authService.unlinkSocialAccount(provider);
       await _loadSocialAccounts();
       if (!mounted) return;
-      AppSnackBar.success(context, message: '$providerName 계정 연동이 해제되었습니다.');
+      AppSnackBar.success(context, message: l10n.snackbar_unlinked(providerName));
     } catch (_) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '$providerName 계정 연동 해제에 실패했습니다.');
+      AppSnackBar.error(context, message: l10n.error_unlinkFailed(providerName));
     }
   }
 
@@ -274,30 +283,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final profile = await _authService.getProfile();
       if (profile == null || !mounted) return;
       setState(() {
-        _userName = profile['nickname'] as String? ?? '사용자';
+        _userName = profile['nickname'] as String? ?? '';
       });
     } catch (_) {
       // 프로필 로드 실패 시 기본값 사용
     }
   }
 
-  List<Map<String, dynamic>> get _displayPets {
-    return _cachedPets.map(_mapCacheToDisplay).toList();
+  List<Map<String, dynamic>> _getDisplayPets(AppLocalizations l10n) {
+    return _cachedPets.map((pet) => _mapCacheToDisplay(pet, l10n)).toList();
   }
 
-  Map<String, dynamic> _mapCacheToDisplay(PetProfileCache pet) {
+  Map<String, dynamic> _mapCacheToDisplay(PetProfileCache pet, AppLocalizations l10n) {
     return {
       'id': pet.id,
       'name': pet.name,
-      'species': pet.species?.isNotEmpty == true ? pet.species! : '종 정보 없음',
-      'age': _formatAge(pet.birthDate),
+      'species': pet.species?.isNotEmpty == true ? pet.species! : l10n.profile_noSpecies,
+      'age': _formatAge(pet.birthDate, l10n),
       'gender': pet.gender,
       'isCached': true,
     };
   }
 
-  String _formatAge(DateTime? birthDate) {
-    if (birthDate == null) return '나이 정보 없음';
+  String _formatAge(DateTime? birthDate, AppLocalizations l10n) {
+    if (birthDate == null) return l10n.profile_noAge;
     final now = DateTime.now();
     int years = now.year - birthDate.year;
     int months = now.month - birthDate.month;
@@ -313,22 +322,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       months += 12;
     }
 
-    final segments = <String>[];
-    if (years > 0) segments.add('${years}년');
-    if (months > 0) segments.add('${months}개월');
-    if (days > 0) segments.add('${days}일');
-    return segments.isEmpty ? '0일' : segments.join(' ');
+    return l10n.profile_ageFormat(years, months, days);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final displayPets = _getDisplayPets(l10n);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             // 상단 앱바
-            _buildAppBar(),
+            _buildAppBar(l10n),
 
             // 스크롤 가능한 컨텐츠
             Expanded(
@@ -337,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 사용자 프로필 섹션
-                    _buildUserProfileSection(),
+                    _buildUserProfileSection(l10n),
 
                     // 구분선
                     Container(
@@ -350,7 +358,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
                       child: Text(
-                        '나의 반려가족',
+                        l10n.profile_myPets,
                         style: TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 16,
@@ -371,7 +379,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: LinearProgressIndicator(minHeight: 2),
                       )
                     else
-                      ..._displayPets.asMap().entries.map((entry) {
+                      ...displayPets.asMap().entries.map((entry) {
                         return _buildPetProfileCard(
                           index: entry.key,
                           pet: entry.value,
@@ -381,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 12),
 
                     // 새로운 아이 등록하기 버튼
-                    _buildAddPetButton(),
+                    _buildAddPetButton(l10n),
 
                     // 구분선
                     Container(
@@ -391,7 +399,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
 
                     // 소셜 계정 연동 섹션
-                    _buildSocialAccountsSection(),
+                    _buildSocialAccountsSection(l10n),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
+                    // 언어 설정 섹션
+                    _buildLanguageSection(l10n),
 
                     // 구분선
                     Container(
@@ -401,7 +419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
 
                     // 약관 및 정책 섹션
-                    _buildTermsPolicySection(),
+                    _buildTermsPolicySection(l10n),
 
                     // 구분선
                     Container(
@@ -411,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
 
                     // 계정 관리 섹션
-                    _buildAccountManagementSection(),
+                    _buildAccountManagementSection(l10n),
 
                     const SizedBox(height: 100),
                   ],
@@ -424,16 +442,208 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// 약관 및 정책 섹션
-  Widget _buildTermsPolicySection() {
+  /// 언어 설정 섹션
+  Widget _buildLanguageSection(AppLocalizations l10n) {
+    final currentLocale = LocaleProvider.instance.currentLanguageCode;
+    final displayName = currentLocale != null
+        ? LocaleProvider.getDisplayName(currentLocale)
+        : l10n.profile_deviceDefault;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '약관 및 정책',
-            style: TextStyle(
+          Text(
+            l10n.profile_languageSettings,
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1A1A1A),
+              height: 22 / 16,
+              letterSpacing: 0.08,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () => _showLanguageDialog(l10n),
+            child: Container(
+              width: double.infinity,
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE7E5E1)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.language,
+                    size: 20,
+                    color: Color(0xFF6B6B6B),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      displayName,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: Color(0xFF97928A),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 언어 선택 다이얼로그
+  Future<void> _showLanguageDialog(AppLocalizations l10n) async {
+    final currentLocale = LocaleProvider.instance.currentLanguageCode;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.profile_languageSelect,
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 기기 설정 옵션
+            _buildLanguageOption(
+              dialogContext: dialogContext,
+              label: l10n.profile_deviceDefault,
+              subtitle: l10n.profile_deviceDefaultSubtitle,
+              isSelected: currentLocale == null,
+              onTap: () async {
+                await LocaleProvider.instance.setLocale(null);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                setState(() {});
+              },
+            ),
+            const Divider(height: 1),
+            // 한국어
+            _buildLanguageOption(
+              dialogContext: dialogContext,
+              label: '한국어',
+              isSelected: currentLocale == 'ko',
+              onTap: () async {
+                await LocaleProvider.instance.setLocale(const Locale('ko'));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                setState(() {});
+              },
+            ),
+            const Divider(height: 1),
+            // English
+            _buildLanguageOption(
+              dialogContext: dialogContext,
+              label: 'English',
+              isSelected: currentLocale == 'en',
+              onTap: () async {
+                await LocaleProvider.instance.setLocale(const Locale('en'));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                setState(() {});
+              },
+            ),
+            const Divider(height: 1),
+            // 中文
+            _buildLanguageOption(
+              dialogContext: dialogContext,
+              label: '中文',
+              isSelected: currentLocale == 'zh',
+              onTap: () async {
+                await LocaleProvider.instance.setLocale(const Locale('zh'));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required BuildContext dialogContext,
+    required String label,
+    String? subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected ? AppColors.brandPrimary : const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF97928A),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check,
+                size: 20,
+                color: AppColors.brandPrimary,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 약관 및 정책 섹션
+  Widget _buildTermsPolicySection(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.terms_sectionTitle,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -444,7 +654,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           _buildTermsRow(
-            label: '이용약관',
+            label: l10n.terms_termsOfService,
             onTap: () => context.pushNamed(
               RouteNames.termsDetail,
               extra: TermsType.termsOfService,
@@ -452,7 +662,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 8),
           _buildTermsRow(
-            label: '개인정보처리방침',
+            label: l10n.terms_privacyPolicy,
             onTap: () => context.pushNamed(
               RouteNames.termsDetail,
               extra: TermsType.privacyPolicy,
@@ -499,7 +709,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// 상단 앱바
-  Widget _buildAppBar() {
+  Widget _buildAppBar(AppLocalizations l10n) {
     return SizedBox(
       height: 56,
       width: double.infinity,
@@ -531,7 +741,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // 제목
             Text(
-              '프로필',
+              l10n.profile_title,
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 20,
@@ -548,7 +758,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// 사용자 프로필 섹션
-  Widget _buildUserProfileSection() {
+  Widget _buildUserProfileSection(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(37, 12, 32, 0),
       child: Row(
@@ -612,7 +822,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // 사용자 이름
           Text(
-            _userName.isEmpty ? '사용자' : '$_userName님',
+            _userName.isEmpty
+                ? l10n.profile_user
+                : '$_userName${l10n.profile_userSuffix}',
             style: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -774,14 +986,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// 소셜 계정 연동 관리 섹션
-  Widget _buildSocialAccountsSection() {
+  Widget _buildSocialAccountsSection(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '소셜 계정 연동',
+            l10n.profile_socialAccounts,
             style: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -797,7 +1009,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           else ...[
             _buildSocialAccountRow(
               provider: 'kakao',
-              label: '카카오',
+              label: l10n.social_kakao,
               icon: SvgPicture.asset(
                 'assets/images/btn_kakao/btn_kakao.svg',
                 width: 24,
@@ -806,11 +1018,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               isLinked: _isProviderLinked('kakao'),
               onLink: _handleLinkKakao,
               onUnlink: () => _handleUnlinkSocial('kakao'),
+              l10n: l10n,
             ),
             const SizedBox(height: 8),
             _buildSocialAccountRow(
               provider: 'google',
-              label: 'Google',
+              label: l10n.social_google,
               icon: SvgPicture.asset(
                 'assets/images/btn_google/btn_google.svg',
                 width: 24,
@@ -819,15 +1032,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               isLinked: _isProviderLinked('google'),
               onLink: _handleLinkGoogle,
               onUnlink: () => _handleUnlinkSocial('google'),
+              l10n: l10n,
             ),
             const SizedBox(height: 8),
             _buildSocialAccountRow(
               provider: 'apple',
-              label: 'Apple',
+              label: l10n.social_apple,
               icon: const Icon(Icons.apple, size: 24, color: Colors.black),
               isLinked: _isProviderLinked('apple'),
               onLink: _handleLinkApple,
               onUnlink: () => _handleUnlinkSocial('apple'),
+              l10n: l10n,
             ),
           ],
         ],
@@ -842,6 +1057,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required bool isLinked,
     required VoidCallback onLink,
     required VoidCallback onUnlink,
+    required AppLocalizations l10n,
   }) {
     return Container(
       height: 56,
@@ -881,7 +1097,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     : null,
               ),
               child: Text(
-                isLinked ? '해제' : '연동',
+                isLinked ? l10n.profile_unlink : l10n.profile_link,
                 style: TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 12,
@@ -897,23 +1113,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// 로그아웃 처리
-  Future<void> _handleLogout() async {
+  Future<void> _handleLogout(AppLocalizations l10n) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '로그아웃',
-          style: TextStyle(
+        title: Text(
+          l10n.dialog_logoutTitle,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
           ),
         ),
-        content: const Text(
-          '로그아웃 하시겠습니까?',
-          style: TextStyle(
+        content: Text(
+          l10n.dialog_logoutContent,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -923,16 +1139,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text(
-              '취소',
-              style: TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+            child: Text(
+              l10n.common_cancel,
+              style: const TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text(
-              '로그아웃',
-              style: TextStyle(
+            child: Text(
+              l10n.profile_logout,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFFFF9A42),
                 fontWeight: FontWeight.w600,
@@ -951,23 +1167,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// 회원 탈퇴 처리
-  Future<void> _handleDeleteAccount() async {
+  Future<void> _handleDeleteAccount(AppLocalizations l10n) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '회원 탈퇴',
-          style: TextStyle(
+        title: Text(
+          l10n.dialog_deleteAccountTitle,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
           ),
         ),
-        content: const Text(
-          '탈퇴하시면 모든 데이터가 삭제되며 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?',
-          style: TextStyle(
+        content: Text(
+          l10n.dialog_deleteAccountContent,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -977,16 +1193,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text(
-              '취소',
-              style: TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+            child: Text(
+              l10n.common_cancel,
+              style: const TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text(
-              '탈퇴',
-              style: TextStyle(
+            child: Text(
+              l10n.dialog_delete,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 color: Color(0xFFE53935),
                 fontWeight: FontWeight.w600,
@@ -1005,19 +1221,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context.goNamed(RouteNames.login);
     } catch (_) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
+      AppSnackBar.error(context, message: l10n.error_deleteAccount);
     }
   }
 
   /// 계정 관리 섹션 (로그아웃 + 회원 탈퇴)
-  Widget _buildAccountManagementSection() {
+  Widget _buildAccountManagementSection(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '계정 관리',
+            l10n.profile_accountManagement,
             style: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -1030,7 +1246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 12),
           // 로그아웃 버튼
           GestureDetector(
-            onTap: _handleLogout,
+            onTap: () => _handleLogout(l10n),
             child: Container(
               width: double.infinity,
               height: 48,
@@ -1038,10 +1254,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: Border.all(color: const Color(0xFFE7E5E1)),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  '로그아웃',
-                  style: TextStyle(
+                  l10n.profile_logout,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -1054,7 +1270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 8),
           // 회원 탈퇴 버튼
           GestureDetector(
-            onTap: _handleDeleteAccount,
+            onTap: () => _handleDeleteAccount(l10n),
             child: Container(
               width: double.infinity,
               height: 48,
@@ -1062,10 +1278,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: Border.all(color: const Color(0xFFE7E5E1)),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  '회원 탈퇴',
-                  style: TextStyle(
+                  l10n.profile_deleteAccount,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -1081,7 +1297,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// 새로운 아이 등록하기 버튼
-  Widget _buildAddPetButton() {
+  Widget _buildAddPetButton(AppLocalizations l10n) {
     return GestureDetector(
       onTap: () async {
         await context.pushNamed(RouteNames.petProfileDetail);
@@ -1119,7 +1335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // 텍스트
                 Text(
-                  '새로운 아이 등록하기',
+                  l10n.profile_addNewPet,
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 16,

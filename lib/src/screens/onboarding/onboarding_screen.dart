@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 온보딩 화면 - 앱 소개 및 시작하기
 class OnboardingScreen extends StatefulWidget {
@@ -573,6 +574,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildBottomContent(double screenWidth, double screenHeight) {
     double w(double value) => (value / _designWidth) * screenWidth;
     double h(double value) => (value / _designHeight) * screenHeight;
+    final l10n = AppLocalizations.of(context)!;
 
     return Positioned(
       left: 0,
@@ -585,7 +587,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             // 제목
             Text(
-              '만나서 반가워요!',
+              l10n.onboarding_title,
               style: TextStyle(
                 fontSize: w(28),
                 fontWeight: FontWeight.w700,
@@ -599,7 +601,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // 설명
             Text(
-              '단순한 기록을 넘어, AI 분석으로 앵무새의\n상태를 더 깊이 이해해 보세요.',
+              l10n.onboarding_description,
               style: TextStyle(
                 fontSize: w(15),
                 height: 1.6,
@@ -611,7 +613,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             SizedBox(height: h(48)),
 
             // 시작하기 버튼
-            _buildStartButton(w, h),
+            _buildStartButton(w, h, l10n),
           ],
         ),
       ),
@@ -619,7 +621,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildStartButton(
-      double Function(double) w, double Function(double) h) {
+      double Function(double) w, double Function(double) h, AppLocalizations l10n) {
     final borderRadius = BorderRadius.circular(w(12));
 
     return Material(
@@ -650,7 +652,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           child: Center(
             child: Text(
-              '시작하기',
+              l10n.btn_start,
               style: TextStyle(
                 fontSize: w(18),
                 fontWeight: FontWeight.w700,

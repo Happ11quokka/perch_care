@@ -5,6 +5,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 비밀번호 찾기 - 이메일 입력 화면
 class ForgotPasswordMethodScreen extends StatefulWidget {
@@ -37,6 +38,7 @@ class _ForgotPasswordMethodScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -56,8 +58,8 @@ class _ForgotPasswordMethodScreenState
           onPressed: () => context.pop(),
         ),
         centerTitle: true,
-        title: const Text(
-          '비밀번호 찾기',
+        title: Text(
+          l10n.forgot_title,
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 20,
@@ -78,8 +80,8 @@ class _ForgotPasswordMethodScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                      const Text(
-                        '가입 시 사용한 이메일을 입력해 주세요.\n비밀번호 재설정 코드를 보내드립니다.',
+                      Text(
+                        l10n.forgot_description,
                         style: TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
@@ -91,8 +93,8 @@ class _ForgotPasswordMethodScreenState
                       ),
                       const SizedBox(height: 32),
                       // 이메일 입력 필드
-                      const Text(
-                        '이메일',
+                      Text(
+                        l10n.input_email,
                         style: TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
@@ -189,6 +191,7 @@ class _ForgotPasswordMethodScreenState
   }
 
   Widget _buildSendCodeButton() {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: _isSending ? null : _handleSendCode,
       child: Container(
@@ -211,8 +214,8 @@ class _ForgotPasswordMethodScreenState
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text(
-                  '코드 보내기',
+              : Text(
+                  l10n.btn_sendCode,
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 18,
@@ -229,15 +232,16 @@ class _ForgotPasswordMethodScreenState
   Future<void> _handleSendCode() async {
     if (_isSending) return;
 
+    final l10n = AppLocalizations.of(context);
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      setState(() => _emailError = '이메일을 입력해 주세요.');
+      setState(() => _emailError = l10n.validation_enterEmail);
       return;
     }
 
     if (!_isValidEmail(email)) {
-      setState(() => _emailError = '올바른 이메일 형식을 입력해 주세요.');
+      setState(() => _emailError = l10n.validation_invalidEmail);
       return;
     }
 
@@ -257,7 +261,8 @@ class _ForgotPasswordMethodScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '코드 전송 중 오류가 발생했습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.error(context, message: l10n.error_sendCode);
     } finally {
       if (mounted) setState(() => _isSending = false);
     }

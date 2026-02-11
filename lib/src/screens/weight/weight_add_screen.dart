@@ -10,6 +10,7 @@ import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WeightAddScreen extends StatefulWidget {
   final DateTime date;
@@ -109,7 +110,8 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     }
 
     if (_activePetId == null) {
-      AppSnackBar.warning(context, message: '활성 펫을 찾을 수 없습니다.');
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.warning(context, message: l10n.error_noPetFound);
       return;
     }
 
@@ -136,14 +138,16 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
       if (mounted) {
         // 성공 메시지
-        AppSnackBar.success(context, message: '오늘의 체중이 기록되었습니다!');
+        final l10n = AppLocalizations.of(context);
+        AppSnackBar.success(context, message: l10n.weight_recordSuccess);
 
         // 이전 화면으로 돌아가며 refresh 신호 전달
         context.pop(true);
       }
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, message: '저장에 실패했습니다. 다시 시도해 주세요.');
+        final l10n = AppLocalizations.of(context);
+        AppSnackBar.error(context, message: l10n.error_saveFailed(e.toString()));
       }
     } finally {
       if (mounted) {
@@ -156,6 +160,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -166,7 +171,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          '체중',
+          l10n.weight_title,
           style: AppTypography.bodyLarge.copyWith(
             fontWeight: FontWeight.w600,
             color: AppColors.brandPrimary,
@@ -219,6 +224,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   }
 
   Widget _buildTopContent() {
+    final l10n = AppLocalizations.of(context);
     final displayWeight = _weightController.text.isEmpty
         ? '0.00'
         : _weightController.text;
@@ -229,7 +235,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '몸무게*',
+              l10n.weight_bodyWeight,
               style: AppTypography.bodyLarge.copyWith(
                 fontWeight: FontWeight.w600,
                 color: AppColors.nearBlack,
@@ -284,12 +290,12 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        _buildBcsScale(),
+        _buildBcsScale(l10n),
       ],
     );
   }
 
-  Widget _buildBcsScale() {
+  Widget _buildBcsScale(AppLocalizations l10n) {
     return Column(
       children: [
         Stack(
@@ -347,7 +353,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          '$_bcsLevel단계',
+          l10n.bhi_stageNumber(_bcsLevel),
           style: AppTypography.bodyLarge.copyWith(
             fontWeight: FontWeight.w600,
             color: AppColors.nearBlack,
@@ -441,6 +447,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   }
 
   Widget _buildDateCard() {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -496,7 +503,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  '여기를 눌러 스티커를 추가해 보세요.',
+                  l10n.weight_addStickerHint,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.mediumGray,
                   ),
@@ -510,6 +517,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   }
 
   Widget _buildWeightField() {
+    final l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: _weightController,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -521,7 +529,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
-        labelText: '체중 입력 (g)',
+        labelText: l10n.weight_inputLabel,
         labelStyle: AppTypography.bodyLarge.copyWith(
           color: AppColors.mediumGray,
         ),
@@ -552,14 +560,14 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return '체중을 입력해주세요.';
+          return l10n.validation_enterWeight;
         }
         final weight = double.tryParse(value);
         if (weight == null) {
-          return '올바른 숫자를 입력해주세요.';
+          return l10n.validation_enterValidNumber;
         }
         if (weight <= 0) {
-          return '체중은 0보다 커야 합니다.';
+          return l10n.validation_weightGreaterThanZero;
         }
         return null;
       },
@@ -567,6 +575,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   }
 
   Widget _buildSaveButton(Size size) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: _isLoading ? null : _onSave,
       child: Container(
@@ -606,7 +615,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                 ),
               )
             : Text(
-                '저장하기',
+                l10n.btn_saveRecord,
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
@@ -618,7 +627,16 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   }
 
   String _formatDateDisplay(DateTime date) {
-    final weekdays = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+    final l10n = AppLocalizations.of(context);
+    final weekdays = [
+      l10n.datetime_weekdayFull_sun,
+      l10n.datetime_weekdayFull_mon,
+      l10n.datetime_weekdayFull_tue,
+      l10n.datetime_weekdayFull_wed,
+      l10n.datetime_weekdayFull_thu,
+      l10n.datetime_weekdayFull_fri,
+      l10n.datetime_weekdayFull_sat,
+    ];
     final weekday = weekdays[(date.weekday % 7)];
     return '${date.day} $weekday';
   }
@@ -640,23 +658,25 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   }
 
   String _getBcsDescription(int level) {
+    final l10n = AppLocalizations.of(context);
     switch (level) {
       case 1:
-        return '뼈가 쉽게 만져지고 옆에서 봐도 매우 마른 모습이에요.\n조금 더 영양을 챙겨 주세요.';
+        return l10n.weight_bcs1;
       case 2:
-        return '갈비뼈가 잘 느껴지고 얇은 실루엣입니다.\n체중이 낮아진 편이라 조금 더 먹이를 늘려 주세요.';
+        return l10n.weight_bcs2;
       case 3:
-        return '갈비뼈가 보이진 않지만 살짝 만지면 쉽게 느껴져요.\n옆에서 봤을 때 배가 쑥 들어간 부분이 보여요.';
+        return l10n.weight_bcs3;
       case 4:
-        return '갈비뼈가 만져지지만 살짝 지방층이 느껴져요.\n옆모습이 둥글게 보이고 체중이 살짝 늘었어요.';
+        return l10n.weight_bcs4;
       case 5:
       default:
-        return '갈비뼈가 잘 만져지지 않고 옆모습이 동그랗게 보입니다.\n먹이량을 줄이고 활동량을 늘려 주세요.';
+        return l10n.weight_bcs5;
     }
   }
   String _formatLunarDisplay(DateTime date) {
+    final l10n = AppLocalizations.of(context);
     final lunarMonth = (date.month - 1) % 12 + 1;
     final lunarDay = ((date.day + 15 - 1) % 30) + 1;
-    return '음력 $lunarMonth월 $lunarDay일';
+    return l10n.datetime_lunar(lunarMonth, lunarDay);
   }
 }

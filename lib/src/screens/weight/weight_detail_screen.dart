@@ -13,6 +13,7 @@ import '../../services/pet/active_pet_notifier.dart';
 import '../../router/route_names.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 class WeightDetailScreen extends StatefulWidget {
   const WeightDetailScreen({super.key});
@@ -33,7 +34,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final int _selectedDay = DateTime.now().day;
   List<WeightRecord> _weightRecords = [];
   List<ScheduleRecord> _scheduleRecords = [];
-  String _petName = '사랑이';
+  String _petName = '';
   String? _activePetId;
   bool _isLoading = true;
   List<Pet> _petList = [];
@@ -240,11 +241,12 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     }
 
     if (_activePetId == null) {
+      final l10n = AppLocalizations.of(context);
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: _buildAppBar(),
-        body: const Center(
-          child: Text('활성화된 펫이 없습니다. 펫을 먼저 추가해주세요.'),
+        body: Center(
+          child: Text(l10n.weightDetail_noPet),
         ),
       );
     }
@@ -288,6 +290,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final l10n = AppLocalizations.of(context);
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -297,9 +300,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         onPressed: _handleBack,
       ),
       centerTitle: true,
-      title: const Text(
-        '기록',
-        style: TextStyle(
+      title: Text(
+        l10n.weightDetail_title,
+        style: const TextStyle(
           fontFamily: 'Pretendard',
           fontSize: 20,
           fontWeight: FontWeight.w500,
@@ -311,12 +314,13 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildHeaderText() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         children: [
           Text(
-            ' 꾸준히 기록을 남기며',
+            l10n.weightDetail_headerLine1,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontFamily: 'Pretendard',
@@ -328,7 +332,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
           ),
           Text(
-            '$_petName 체중 변화를 한 눈에!',
+            l10n.weightDetail_headerLine2(_petName.isNotEmpty ? _petName : l10n.pet_defaultName),
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontFamily: 'Pretendard',
@@ -340,10 +344,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '지금 바로 기록하고 우리 아이 건강 상태를',
+          Text(
+            l10n.weightDetail_subLine1,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w400,
@@ -351,10 +355,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               height: 1.5,
             ),
           ),
-          const Text(
-            '편하게 관리해 보세요.',
+          Text(
+            l10n.weightDetail_subLine2,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w400,
@@ -368,6 +372,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildPeriodToggle() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 32),
       child: Align(
@@ -394,7 +399,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      '주',
+                      l10n.weightDetail_toggleWeek,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 13,
@@ -418,7 +423,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      '월',
+                      l10n.weightDetail_toggleMonth,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 13,
@@ -471,10 +476,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     required int selectedLabelIdx,
   }) {
     if (spots.isEmpty) {
-      return const Center(
+      final l10n = AppLocalizations.of(context);
+      return Center(
         child: Text(
-          '데이터가 없습니다',
-          style: TextStyle(
+          l10n.common_noData,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
             color: AppColors.mediumGray,
@@ -703,7 +709,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildWeeklyDaysChart() {
-    final weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+    final l10n = AppLocalizations.of(context);
+    final weekdays = [l10n.datetime_weekday_sun, l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat];
     final weeklyData = _calculateWeeklyData();
     final spots = weeklyData.entries
         .map((e) => FlSpot(e.key.toDouble(), e.value))
@@ -927,7 +934,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildCalendarWeekdays() {
-    const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+    final l10n = AppLocalizations.of(context);
+    final weekdays = [l10n.datetime_weekday_sun, l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat];
     return Row(
       children: weekdays.map((day) {
         return Expanded(
@@ -1083,13 +1091,15 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         await _loadScheduleData();
       } catch (e) {
         if (mounted) {
-          AppSnackBar.error(context, message: '일정 저장 중 오류가 발생했습니다.');
+          final l10n = AppLocalizations.of(context);
+          AppSnackBar.error(context, message: l10n.schedule_saveError);
         }
       }
     }
   }
 
   Widget _buildScheduleList() {
+    final l10n = AppLocalizations.of(context);
     // Filter schedules for the selected month
     final monthSchedules = _scheduleRecords.where((record) {
       return record.startTime.year == _selectedYear &&
@@ -1117,9 +1127,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 color: AppColors.mediumGray.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 12),
-              const Text(
-                '등록된 일정이 없습니다',
-                style: TextStyle(
+              Text(
+                l10n.weightDetail_noSchedule,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -1128,9 +1138,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                '아래 버튼을 눌러 일정을 추가해보세요',
-                style: TextStyle(
+              Text(
+                l10n.weightDetail_addScheduleHint,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 12,
                   color: AppColors.mediumGray,
@@ -1162,9 +1172,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '이번 달 일정',
-            style: TextStyle(
+          Text(
+            l10n.weightDetail_monthSchedule,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -1180,7 +1190,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildScheduleDateGroup(DateTime date, List<ScheduleRecord> schedules) {
-    final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+    final l10n = AppLocalizations.of(context);
+    final weekdays = [l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat, l10n.datetime_weekday_sun];
     final weekday = weekdays[(date.weekday - 1) % 7];
     final isToday = date.year == DateTime.now().year &&
         date.month == DateTime.now().month &&
@@ -1211,9 +1222,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                     color: AppColors.brandPrimary,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Text(
-                    '오늘',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.weightDetail_today,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -1359,6 +1370,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildWeightRecordsList() {
+    final l10n = AppLocalizations.of(context);
     final monthRecords = _weightRecords.where((record) =>
         record.date.year == _selectedYear &&
         record.date.month == _selectedMonth).toList()
@@ -1382,9 +1394,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 color: AppColors.mediumGray.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 12),
-              const Text(
-                '이번 달 체중 기록이 없습니다',
-                style: TextStyle(
+              Text(
+                l10n.weightDetail_noWeightRecord,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -1404,7 +1416,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$_selectedMonth월 체중 기록',
+            l10n.weightDetail_monthWeightRecord(_selectedMonth),
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -1415,7 +1427,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           ),
           const SizedBox(height: 12),
           ...monthRecords.map((record) {
-            final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+            final weekdays = [l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat, l10n.datetime_weekday_sun];
             final weekday = weekdays[(record.date.weekday - 1) % 7];
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -1458,6 +1470,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildAddRecordButton() {
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       top: false,
       child: Padding(
@@ -1475,7 +1488,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 await _loadScheduleData();
               } catch (e) {
                 if (mounted) {
-                  AppSnackBar.error(context, message: '일정 저장 중 오류가 발생했습니다.');
+                  AppSnackBar.error(context, message: l10n.schedule_saveError);
                 }
               }
             }
@@ -1505,9 +1518,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  '기록 추가',
-                  style: TextStyle(
+                Text(
+                  l10n.btn_addRecord,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
