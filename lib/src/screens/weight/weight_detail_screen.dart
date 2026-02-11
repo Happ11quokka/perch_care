@@ -447,8 +447,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     return SizedBox(
       height: 260,
       child: _isWeeklyView
-          ? _buildMonthlyOverviewChart()
-          : _buildWeeklyDaysChart(),
+          ? _buildWeeklyDaysChart()
+          : _buildMonthlyOverviewChart(),
     );
   }
 
@@ -662,9 +662,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                               style: TextStyle(
                                 fontFamily: 'Pretendard',
                                 fontSize: 13,
-                                fontWeight: FontWeight.w400,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                                 color: isSelected
-                                    ? Colors.white
+                                    ? AppColors.brandPrimary
                                     : AppColors.mediumGray,
                                 letterSpacing: -0.13,
                               ),
