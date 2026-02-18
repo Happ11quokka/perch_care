@@ -685,6 +685,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
               ),
               child: TextField(
                 controller: _inputController,
+                onTapOutside: (event) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   hintText: l10n.chatbot_inputHint,

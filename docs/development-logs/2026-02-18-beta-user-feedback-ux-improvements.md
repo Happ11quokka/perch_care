@@ -37,6 +37,7 @@
 | 15 | UX | 기록/앵박사 페이지 코치마크 가이드 확장 | 완료 |
 | 16 | 버그/기능 | 앵박사 다국어 답변 미매칭 + 기록 미반영 + API 파라미터 미전달 | 완료 |
 | 17 | 버그 | 체중 기록 화면 하드코딩 한국어 → 로컬라이제이션 미적용 | 완료 |
+| 18 | 버그 | 앵박사 채팅 입력 키보드 외부 탭 시 dismiss 안됨 | 완료 |
 
 ---
 
@@ -616,3 +617,32 @@ response = await _openai_client.chat.completions.create(
 |----|--------|------|--------|
 | `weightDetail_monthChartLabel` | {month}월 | M{month} | {month}月 |
 | `schedule_dateDisplay` | {month}월 {day}일 ({weekday}) | {month}/{day} ({weekday}) | {month}月{day}日（{weekday}） |
+
+---
+
+## 18. 앵박사 채팅 입력 키보드 외부 탭 시 dismiss 안됨
+
+**파일**: [ai_encyclopedia_screen.dart](../../lib/src/screens/ai_encyclopedia/ai_encyclopedia_screen.dart)
+
+### 문제
+앵박사(AI Encyclopedia) 화면에서 하단 채팅 입력 `TextField`를 탭하면 키보드가 올라오는데, 화면의 다른 영역(메시지 목록, 빈 영역 등)을 탭해도 키보드가 사라지지 않음.
+
+### 원인
+`_buildInputArea()`(L686)의 `TextField`에 키보드 dismiss 메커니즘이 전혀 없었음:
+1. `FocusNode` 미할당
+2. `onTapOutside` 콜백 없음
+3. 스크린 body에 unfocus용 `GestureDetector` 없음
+
+→ 키보드가 올라온 후 외부 탭으로 포커스를 해제할 방법이 없었음.
+
+### 수정
+`TextField`에 `onTapOutside` 콜백 한 줄 추가 (Flutter 3.7+ 지원):
+```dart
+TextField(
+  controller: _inputController,
+  onTapOutside: (event) => FocusScope.of(context).unfocus(),  // 추가
+  decoration: InputDecoration(...),
+  ...
+)
+```
+외부 영역 탭 시 `FocusScope.unfocus()`가 호출되어 키보드가 자동으로 dismiss됨.
