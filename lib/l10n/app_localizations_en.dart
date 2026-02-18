@@ -53,6 +53,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get common_registered => 'Registered successfully.';
 
   @override
+  String get common_collapse => 'Collapse';
+
+  @override
+  String common_showAll(int count) {
+    return 'Show all ($count)';
+  }
+
+  @override
   String get pet_loadError => 'Failed to load pet information.';
 
   @override
@@ -386,6 +394,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String weightDetail_yearMonth(int year, int month) {
     return '$month $year';
+  }
+
+  @override
+  String weightDetail_monthChartLabel(int month) {
+    return 'M$month';
+  }
+
+  @override
+  String schedule_dateDisplay(int month, int day, String weekday) {
+    return '$month/$day ($weekday)';
   }
 
   @override
@@ -1043,6 +1061,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get schedule_saveError => 'Error saving schedule.';
 
   @override
+  String get schedule_deleted => 'Schedule deleted.';
+
+  @override
+  String get schedule_deleteError => 'Failed to delete schedule.';
+
+  @override
   String schedule_reminderMinutes(int minutes) {
     return '$minutes min before';
   }
@@ -1052,4 +1076,214 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get btn_saveRecord => 'Save Record';
+
+  @override
+  String get error_network => 'Please check your network connection.';
+
+  @override
+  String get error_server =>
+      'A temporary server issue occurred. Please try again later.';
+
+  @override
+  String get error_authRequired => 'Login is required.';
+
+  @override
+  String get error_conflict => 'This information is already registered.';
+
+  @override
+  String get error_invalidData => 'Please check your input again.';
+
+  @override
+  String get error_notFound => 'The requested information could not be found.';
+
+  @override
+  String get error_savePetFailed =>
+      'Failed to save pet info. Please try again.';
+
+  @override
+  String get error_saveWeightFailed =>
+      'Failed to save weight record. Please try again.';
+
+  @override
+  String get coach_wciCard_title => 'Health Status';
+
+  @override
+  String get coach_wciCard_body =>
+      'Check WCI health status here.\nIt gets more accurate with more data!';
+
+  @override
+  String get coach_weightCard_title => 'Weight Record';
+
+  @override
+  String get coach_weightCard_body =>
+      'Record weight here!\nDaily tracking helps monitor health changes.';
+
+  @override
+  String get coach_foodCard_title => 'Food Record';
+
+  @override
+  String get coach_foodCard_body =>
+      'Record food intake here.\nIt helps with accurate health analysis.';
+
+  @override
+  String get coach_healthSignalCard_title => 'Today\'s Health Signal';
+
+  @override
+  String get coach_healthSignalCard_body =>
+      'Check AI-analyzed health signals here.';
+
+  @override
+  String get coach_waterCard_title => 'Water Record';
+
+  @override
+  String get coach_waterCard_body =>
+      'Record water intake here.\nHydration is key to health management.';
+
+  @override
+  String get coach_recordsTab_title => 'Records Tab';
+
+  @override
+  String get coach_recordsTab_body =>
+      'View weight changes and schedules\nat a glance here.';
+
+  @override
+  String get coach_chatbotTab_title => 'Dr. Parrot';
+
+  @override
+  String get coach_chatbotTab_body =>
+      'Have questions about parrots?\nAsk our AI Dr. Parrot!';
+
+  @override
+  String get coach_recordToggle_title => 'Period Toggle';
+
+  @override
+  String get coach_recordToggle_body =>
+      'Tap Weekly/Monthly to view weight changes by period.';
+
+  @override
+  String get coach_recordChart_title => 'Weight Chart';
+
+  @override
+  String get coach_recordChart_body =>
+      'See your weight trends at a glance in the chart.';
+
+  @override
+  String get coach_recordCalendar_title => 'Calendar';
+
+  @override
+  String get coach_recordCalendar_body =>
+      'Select a date to view records for that day.';
+
+  @override
+  String get coach_recordAddBtn_title => 'Add Record';
+
+  @override
+  String get coach_recordAddBtn_body =>
+      'Tap this button to add a new weight record.';
+
+  @override
+  String get coach_chatSuggestion_title => 'Suggestions';
+
+  @override
+  String get coach_chatSuggestion_body =>
+      'Tap a topic to instantly ask the AI.';
+
+  @override
+  String get coach_chatInput_title => 'Ask a Question';
+
+  @override
+  String get coach_chatInput_body =>
+      'Type your own question to ask the AI doctor.';
+
+  @override
+  String get coach_next => 'Next';
+
+  @override
+  String get coach_gotIt => 'Got it!';
+
+  @override
+  String get coach_skip => 'Skip';
+
+  @override
+  String get weight_selectTime => 'Measurement Time';
+
+  @override
+  String get weight_timeNotRecorded => 'Time not recorded';
+
+  @override
+  String get weight_dailyAverage => 'Daily Avg';
+
+  @override
+  String weight_multipleRecords(int count) {
+    return '$count measurements';
+  }
+
+  @override
+  String get weight_addAnother => 'Add Another';
+
+  @override
+  String get weight_deleteRecord => 'Delete this record?';
+
+  @override
+  String get weight_deleteConfirm => 'Delete';
+
+  @override
+  String get weight_amPeriod => 'AM';
+
+  @override
+  String get weight_pmPeriod => 'PM';
+
+  @override
+  String get diet_serving => 'Served';
+
+  @override
+  String get diet_eating => 'Eaten';
+
+  @override
+  String get diet_addServing => 'Add Serving Record';
+
+  @override
+  String get diet_addEating => 'Add Eating Record';
+
+  @override
+  String get diet_addRecord => 'Add Record';
+
+  @override
+  String get diet_totalServed => 'Total Served';
+
+  @override
+  String get diet_totalEaten => 'Total Eaten';
+
+  @override
+  String get diet_eatingRate => 'Eating Rate';
+
+  @override
+  String diet_eatingRateValue(int rate) {
+    return '$rate%';
+  }
+
+  @override
+  String get diet_selectTime => 'Serving/Eating Time';
+
+  @override
+  String diet_servingSummary(int count, String grams) {
+    return 'Served ${count}x · ${grams}g';
+  }
+
+  @override
+  String diet_eatingSummary(int count, String grams) {
+    return 'Eaten ${count}x · ${grams}g';
+  }
+
+  @override
+  String get diet_selectType => 'Record Type';
+
+  @override
+  String get diet_foodName => 'Food Name';
+
+  @override
+  String get diet_amount => 'Amount (g)';
+
+  @override
+  String get diet_memo => 'Memo (optional)';
 }

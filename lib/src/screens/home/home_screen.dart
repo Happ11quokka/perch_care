@@ -11,6 +11,9 @@ import '../../services/storage/local_image_storage_service.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../models/pet.dart';
 import '../../models/bhi_result.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
+import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/coach_mark_overlay.dart';
 import '../../../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -39,6 +42,16 @@ class _HomeScreenState extends State<HomeScreen> {
   // WCI 레벨 (0: 데이터 없음, 1~5: 각 단계)
   int _wciLevel = 0;
 
+  // 코치마크 타겟 키
+  final _wciCardKey = GlobalKey();
+  final _weightCardKey = GlobalKey();
+  final _waterCardKey = GlobalKey();
+  final _foodCardKey = GlobalKey();
+  final _healthSignalCardKey = GlobalKey();
+
+  // 스크롤 컨트롤러 (코치마크 자동 스크롤용)
+  final _scrollController = ScrollController();
+
   // WCI 단계별 설명 텍스트를 가져오는 메소드
   Map<int, String> _getWciDescriptions(AppLocalizations l10n) => {
     1: l10n.wci_level1,
@@ -60,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     ActivePetNotifier.instance.removeListener(_onActivePetChanged);
     super.dispose();
   }
@@ -135,6 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (activePet != null) {
         _loadBhi(activePet.id);
       }
+
+      // 첫 사용자 코치마크 표시
+      _maybeShowCoachMarks();
     } catch (e) {
       debugPrint('[HomeScreen] 펫 목록 로드 실패: $e');
       if (mounted) {
@@ -143,6 +160,72 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     }
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final coachService = CoachMarkService.instance;
+    if (await coachService.hasSeenHomeCoachMarks()) return;
+
+    // 레이아웃 안정화 대기
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+
+    CoachMarkOverlay.show(
+      context,
+      scrollController: _scrollController,
+      steps: [
+        // 1. WCI 건강 상태 카드
+        CoachMarkStep(
+          targetKey: _wciCardKey,
+          title: l10n.coach_wciCard_title,
+          body: l10n.coach_wciCard_body,
+        ),
+        // 2. 체중 카드
+        CoachMarkStep(
+          targetKey: _weightCardKey,
+          title: l10n.coach_weightCard_title,
+          body: l10n.coach_weightCard_body,
+        ),
+        // 3. 수분 카드
+        CoachMarkStep(
+          targetKey: _waterCardKey,
+          title: l10n.coach_waterCard_title,
+          body: l10n.coach_waterCard_body,
+        ),
+        // 4. 사료 카드
+        CoachMarkStep(
+          targetKey: _foodCardKey,
+          title: l10n.coach_foodCard_title,
+          body: l10n.coach_foodCard_body,
+        ),
+        // 5. 건강 신호 카드
+        CoachMarkStep(
+          targetKey: _healthSignalCardKey,
+          title: l10n.coach_healthSignalCard_title,
+          body: l10n.coach_healthSignalCard_body,
+        ),
+        // 6. 기록 탭 (하단 네비게이션)
+        CoachMarkStep(
+          targetKey: BottomNavBar.recordsTabKey,
+          title: l10n.coach_recordsTab_title,
+          body: l10n.coach_recordsTab_body,
+          isScrollable: false,
+        ),
+        // 7. 앵박사 탭 (하단 네비게이션)
+        CoachMarkStep(
+          targetKey: BottomNavBar.chatbotTabKey,
+          title: l10n.coach_chatbotTab_title,
+          body: l10n.coach_chatbotTab_body,
+          isScrollable: false,
+        ),
+      ],
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () => coachService.markHomeCoachMarksSeen(),
+    );
   }
 
   Future<void> _loadBhi(String petId) async {
@@ -177,13 +260,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(height: MediaQuery.of(context).padding.top + 140),
                     Expanded(
                       child: SingleChildScrollView(
+                        controller: _scrollController,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 17),
                           child: Column(
                             children: [
                               const SizedBox(height: 24),
                               // WCI 건강 상태 카드
-                              _buildWCICard(),
+                              Container(key: _wciCardKey, child: _buildWCICard()),
                               const SizedBox(height: 12),
                               // 하단 4개 카드
                               _buildBottomCards(),
@@ -737,28 +821,34 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildDataCard(
-                title: l10n.home_weight,
-                subtitle: l10n.home_weightHint,
-                iconPath: 'assets/images/home_vector/weight.svg',
-                hasData: _hasWeightData,
-                onTap: () async {
-                  await context.pushNamed(RouteNames.weightRecord);
-                  if (_activePet != null) _loadBhi(_activePet!.id);
-                },
+              child: Container(
+                key: _weightCardKey,
+                child: _buildDataCard(
+                  title: l10n.home_weight,
+                  subtitle: l10n.home_weightHint,
+                  iconPath: 'assets/images/home_vector/weight.svg',
+                  hasData: _hasWeightData,
+                  onTap: () async {
+                    await context.pushNamed(RouteNames.weightRecord);
+                    if (_activePet != null) _loadBhi(_activePet!.id);
+                  },
+                ),
               ),
             ),
             const SizedBox(width: 6),
             Expanded(
-              child: _buildDataCard(
-                title: l10n.home_food,
-                subtitle: l10n.home_foodHint,
-                iconPath: 'assets/images/home_vector/eat.svg',
-                hasData: _hasFoodData,
-                onTap: () async {
-                  await context.pushNamed(RouteNames.foodRecord);
-                  if (_activePet != null) _loadBhi(_activePet!.id);
-                },
+              child: Container(
+                key: _foodCardKey,
+                child: _buildDataCard(
+                  title: l10n.home_food,
+                  subtitle: l10n.home_foodHint,
+                  iconPath: 'assets/images/home_vector/eat.svg',
+                  hasData: _hasFoodData,
+                  onTap: () async {
+                    await context.pushNamed(RouteNames.foodRecord);
+                    if (_activePet != null) _loadBhi(_activePet!.id);
+                  },
+                ),
               ),
             ),
           ],
@@ -768,20 +858,26 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildDataCard(
-                title: l10n.home_water,
-                subtitle: l10n.home_waterHint,
-                iconPath: 'assets/images/home_vector/water.svg',
-                hasData: _hasWaterData,
-                onTap: () async {
-                  await context.pushNamed(RouteNames.waterRecord);
-                  if (_activePet != null) _loadBhi(_activePet!.id);
-                },
+              child: Container(
+                key: _waterCardKey,
+                child: _buildDataCard(
+                  title: l10n.home_water,
+                  subtitle: l10n.home_waterHint,
+                  iconPath: 'assets/images/home_vector/water.svg',
+                  hasData: _hasWaterData,
+                  onTap: () async {
+                    await context.pushNamed(RouteNames.waterRecord);
+                    if (_activePet != null) _loadBhi(_activePet!.id);
+                  },
+                ),
               ),
             ),
             const SizedBox(width: 6),
             Expanded(
-              child: _buildHealthSignalCard(),
+              child: Container(
+                key: _healthSignalCardKey,
+                child: _buildHealthSignalCard(),
+              ),
             ),
           ],
         ),

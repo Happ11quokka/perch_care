@@ -6,7 +6,7 @@ import '../../models/weight_record.dart';
 import '../api/api_client.dart';
 
 /// 체중 데이터 관리 서비스
-/// FastAPI 백엔드와 연동
+/// FastAPI 백엔드와 연동, 1일 다중 기록 지원
 class WeightService {
   WeightService();
 
@@ -18,6 +18,15 @@ class WeightService {
   final Map<String, List<WeightRecord>> _recordsByPet = {};
   bool _isInitialized = false;
 
+  // 로컬 ID 생성용 카운터
+  int _localIdCounter = 0;
+
+  /// 로컬 전용 고유 ID 생성
+  String _generateLocalId() {
+    _localIdCounter++;
+    return 'local_${DateTime.now().millisecondsSinceEpoch}_$_localIdCounter';
+  }
+
   /// 모든 체중 기록 조회 (메모리 캐시)
   List<WeightRecord> getWeightRecords({String? petId}) {
     if (petId != null) {
@@ -25,8 +34,40 @@ class WeightService {
     }
 
     final allRecords = _recordsByPet.values.expand((records) => records).toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+      ..sort(_compareRecords);
     return List.unmodifiable(allRecords);
+  }
+
+  /// 특정 날짜의 모든 기록 리스트 반환 (다중 기록 지원)
+  List<WeightRecord> getRecordsByDate(DateTime date, {String? petId}) {
+    final normalizedDate = _normalizeDate(date);
+    final List<WeightRecord> result = [];
+
+    final Iterable<List<WeightRecord>> sources;
+    if (petId != null) {
+      final records = _recordsByPet[petId];
+      if (records == null) return result;
+      sources = [records];
+    } else {
+      sources = _recordsByPet.values;
+    }
+
+    for (final records in sources) {
+      result.addAll(records.where(
+        (record) => _normalizeDate(record.date) == normalizedDate,
+      ));
+    }
+
+    result.sort(_compareRecords);
+    return result;
+  }
+
+  /// 해당 날짜의 일평균 체중 반환
+  double? getDailyAverageWeight(DateTime date, {String? petId}) {
+    final records = getRecordsByDate(date, petId: petId);
+    if (records.isEmpty) return null;
+    final sum = records.fold(0.0, (total, r) => total + r.weight);
+    return sum / records.length;
   }
 
   /// 서버에서 전체 체중 기록을 불러와 캐시 업데이트
@@ -40,7 +81,7 @@ class WeightService {
           .toList();
 
       _recordsByPet[petId] = records
-        ..sort((a, b) => a.date.compareTo(b.date));
+        ..sort(_compareRecords);
       await _persistToStorage();
 
       return List.unmodifiable(_recordsByPet[petId]!);
@@ -59,6 +100,7 @@ class WeightService {
   }
 
   /// 특정 날짜의 체중 기록 조회 (캐시 → 서버 순으로 탐색)
+  /// 다중 기록 중 첫 번째 반환 (하위 호환성)
   Future<WeightRecord?> fetchRecordByDate(DateTime date, {String? petId}) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(date);
@@ -76,7 +118,7 @@ class WeightService {
 
       if (response != null) {
         final record = WeightRecord.fromJson(response);
-        _upsertLocal(record);
+        _insertLocal(record);
         await _persistToStorage();
         return record;
       }
@@ -86,6 +128,7 @@ class WeightService {
   }
 
   /// 로컬 캐시에서 특정 날짜의 체중 기록 조회 (서버 미사용)
+  /// 다중 기록 중 첫 번째 반환 (하위 호환성)
   Future<WeightRecord?> fetchLocalRecordByDate(
     DateTime date, {
     String? petId,
@@ -94,32 +137,13 @@ class WeightService {
     return getRecordByDate(date, petId: petId);
   }
 
-  /// 캐시에서 특정 날짜의 기록 반환
+  /// 캐시에서 특정 날짜의 기록 반환 (첫 번째, 하위 호환성)
   WeightRecord? getRecordByDate(DateTime date, {String? petId}) {
-    final normalizedDate = _normalizeDate(date);
-    final Iterable<List<WeightRecord>> sources;
-
-    if (petId != null) {
-      final records = _recordsByPet[petId];
-      if (records == null) return null;
-      sources = [records];
-    } else {
-      sources = _recordsByPet.values;
-    }
-
-    for (final records in sources) {
-      try {
-        return records.firstWhere(
-          (record) => _normalizeDate(record.date) == normalizedDate,
-        );
-      } catch (_) {
-        continue;
-      }
-    }
-    return null;
+    final records = getRecordsByDate(date, petId: petId);
+    return records.isNotEmpty ? records.first : null;
   }
 
-  /// 체중 기록 저장 또는 수정 (Upsert)
+  /// 체중 기록 저장 (서버에 전송 + 로컬 캐시)
   Future<void> saveWeightRecord(WeightRecord record) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(record.date);
@@ -130,15 +154,32 @@ class WeightService {
       if (record.memo != null) 'memo': record.memo,
     });
 
-    _upsertLocal(record.copyWith(date: normalizedDate));
-    await _persistToStorage();
+    // 서버 API는 날짜 기반 upsert이므로, 로컬에서만 다중 기록 관리
+    // 서버 전송은 가장 최근 기록으로 덮어쓰기됨
   }
 
-  /// 로컬 캐시에 체중 기록 저장 또는 수정 (서버 미사용)
+  /// 로컬 캐시에 체중 기록 추가 (다중 기록 지원)
   Future<void> saveLocalWeightRecord(WeightRecord record) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(record.date);
-    _upsertLocal(record.copyWith(date: normalizedDate));
+    final recordWithId = record.copyWith(
+      id: record.id ?? _generateLocalId(),
+      date: normalizedDate,
+    );
+    _insertLocal(recordWithId);
+    await _persistToStorage();
+  }
+
+  /// 특정 ID의 체중 기록 삭제 (로컬)
+  Future<void> deleteWeightRecordById(String recordId, String petId) async {
+    await _ensureInitialized();
+    final records = _recordsByPet[petId];
+    if (records == null) return;
+
+    records.removeWhere((r) => r.id == recordId);
+    if (records.isEmpty) {
+      _recordsByPet.remove(petId);
+    }
     await _persistToStorage();
   }
 
@@ -228,19 +269,29 @@ class WeightService {
     return date.toIso8601String().split('T').first;
   }
 
-  void _upsertLocal(WeightRecord record) {
-    final normalizedDate = _normalizeDate(record.date);
-    final normalizedRecord = record.copyWith(date: normalizedDate);
+  /// 레코드 정렬 비교: 날짜 → 시간 순
+  int _compareRecords(WeightRecord a, WeightRecord b) {
+    final dateCompare = a.date.compareTo(b.date);
+    if (dateCompare != 0) return dateCompare;
+    final aMinutes = (a.recordedHour ?? 0) * 60 + (a.recordedMinute ?? 0);
+    final bMinutes = (b.recordedHour ?? 0) * 60 + (b.recordedMinute ?? 0);
+    return aMinutes.compareTo(bMinutes);
+  }
+
+  /// 로컬 캐시에 기록 추가 (id 기반, 다중 기록 지원)
+  void _insertLocal(WeightRecord record) {
     final records = _recordsByPet.putIfAbsent(record.petId, () => []);
-    final index = records.indexWhere(
-      (r) => _normalizeDate(r.date) == normalizedDate,
-    );
-    if (index == -1) {
-      records.add(normalizedRecord);
+    if (record.id != null) {
+      final index = records.indexWhere((r) => r.id == record.id);
+      if (index != -1) {
+        records[index] = record;
+      } else {
+        records.add(record);
+      }
     } else {
-      records[index] = normalizedRecord;
+      records.add(record);
     }
-    records.sort((a, b) => a.date.compareTo(b.date));
+    records.sort(_compareRecords);
   }
 
   Future<void> _ensureInitialized() async {
@@ -257,15 +308,18 @@ class WeightService {
     for (final item in raw) {
       final map = jsonDecode(item) as Map<String, dynamic>;
       final record = WeightRecord(
+        id: map['id'] as String? ?? _generateLocalId(),
         petId: map['petId'] as String? ?? 'default',
         date: DateTime.parse(map['date'] as String),
         weight: (map['weight'] as num).toDouble(),
+        recordedHour: map['recordedHour'] as int?,
+        recordedMinute: map['recordedMinute'] as int?,
       );
       loaded.putIfAbsent(record.petId, () => []).add(record);
     }
 
     for (final entries in loaded.entries) {
-      entries.value.sort((a, b) => a.date.compareTo(b.date));
+      entries.value.sort(_compareRecords);
     }
 
     _recordsByPet
@@ -278,9 +332,12 @@ class WeightService {
     final data = _recordsByPet.values
         .expand((records) => records)
         .map((record) => jsonEncode({
+              'id': record.id,
               'petId': record.petId,
               'date': record.date.toIso8601String(),
               'weight': record.weight,
+              if (record.recordedHour != null) 'recordedHour': record.recordedHour,
+              if (record.recordedMinute != null) 'recordedMinute': record.recordedMinute,
             }))
         .toList();
     await prefs.setStringList(_storageKey, data);

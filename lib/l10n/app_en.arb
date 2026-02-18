@@ -15,6 +15,13 @@
   "common_saveError": "Error while saving: {error}",
   "common_updated": "Updated successfully.",
   "common_registered": "Registered successfully.",
+  "common_collapse": "Collapse",
+  "common_showAll": "Show all ({count})",
+  "@common_showAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "pet_loadError": "Failed to load pet information.",
 
   "onboarding_title": "Nice to meet you!",
@@ -126,6 +133,8 @@
   "weightDetail_toggleMonth": "M",
   "weightDetail_recordSummary": "{petName}'s weight recorded for {days} days",
   "weightDetail_yearMonth": "{month} {year}",
+  "weightDetail_monthChartLabel": "M{month}",
+  "schedule_dateDisplay": "{month}/{day} ({weekday})",
   "weightDetail_noPet": "No active pet. Please add a pet first.",
   "weightDetail_noSchedule": "No scheduled events",
   "weightDetail_addScheduleHint": "Tap the button below to add an event",
@@ -343,8 +352,98 @@
   "notification_daysAgo": "{days}d ago",
 
   "schedule_saveError": "Error saving schedule.",
+  "schedule_deleted": "Schedule deleted.",
+  "schedule_deleteError": "Failed to delete schedule.",
   "schedule_reminderMinutes": "{minutes} min before",
 
   "btn_save": "Save",
-  "btn_saveRecord": "Save Record"
+  "btn_saveRecord": "Save Record",
+
+  "error_network": "Please check your network connection.",
+  "error_server": "A temporary server issue occurred. Please try again later.",
+  "error_authRequired": "Login is required.",
+  "error_conflict": "This information is already registered.",
+  "error_invalidData": "Please check your input again.",
+  "error_notFound": "The requested information could not be found.",
+  "error_savePetFailed": "Failed to save pet info. Please try again.",
+  "error_saveWeightFailed": "Failed to save weight record. Please try again.",
+
+  "coach_wciCard_title": "Health Status",
+  "coach_wciCard_body": "Check WCI health status here.\nIt gets more accurate with more data!",
+  "coach_weightCard_title": "Weight Record",
+  "coach_weightCard_body": "Record weight here!\nDaily tracking helps monitor health changes.",
+  "coach_foodCard_title": "Food Record",
+  "coach_foodCard_body": "Record food intake here.\nIt helps with accurate health analysis.",
+  "coach_healthSignalCard_title": "Today's Health Signal",
+  "coach_healthSignalCard_body": "Check AI-analyzed health signals here.",
+  "coach_waterCard_title": "Water Record",
+  "coach_waterCard_body": "Record water intake here.\nHydration is key to health management.",
+  "coach_recordsTab_title": "Records Tab",
+  "coach_recordsTab_body": "View weight changes and schedules\nat a glance here.",
+  "coach_chatbotTab_title": "Dr. Parrot",
+  "coach_chatbotTab_body": "Have questions about parrots?\nAsk our AI Dr. Parrot!",
+  "coach_recordToggle_title": "Period Toggle",
+  "coach_recordToggle_body": "Tap Weekly/Monthly to view weight changes by period.",
+  "coach_recordChart_title": "Weight Chart",
+  "coach_recordChart_body": "See your weight trends at a glance in the chart.",
+  "coach_recordCalendar_title": "Calendar",
+  "coach_recordCalendar_body": "Select a date to view records for that day.",
+  "coach_recordAddBtn_title": "Add Record",
+  "coach_recordAddBtn_body": "Tap this button to add a new weight record.",
+  "coach_chatSuggestion_title": "Suggestions",
+  "coach_chatSuggestion_body": "Tap a topic to instantly ask the AI.",
+  "coach_chatInput_title": "Ask a Question",
+  "coach_chatInput_body": "Type your own question to ask the AI doctor.",
+  "coach_next": "Next",
+  "coach_gotIt": "Got it!",
+  "coach_skip": "Skip",
+
+  "weight_selectTime": "Measurement Time",
+  "weight_timeNotRecorded": "Time not recorded",
+  "weight_dailyAverage": "Daily Avg",
+  "weight_multipleRecords": "{count} measurements",
+  "@weight_multipleRecords": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weight_addAnother": "Add Another",
+  "weight_deleteRecord": "Delete this record?",
+  "weight_deleteConfirm": "Delete",
+  "weight_amPeriod": "AM",
+  "weight_pmPeriod": "PM",
+
+  "diet_serving": "Served",
+  "diet_eating": "Eaten",
+  "diet_addServing": "Add Serving Record",
+  "diet_addEating": "Add Eating Record",
+  "diet_addRecord": "Add Record",
+  "diet_totalServed": "Total Served",
+  "diet_totalEaten": "Total Eaten",
+  "diet_eatingRate": "Eating Rate",
+  "diet_eatingRateValue": "{rate}%",
+  "@diet_eatingRateValue": {
+    "placeholders": {
+      "rate": {"type": "int"}
+    }
+  },
+  "diet_selectTime": "Serving/Eating Time",
+  "diet_servingSummary": "Served {count}x · {grams}g",
+  "@diet_servingSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "grams": {"type": "String"}
+    }
+  },
+  "diet_eatingSummary": "Eaten {count}x · {grams}g",
+  "@diet_eatingSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "grams": {"type": "String"}
+    }
+  },
+  "diet_selectType": "Record Type",
+  "diet_foodName": "Food Name",
+  "diet_amount": "Amount (g)",
+  "diet_memo": "Memo (optional)"
 }

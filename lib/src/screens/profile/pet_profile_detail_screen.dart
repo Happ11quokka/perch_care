@@ -10,6 +10,7 @@ import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 
 /// 반려동물 프로필 상세/편집 화면
@@ -663,7 +664,11 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.common_saveError(e.toString()));
+      debugPrint('[PetProfileDetail] Save error: $e');
+      AppSnackBar.error(
+        context,
+        message: ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.petSave),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

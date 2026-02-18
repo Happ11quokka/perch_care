@@ -6,6 +6,11 @@ class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int>? onTap;
 
+  /// 코치마크에서 참조할 수 있는 정적 GlobalKey
+  static final homeTabKey = GlobalKey(debugLabel: 'bottomNav_home');
+  static final recordsTabKey = GlobalKey(debugLabel: 'bottomNav_records');
+  static final chatbotTabKey = GlobalKey(debugLabel: 'bottomNav_chatbot');
+
   const BottomNavBar({
     super.key,
     required this.currentIndex,
@@ -36,18 +41,21 @@ class BottomNavBar extends StatelessWidget {
             _buildNavItem(
               context: context,
               index: 0,
+              itemKey: homeTabKey,
               iconPath: 'assets/images/home.svg',
               onTap: () => onTap?.call(0),
             ),
             _buildNavItem(
               context: context,
               index: 1,
+              itemKey: recordsTabKey,
               iconPath: 'assets/images/calender.svg',
               onTap: () => onTap?.call(1),
             ),
             _buildNavItem(
               context: context,
               index: 2,
+              itemKey: chatbotTabKey,
               iconPath: 'assets/images/chat.svg',
               onTap: () => onTap?.call(2),
             ),
@@ -60,6 +68,7 @@ class BottomNavBar extends StatelessWidget {
   Widget _buildNavItem({
     required BuildContext context,
     required int index,
+    required GlobalKey itemKey,
     required String iconPath,
     required VoidCallback onTap,
   }) {
@@ -70,6 +79,7 @@ class BottomNavBar extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
+          key: itemKey,
           height: 92,
           decoration: const BoxDecoration(
             color: Colors.transparent,

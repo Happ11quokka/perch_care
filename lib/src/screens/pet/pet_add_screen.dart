@@ -11,6 +11,9 @@ import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
+import '../../services/weight/weight_service.dart';
+import '../../models/weight_record.dart';
+import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 
 /// 반려동물 등록/수정 화면 - Figma 디자인 기반
@@ -56,6 +59,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
   final _petService = PetService.instance;
   Pet? _existingPet;
 
+  // 필드별 검증 에러 추적
+  final Map<String, String?> _fieldErrors = {};
+
   // Raw values for gender and growth stage
   static const List<String> _genderValues = ['male', 'female', 'unknown'];
   static const List<String> _growthStageValues = ['rapid_growth', 'post_growth', 'adult'];
@@ -83,6 +89,10 @@ class _PetAddScreenState extends State<PetAddScreen> {
       _selectedGender = pet.gender;
       _selectedGrowthStage = pet.growthStage;
       _selectedBirthDate = pet.birthDate;
+      _selectedAdoptionDate = pet.adoptionDate;
+      if (pet.weight != null) {
+        _weightController.text = pet.weight!.toStringAsFixed(1);
+      }
 
       // 로컬 저장된 펫 이미지 로드
       final imageBytes = await LocalImageStorageService.instance.getImage(
@@ -220,6 +230,26 @@ class _PetAddScreenState extends State<PetAddScreen> {
         );
       }
 
+      // 새 펫 생성 시 초기 체중을 WeightRecord로 자동 생성
+      if (weightValue != null && _existingPet == null) {
+        try {
+          final weightService = WeightService();
+          final record = WeightRecord(
+            petId: savedPet.id,
+            date: DateTime.now(),
+            weight: weightValue,
+          );
+          await weightService.saveLocalWeightRecord(record);
+          try {
+            await weightService.saveWeightRecord(record);
+          } catch (_) {
+            debugPrint('[PetAdd] Backend weight save failed, local only');
+          }
+        } catch (e) {
+          debugPrint('[PetAdd] Initial weight record failed: $e');
+        }
+      }
+
       // 이미지를 SQLite에 저장
       if (_selectedImage != null) {
         final bytes = await _selectedImage!.readAsBytes();
@@ -253,7 +283,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.common_saveError(e.toString()));
+      debugPrint('[PetAdd] Save error: $e');
+      AppSnackBar.error(
+        context,
+        message: ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.petSave),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -373,6 +407,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
                         focusNode: _nameFocusNode,
                         hasFocus: _nameHasFocus,
                         hintText: l10n.pet_name_hint,
+                        fieldKey: 'name',
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return l10n.pet_name_hint;
@@ -474,60 +509,105 @@ class _PetAddScreenState extends State<PetAddScreen> {
     required FocusNode focusNode,
     required bool hasFocus,
     required String hintText,
+    String? fieldKey,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
     final hasValue = controller.text.isNotEmpty;
     final isActive = hasFocus || hasValue;
-    final borderColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final errorText = fieldKey != null ? _fieldErrors[fieldKey] : null;
+    final hasError = errorText != null;
+    final borderColor = hasError
+        ? const Color(0xFFFF572D)
+        : isActive
+            ? const Color(0xFFFF9A42)
+            : const Color(0xFF97928A);
     final bgColor = (hasFocus && hasValue)
         ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
         : Colors.white;
 
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: bgColor,
-        border: Border.all(color: borderColor, width: 1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          keyboardType: keyboardType,
-          validator: validator,
-          onChanged: (_) => setState(() {}),
-          style: const TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF1A1A1A),
-            letterSpacing: -0.35,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: bgColor,
+            border: Border.all(color: borderColor, width: 1),
+            borderRadius: BorderRadius.circular(16),
           ),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: const TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF97928A),
-              letterSpacing: -0.35,
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: TextFormField(
+              controller: controller,
+              focusNode: focusNode,
+              keyboardType: keyboardType,
+              validator: (value) {
+                final result = validator?.call(value);
+                if (fieldKey != null) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted && _fieldErrors[fieldKey] != result) {
+                      setState(() => _fieldErrors[fieldKey] = result);
+                    }
+                  });
+                }
+                return result;
+              },
+              onChanged: (_) {
+                if (fieldKey != null && _fieldErrors[fieldKey] != null) {
+                  setState(() => _fieldErrors[fieldKey] = null);
+                } else {
+                  setState(() {});
+                }
+              },
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF1A1A1A),
+                letterSpacing: -0.35,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF97928A),
+                  letterSpacing: -0.35,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                filled: false,
+                fillColor: Colors.transparent,
+                contentPadding: EdgeInsets.zero,
+                errorStyle: const TextStyle(height: 0, fontSize: 0),
+              ),
             ),
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            errorBorder: InputBorder.none,
-            focusedErrorBorder: InputBorder.none,
-            filled: false,
-            fillColor: Colors.transparent,
-            contentPadding: EdgeInsets.zero,
-            errorStyle: const TextStyle(height: 0, fontSize: 0),
           ),
         ),
-      ),
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Text(
+              errorText,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFFFF572D),
+                letterSpacing: -0.3,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 

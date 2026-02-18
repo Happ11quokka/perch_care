@@ -9,6 +9,8 @@ import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../utils/error_handler.dart';
+import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -30,6 +32,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   final _weightService = WeightService();
   final _petCache = PetLocalCacheService.instance;
   bool _isLoading = false;
+  TimeOfDay _selectedTime = TimeOfDay.now();
   double _sheetHeight = 0;
   final double _peekHeight = 260.0;
   double _expandedHeight = 0;
@@ -43,7 +46,6 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     _weightController.addListener(_onWeightChanged);
     Future.microtask(() async {
       await _loadActivePet();
-      await _loadExistingRecord();
     });
   }
 
@@ -83,26 +85,6 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     }
   }
 
-  /// 기존 기록이 있으면 로드
-  Future<void> _loadExistingRecord() async {
-    if (_activePetId == null) return;
-
-    final existingRecord = await _weightService.fetchLocalRecordByDate(
-      widget.date,
-      petId: _activePetId,
-    );
-
-    if (existingRecord != null && mounted) {
-      setState(() {
-        _weightController.text = existingRecord.weight.toStringAsFixed(1);
-        _sliderWeight = existingRecord.weight.clamp(40, 90).toDouble();
-        _bcsLevel = _mapWeightToBcsLevel(existingRecord.weight);
-      });
-    } else {
-      _sliderWeight = _sliderWeight.clamp(40, 90);
-    }
-  }
-
   /// 저장 버튼 클릭
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) {
@@ -125,6 +107,8 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         petId: _activePetId!,
         date: widget.date,
         weight: weight,
+        recordedHour: _selectedTime.hour,
+        recordedMinute: _selectedTime.minute,
       );
 
       // 로컬 캐시에 먼저 저장
@@ -136,18 +120,27 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         debugPrint('[WeightAdd] 백엔드 저장 실패, 로컬에만 저장됨');
       }
 
+      debugPrint('[WeightAdd] Save success, mounted=$mounted');
       if (mounted) {
         // 성공 메시지
         final l10n = AppLocalizations.of(context);
+        debugPrint('[WeightAdd] Showing success snackbar...');
         AppSnackBar.success(context, message: l10n.weight_recordSuccess);
+        debugPrint('[WeightAdd] Snackbar shown, waiting 1.2s before pop...');
 
-        // 이전 화면으로 돌아가며 refresh 신호 전달
-        context.pop(true);
+        // 스낵바를 사용자가 확인할 수 있도록 딜레이 후 이전 화면으로 돌아감
+        await Future.delayed(const Duration(milliseconds: 1200));
+        debugPrint('[WeightAdd] Delay done, mounted=$mounted, popping...');
+        if (mounted) context.pop(true);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
-        AppSnackBar.error(context, message: l10n.error_saveFailed(e.toString()));
+        debugPrint('[WeightAdd] Save error: $e');
+        AppSnackBar.error(
+          context,
+          message: ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.weightSave),
+        );
       }
     } finally {
       if (mounted) {
@@ -387,11 +380,6 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           _sheetHeight = _sheetHeight > midPoint ? _expandedHeight : _peekHeight;
         });
       },
-      onTap: () {
-        setState(() {
-          _sheetHeight = _sheetHeight == _peekHeight ? _expandedHeight : _peekHeight;
-        });
-      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
@@ -412,13 +400,20 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         ),
         child: Column(
           children: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              width: 36,
-              height: 5,
-              decoration: BoxDecoration(
-                color: AppColors.lightGray,
-                borderRadius: BorderRadius.circular(2.5),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _sheetHeight = _sheetHeight == _peekHeight ? _expandedHeight : _peekHeight;
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                width: 36,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
               ),
             ),
             Expanded(
@@ -432,6 +427,8 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildDateCard(),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildTimeCard(),
                     const SizedBox(height: AppSpacing.xl),
                     _buildWeightField(),
                     const SizedBox(height: AppSpacing.lg),
@@ -439,6 +436,71 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeCard() {
+    final l10n = AppLocalizations.of(context);
+    final isAM = _selectedTime.hour < 12;
+    final displayHour = _selectedTime.hour == 0
+        ? 12
+        : (_selectedTime.hour > 12 ? _selectedTime.hour - 12 : _selectedTime.hour);
+    final period = isAM ? l10n.weight_amPeriod : l10n.weight_pmPeriod;
+    final timeText = '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
+
+    return GestureDetector(
+      onTap: () async {
+        final picked = await showAnalogTimePicker(
+          context: context,
+          initialTime: _selectedTime,
+        );
+        if (picked != null && mounted) {
+          setState(() {
+            _selectedTime = picked;
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: AppColors.lightGray),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.access_time,
+              size: 20,
+              color: AppColors.brandPrimary,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              l10n.weight_selectTime,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.mediumGray,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              timeText,
+              style: AppTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.nearBlack,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: AppColors.mediumGray,
             ),
           ],
         ),

@@ -20,6 +20,7 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
   late int _selectedHour;
   late int _selectedMinute;
   late bool _isAM;
+  bool _isSelectingHour = true; // true=시 선택, false=분 선택
 
   @override
   void initState() {
@@ -39,11 +40,28 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
     var angle = math.atan2(dx, -dy);
     if (angle < 0) angle += 2 * math.pi;
 
-    // 시간 계산 (1-12)
-    final hour = ((angle / (2 * math.pi)) * 12).round();
-    setState(() {
-      _selectedHour = hour == 0 ? 12 : hour;
-    });
+    if (_isSelectingHour) {
+      // 시간 계산 (1-12)
+      final hour = ((angle / (2 * math.pi)) * 12).round();
+      setState(() {
+        _selectedHour = hour == 0 ? 12 : hour;
+      });
+    } else {
+      // 분 계산 (0-59), 1분 단위
+      final rawMinute = ((angle / (2 * math.pi)) * 60).round() % 60;
+      setState(() {
+        _selectedMinute = rawMinute;
+      });
+    }
+  }
+
+  void _onClockTapUp() {
+    // 시 선택 후 자동으로 분 모드로 전환
+    if (_isSelectingHour) {
+      setState(() {
+        _isSelectingHour = false;
+      });
+    }
   }
 
   TimeOfDay get _currentTime {
@@ -79,17 +97,8 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
             ),
           ),
           const SizedBox(height: 24),
-          // 시간 표시
-          Text(
-            '${_selectedHour.toString().padLeft(2, '0')}:${_selectedMinute.toString().padLeft(2, '0')}',
-            style: const TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 48,
-              fontWeight: FontWeight.w600,
-              color: AppColors.nearBlack,
-              letterSpacing: -1.2,
-            ),
-          ),
+          // 시간 표시 (탭으로 시/분 모드 전환)
+          _buildTimeDisplay(),
           const SizedBox(height: 16),
           // AM/PM 토글
           _buildAmPmToggle(),
@@ -139,6 +148,75 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
           SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
         ],
       ),
+    );
+  }
+
+  Widget _buildTimeDisplay() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // 시 부분 (탭 가능)
+        GestureDetector(
+          onTap: () => setState(() => _isSelectingHour = true),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: _isSelectingHour
+                  ? AppColors.brandPrimary.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _selectedHour.toString().padLeft(2, '0'),
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 48,
+                fontWeight: FontWeight.w600,
+                color: _isSelectingHour
+                    ? AppColors.brandPrimary
+                    : AppColors.nearBlack,
+                letterSpacing: -1.2,
+              ),
+            ),
+          ),
+        ),
+        const Text(
+          ':',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 48,
+            fontWeight: FontWeight.w600,
+            color: AppColors.nearBlack,
+            letterSpacing: -1.2,
+          ),
+        ),
+        // 분 부분 (탭 가능)
+        GestureDetector(
+          onTap: () => setState(() => _isSelectingHour = false),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: !_isSelectingHour
+                  ? AppColors.brandPrimary.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _selectedMinute.toString().padLeft(2, '0'),
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 48,
+                fontWeight: FontWeight.w600,
+                color: !_isSelectingHour
+                    ? AppColors.brandPrimary
+                    : AppColors.nearBlack,
+                letterSpacing: -1.2,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -197,34 +275,38 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
   Widget _buildAnalogClock() {
     return GestureDetector(
       onPanUpdate: (details) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box != null) {
-          final localPosition = details.localPosition;
-          _onClockTap(localPosition, const Size(240, 240));
-        }
+        _onClockTap(details.localPosition, const Size(240, 240));
       },
+      onPanEnd: (_) => _onClockTapUp(),
       onTapDown: (details) {
         _onClockTap(details.localPosition, const Size(240, 240));
       },
+      onTapUp: (_) => _onClockTapUp(),
       child: SizedBox(
         width: 240,
         height: 240,
         child: CustomPaint(
-          painter: _AnalogClockPainter(
-            hour: _selectedHour,
-            minute: _selectedMinute,
-          ),
+          painter: _isSelectingHour
+              ? _HourClockPainter(
+                  hour: _selectedHour,
+                  minute: _selectedMinute,
+                )
+              : _MinuteClockPainter(
+                  minute: _selectedMinute,
+                ),
         ),
       ),
     );
   }
 }
 
-class _AnalogClockPainter extends CustomPainter {
+// ── 시 선택 페인터 ──────────────────────────────────────────────────────────
+
+class _HourClockPainter extends CustomPainter {
   final int hour;
   final int minute;
 
-  _AnalogClockPainter({
+  _HourClockPainter({
     required this.hour,
     required this.minute,
   });
@@ -296,8 +378,132 @@ class _AnalogClockPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _AnalogClockPainter oldDelegate) {
+  bool shouldRepaint(covariant _HourClockPainter oldDelegate) {
     return oldDelegate.hour != hour || oldDelegate.minute != minute;
+  }
+}
+
+// ── 분 선택 페인터 ──────────────────────────────────────────────────────────
+
+class _MinuteClockPainter extends CustomPainter {
+  final int minute;
+
+  _MinuteClockPainter({required this.minute});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 10;
+
+    // 시계 외곽선
+    final outerPaint = Paint()
+      ..color = const Color(0xFFE0E0E0)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas.drawCircle(center, radius, outerPaint);
+
+    // 1분 단위 작은 눈금 (60개)
+    for (int i = 0; i < 60; i++) {
+      if (i % 5 == 0) continue; // 5분 눈금은 아래에서 별도 처리
+      final angle = (i * 6 - 90) * math.pi / 180;
+      final tickStart = Offset(
+        center.dx + (radius - 4) * math.cos(angle),
+        center.dy + (radius - 4) * math.sin(angle),
+      );
+      final tickEnd = Offset(
+        center.dx + (radius - 10) * math.cos(angle),
+        center.dy + (radius - 10) * math.sin(angle),
+      );
+      final tickPaint = Paint()
+        ..color = const Color(0xFFE0E0E0)
+        ..strokeWidth = 1
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(tickStart, tickEnd, tickPaint);
+    }
+
+    // 분 눈금 (0, 5, 10, ..., 55) - 12개
+    for (int i = 0; i < 12; i++) {
+      final minuteValue = i * 5;
+      final angle = (i * 30 - 90) * math.pi / 180;
+      final isSelected = minuteValue == minute;
+      final textRadius = radius - 25;
+
+      final textOffset = Offset(
+        center.dx + textRadius * math.cos(angle),
+        center.dy + textRadius * math.sin(angle),
+      );
+
+      // 선택된 5분 눈금에 원 표시
+      if (isSelected) {
+        final selectedPaint = Paint()..color = AppColors.brandPrimary;
+        canvas.drawCircle(textOffset, 18, selectedPaint);
+      }
+
+      final label = minuteValue.toString().padLeft(2, '0');
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: label,
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected ? Colors.white : AppColors.mediumGray,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        textOffset - Offset(textPainter.width / 2, textPainter.height / 2),
+      );
+    }
+
+    // 분침
+    final minuteAngle = (minute * 6 - 90) * math.pi / 180;
+    final minuteHandLength = radius - 40;
+    final minuteHandEnd = Offset(
+      center.dx + minuteHandLength * math.cos(minuteAngle),
+      center.dy + minuteHandLength * math.sin(minuteAngle),
+    );
+
+    final minutePaint = Paint()
+      ..color = AppColors.brandPrimary
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(center, minuteHandEnd, minutePaint);
+
+    // 5분 단위가 아닌 경우 분침 끝에 포인터 표시
+    if (minute % 5 != 0) {
+      final pointerRadius = radius - 25;
+      final pointerOffset = Offset(
+        center.dx + pointerRadius * math.cos(minuteAngle),
+        center.dy + pointerRadius * math.sin(minuteAngle),
+      );
+      canvas.drawCircle(pointerOffset, 14, Paint()..color = AppColors.brandPrimary);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: minute.toString(),
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+      tp.paint(canvas, pointerOffset - Offset(tp.width / 2, tp.height / 2));
+    }
+
+    // 중심점
+    canvas.drawCircle(center, 5, Paint()..color = AppColors.brandPrimary);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MinuteClockPainter oldDelegate) {
+    return oldDelegate.minute != minute;
   }
 }
 

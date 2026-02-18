@@ -53,6 +53,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get common_registered => '注册成功。';
 
   @override
+  String get common_collapse => '收起';
+
+  @override
+  String common_showAll(int count) {
+    return '查看全部 ($count)';
+  }
+
+  @override
   String get pet_loadError => '加载宠物信息失败。';
 
   @override
@@ -371,6 +379,16 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String weightDetail_yearMonth(int year, int month) {
     return '$year年$month月';
+  }
+
+  @override
+  String weightDetail_monthChartLabel(int month) {
+    return '$month月';
+  }
+
+  @override
+  String schedule_dateDisplay(int month, int day, String weekday) {
+    return '$month月$day日（$weekday）';
   }
 
   @override
@@ -1011,6 +1029,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get schedule_saveError => '保存日程时发生错误。';
 
   @override
+  String get schedule_deleted => '日程已删除。';
+
+  @override
+  String get schedule_deleteError => '删除日程时发生错误。';
+
+  @override
   String schedule_reminderMinutes(int minutes) {
     return '$minutes分钟前';
   }
@@ -1020,4 +1044,198 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get btn_saveRecord => '保存记录';
+
+  @override
+  String get error_network => '请检查网络连接。';
+
+  @override
+  String get error_server => '服务器出现临时问题，请稍后重试。';
+
+  @override
+  String get error_authRequired => '需要登录。';
+
+  @override
+  String get error_conflict => '该信息已注册。';
+
+  @override
+  String get error_invalidData => '请重新检查输入信息。';
+
+  @override
+  String get error_notFound => '找不到请求的信息。';
+
+  @override
+  String get error_savePetFailed => '保存宠物信息失败，请重试。';
+
+  @override
+  String get error_saveWeightFailed => '保存体重记录失败，请重试。';
+
+  @override
+  String get coach_wciCard_title => '健康状态';
+
+  @override
+  String get coach_wciCard_body => '在这里查看WCI健康状态。\n数据越多越准确！';
+
+  @override
+  String get coach_weightCard_title => '体重记录';
+
+  @override
+  String get coach_weightCard_body => '在这里记录体重！\n每天记录可以追踪健康变化。';
+
+  @override
+  String get coach_foodCard_title => '食物记录';
+
+  @override
+  String get coach_foodCard_body => '在这里记录食物摄入量。\n有助于准确的健康分析。';
+
+  @override
+  String get coach_healthSignalCard_title => '今日健康信号';
+
+  @override
+  String get coach_healthSignalCard_body => '查看AI分析的健康信号。';
+
+  @override
+  String get coach_waterCard_title => '饮水记录';
+
+  @override
+  String get coach_waterCard_body => '在这里记录饮水量。\n水分摄入也是健康管理的重要因素。';
+
+  @override
+  String get coach_recordsTab_title => '记录选项卡';
+
+  @override
+  String get coach_recordsTab_body => '在这里一目了然地查看\n体重变化和日程。';
+
+  @override
+  String get coach_chatbotTab_title => '鹦鹉博士';
+
+  @override
+  String get coach_chatbotTab_body => '对鹦鹉有疑问？\n问问AI鹦鹉博士吧！';
+
+  @override
+  String get coach_recordToggle_title => '周期切换';
+
+  @override
+  String get coach_recordToggle_body => '点击周/月按钮查看不同时期的体重变化。';
+
+  @override
+  String get coach_recordChart_title => '体重图表';
+
+  @override
+  String get coach_recordChart_body => '在图表中一目了然地查看体重趋势。';
+
+  @override
+  String get coach_recordCalendar_title => '日历';
+
+  @override
+  String get coach_recordCalendar_body => '选择日期查看当天的记录。';
+
+  @override
+  String get coach_recordAddBtn_title => '添加记录';
+
+  @override
+  String get coach_recordAddBtn_body => '点击此按钮添加新的体重记录。';
+
+  @override
+  String get coach_chatSuggestion_title => '推荐问题';
+
+  @override
+  String get coach_chatSuggestion_body => '点击主题即可向AI提问。';
+
+  @override
+  String get coach_chatInput_title => '输入问题';
+
+  @override
+  String get coach_chatInput_body => '直接输入问题向AI医生提问。';
+
+  @override
+  String get coach_next => '下一步';
+
+  @override
+  String get coach_gotIt => '知道了！';
+
+  @override
+  String get coach_skip => '跳过';
+
+  @override
+  String get weight_selectTime => '测量时间';
+
+  @override
+  String get weight_timeNotRecorded => '未记录时间';
+
+  @override
+  String get weight_dailyAverage => '日均';
+
+  @override
+  String weight_multipleRecords(int count) {
+    return '$count次测量';
+  }
+
+  @override
+  String get weight_addAnother => '再次记录';
+
+  @override
+  String get weight_deleteRecord => '确定删除此记录？';
+
+  @override
+  String get weight_deleteConfirm => '删除';
+
+  @override
+  String get weight_amPeriod => '上午';
+
+  @override
+  String get weight_pmPeriod => '下午';
+
+  @override
+  String get diet_serving => '投喂';
+
+  @override
+  String get diet_eating => '进食';
+
+  @override
+  String get diet_addServing => '添加投喂记录';
+
+  @override
+  String get diet_addEating => '添加进食记录';
+
+  @override
+  String get diet_addRecord => '添加记录';
+
+  @override
+  String get diet_totalServed => '总投喂量';
+
+  @override
+  String get diet_totalEaten => '总进食量';
+
+  @override
+  String get diet_eatingRate => '进食率';
+
+  @override
+  String diet_eatingRateValue(int rate) {
+    return '$rate%';
+  }
+
+  @override
+  String get diet_selectTime => '投喂/进食时间';
+
+  @override
+  String diet_servingSummary(int count, String grams) {
+    return '投喂 $count次 · ${grams}g';
+  }
+
+  @override
+  String diet_eatingSummary(int count, String grams) {
+    return '进食 $count次 · ${grams}g';
+  }
+
+  @override
+  String get diet_selectType => '记录类型';
+
+  @override
+  String get diet_foodName => '食物名称';
+
+  @override
+  String get diet_amount => '量(g)';
+
+  @override
+  String get diet_memo => '备注（选填）';
 }

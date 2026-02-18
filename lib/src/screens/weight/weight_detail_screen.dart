@@ -13,6 +13,8 @@ import '../../services/pet/active_pet_notifier.dart';
 import '../../router/route_names.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WeightDetailScreen extends StatefulWidget {
@@ -27,6 +29,13 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final _scheduleService = ScheduleService();
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
+  final _scrollController = ScrollController();
+
+  // Coach mark target keys
+  final _toggleKey = GlobalKey();
+  final _chartKey = GlobalKey();
+  final _calendarKey = GlobalKey();
+  final _addBtnKey = GlobalKey();
 
   bool _isWeeklyView = true; // true: 주, false: 월
   int _selectedYear = DateTime.now().year;
@@ -38,6 +47,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   String? _activePetId;
   bool _isLoading = true;
   List<Pet> _petList = [];
+  bool _isRecordsExpanded = false;
 
   // Cached calculation results
   Map<DateTime, double>? _cachedMonthlyAverages;
@@ -53,6 +63,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   @override
   void dispose() {
     ActivePetNotifier.instance.removeListener(_onActivePetChanged);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -117,6 +128,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           _loadWeightData(),
           _loadScheduleData(),
         ]);
+        _maybeShowCoachMarks();
       }
     } catch (_) {
       // API 실패 시 로컬 캐시 폴백
@@ -214,6 +226,48 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     }
   }
 
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    if (await service.hasSeenRecordsCoachMarks()) return;
+    if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = [
+      CoachMarkStep(
+        targetKey: _toggleKey,
+        title: l10n.coach_recordToggle_title,
+        body: l10n.coach_recordToggle_body,
+      ),
+      CoachMarkStep(
+        targetKey: _chartKey,
+        title: l10n.coach_recordChart_title,
+        body: l10n.coach_recordChart_body,
+      ),
+      CoachMarkStep(
+        targetKey: _calendarKey,
+        title: l10n.coach_recordCalendar_title,
+        body: l10n.coach_recordCalendar_body,
+      ),
+      CoachMarkStep(
+        targetKey: _addBtnKey,
+        title: l10n.coach_recordAddBtn_title,
+        body: l10n.coach_recordAddBtn_body,
+        isScrollable: false,
+      ),
+    ];
+    CoachMarkOverlay.show(
+      context,
+      steps: steps,
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      scrollController: _scrollController,
+      onComplete: () => service.markRecordsCoachMarksSeen(),
+    );
+  }
+
   void _handleBack() {
     if (context.canPop()) {
       context.pop();
@@ -258,6 +312,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         children: [
           Expanded(
             child: SingleChildScrollView(
+              controller: _scrollController,
               child: Column(
                 children: [
                   if (_petList.length > 1) ...[
@@ -378,6 +433,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       child: Align(
         alignment: Alignment.centerRight,
         child: Container(
+          key: _toggleKey,
           height: 33,
           padding: const EdgeInsets.all(2),
           decoration: BoxDecoration(
@@ -445,6 +501,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildChart() {
     return SizedBox(
+      key: _chartKey,
       height: 260,
       child: _isWeeklyView
           ? _buildWeeklyDaysChart()
@@ -692,7 +749,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     final selectedMonthIdx = spots.isNotEmpty ? spots.last.x.toInt() : (months.length - 1);
     final selectedValue = spots.isNotEmpty ? spots.last.y : 0.0;
 
-    final labels = months.map((m) => '${m.month}월').toList();
+    final l10n = AppLocalizations.of(context);
+    final labels = months.map((m) => l10n.weightDetail_monthChartLabel(m.month)).toList();
 
     return _buildPillChart(
       spots: spots,
@@ -828,25 +886,17 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Widget _buildRecordSummary() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Text.rich(
-        TextSpan(
-          style: const TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: AppColors.nearBlack,
-            letterSpacing: -0.4,
-          ),
-          children: [
-            TextSpan(text: '$_petName의 몸무게 총 '),
-            TextSpan(
-              text: '$_totalRecordDays일',
-              style: const TextStyle(color: AppColors.brandPrimary),
-            ),
-            const TextSpan(text: ' 기록 중'),
-          ],
+      child: Text(
+        l10n.weightDetail_recordSummary(_petName, _totalRecordDays),
+        style: const TextStyle(
+          fontFamily: 'Pretendard',
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.nearBlack,
+          letterSpacing: -0.4,
         ),
       ),
     );
@@ -854,6 +904,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildCalendarCard() {
     return Container(
+      key: _calendarKey,
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),
       decoration: BoxDecoration(
@@ -890,7 +941,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           ),
           const SizedBox(width: 10),
           Text(
-            '$_selectedYear년 $_selectedMonth월',
+            AppLocalizations.of(context).weightDetail_yearMonth(_selectedYear, _selectedMonth),
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -1205,7 +1256,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           child: Row(
             children: [
               Text(
-                '${date.month}월 ${date.day}일 ($weekday)',
+                l10n.schedule_dateDisplay(date.month, date.day, weekday),
                 style: TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
@@ -1242,8 +1293,44 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 
+  Future<void> _deleteSchedule(ScheduleRecord schedule) async {
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _scheduleRecords.removeWhere((r) => r.id == schedule.id);
+    });
+
+    try {
+      await _scheduleService.deleteSchedule(schedule.id, petId: schedule.petId);
+      if (mounted) {
+        AppSnackBar.success(context, message: l10n.schedule_deleted);
+      }
+    } catch (e) {
+      if (mounted) {
+        await _loadScheduleData();
+        if (mounted) {
+          AppSnackBar.error(context, message: l10n.schedule_deleteError);
+        }
+      }
+    }
+  }
+
   Widget _buildScheduleItem(ScheduleRecord schedule) {
-    return Container(
+    final l10n = AppLocalizations.of(context);
+    return Dismissible(
+      key: Key(schedule.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      onDismissed: (_) => _deleteSchedule(schedule),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1313,7 +1400,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${schedule.reminderMinutes}분 전',
+                    l10n.schedule_reminderMinutes(schedule.reminderMinutes!),
                     style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 11,
@@ -1325,6 +1412,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
         ],
       ),
+    ),
     );
   }
 
@@ -1369,6 +1457,17 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 
+  String _formatRecordTime(WeightRecord record) {
+    if (!record.hasTime) return '';
+    final hour = record.recordedHour!;
+    final minute = record.recordedMinute!;
+    final l10n = AppLocalizations.of(context);
+    final isAM = hour < 12;
+    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final period = isAM ? l10n.weight_amPeriod : l10n.weight_pmPeriod;
+    return '$period $displayHour:${minute.toString().padLeft(2, '0')}';
+  }
+
   Widget _buildWeightRecordsList() {
     final l10n = AppLocalizations.of(context);
     final monthRecords = _weightRecords.where((record) =>
@@ -1410,6 +1509,39 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       );
     }
 
+    // 날짜별 그룹화 (내림차순)
+    final Map<String, List<WeightRecord>> groupedByDate = {};
+    for (final record in monthRecords) {
+      final key = '${record.date.year}-${record.date.month}-${record.date.day}';
+      groupedByDate.putIfAbsent(key, () => []);
+      groupedByDate[key]!.add(record);
+    }
+    // 날짜 내 기록은 시간 기준 오름차순 정렬
+    for (final records in groupedByDate.values) {
+      records.sort((a, b) {
+        final aMinutes = (a.recordedHour ?? 0) * 60 + (a.recordedMinute ?? 0);
+        final bMinutes = (b.recordedHour ?? 0) * 60 + (b.recordedMinute ?? 0);
+        return aMinutes.compareTo(bMinutes);
+      });
+    }
+    final sortedDateKeys = groupedByDate.keys.toList()
+      ..sort((a, b) => b.compareTo(a)); // 최신 날짜 먼저
+
+    // 펼치기 기준: 그룹(날짜) 수 기준 10개
+    final visibleKeys = _isRecordsExpanded
+        ? sortedDateKeys
+        : sortedDateKeys.take(10).toList();
+
+    final weekdays = [
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+      l10n.datetime_weekday_sun,
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
@@ -1426,44 +1558,229 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ...monthRecords.map((record) {
-            final weekdays = [l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat, l10n.datetime_weekday_sun];
-            final weekday = weekdays[(record.date.weekday - 1) % 7];
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE8E8E8)),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    '${record.date.month}/${record.date.day} ($weekday)',
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.nearBlack,
-                      letterSpacing: -0.35,
+          ...visibleKeys.map((dateKey) {
+            final records = groupedByDate[dateKey]!;
+            final date = records.first.date;
+            final weekday = weekdays[(date.weekday - 1) % 7];
+            final isSingle = records.length == 1;
+
+            if (isSingle) {
+              // 단일 기록: 기존 스타일 + 시간 표시
+              final record = records.first;
+              final timeText = record.hasTime
+                  ? _formatRecordTime(record)
+                  : l10n.weight_timeNotRecorded;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE8E8E8)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${date.month}/${date.day} ($weekday)',
+                            style: const TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.nearBlack,
+                              letterSpacing: -0.35,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            timeText,
+                            style: const TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.mediumGray,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${record.weight.toStringAsFixed(1)} g',
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.brandPrimary,
-                      letterSpacing: -0.35,
+                    Text(
+                      '${record.weight.toStringAsFixed(1)} g',
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.brandPrimary,
+                        letterSpacing: -0.35,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
+                  ],
+                ),
+              );
+            } else {
+              // 다중 기록: 헤더(평균) + 하위 항목
+              final avgWeight = records.map((r) => r.weight).reduce((a, b) => a + b) / records.length;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE8E8E8)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 헤더: 날짜 + 평균 + 횟수
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${date.month}/${date.day} ($weekday)',
+                                  style: const TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.nearBlack,
+                                    letterSpacing: -0.35,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.weight_multipleRecords(records.length),
+                                  style: const TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.mediumGray,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${avgWeight.toStringAsFixed(1)} g',
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.brandPrimary,
+                                  letterSpacing: -0.35,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                l10n.weight_dailyAverage,
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.mediumGray,
+                                  letterSpacing: -0.28,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+                    // 하위 항목들
+                    ...records.map((record) {
+                      final timeText = record.hasTime
+                          ? _formatRecordTime(record)
+                          : l10n.weight_timeNotRecorded;
+                      final isLast = record == records.last;
+                      return Padding(
+                        padding: EdgeInsets.fromLTRB(32, 10, 16, isLast ? 12 : 6),
+                        child: Row(
+                          children: [
+                            Text(
+                              timeText,
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                color: record.hasTime
+                                    ? AppColors.nearBlack
+                                    : AppColors.mediumGray,
+                                letterSpacing: -0.32,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '${record.weight.toStringAsFixed(1)} g',
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.nearBlack,
+                                letterSpacing: -0.32,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            }
           }),
+          if (sortedDateKeys.length > 10)
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isRecordsExpanded = !_isRecordsExpanded;
+                });
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _isRecordsExpanded
+                          ? l10n.common_collapse
+                          : l10n.common_showAll(sortedDateKeys.length),
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.mediumGray,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      _isRecordsExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      size: 18,
+                      color: AppColors.mediumGray,
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1472,6 +1789,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   Widget _buildAddRecordButton() {
     final l10n = AppLocalizations.of(context);
     return SafeArea(
+      key: _addBtnKey,
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),

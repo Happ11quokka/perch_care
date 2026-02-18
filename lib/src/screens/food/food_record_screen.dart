@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../models/diet_entry.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/food/food_record_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/dashed_border.dart';
-import '../../router/route_names.dart';
+import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../router/route_names.dart';
 import '../../../l10n/app_localizations.dart';
 
 class FoodRecordScreen extends StatefulWidget {
@@ -25,7 +27,8 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
   bool _isLoading = true;
-  List<_FoodEntry> _entries = [];
+  bool _showServing = true; // true=배식 탭, false=취식 탭
+  List<DietEntry> _entries = [];
 
   @override
   void initState() {
@@ -64,9 +67,14 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         final record = await _foodService.getByDate(_activePetId!, _selectedDate);
         if (record != null && record.entriesJson != null) {
           final list = jsonDecode(record.entriesJson!) as List<dynamic>;
-          final entries = list
-              .map((item) => _FoodEntry.fromJson(item as Map<String, dynamic>))
-              .toList();
+          final entries = list.map((item) {
+            final map = item as Map<String, dynamic>;
+            if (map.containsKey('type')) {
+              return DietEntry.fromJson(map);
+            } else {
+              return DietEntry.fromLegacyJson(map);
+            }
+          }).toList();
           if (!mounted) return;
           setState(() {
             _entries = entries;
@@ -74,8 +82,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           return;
         }
       } catch (e) {
-        // Fall back to SharedPreferences if backend call fails
-        print('Failed to load from backend, falling back to local storage: $e');
+        debugPrint('Failed to load from backend, falling back to local storage: $e');
       }
     }
 
@@ -90,9 +97,14 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
       return;
     }
     final list = jsonDecode(raw) as List<dynamic>;
-    final entries = list
-        .map((item) => _FoodEntry.fromJson(item as Map<String, dynamic>))
-        .toList();
+    final entries = list.map((item) {
+      final map = item as Map<String, dynamic>;
+      if (map.containsKey('type')) {
+        return DietEntry.fromJson(map);
+      } else {
+        return DietEntry.fromLegacyJson(map);
+      }
+    }).toList();
     if (!mounted) return;
     setState(() {
       _entries = entries;
@@ -106,19 +118,18 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     await prefs.setString(_storageKey(), jsonEncode(data));
 
     // Also save to backend
-    if (_activePetId != null && _entries.isNotEmpty) {
+    if (_activePetId != null) {
       try {
         await _foodService.upsert(
           petId: _activePetId!,
           recordedDate: _selectedDate,
-          totalGrams: _totalGrams,
-          targetGrams: _targetGrams,
+          totalGrams: _totalEaten,     // 취식 총량을 기존 totalGrams로 전송 (하위 호환)
+          targetGrams: _totalServed,   // 배식 총량을 기존 targetGrams로 전송
           count: _entries.length,
           entriesJson: jsonEncode(data),
         );
       } catch (e) {
-        // Don't break if backend save fails (offline mode)
-        print('Failed to save to backend, data saved locally: $e');
+        debugPrint('Failed to save to backend, data saved locally: $e');
       }
     }
   }
@@ -137,35 +148,46 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     await _loadEntries();
   }
 
-  double get _totalGrams {
-    return _entries.fold(0, (sum, entry) => sum + entry.totalGrams);
+  // ── 계산 프로퍼티 ──────────────────────────────────────────────────────────
+
+  List<DietEntry> get _servingEntries =>
+      _entries.where((e) => e.type == DietType.serving).toList();
+
+  List<DietEntry> get _eatingEntries =>
+      _entries.where((e) => e.type == DietType.eating).toList();
+
+  double get _totalServed =>
+      _servingEntries.fold(0.0, (sum, e) => sum + e.grams);
+
+  double get _totalEaten =>
+      _eatingEntries.fold(0.0, (sum, e) => sum + e.grams);
+
+  int get _eatingRatePercent => _totalServed > 0
+      ? ((_totalEaten / _totalServed) * 100).round().clamp(0, 999)
+      : 0;
+
+  // ── 기록 삭제 ──────────────────────────────────────────────────────────────
+
+  void _deleteEntry(DietEntry entry) {
+    setState(() {
+      _entries = _entries.where((e) => !identical(e, entry)).toList();
+    });
+    _saveEntries();
   }
 
-  double get _targetGrams {
-    return _entries.fold(0, (sum, entry) => sum + entry.targetGrams);
-  }
+  // ── 기록 추가 모달 ──────────────────────────────────────────────────────────
 
-  double get _progress {
-    if (_targetGrams == 0) return 0;
-    return (_totalGrams / _targetGrams).clamp(0.0, 1.0);
-  }
-
-  Future<void> _openEntryEditor({int? index}) async {
+  Future<void> _openAddEntryModal() async {
     final l10n = AppLocalizations.of(context);
-    final existing = index != null ? _entries[index] : null;
-    final nameController =
-        TextEditingController(text: existing?.name ?? '');
-    final totalController = TextEditingController(
-      text: existing != null ? existing.totalGrams.toStringAsFixed(0) : '',
-    );
-    final targetController = TextEditingController(
-      text: existing != null ? existing.targetGrams.toStringAsFixed(0) : '',
-    );
-    final countController = TextEditingController(
-      text: existing != null ? existing.count.toString() : '',
-    );
 
-    final result = await showModalBottomSheet<_FoodEntry>(
+    // 현재 탭에 맞게 기본값 설정
+    DietType selectedType = _showServing ? DietType.serving : DietType.eating;
+    final nameController = TextEditingController();
+    final gramsController = TextEditingController();
+    final memoController = TextEditingController();
+    TimeOfDay? selectedTime;
+
+    final result = await showModalBottomSheet<DietEntry>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -173,111 +195,240 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                existing == null ? l10n.food_addTitle : l10n.food_editTitle,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.nearBlack,
-                  letterSpacing: -0.4,
-                ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.food_nameLabel,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: totalController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: l10n.food_totalIntake,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: targetController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: l10n.food_targetAmount,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: countController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: l10n.food_intakeCount,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(l10n.common_cancel),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 타이틀
+                    Text(
+                      l10n.diet_addRecord,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.nearBlack,
+                        letterSpacing: -0.4,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final name = nameController.text.trim();
-                        final total = double.tryParse(totalController.text.trim());
-                        final target = double.tryParse(targetController.text.trim());
-                        final count = int.tryParse(countController.text.trim());
-                        if (name.isEmpty || total == null || target == null || count == null) {
-                          return;
-                        }
-                        Navigator.pop(
-                          context,
-                          _FoodEntry(
-                            name: name,
-                            totalGrams: total,
-                            targetGrams: target,
-                            count: count,
-                          ),
+                    const SizedBox(height: 16),
+                    // 배식/취식 라디오
+                    Text(
+                      l10n.diet_selectType,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.mediumGray,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _buildRadioOption(
+                          label: l10n.diet_serving,
+                          value: DietType.serving,
+                          groupValue: selectedType,
+                          onChanged: (v) => setModalState(() => selectedType = v!),
+                        ),
+                        const SizedBox(width: 24),
+                        _buildRadioOption(
+                          label: l10n.diet_eating,
+                          value: DietType.eating,
+                          groupValue: selectedType,
+                          onChanged: (v) => setModalState(() => selectedType = v!),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // 음식 이름
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: l10n.diet_foodName,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // 양(g)
+                    TextField(
+                      controller: gramsController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: l10n.diet_amount,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // 시간 선택
+                    GestureDetector(
+                      onTap: () async {
+                        final time = await showAnalogTimePicker(
+                          context: context,
+                          initialTime: selectedTime ?? TimeOfDay.now(),
                         );
+                        if (time != null) {
+                          setModalState(() => selectedTime = time);
+                        }
                       },
-                      child: Text(l10n.common_save),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFBDBDBD)),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              size: 18,
+                              color: AppColors.mediumGray,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              selectedTime != null
+                                  ? _formatTimeOfDay(selectedTime!)
+                                  : l10n.diet_selectTime,
+                              style: TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 14,
+                                color: selectedTime != null
+                                    ? AppColors.nearBlack
+                                    : AppColors.mediumGray,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    // 메모 (선택)
+                    TextField(
+                      controller: memoController,
+                      decoration: InputDecoration(
+                        labelText: l10n.diet_memo,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // 취소/저장 버튼
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: Text(
+                              l10n.common_cancel,
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.mediumGray,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              final name = nameController.text.trim();
+                              final grams = double.tryParse(gramsController.text.trim());
+                              if (name.isEmpty || grams == null || grams <= 0) return;
+                              Navigator.pop(
+                                context,
+                                DietEntry(
+                                  foodName: name,
+                                  type: selectedType,
+                                  grams: grams,
+                                  recordedHour: selectedTime?.hour,
+                                  recordedMinute: selectedTime?.minute,
+                                  memo: memoController.text.trim().isEmpty
+                                      ? null
+                                      : memoController.text.trim(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  l10n.common_save,
+                                  style: const TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
 
-    if (result == null) return;
+    if (result == null || !mounted) return;
     setState(() {
-      if (index == null) {
-        _entries = [..._entries, result];
-      } else {
-        final updated = [..._entries];
-        updated[index] = result;
-        _entries = updated;
-      }
+      _entries = [..._entries, result];
     });
     await _saveEntries();
   }
@@ -290,10 +441,44 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     context.goNamed(RouteNames.home);
   }
 
+  // ── 헬퍼 ──────────────────────────────────────────────────────────────────
+
+  String _formatTimeOfDay(TimeOfDay time) {
+    final isAM = time.hour < 12;
+    final hour = time.hour == 0
+        ? 12
+        : (time.hour > 12 ? time.hour - 12 : time.hour);
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = isAM ? '오전' : '오후';
+    return '$period $hour:$minute';
+  }
+
+  String _formatDate(DateTime date, AppLocalizations l10n) {
+    final weekdays = [
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+      l10n.datetime_weekday_sun,
+    ];
+    final weekday = weekdays[date.weekday - 1];
+    return l10n.datetime_dateFormat(date.year, date.month, date.day, weekday);
+  }
+
+  String _formatDateKey(DateTime date) {
+    return '${date.year}-${date.month}-${date.day}';
+  }
+
+  // ── 빌드 ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final hasData = _entries.isNotEmpty;
+    final hasAnyData = _entries.isNotEmpty;
+    final currentEntries = _showServing ? _servingEntries : _eatingEntries;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -325,6 +510,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // ── 날짜 선택 pill ────────────────────────────────────
                     GestureDetector(
                       onTap: _pickDate,
                       child: Container(
@@ -349,11 +535,13 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
+
+                    // ── 요약 영역 ─────────────────────────────────────────
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         l10n.food_routine,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -362,45 +550,33 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      l10n.food_title,
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.gray500,
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 20),
                     SvgPicture.asset(
                       'assets/images/home_vector/eat.svg',
-                      width: 80,
-                      height: 80,
+                      width: 72,
+                      height: 72,
                       colorFilter: ColorFilter.mode(
-                        hasData ? AppColors.brandPrimary : AppColors.gray300,
+                        hasAnyData ? AppColors.brandPrimary : AppColors.gray300,
                         BlendMode.srcIn,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      '${_totalGrams.toStringAsFixed(0)}g',
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: hasData ? AppColors.nearBlack : AppColors.gray400,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
+                    const SizedBox(height: 16),
+                    _buildSummaryRow(l10n),
                     const SizedBox(height: 24),
-                    if (hasData) ...[
-                      ..._entries.asMap().entries.map((entry) {
-                        return _buildFoodCard(entry.key, entry.value, l10n);
-                      }),
-                      const SizedBox(height: 12),
+
+                    // ── 배식/취식 토글 ────────────────────────────────────
+                    _buildTypeToggle(l10n),
+                    const SizedBox(height: 16),
+
+                    // ── 기록 리스트 ───────────────────────────────────────
+                    if (currentEntries.isNotEmpty) ...[
+                      ...currentEntries.map(
+                        (entry) => _buildEntryCard(entry),
+                      ),
+                      const SizedBox(height: 8),
                     ],
+
+                    // ── 기록 추가 버튼 ────────────────────────────────────
                     DashedBorder(
                       radius: 16,
                       color: const Color(0xFFBDBDBD),
@@ -408,7 +584,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       dashWidth: 6,
                       dashGap: 4,
                       child: InkWell(
-                        onTap: () => _openEntryEditor(),
+                        onTap: _openAddEntryModal,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 18),
@@ -431,7 +607,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                l10n.food_addFood,
+                                _showServing
+                                    ? l10n.diet_addServing
+                                    : l10n.diet_addEating,
                                 style: const TextStyle(
                                   fontFamily: 'Pretendard',
                                   fontSize: 14,
@@ -446,6 +624,8 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
+
+                    // ── 저장 버튼 ─────────────────────────────────────────
                     GestureDetector(
                       onTap: () async {
                         await _saveEntries();
@@ -483,183 +663,275 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     );
   }
 
-  Widget _buildFoodCard(int index, _FoodEntry entry, AppLocalizations l10n) {
-    return GestureDetector(
-      onTap: () => _openEntryEditor(index: index),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+  // ── 요약 행 (배식량 | 취식량 | 취식률) ────────────────────────────────────
+
+  Widget _buildSummaryRow(AppLocalizations l10n) {
+    final hasData = _entries.isNotEmpty;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildSummaryItem(
+          label: l10n.diet_totalServed,
+          value: '${_totalServed.toStringAsFixed(0)}g',
+          hasData: _servingEntries.isNotEmpty,
         ),
-        child: Column(
-          children: [
-            Container(
-              height: 72,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF2F2F2),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                entry.name,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.nearBlack,
-                  letterSpacing: -0.35,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.food_dailyTarget,
-                          style: const TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.nearBlack,
-                            letterSpacing: -0.35,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          l10n.food_recommendedRange(entry.recommendedMin.toInt(), entry.recommendedMax.toInt()),
-                          style: const TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.brandPrimary,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          l10n.food_dailyCount,
-                          style: const TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.nearBlack,
-                            letterSpacing: -0.35,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          l10n.food_perMeal(entry.perMeal.toInt()),
-                          style: const TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.gray600,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${entry.targetGrams.toStringAsFixed(0)}g',
-                        style: const TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.nearBlack,
-                          letterSpacing: -0.45,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        l10n.food_timesCount(entry.count),
-                        style: const TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.nearBlack,
-                          letterSpacing: -0.45,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+        _buildSummaryDivider(),
+        _buildSummaryItem(
+          label: l10n.diet_totalEaten,
+          value: '${_totalEaten.toStringAsFixed(0)}g',
+          hasData: _eatingEntries.isNotEmpty,
+        ),
+        _buildSummaryDivider(),
+        _buildSummaryItem(
+          label: l10n.diet_eatingRate,
+          value: l10n.diet_eatingRateValue(_eatingRatePercent),
+          hasData: hasData,
+          isHighlight: _eatingRatePercent >= 80,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryItem({
+    required String label,
+    required String value,
+    required bool hasData,
+    bool isHighlight = false,
+  }) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: AppColors.mediumGray,
+            letterSpacing: -0.2,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: hasData
+                ? (isHighlight ? AppColors.brandPrimary : AppColors.nearBlack)
+                : AppColors.gray400,
+            letterSpacing: -0.45,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryDivider() {
+    return Container(
+      height: 32,
+      width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      color: const Color(0xFFE0E0E0),
+    );
+  }
+
+  // ── 배식/취식 토글 ─────────────────────────────────────────────────────────
+
+  Widget _buildTypeToggle(AppLocalizations l10n) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildToggleButton(
+            text: l10n.diet_serving,
+            isActive: _showServing,
+            onTap: () => setState(() => _showServing = true),
+          ),
+          _buildToggleButton(
+            text: l10n.diet_eating,
+            isActive: !_showServing,
+            onTap: () => setState(() => _showServing = false),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleButton({
+    required String text,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.brandPrimary : Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isActive ? Colors.white : AppColors.mediumGray,
+          ),
         ),
       ),
     );
   }
 
-  String _formatDate(DateTime date, AppLocalizations l10n) {
-    final weekdays = [
-      l10n.datetime_weekday_mon,
-      l10n.datetime_weekday_tue,
-      l10n.datetime_weekday_wed,
-      l10n.datetime_weekday_thu,
-      l10n.datetime_weekday_fri,
-      l10n.datetime_weekday_sat,
-      l10n.datetime_weekday_sun,
-    ];
-    final weekday = weekdays[date.weekday - 1];
-    return l10n.datetime_dateFormat(date.year, date.month, date.day, weekday);
+  // ── 기록 카드 ──────────────────────────────────────────────────────────────
+
+  Widget _buildEntryCard(DietEntry entry) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
+      ),
+      child: Row(
+        children: [
+          // 시간 표시
+          if (entry.hasTime) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.gray100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                entry.timeDisplayString,
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+          // 음식 이름
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.foodName,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.nearBlack,
+                    letterSpacing: -0.35,
+                  ),
+                ),
+                if (entry.memo != null && entry.memo!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    entry.memo!,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.mediumGray,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // 양
+          Text(
+            '${entry.grams.toStringAsFixed(1)}g',
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.nearBlack,
+              letterSpacing: -0.35,
+            ),
+          ),
+          // 삭제 버튼
+          GestureDetector(
+            onTap: () => _deleteEntry(entry),
+            child: Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.all(4),
+              child: const Icon(
+                Icons.close,
+                size: 16,
+                color: AppColors.mediumGray,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  String _formatDateKey(DateTime date) {
-    return '${date.year}-${date.month}-${date.day}';
-  }
-}
+  // ── 라디오 옵션 ────────────────────────────────────────────────────────────
 
-class _FoodEntry {
-  final String name;
-  final double totalGrams;
-  final double targetGrams;
-  final int count;
-  final double recommendedMin;
-  final double recommendedMax;
-
-  const _FoodEntry({
-    required this.name,
-    required this.totalGrams,
-    required this.targetGrams,
-    required this.count,
-    this.recommendedMin = 40,
-    this.recommendedMax = 60,
-  });
-
-  double get perMeal => count == 0 ? 0 : totalGrams / count;
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'totalGrams': totalGrams,
-      'targetGrams': targetGrams,
-      'count': count,
-      'recommendedMin': recommendedMin,
-      'recommendedMax': recommendedMax,
-    };
-  }
-
-  factory _FoodEntry.fromJson(Map<String, dynamic> json) {
-    return _FoodEntry(
-      name: json['name'] as String? ?? '',
-      totalGrams: (json['totalGrams'] as num?)?.toDouble() ?? 0,
-      targetGrams: (json['targetGrams'] as num?)?.toDouble() ?? 0,
-      count: json['count'] as int? ?? 0,
-      recommendedMin: (json['recommendedMin'] as num?)?.toDouble() ?? 40,
-      recommendedMax: (json['recommendedMax'] as num?)?.toDouble() ?? 60,
+  Widget _buildRadioOption({
+    required String label,
+    required DietType value,
+    required DietType groupValue,
+    required ValueChanged<DietType?> onChanged,
+  }) {
+    final isSelected = value == groupValue;
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? AppColors.brandPrimary : AppColors.lightGray,
+                width: 2,
+              ),
+            ),
+            child: isSelected
+                ? Center(
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.brandPrimary,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? AppColors.nearBlack : AppColors.mediumGray,
+              letterSpacing: -0.3,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

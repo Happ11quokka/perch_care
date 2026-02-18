@@ -15,6 +15,13 @@
   "common_saveError": "保存时发生错误: {error}",
   "common_updated": "修改成功。",
   "common_registered": "注册成功。",
+  "common_collapse": "收起",
+  "common_showAll": "查看全部 ({count})",
+  "@common_showAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "pet_loadError": "加载宠物信息失败。",
 
   "onboarding_title": "很高兴认识你！",
@@ -176,6 +183,20 @@
     "placeholders": {
       "year": {"type": "int"},
       "month": {"type": "int"}
+    }
+  },
+  "weightDetail_monthChartLabel": "{month}月",
+  "@weightDetail_monthChartLabel": {
+    "placeholders": {
+      "month": {"type": "int"}
+    }
+  },
+  "schedule_dateDisplay": "{month}月{day}日（{weekday}）",
+  "@schedule_dateDisplay": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"},
+      "weekday": {"type": "String"}
     }
   },
   "weightDetail_noPet": "暂无活跃的宠物。请先添加宠物。",
@@ -493,6 +514,8 @@
   },
 
   "schedule_saveError": "保存日程时发生错误。",
+  "schedule_deleted": "日程已删除。",
+  "schedule_deleteError": "删除日程时发生错误。",
   "schedule_reminderMinutes": "{minutes}分钟前",
   "@schedule_reminderMinutes": {
     "placeholders": {
@@ -501,5 +524,93 @@
   },
 
   "btn_save": "保存",
-  "btn_saveRecord": "保存记录"
+  "btn_saveRecord": "保存记录",
+
+  "error_network": "请检查网络连接。",
+  "error_server": "服务器出现临时问题，请稍后重试。",
+  "error_authRequired": "需要登录。",
+  "error_conflict": "该信息已注册。",
+  "error_invalidData": "请重新检查输入信息。",
+  "error_notFound": "找不到请求的信息。",
+  "error_savePetFailed": "保存宠物信息失败，请重试。",
+  "error_saveWeightFailed": "保存体重记录失败，请重试。",
+
+  "coach_wciCard_title": "健康状态",
+  "coach_wciCard_body": "在这里查看WCI健康状态。\n数据越多越准确！",
+  "coach_weightCard_title": "体重记录",
+  "coach_weightCard_body": "在这里记录体重！\n每天记录可以追踪健康变化。",
+  "coach_foodCard_title": "食物记录",
+  "coach_foodCard_body": "在这里记录食物摄入量。\n有助于准确的健康分析。",
+  "coach_healthSignalCard_title": "今日健康信号",
+  "coach_healthSignalCard_body": "查看AI分析的健康信号。",
+  "coach_waterCard_title": "饮水记录",
+  "coach_waterCard_body": "在这里记录饮水量。\n水分摄入也是健康管理的重要因素。",
+  "coach_recordsTab_title": "记录选项卡",
+  "coach_recordsTab_body": "在这里一目了然地查看\n体重变化和日程。",
+  "coach_chatbotTab_title": "鹦鹉博士",
+  "coach_chatbotTab_body": "对鹦鹉有疑问？\n问问AI鹦鹉博士吧！",
+  "coach_recordToggle_title": "周期切换",
+  "coach_recordToggle_body": "点击周/月按钮查看不同时期的体重变化。",
+  "coach_recordChart_title": "体重图表",
+  "coach_recordChart_body": "在图表中一目了然地查看体重趋势。",
+  "coach_recordCalendar_title": "日历",
+  "coach_recordCalendar_body": "选择日期查看当天的记录。",
+  "coach_recordAddBtn_title": "添加记录",
+  "coach_recordAddBtn_body": "点击此按钮添加新的体重记录。",
+  "coach_chatSuggestion_title": "推荐问题",
+  "coach_chatSuggestion_body": "点击主题即可向AI提问。",
+  "coach_chatInput_title": "输入问题",
+  "coach_chatInput_body": "直接输入问题向AI医生提问。",
+  "coach_next": "下一步",
+  "coach_gotIt": "知道了！",
+  "coach_skip": "跳过",
+
+  "weight_selectTime": "测量时间",
+  "weight_timeNotRecorded": "未记录时间",
+  "weight_dailyAverage": "日均",
+  "weight_multipleRecords": "{count}次测量",
+  "@weight_multipleRecords": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weight_addAnother": "再次记录",
+  "weight_deleteRecord": "确定删除此记录？",
+  "weight_deleteConfirm": "删除",
+  "weight_amPeriod": "上午",
+  "weight_pmPeriod": "下午",
+
+  "diet_serving": "投喂",
+  "diet_eating": "进食",
+  "diet_addServing": "添加投喂记录",
+  "diet_addEating": "添加进食记录",
+  "diet_addRecord": "添加记录",
+  "diet_totalServed": "总投喂量",
+  "diet_totalEaten": "总进食量",
+  "diet_eatingRate": "进食率",
+  "diet_eatingRateValue": "{rate}%",
+  "@diet_eatingRateValue": {
+    "placeholders": {
+      "rate": {"type": "int"}
+    }
+  },
+  "diet_selectTime": "投喂/进食时间",
+  "diet_servingSummary": "投喂 {count}次 · {grams}g",
+  "@diet_servingSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "grams": {"type": "String"}
+    }
+  },
+  "diet_eatingSummary": "进食 {count}次 · {grams}g",
+  "@diet_eatingSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "grams": {"type": "String"}
+    }
+  },
+  "diet_selectType": "记录类型",
+  "diet_foodName": "食物名称",
+  "diet_amount": "量(g)",
+  "diet_memo": "备注（选填）"
 }

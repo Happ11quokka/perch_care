@@ -18,7 +18,9 @@ import '../../theme/radius.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/coach_mark_overlay.dart';
 import '../../widgets/local_image_avatar.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 class AIEncyclopediaScreen extends StatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -36,6 +38,10 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   final ChatStorageService _chatStorage = ChatStorageService.instance;
   final List<ChatMessage> _messages = [];
   Pet? _activePet;
+
+  // Coach mark target keys
+  final _suggestionKey = GlobalKey();
+  final _inputKey = GlobalKey();
   bool _isSending = false;
   bool _isTyping = false;
   bool _isLoadingMessages = true;
@@ -83,6 +89,41 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   Future<void> _initializeChat() async {
     await _loadActivePet();
     await _loadMessages();
+    _maybeShowCoachMarks();
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    // Welcome 상태(대화 없음)에서만 표시
+    if (_messages.isNotEmpty) return;
+    final service = CoachMarkService.instance;
+    if (await service.hasSeenChatbotCoachMarks()) return;
+    if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = [
+      CoachMarkStep(
+        targetKey: _suggestionKey,
+        title: l10n.coach_chatSuggestion_title,
+        body: l10n.coach_chatSuggestion_body,
+        isScrollable: false,
+      ),
+      CoachMarkStep(
+        targetKey: _inputKey,
+        title: l10n.coach_chatInput_title,
+        body: l10n.coach_chatInput_body,
+        isScrollable: false,
+      ),
+    ];
+    CoachMarkOverlay.show(
+      context,
+      steps: steps,
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () => service.markChatbotCoachMarksSeen(),
+    );
   }
 
   void _onInputChanged() {
@@ -487,6 +528,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     ];
 
     return Container(
+      key: _suggestionKey,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.sm,
@@ -622,6 +664,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     final l10n = AppLocalizations.of(context);
 
     return Container(
+      key: _inputKey,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.sm,

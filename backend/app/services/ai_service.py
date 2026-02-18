@@ -30,10 +30,15 @@ _openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
 MODEL = "gpt-4o-mini"
 
 SYSTEM_PROMPT = (
-    "너는 앵무새(반려조) 케어 전문가야. "
-    "사용자의 질문에 친절하고 정확하게 답변해. "
-    "근거가 불확실하면 수의사 상담을 권장해. "
-    "답변은 5줄 이내로 간결하게 해줘."
+    "You are an expert in parrot (companion bird) care. "
+    "IMPORTANT: Always respond in the SAME language as the user's message. "
+    "If the user writes in Korean, reply in Korean. "
+    "If the user writes in Chinese, reply in Chinese. "
+    "If the user writes in English, reply in English. "
+    "Match the user's language exactly.\n\n"
+    "Answer kindly and accurately. "
+    "If evidence is uncertain, recommend consulting a veterinarian. "
+    "Keep answers concise, within 5 lines."
 )
 
 
@@ -145,7 +150,13 @@ async def ask(
     # system prompt 구성
     system_parts = [SYSTEM_PROMPT]
     if rag_context:
-        system_parts.append(f"\n\n{rag_context}\n\n위 데이터를 참고하여 이 앵무새에 맞는 맞춤 답변을 제공해.")
+        system_parts.append(
+            f"\n\n{rag_context}\n\n"
+            "CRITICAL: You MUST reference the health data above in your answer. "
+            "When the user asks about weight, diet, or water intake, cite the specific numbers from the data. "
+            "Always personalize your advice based on this parrot's actual records. "
+            "Do not give generic answers when specific data is available."
+        )
     elif pet_profile_context:
         # pet_id가 없으면 프론트엔드에서 보낸 프로필 컨텍스트 사용
         system_parts.append(f"\n\n{pet_profile_context}")
@@ -167,6 +178,8 @@ async def ask(
     response = await _openai_client.chat.completions.create(
         model=MODEL,
         messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
     )
 
     choice = response.choices[0]

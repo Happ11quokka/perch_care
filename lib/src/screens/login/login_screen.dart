@@ -273,13 +273,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const SizedBox(height: 100),
                       // Social Login Buttons
-                      _buildSocialLoginButton(
-                        icon: _buildKakaoIcon(),
-                        label: l10n.login_kakao,
-                        onTap: _handleKakaoLogin,
-                        isLoading: _isKakaoLoading,
-                      ),
-                      const SizedBox(height: 16),
+                      // TODO: 사업자 등록 완료 후 카카오 로그인 활성화
+                      // _buildSocialLoginButton(
+                      //   icon: _buildKakaoIcon(),
+                      //   label: l10n.login_kakao,
+                      //   onTap: _handleKakaoLogin,
+                      //   isLoading: _isKakaoLoading,
+                      // ),
+                      // const SizedBox(height: 16),
                       _buildSocialLoginButton(
                         icon: _buildGoogleIcon(),
                         label: l10n.login_google,

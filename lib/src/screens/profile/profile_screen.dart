@@ -1007,20 +1007,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (_isLoadingSocial)
             const Center(child: CircularProgressIndicator(strokeWidth: 2))
           else ...[
-            _buildSocialAccountRow(
-              provider: 'kakao',
-              label: l10n.social_kakao,
-              icon: SvgPicture.asset(
-                'assets/images/btn_kakao/btn_kakao.svg',
-                width: 24,
-                height: 24,
-              ),
-              isLinked: _isProviderLinked('kakao'),
-              onLink: _handleLinkKakao,
-              onUnlink: () => _handleUnlinkSocial('kakao'),
-              l10n: l10n,
-            ),
-            const SizedBox(height: 8),
+            // TODO: 사업자 등록 완료 후 카카오 연동 활성화
+            // _buildSocialAccountRow(
+            //   provider: 'kakao',
+            //   label: l10n.social_kakao,
+            //   icon: SvgPicture.asset(
+            //     'assets/images/btn_kakao/btn_kakao.svg',
+            //     width: 24,
+            //     height: 24,
+            //   ),
+            //   isLinked: _isProviderLinked('kakao'),
+            //   onLink: _handleLinkKakao,
+            //   onUnlink: () => _handleUnlinkSocial('kakao'),
+            //   l10n: l10n,
+            // ),
+            // const SizedBox(height: 8),
             _buildSocialAccountRow(
               provider: 'google',
               label: l10n.social_google,
@@ -1300,7 +1301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildAddPetButton(AppLocalizations l10n) {
     return GestureDetector(
       onTap: () async {
-        await context.pushNamed(RouteNames.petProfileDetail);
+        await context.pushNamed(RouteNames.petAdd);
         await _loadPets();
       },
       child: Container(

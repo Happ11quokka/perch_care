@@ -53,6 +53,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get common_registered => '등록되었습니다.';
 
   @override
+  String get common_collapse => '접기';
+
+  @override
+  String common_showAll(int count) {
+    return '전체 보기 ($count건)';
+  }
+
+  @override
   String get pet_loadError => '펫 정보를 불러오는데 실패했습니다.';
 
   @override
@@ -376,6 +384,16 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String weightDetail_yearMonth(int year, int month) {
     return '$year년 $month월';
+  }
+
+  @override
+  String weightDetail_monthChartLabel(int month) {
+    return '$month월';
+  }
+
+  @override
+  String schedule_dateDisplay(int month, int day, String weekday) {
+    return '$month월 $day일 ($weekday)';
   }
 
   @override
@@ -1022,6 +1040,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get schedule_saveError => '일정 저장 중 오류가 발생했습니다.';
 
   @override
+  String get schedule_deleted => '일정이 삭제되었습니다.';
+
+  @override
+  String get schedule_deleteError => '일정 삭제 중 오류가 발생했습니다.';
+
+  @override
   String schedule_reminderMinutes(int minutes) {
     return '$minutes분 전';
   }
@@ -1031,4 +1055,199 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get btn_saveRecord => '저장하기';
+
+  @override
+  String get error_network => '네트워크 연결을 확인해 주세요.';
+
+  @override
+  String get error_server => '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get error_authRequired => '로그인이 필요합니다.';
+
+  @override
+  String get error_conflict => '이미 등록된 정보가 있습니다.';
+
+  @override
+  String get error_invalidData => '입력 정보를 다시 확인해 주세요.';
+
+  @override
+  String get error_notFound => '요청하신 정보를 찾을 수 없습니다.';
+
+  @override
+  String get error_savePetFailed => '펫 정보 저장에 실패했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get error_saveWeightFailed => '체중 기록 저장에 실패했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get coach_wciCard_title => '건강 상태';
+
+  @override
+  String get coach_wciCard_body => 'WCI 건강 상태를 확인하세요.\n데이터가 쌓일수록 더 정확해져요!';
+
+  @override
+  String get coach_weightCard_title => '체중 기록';
+
+  @override
+  String get coach_weightCard_body =>
+      '여기서 체중을 기록해보세요!\n매일 기록하면 건강 변화를 추적할 수 있어요.';
+
+  @override
+  String get coach_foodCard_title => '사료 기록';
+
+  @override
+  String get coach_foodCard_body => '사료 취식량을 기록해보세요.\n정확한 건강 분석에 도움이 돼요.';
+
+  @override
+  String get coach_healthSignalCard_title => '오늘의 건강 신호';
+
+  @override
+  String get coach_healthSignalCard_body => 'AI가 분석한 건강 신호를 확인해보세요.';
+
+  @override
+  String get coach_waterCard_title => '수분 기록';
+
+  @override
+  String get coach_waterCard_body => '음수량을 기록해보세요.\n수분 섭취도 건강 관리의 중요한 요소예요.';
+
+  @override
+  String get coach_recordsTab_title => '기록 탭';
+
+  @override
+  String get coach_recordsTab_body => '여기서 체중 변화와 일정을\n한눈에 확인할 수 있어요.';
+
+  @override
+  String get coach_chatbotTab_title => '앵박사';
+
+  @override
+  String get coach_chatbotTab_body => '앵무새에 대해 궁금한 점이 있다면\nAI 앵박사에게 물어보세요!';
+
+  @override
+  String get coach_recordToggle_title => '기간 전환';
+
+  @override
+  String get coach_recordToggle_body => '주간/월간 버튼을 눌러 기간별 체중 변화를 확인하세요.';
+
+  @override
+  String get coach_recordChart_title => '체중 차트';
+
+  @override
+  String get coach_recordChart_body => '차트에서 체중 추이를 한눈에 확인할 수 있어요.';
+
+  @override
+  String get coach_recordCalendar_title => '캘린더';
+
+  @override
+  String get coach_recordCalendar_body => '날짜를 선택하면 해당 날의 기록을 볼 수 있어요.';
+
+  @override
+  String get coach_recordAddBtn_title => '기록 추가';
+
+  @override
+  String get coach_recordAddBtn_body => '이 버튼을 눌러 새 체중을 기록하세요.';
+
+  @override
+  String get coach_chatSuggestion_title => '추천 질문';
+
+  @override
+  String get coach_chatSuggestion_body => '궁금한 주제를 탭하면 바로 AI에게 물어볼 수 있어요.';
+
+  @override
+  String get coach_chatInput_title => '질문 입력';
+
+  @override
+  String get coach_chatInput_body => '직접 질문을 입력해서 앵박사에게 물어보세요.';
+
+  @override
+  String get coach_next => '다음';
+
+  @override
+  String get coach_gotIt => '알겠어요!';
+
+  @override
+  String get coach_skip => '건너뛰기';
+
+  @override
+  String get weight_selectTime => '측정 시간';
+
+  @override
+  String get weight_timeNotRecorded => '시간 미기록';
+
+  @override
+  String get weight_dailyAverage => '일평균';
+
+  @override
+  String weight_multipleRecords(int count) {
+    return '$count회 측정';
+  }
+
+  @override
+  String get weight_addAnother => '추가 기록';
+
+  @override
+  String get weight_deleteRecord => '이 기록을 삭제하시겠습니까?';
+
+  @override
+  String get weight_deleteConfirm => '삭제';
+
+  @override
+  String get weight_amPeriod => '오전';
+
+  @override
+  String get weight_pmPeriod => '오후';
+
+  @override
+  String get diet_serving => '배식';
+
+  @override
+  String get diet_eating => '취식';
+
+  @override
+  String get diet_addServing => '배식 기록 추가';
+
+  @override
+  String get diet_addEating => '취식 기록 추가';
+
+  @override
+  String get diet_addRecord => '기록 추가';
+
+  @override
+  String get diet_totalServed => '총 배식량';
+
+  @override
+  String get diet_totalEaten => '총 취식량';
+
+  @override
+  String get diet_eatingRate => '취식률';
+
+  @override
+  String diet_eatingRateValue(int rate) {
+    return '$rate%';
+  }
+
+  @override
+  String get diet_selectTime => '급여/섭취 시간';
+
+  @override
+  String diet_servingSummary(int count, String grams) {
+    return '배식 $count회 · ${grams}g';
+  }
+
+  @override
+  String diet_eatingSummary(int count, String grams) {
+    return '취식 $count회 · ${grams}g';
+  }
+
+  @override
+  String get diet_selectType => '기록 유형';
+
+  @override
+  String get diet_foodName => '음식 이름';
+
+  @override
+  String get diet_amount => '양(g)';
+
+  @override
+  String get diet_memo => '메모 (선택)';
 }

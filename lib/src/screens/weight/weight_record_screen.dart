@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/weight_record.dart';
 import '../../services/pet/pet_local_cache_service.dart';
@@ -8,6 +9,8 @@ import '../../services/pet/pet_service.dart';
 import '../../services/weight/weight_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../widgets/app_snack_bar.dart';
+import '../../widgets/analog_time_picker.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WeightRecordScreen extends StatefulWidget {
@@ -21,16 +24,27 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
   final _weightService = WeightService();
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
+  final _weightController = TextEditingController();
+  final _weightFocusNode = FocusNode();
 
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
   String? _activePetId;
   bool _isLoading = true;
+  bool _isSaving = false;
   List<WeightRecord> _records = [];
 
   @override
   void initState() {
     super.initState();
     _loadActivePet();
+  }
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _weightFocusNode.dispose();
+    super.dispose();
   }
 
   Future<void> _loadActivePet() async {
@@ -81,6 +95,12 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
     setState(() {
       _records = records;
     });
+    _syncWeightController();
+  }
+
+  void _syncWeightController() {
+    // 다중 기록이므로 기존 값 자동 로드하지 않음 (빈 상태로 새 기록 입력 대기)
+    _weightController.clear();
   }
 
   Future<void> _pickDate() async {
@@ -94,21 +114,33 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
     setState(() {
       _selectedDate = picked;
     });
+    _syncWeightController();
   }
 
-  WeightRecord? _recordForDate(DateTime date) {
+  /// 해당 날짜의 모든 기록 반환 (다중 기록 지원)
+  List<WeightRecord> _recordsForDate(DateTime date) {
     final normalized = DateTime(date.year, date.month, date.day);
-    for (final record in _records) {
-      final recordDate = DateTime(
-        record.date.year,
-        record.date.month,
-        record.date.day,
-      );
-      if (recordDate == normalized) {
-        return record;
-      }
-    }
-    return null;
+    return _records.where((record) {
+      final recordDate = DateTime(record.date.year, record.date.month, record.date.day);
+      return recordDate == normalized;
+    }).toList();
+  }
+
+  /// 해당 날짜의 일평균 체중 반환
+  double? _dailyAverageForDate(DateTime date) {
+    final dayRecords = _recordsForDate(date);
+    if (dayRecords.isEmpty) return null;
+    final sum = dayRecords.fold(0.0, (total, r) => total + r.weight);
+    return sum / dayRecords.length;
+  }
+
+  /// 하위 호환용: 단일 기록 반환 (WCI 계산 등)
+  WeightRecord? _recordForDate(DateTime date) {
+    final dayRecords = _recordsForDate(date);
+    if (dayRecords.isEmpty) return null;
+    // 일평균을 가상 기록으로 반환
+    final avg = _dailyAverageForDate(date)!;
+    return dayRecords.first.copyWith(weight: avg);
   }
 
   WeightRecord? _baselineRecord(DateTime date) {
@@ -187,93 +219,43 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
     return (clamped - min) / (max - min);
   }
 
-  Future<void> _openWeightEditor() async {
+  Future<void> _saveWeight() async {
     if (_activePetId == null) return;
     final l10n = AppLocalizations.of(context);
-    final current = _recordForDate(_selectedDate);
-    final controller = TextEditingController(
-      text: current != null ? current.weight.toStringAsFixed(1) : '',
-    );
-    final weight = await showModalBottomSheet<double>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.weight_inputWeight,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.nearBlack,
-                  letterSpacing: -0.4,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  hintText: l10n.weight_inputHint,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(l10n.common_cancel),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final value = double.tryParse(controller.text.trim());
-                        if (value == null) return;
-                        Navigator.pop(context, value);
-                      },
-                      child: Text(l10n.btn_save),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (weight == null) return;
-    final record = WeightRecord(
-      petId: _activePetId!,
-      date: _selectedDate,
-      weight: weight,
-    );
-    // 로컬 캐시에 먼저 저장
-    await _weightService.saveLocalWeightRecord(record);
-    // 백엔드 API에도 저장
-    try {
-      await _weightService.saveWeightRecord(record);
-    } catch (e) {
-      debugPrint('[WeightRecord] 백엔드 저장 실패: $e');
+    final weight = double.tryParse(_weightController.text.trim());
+    if (weight == null || weight <= 0) {
+      _weightFocusNode.requestFocus();
+      return;
     }
-    await _loadRecords();
+
+    setState(() { _isSaving = true; });
+
+    try {
+      final record = WeightRecord(
+        petId: _activePetId!,
+        date: _selectedDate,
+        weight: weight,
+        recordedHour: _selectedTime.hour,
+        recordedMinute: _selectedTime.minute,
+      );
+      await _weightService.saveLocalWeightRecord(record);
+      try {
+        await _weightService.saveWeightRecord(record);
+      } catch (e) {
+        debugPrint('[WeightRecord] 백엔드 저장 실패: $e');
+      }
+      await _loadRecords();
+      if (mounted) {
+        setState(() {
+          _selectedTime = TimeOfDay.now();
+        });
+        AppSnackBar.success(context, message: l10n.snackbar_saved);
+      }
+    } finally {
+      if (mounted) {
+        setState(() { _isSaving = false; });
+      }
+    }
   }
 
   void _handleBack() {
@@ -374,39 +356,32 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    GestureDetector(
-                      onTap: _openWeightEditor,
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: 240,
-                            height: 130,
-                            child: CustomPaint(
-                              painter: _WciGaugePainter(
-                                progress: progress,
-                                activeColor: AppColors.brandPrimary,
-                                trackColor: const Color(0xFFEDEDED),
-                                hasData: hasData,
-                              ),
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: 240,
+                          height: 130,
+                          child: CustomPaint(
+                            painter: _WciGaugePainter(
+                              progress: progress,
+                              activeColor: AppColors.brandPrimary,
+                              trackColor: const Color(0xFFEDEDED),
+                              hasData: hasData,
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '${(current?.weight ?? 0).toStringAsFixed(2)}g',
-                            style: TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              color:
-                                  hasData ? AppColors.nearBlack : AppColors.gray400,
-                              decoration: hasData
-                                  ? TextDecoration.none
-                                  : TextDecoration.underline,
-                              decorationColor: AppColors.gray300,
-                            ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '${(current?.weight ?? 0).toStringAsFixed(2)}g',
+                          style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                hasData ? AppColors.nearBlack : AppColors.gray400,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -492,30 +467,93 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
+                    // 해당 날짜의 기존 기록 목록
+                    _buildExistingRecordsList(),
+                    const SizedBox(height: 16),
+                    // 시간 선택 카드
+                    _buildTimeCard(l10n),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _weightController,
+                      focusNode: _weightFocusNode,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+                      ],
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.nearBlack,
+                        letterSpacing: -0.4,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: l10n.weight_inputWeight,
+                        labelStyle: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.mediumGray,
+                        ),
+                        hintText: l10n.weight_inputHint,
+                        suffixText: 'g',
+                        suffixStyle: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.mediumGray,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     GestureDetector(
-                      onTap: _openWeightEditor,
+                      onTap: _isSaving ? null : _saveWeight,
                       child: Container(
                         height: 56,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
-                            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                            colors: _isSaving
+                                ? [AppColors.lightGray, AppColors.mediumGray]
+                                : [const Color(0xFFFF9A42), const Color(0xFFFF7C2A)],
                           ),
                         ),
                         child: Center(
-                          child: Text(
-                            l10n.btn_save,
-                            style: const TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              letterSpacing: -0.4,
-                            ),
-                          ),
+                          child: _isSaving
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  l10n.btn_save,
+                                  style: const TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    letterSpacing: -0.4,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -524,6 +562,155 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
               ),
             ),
     );
+  }
+
+  Widget _buildTimeCard(AppLocalizations l10n) {
+    final isAM = _selectedTime.hour < 12;
+    final displayHour = _selectedTime.hour == 0
+        ? 12
+        : (_selectedTime.hour > 12 ? _selectedTime.hour - 12 : _selectedTime.hour);
+    final period = isAM ? l10n.weight_amPeriod : l10n.weight_pmPeriod;
+    final timeText =
+        '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
+
+    return GestureDetector(
+      onTap: () async {
+        final picked = await showAnalogTimePicker(
+          context: context,
+          initialTime: _selectedTime,
+        );
+        if (picked != null && mounted) {
+          setState(() {
+            _selectedTime = picked;
+          });
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.access_time, size: 20, color: AppColors.brandPrimary),
+            const SizedBox(width: 10),
+            Text(
+              l10n.weight_selectTime,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.mediumGray,
+                letterSpacing: -0.35,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              timeText,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.nearBlack,
+                letterSpacing: -0.35,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, size: 18, color: AppColors.mediumGray),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExistingRecordsList() {
+    final l10n = AppLocalizations.of(context);
+    final dayRecords = _recordsForDate(_selectedDate);
+    if (dayRecords.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.weight_multipleRecords(dayRecords.length),
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.nearBlack,
+                letterSpacing: -0.35,
+              ),
+            ),
+            Text(
+              '${l10n.weight_dailyAverage} ${_dailyAverageForDate(_selectedDate)?.toStringAsFixed(1) ?? '-'}g',
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.brandPrimary,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...dayRecords.map((record) {
+          final timeStr = record.hasTime
+              ? _formatRecordTime(record, l10n)
+              : l10n.weight_timeNotRecorded;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6F6F6),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.access_time, size: 14, color: AppColors.mediumGray),
+                const SizedBox(width: 6),
+                Text(
+                  timeStr,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.mediumGray,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${record.weight.toStringAsFixed(1)}g',
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.nearBlack,
+                    letterSpacing: -0.35,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  String _formatRecordTime(WeightRecord record, AppLocalizations l10n) {
+    if (!record.hasTime) return '';
+    final hour = record.recordedHour!;
+    final minute = record.recordedMinute!;
+    final isAM = hour < 12;
+    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final period = isAM ? l10n.weight_amPeriod : l10n.weight_pmPeriod;
+    return '$period $displayHour:${minute.toString().padLeft(2, '0')}';
   }
 
   String _buildCalculationText(

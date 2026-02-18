@@ -4,6 +4,8 @@ class WeightRecord {
   final DateTime date;
   final double weight; // in grams
   final String? memo;
+  final int? recordedHour;   // 0-23, null이면 시간 미기록 (기존 데이터 호환)
+  final int? recordedMinute; // 0-59
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,6 +15,8 @@ class WeightRecord {
     required this.date,
     required this.weight,
     this.memo,
+    this.recordedHour,
+    this.recordedMinute,
     this.createdAt,
     this.updatedAt,
   });
@@ -25,6 +29,8 @@ class WeightRecord {
       date: DateTime.parse(json['recorded_date'] as String),
       weight: (json['weight'] as num).toDouble(),
       memo: json['memo'] as String?,
+      recordedHour: json['recorded_hour'] as int?,
+      recordedMinute: json['recorded_minute'] as int?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,
@@ -62,6 +68,8 @@ class WeightRecord {
     DateTime? date,
     double? weight,
     String? memo,
+    int? recordedHour,
+    int? recordedMinute,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -71,10 +79,15 @@ class WeightRecord {
       date: date ?? this.date,
       weight: weight ?? this.weight,
       memo: memo ?? this.memo,
+      recordedHour: recordedHour ?? this.recordedHour,
+      recordedMinute: recordedMinute ?? this.recordedMinute,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  /// 시간이 기록되었는지 여부
+  bool get hasTime => recordedHour != null && recordedMinute != null;
 
   @override
   bool operator ==(Object other) =>
