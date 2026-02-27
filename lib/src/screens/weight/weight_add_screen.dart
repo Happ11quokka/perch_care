@@ -9,6 +9,7 @@ import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -127,6 +128,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         final l10n = AppLocalizations.of(context);
         debugPrint('[WeightAdd] Showing success snackbar...');
         AppSnackBar.success(context, message: l10n.weight_recordSuccess);
+        AnalyticsService.instance.logWeightRecorded(_activePetId!);
         debugPrint('[WeightAdd] Snackbar shown, waiting 1.2s before pop...');
 
         // 스낵바를 사용자가 확인할 수 있도록 딜레이 후 이전 화면으로 돌아감

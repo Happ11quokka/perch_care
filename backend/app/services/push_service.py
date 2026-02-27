@@ -20,9 +20,12 @@ def _ensure_initialized():
     if not settings.firebase_credentials_json:
         logger.warning("FIREBASE_CREDENTIALS_JSON not set — push notifications disabled")
         return
-    cred = credentials.Certificate(json.loads(settings.firebase_credentials_json))
+    parsed = json.loads(settings.firebase_credentials_json)
+    logger.info(f"Firebase init — project: {parsed.get('project_id')}, key_id: {parsed.get('private_key_id', '')[:12]}...")
+    cred = credentials.Certificate(parsed)
     firebase_admin.initialize_app(cred)
     _initialized = True
+    logger.info("Firebase Admin SDK initialized successfully")
 
 
 def send_push_notification(token: str, title: str, body: str, data: dict | None = None) -> bool:
@@ -71,8 +74,10 @@ def send_push_notifications_batch(tokens: list[str], title: str, body: str, data
             success += response.success_count
             failure += response.failure_count
             for idx, send_response in enumerate(response.responses):
-                if send_response.exception and isinstance(send_response.exception, messaging.UnregisteredError):
-                    invalid_tokens.append(batch[idx])
+                if send_response.exception:
+                    logger.error(f"Token {batch[idx][:20]}... error: {type(send_response.exception).__name__}: {send_response.exception}")
+                    if isinstance(send_response.exception, messaging.UnregisteredError):
+                        invalid_tokens.append(batch[idx])
         except Exception:
             logger.exception(f"Batch send failed for {len(batch)} tokens")
             failure += len(batch)

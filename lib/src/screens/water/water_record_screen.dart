@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/water/water_record_service.dart';
 import '../../theme/colors.dart';
@@ -124,6 +125,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
         // Fail silently if offline - data is already saved to SharedPreferences
       }
     }
+    AnalyticsService.instance.logWaterRecorded(_activePetId ?? '');
   }
 
   Future<void> _pickDate() async {

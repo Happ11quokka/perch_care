@@ -29,6 +29,7 @@ import '../screens/terms/terms_detail_screen.dart';
 import '../screens/faq/faq_screen.dart';
 import '../data/terms_content.dart';
 import '../services/api/token_service.dart';
+import '../services/analytics/analytics_service.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
@@ -53,6 +54,7 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
+    observers: [AnalyticsService.instance.observer],
     redirect: (context, state) {
       final currentPath = state.uri.path;
       final isPublicRoute = _publicPaths.contains(currentPath);

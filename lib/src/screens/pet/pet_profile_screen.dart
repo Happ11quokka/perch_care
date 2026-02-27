@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
@@ -122,6 +123,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
 
     try {
       await _petService.deletePet(petId);
+      AnalyticsService.instance.logPetDeleted();
       await _petCache.removePet(petId);
       await _loadPets();
       if (!mounted) return;

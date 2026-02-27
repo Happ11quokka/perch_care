@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../api/api_client.dart';
 import '../api/token_service.dart';
 import '../pet/pet_local_cache_service.dart';
+import '../analytics/analytics_service.dart';
 import '../push/push_notification_service.dart';
 import '../storage/local_image_storage_service.dart';
 
@@ -92,6 +93,7 @@ class AuthService {
       refreshToken: response['refresh_token'],
     );
     PushNotificationService.instance.initialize();
+    AnalyticsService.instance.logSignUp('email');
   }
 
   /// 이메일 로그인
@@ -109,6 +111,7 @@ class AuthService {
       refreshToken: response['refresh_token'],
     );
     PushNotificationService.instance.initialize();
+    AnalyticsService.instance.logLogin('email');
   }
 
   /// Google 로그인 (회원가입 필요 여부 확인)
@@ -117,7 +120,9 @@ class AuthService {
       'id_token': idToken,
     }, auth: false);
 
-    return _handleOAuthResponse(response);
+    final result = await _handleOAuthResponse(response);
+    if (result.success) AnalyticsService.instance.logLogin('google');
+    return result;
   }
 
   /// Apple 로그인 (회원가입 필요 여부 확인)
@@ -134,7 +139,9 @@ class AuthService {
       if (email != null) 'email': email,
     }, auth: false);
 
-    return _handleOAuthResponse(response);
+    final result = await _handleOAuthResponse(response);
+    if (result.success) AnalyticsService.instance.logLogin('apple');
+    return result;
   }
 
   /// Kakao 로그인 (회원가입 필요 여부 확인)
@@ -143,7 +150,9 @@ class AuthService {
       'access_token': accessToken,
     }, auth: false);
 
-    return _handleOAuthResponse(response);
+    final result = await _handleOAuthResponse(response);
+    if (result.success) AnalyticsService.instance.logLogin('kakao');
+    return result;
   }
 
   /// OAuth 응답 처리 공통 로직
@@ -262,6 +271,7 @@ class AuthService {
 
   /// 회원 탈퇴
   Future<void> deleteAccount() async {
+    AnalyticsService.instance.logAccountDeleted();
     await _api.delete('/users/me');
     await _petCache.clearAll();
     await LocalImageStorageService.instance.clearAll();

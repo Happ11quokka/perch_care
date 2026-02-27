@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/diet_entry.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/food/food_record_service.dart';
 import '../../theme/colors.dart';
@@ -132,6 +133,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         debugPrint('Failed to save to backend, data saved locally: $e');
       }
     }
+    AnalyticsService.instance.logFoodRecorded(_activePetId ?? '', _entries.length);
   }
 
   Future<void> _pickDate() async {

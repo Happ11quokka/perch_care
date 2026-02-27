@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../models/chat_message.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
 import '../../services/api/token_service.dart';
 import '../../services/pet/pet_service.dart';
@@ -151,6 +152,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     if (_isSending) return;
     final text = _inputController.text.trim();
     if (text.isEmpty) return;
+    AnalyticsService.instance.logAiChatSent();
 
     final l10n = AppLocalizations.of(context);
     final history = _buildCleanHistory();

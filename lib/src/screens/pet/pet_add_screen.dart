@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
@@ -275,6 +276,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
       if (!mounted) return;
 
       AppSnackBar.success(context, message: _existingPet != null ? l10n.common_updated : l10n.common_registered);
+      if (_existingPet == null) {
+        AnalyticsService.instance.logPetRegistered(_speciesController.text.trim());
+      }
 
       if (widget.isInitialSetup) {
         context.goNamed(RouteNames.home);
