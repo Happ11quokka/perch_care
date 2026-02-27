@@ -454,6 +454,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profile_unlink => '해제';
 
   @override
+  String get profile_appSupport => '앱 지원';
+
+  @override
+  String get profile_rateApp => '앱 평가하기';
+
+  @override
   String get profile_accountManagement => '계정 관리';
 
   @override

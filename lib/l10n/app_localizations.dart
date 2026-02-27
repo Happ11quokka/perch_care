@@ -916,6 +916,18 @@ abstract class AppLocalizations {
   /// **'해제'**
   String get profile_unlink;
 
+  /// No description provided for @profile_appSupport.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱 지원'**
+  String get profile_appSupport;
+
+  /// No description provided for @profile_rateApp.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱 평가하기'**
+  String get profile_rateApp;
+
   /// No description provided for @profile_accountManagement.
   ///
   /// In ko, this message translates to:

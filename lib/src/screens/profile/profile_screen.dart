@@ -14,6 +14,7 @@ import '../../data/terms_content.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../services/storage/local_image_storage_service.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/api/token_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../providers/locale_provider.dart';
@@ -393,6 +394,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // 약관 및 정책 섹션
                     _buildTermsPolicySection(l10n),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
+                    // 앱 지원 섹션
+                    _buildAppSupportSection(l10n),
 
                     // 구분선
                     Container(
@@ -1202,6 +1213,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       AppSnackBar.error(context, message: l10n.error_deleteAccount);
     }
+  }
+
+  /// 앱 지원 섹션
+  Widget _buildAppSupportSection(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.profile_appSupport,
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1A1A1A),
+              height: 22 / 16,
+              letterSpacing: 0.08,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildTermsRow(
+            label: l10n.profile_rateApp,
+            onTap: () => AnalyticsService.instance.openStoreListing(),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 계정 관리 섹션 (로그아웃 + 회원 탈퇴)

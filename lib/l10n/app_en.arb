@@ -154,6 +154,8 @@
   "profile_socialAccounts": "Linked Accounts",
   "profile_link": "Link",
   "profile_unlink": "Unlink",
+  "profile_appSupport": "App Support",
+  "profile_rateApp": "Rate this app",
   "profile_accountManagement": "Account",
   "profile_logout": "Logout",
   "profile_deleteAccount": "Delete Account",

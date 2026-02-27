@@ -465,6 +465,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile_unlink => 'Unlink';
 
   @override
+  String get profile_appSupport => 'App Support';
+
+  @override
+  String get profile_rateApp => 'Rate this app';
+
+  @override
   String get profile_accountManagement => 'Account';
 
   @override

@@ -51,6 +51,8 @@ class AnalyticsService {
 
   // --- In-App Review ---
 
+  Future<void> openStoreListing() => _inAppReview.openStoreListing();
+
   static const _kWeightCountKey = 'analytics_weight_record_count';
   static const _kReviewPromptedKey = 'analytics_review_prompted';
   static const _kReviewThreshold = 5;

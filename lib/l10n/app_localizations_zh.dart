@@ -448,6 +448,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile_unlink => '解绑';
 
   @override
+  String get profile_appSupport => '应用支持';
+
+  @override
+  String get profile_rateApp => '评价应用';
+
+  @override
   String get profile_accountManagement => '账号管理';
 
   @override

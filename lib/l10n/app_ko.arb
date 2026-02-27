@@ -228,6 +228,8 @@
   "profile_socialAccounts": "소셜 계정 연동",
   "profile_link": "연동",
   "profile_unlink": "해제",
+  "profile_appSupport": "앱 지원",
+  "profile_rateApp": "앱 평가하기",
   "profile_accountManagement": "계정 관리",
   "profile_logout": "로그아웃",
   "profile_deleteAccount": "회원 탈퇴",

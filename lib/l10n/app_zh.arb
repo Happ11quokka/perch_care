@@ -223,6 +223,8 @@
   "profile_socialAccounts": "社交账号绑定",
   "profile_link": "绑定",
   "profile_unlink": "解绑",
+  "profile_appSupport": "应用支持",
+  "profile_rateApp": "评价应用",
   "profile_accountManagement": "账号管理",
   "profile_logout": "退出登录",
   "profile_deleteAccount": "注销账号",
