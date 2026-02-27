@@ -71,3 +71,9 @@ backend/uploads/*
 
 # Development logs
 docs/development-logs/
+
+# Firebase config (contains API keys)
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase.json
