@@ -1238,6 +1238,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get diet_editRecord => '기록 수정';
 
   @override
+  String get diet_recentFoods => '최근 음식';
+
+  @override
   String get diet_totalServed => '총 배식량';
 
   @override

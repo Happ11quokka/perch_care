@@ -86,22 +86,34 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// 특정 petId로 펫 정보 + BHI를 서버에서 새로 로드
+  /// 특정 petId로 펫 정보 + BHI를 서버에서 병렬 로드
   Future<void> _refreshForPet(String petId) async {
     // 이미 같은 펫이면 무시
     if (_activePet?.id == petId) return;
 
-    // 펫 정보 로드
+    // 펫 정보 + BHI를 동시에 로드 (독립적이므로 병렬 가능)
+    late Pet? pet;
+    late BhiResult? bhi;
+
     try {
-      final pet = await _petService.getPetById(petId);
+      final petFuture = _petService.getPetById(petId);
+      final bhiFuture = () async {
+        try {
+          return await _bhiService.getBhi(petId, targetDate: DateTime.now());
+        } catch (e) {
+          debugPrint('[HomeScreen] BHI 로드 실패: $e');
+          return null;
+        }
+      }();
+      final results = await Future.wait<dynamic>([petFuture, bhiFuture]);
+
       if (!mounted) return;
-      if (pet != null) {
-        setState(() {
-          _activePet = pet;
-        });
-      }
+
+      pet = results[0] as Pet?;
+      bhi = results[1] as BhiResult?;
     } catch (e) {
       debugPrint('[HomeScreen] 펫 정보 로드 실패, 로컬 캐시 복원 시도: $e');
+      if (!mounted) return;
       // 서버 실패 시 로컬 캐시에서 펫 이름만이라도 복원
       try {
         final cached = await _petCache.getActivePet();
@@ -121,11 +133,24 @@ class _HomeScreenState extends State<HomeScreen> {
       } catch (cacheError) {
         debugPrint('[HomeScreen] 로컬 캐시 복원도 실패: $cacheError');
       }
+      return;
     }
 
-    // BHI 로드 (새 펫 데이터로 덮어쓰기)
-    if (!mounted) return;
-    _loadBhi(petId);
+    if (pet != null) {
+      setState(() {
+        _activePet = pet;
+      });
+    }
+
+    if (bhi != null) {
+      setState(() {
+        _bhiResult = bhi;
+        _wciLevel = bhi!.wciLevel;
+        _hasWeightData = bhi.hasWeightData;
+        _hasFoodData = bhi.hasFoodData;
+        _hasWaterData = bhi.hasWaterData;
+      });
+    }
   }
 
   Future<void> _loadPets() async {

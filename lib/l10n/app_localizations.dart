@@ -2374,6 +2374,12 @@ abstract class AppLocalizations {
   /// **'기록 수정'**
   String get diet_editRecord;
 
+  /// No description provided for @diet_recentFoods.
+  ///
+  /// In ko, this message translates to:
+  /// **'최근 음식'**
+  String get diet_recentFoods;
+
   /// No description provided for @diet_totalServed.
   ///
   /// In ko, this message translates to:

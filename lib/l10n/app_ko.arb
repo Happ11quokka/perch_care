@@ -624,6 +624,7 @@
   "diet_addEating": "취식 기록 추가",
   "diet_addRecord": "기록 추가",
   "diet_editRecord": "기록 수정",
+  "diet_recentFoods": "최근 음식",
   "diet_totalServed": "총 배식량",
   "diet_totalEaten": "총 취식량",
   "diet_eatingRate": "취식률",

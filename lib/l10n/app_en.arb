@@ -426,6 +426,7 @@
   "diet_addEating": "Add Eating Record",
   "diet_addRecord": "Add Record",
   "diet_editRecord": "Edit Record",
+  "diet_recentFoods": "Recent foods",
   "diet_totalServed": "Total Served",
   "diet_totalEaten": "Total Eaten",
   "diet_eatingRate": "Eating Rate",

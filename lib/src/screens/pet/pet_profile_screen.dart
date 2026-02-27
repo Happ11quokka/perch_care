@@ -3,12 +3,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
-import '../../services/analytics/analytics_service.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
-import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 반려동물 프로필 목록 화면
@@ -96,45 +94,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
       });
     } catch (_) {
       // 프로필 로드 실패 시 기본값 사용
-    }
-  }
-
-  Future<void> _deletePet(String petId, String petName) async {
-    final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.pet_deleteConfirmTitle),
-        content: Text(l10n.pet_deleteConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.common_cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(l10n.pet_deleteConfirmButton),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-
-    try {
-      await _petService.deletePet(petId);
-      AnalyticsService.instance.logPetDeleted();
-      await _petCache.removePet(petId);
-      await _loadPets();
-      if (!mounted) return;
-      // 삭제 후 남은 펫이 있으면 첫 번째 펫을 활성화
-      if (_cachedPets.isNotEmpty) {
-        ActivePetNotifier.instance.notify(_cachedPets.first.id);
-      }
-      AppSnackBar.success(context, message: l10n.snackbar_deleted);
-    } catch (e) {
-      if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.error_noPetFound);
     }
   }
 
@@ -315,11 +274,10 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
 
   Widget _buildPetCard(Map<String, dynamic> pet) {
     final isSelected = pet['id'] == _selectedPetId;
+    final petId = pet['id'] as String;
 
     return GestureDetector(
       onTap: () async {
-        final petId = pet['id'] as String?;
-        if (petId == null) return;
         setState(() {
           _selectedPetId = petId;
         });
@@ -332,140 +290,119 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
         ActivePetNotifier.instance.notify(petId);
       },
       child: Container(
-      margin: const EdgeInsets.only(left: 32, right: 32, bottom: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFFFF5ED) : const Color(0xFFF0F0F0),
-        border: Border.all(
-          color: isSelected ? const Color(0xFFFF9A42) : Colors.transparent,
-          width: 1,
+        margin: const EdgeInsets.only(left: 32, right: 32, bottom: 12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFF5ED) : const Color(0xFFF0F0F0),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFF9A42) : Colors.transparent,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(16),
         ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          // 프로필 이미지
-          Container(
-            width: 62.64,
-            height: 62.64,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFFD9D9D9),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/images/pet_profile.svg',
-                width: 40,
-                height: 40,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-          const SizedBox(width: 15),
-          // 정보
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      pet['name'] as String,
-                      style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF1A1A1A),
-                        letterSpacing: 0.08,
-                      ),
-                    ),
-                    const SizedBox(width: 1),
-                    if (pet['gender'] == 'male' ||
-                        pet['gender'] == 'female')
-                      SvgPicture.asset(
-                        pet['gender'] == 'male'
-                            ? 'assets/images/gender_male.svg'
-                            : 'assets/images/gender_female.svg',
-                        width: 20,
-                        height: 20,
-                      )
-                    else
-                      const SizedBox(width: 20, height: 20),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  pet['species'] as String,
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF6B6B6B),
-                    letterSpacing: 0.06,
-                  ),
-                ),
-                Text(
-                  pet['age'] as String,
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF6B6B6B),
-                    letterSpacing: 0.06,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // 수정 버튼
-          GestureDetector(
-            onTap: () async {
-              await context.pushNamed(
-                RouteNames.petAdd,
-                extra: {'petId': pet['id']},
-              );
-              await _loadPets();
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected
-                    ? const Color(0xFFFF9A42)
-                    : const Color(0xFF97928A),
-              ),
-              child: const Icon(
-                Icons.edit,
-                size: 14,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // 삭제 버튼
-          GestureDetector(
-            onTap: () => _deletePet(
-              pet['id'] as String,
-              pet['name'] as String,
-            ),
-            child: Container(
-              width: 24,
-              height: 24,
+        child: Row(
+          children: [
+            // 프로필 이미지
+            Container(
+              width: 62.64,
+              height: 62.64,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color(0xFFD9D9D9),
               ),
-              child: const Icon(
-                Icons.close,
-                size: 14,
-                color: Color(0xFF97928A),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/pet_profile.svg',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 15),
+            // 정보
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        pet['name'] as String,
+                        style: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: 0.08,
+                        ),
+                      ),
+                      const SizedBox(width: 1),
+                      if (pet['gender'] == 'male' ||
+                          pet['gender'] == 'female')
+                        SvgPicture.asset(
+                          pet['gender'] == 'male'
+                              ? 'assets/images/gender_male.svg'
+                              : 'assets/images/gender_female.svg',
+                          width: 20,
+                          height: 20,
+                        )
+                      else
+                        const SizedBox(width: 20, height: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    pet['species'] as String,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B6B6B),
+                      letterSpacing: 0.06,
+                    ),
+                  ),
+                  Text(
+                    pet['age'] as String,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B6B6B),
+                      letterSpacing: 0.06,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 수정 버튼
+            GestureDetector(
+              onTap: () async {
+                await context.pushNamed(
+                  RouteNames.petAdd,
+                  extra: {'petId': pet['id']},
+                );
+                await _loadPets();
+              },
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected
+                      ? const Color(0xFFFF9A42)
+                      : const Color(0xFF97928A),
+                ),
+                child: const Icon(
+                  Icons.edit,
+                  size: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 

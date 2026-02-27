@@ -30,6 +30,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   bool _isLoading = true;
   bool _showServing = true; // true=배식 탭, false=취식 탭
   List<DietEntry> _entries = [];
+  List<String> _pastFoodNames = [];
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
       setState(() {
         _activePetId = pet?.id;
       });
+      await _loadFoodNameSuggestions();
       await _loadEntries();
     } catch (_) {
       if (!mounted) return;
@@ -80,6 +82,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           setState(() {
             _entries = entries;
           });
+          await _updateFoodNameSuggestions();
           return;
         }
       } catch (e) {
@@ -134,6 +137,61 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
       }
     }
     AnalyticsService.instance.logFoodRecorded(_activePetId ?? '', _entries.length);
+    await _updateFoodNameSuggestions();
+  }
+
+  String _foodNamesSuggestionKey() =>
+      'food_names_${_activePetId ?? 'default'}';
+
+  Future<void> _loadFoodNameSuggestions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getStringList(_foodNamesSuggestionKey());
+    if (existing != null) {
+      if (!mounted) return;
+      setState(() => _pastFoodNames = existing);
+      return;
+    }
+    // Migration: scan existing food_* keys for this pet
+    final prefix = 'food_${_activePetId ?? 'default'}_';
+    final allKeys = prefs.getKeys().where(
+      (k) => k.startsWith(prefix) && !k.startsWith('food_names_'),
+    );
+    final names = <String>{};
+    for (final key in allKeys) {
+      final raw = prefs.getString(key);
+      if (raw == null) continue;
+      try {
+        final list = jsonDecode(raw) as List<dynamic>;
+        for (final item in list) {
+          final map = item as Map<String, dynamic>;
+          final name = (map['foodName'] ?? map['name'] ?? '') as String;
+          if (name.isNotEmpty) names.add(name);
+        }
+      } catch (_) {}
+    }
+    final namesList = names.toList();
+    await prefs.setStringList(_foodNamesSuggestionKey(), namesList);
+    if (!mounted) return;
+    setState(() => _pastFoodNames = namesList);
+  }
+
+  Future<void> _updateFoodNameSuggestions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getStringList(_foodNamesSuggestionKey()) ?? [];
+    final currentSet = current.toSet();
+    final newNames = <String>[];
+    for (final entry in _entries) {
+      if (entry.foodName.isNotEmpty && !currentSet.contains(entry.foodName)) {
+        currentSet.add(entry.foodName);
+        newNames.add(entry.foodName);
+      }
+    }
+    if (newNames.isNotEmpty) {
+      final updated = [...current, ...newNames];
+      await prefs.setStringList(_foodNamesSuggestionKey(), updated);
+      if (!mounted) return;
+      setState(() => _pastFoodNames = updated);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -275,6 +333,58 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         fontSize: 14,
                       ),
                     ),
+                    if (_pastFoodNames.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          l10n.diet_recentFoods,
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.mediumGray,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: _pastFoodNames.reversed.take(10).map((name) {
+                          return GestureDetector(
+                            onTap: () {
+                              nameController.text = name;
+                              nameController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: name.length),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.gray100,
+                                borderRadius: BorderRadius.circular(9999),
+                                border: Border.all(color: AppColors.gray300, width: 0.5),
+                              ),
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.nearBlack,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     // 양(g)
                     TextField(

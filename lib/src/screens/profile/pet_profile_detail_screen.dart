@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
@@ -10,6 +11,9 @@ import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
+import '../../services/pet/active_pet_notifier.dart';
+import '../../services/analytics/analytics_service.dart';
+import '../../services/storage/local_image_storage_service.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 
@@ -27,6 +31,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   final _petService = PetService.instance;
   final _imagePicker = ImagePicker();
   File? _selectedImage;
+  Uint8List? _savedImageBytes;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
@@ -65,6 +70,13 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
 
       if (apiPet != null) {
         _existingPetId = apiPet.id;
+
+        // 로컬 저장된 펫 이미지 로드
+        final imageBytes = await LocalImageStorageService.instance.getImage(
+          ownerType: ImageOwnerType.petProfile,
+          ownerId: apiPet.id,
+        );
+        _savedImageBytes = imageBytes;
 
         // 로컬 캐시도 동기화
         await _petCache.upsertPet(
@@ -176,6 +188,37 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
                         child: _buildSaveButton(l10n),
                       ),
 
+                      const SizedBox(height: 12),
+
+                      // 삭제 버튼
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: GestureDetector(
+                          onTap: _isLoading ? null : _handleDelete,
+                          child: Container(
+                            width: double.infinity,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFFF572D)),
+                            ),
+                            child: Center(
+                              child: Text(
+                                l10n.pet_delete,
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFFF572D),
+                                  letterSpacing: -0.45,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -253,6 +296,18 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
                   shape: BoxShape.circle,
                   image: DecorationImage(
                     image: FileImage(_selectedImage!),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+            else if (_savedImageBytes != null)
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: MemoryImage(_savedImageBytes!),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -597,6 +652,46 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
     }
   }
 
+  Future<void> _handleDelete() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.pet_deleteConfirmTitle),
+        content: Text(l10n.pet_deleteConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.common_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(l10n.pet_deleteConfirmButton),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await _petService.deletePet(_existingPetId!);
+      AnalyticsService.instance.logPetDeleted();
+      await _petCache.removePet(_existingPetId!);
+      if (!mounted) return;
+      final remainingPets = await _petCache.getPets();
+      if (remainingPets.isNotEmpty) {
+        ActivePetNotifier.instance.notify(remainingPets.first.id);
+      }
+      if (!mounted) return;
+      AppSnackBar.success(context, message: l10n.snackbar_deleted);
+      context.pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.error(context, message: l10n.error_noPetFound);
+    }
+  }
+
   /// 저장 처리
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) {
@@ -640,6 +735,16 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
           gender: gender,
           weight: weightValue,
           adoptionDate: _adoptionDate,
+        );
+      }
+
+      // 이미지를 SQLite에 저장
+      if (_selectedImage != null) {
+        final bytes = await _selectedImage!.readAsBytes();
+        await LocalImageStorageService.instance.saveImage(
+          ownerType: ImageOwnerType.petProfile,
+          ownerId: savedPet.id,
+          imageBytes: bytes,
         );
       }
 

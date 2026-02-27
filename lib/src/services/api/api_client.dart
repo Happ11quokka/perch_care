@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -15,8 +16,13 @@ class ApiClient {
     _instance = ApiClient._();
   }
 
+  static const _requestTimeout = Duration(seconds: 10);
+  static const _refreshTimeout = Duration(seconds: 5);
+  static const _uploadTimeout = Duration(seconds: 30);
+
   String get _baseUrl => Environment.apiBaseUrl;
   final _tokenService = TokenService.instance;
+  Completer<bool>? _refreshCompleter;
 
   Map<String, String> get _headers {
     return {
@@ -77,35 +83,42 @@ class ApiClient {
     request.headers['Authorization'] = 'Bearer ${_tokenService.accessToken}';
     request.files.add(http.MultipartFile.fromBytes('file', fileBytes, filename: fileName));
 
-    final streamedResponse = await request.send();
+    final streamedResponse = await request.send().timeout(_uploadTimeout);
     final response = await http.Response.fromStream(streamedResponse);
     return _handleResponse(response);
   }
 
   /// 토큰 갱신이 포함된 요청 래퍼
   Future<http.Response> _makeRequest(Future<http.Response> Function() request) async {
-    var response = await request();
+    var response = await request().timeout(_requestTimeout);
 
     // 401이면 토큰 갱신 시도
     if (response.statusCode == 401 && _tokenService.refreshToken != null) {
       final refreshed = await _refreshToken();
       if (refreshed) {
-        response = await request();
+        response = await request().timeout(_requestTimeout);
       }
     }
 
     return response;
   }
 
-  /// 토큰 갱신
+  /// 토큰 갱신 (동시 요청 시 Completer로 중복 방지)
   Future<bool> _refreshToken() async {
+    // 이미 갱신 진행 중이면 해당 결과를 공유
+    if (_refreshCompleter != null) {
+      return _refreshCompleter!.future;
+    }
+
+    _refreshCompleter = Completer<bool>();
+
     try {
       final uri = Uri.parse('$_baseUrl/auth/refresh');
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'refresh_token': _tokenService.refreshToken}),
-      );
+      ).timeout(_refreshTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -113,16 +126,21 @@ class ApiClient {
           accessToken: data['access_token'],
           refreshToken: data['refresh_token'],
         );
+        _refreshCompleter!.complete(true);
         return true;
       }
       debugPrint('[ApiClient] Token refresh failed: ${response.statusCode}');
+      await _tokenService.clearTokens();
+      _refreshCompleter!.complete(false);
+      return false;
     } catch (e) {
       debugPrint('[ApiClient] Token refresh error: $e');
+      await _tokenService.clearTokens();
+      _refreshCompleter!.complete(false);
+      return false;
+    } finally {
+      _refreshCompleter = null;
     }
-
-    // 갱신 실패 시 토큰 삭제
-    await _tokenService.clearTokens();
-    return false;
   }
 
   dynamic _handleResponse(http.Response response) {

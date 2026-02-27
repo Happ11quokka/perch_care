@@ -1274,6 +1274,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diet_editRecord => 'Edit Record';
 
   @override
+  String get diet_recentFoods => 'Recent foods';
+
+  @override
   String get diet_totalServed => 'Total Served';
 
   @override

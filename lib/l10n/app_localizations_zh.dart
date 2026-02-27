@@ -1225,6 +1225,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diet_editRecord => '编辑记录';
 
   @override
+  String get diet_recentFoods => '最近食物';
+
+  @override
   String get diet_totalServed => '总投喂量';
 
   @override

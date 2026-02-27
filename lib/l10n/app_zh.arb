@@ -593,6 +593,7 @@
   "diet_addEating": "添加进食记录",
   "diet_addRecord": "添加记录",
   "diet_editRecord": "编辑记录",
+  "diet_recentFoods": "最近食物",
   "diet_totalServed": "总投喂量",
   "diet_totalEaten": "总进食量",
   "diet_eatingRate": "进食率",
