@@ -1,7 +1,8 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../api/api_client.dart';
+import '../../providers/locale_provider.dart';
 
 /// FCM 푸시 알림 서비스
 class PushNotificationService {
@@ -50,9 +51,14 @@ class PushNotificationService {
   Future<void> _registerToken(String token) async {
     try {
       final platform = Platform.isIOS ? 'ios' : 'android';
+      final lang = LocaleProvider.instance.currentLanguageCode
+          ?? WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      // Normalize to supported languages
+      final language = const ['ko', 'en', 'zh'].contains(lang) ? lang : 'zh';
       await _api.post('/users/me/device-token', body: {
         'token': token,
         'platform': platform,
+        'language': language,
       });
       debugPrint('[Push] Token registered: ${token.substring(0, 20)}...');
     } catch (e) {

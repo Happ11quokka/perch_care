@@ -7,6 +7,7 @@ import asyncio
 import logging
 from datetime import date, timezone, timedelta
 
+from collections import defaultdict
 from sqlalchemy import select, exists, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -100,28 +101,42 @@ async def run():
             select(DeviceToken).where(DeviceToken.user_id.in_(user_ids))
         )
         device_tokens = list(result.scalars().all())
-        tokens = [dt.token for dt in device_tokens]
-        logger.info(f"Device tokens to notify: {len(tokens)}")
+        logger.info(f"Device tokens to notify: {len(device_tokens)}")
 
-        # 3. Send FCM push (use default language)
-        msg = MESSAGES[DEFAULT_LANG]
-        if tokens:
-            success, failure, invalid = send_push_notifications_batch(
-                tokens=tokens,
-                title=msg["title"],
-                body=msg["body"],
-                data={"type": "daily_reminder"},
-            )
-            logger.info(f"Push sent — success: {success}, failure: {failure}, invalid: {len(invalid)}")
+        # 3. Group tokens by language and send FCM push per language
+        total_success = 0
+        total_failure = 0
+        all_invalid: list[str] = []
 
-            # Remove invalid tokens
-            if invalid:
-                await db.execute(
-                    delete(DeviceToken).where(DeviceToken.token.in_(invalid))
+        if device_tokens:
+            tokens_by_lang: dict[str, list[str]] = defaultdict(list)
+            for dt in device_tokens:
+                lang = dt.language if dt.language in MESSAGES else DEFAULT_LANG
+                tokens_by_lang[lang].append(dt.token)
+
+            for lang, tokens in tokens_by_lang.items():
+                msg = MESSAGES[lang]
+                success, failure, invalid = send_push_notifications_batch(
+                    tokens=tokens,
+                    title=msg["title"],
+                    body=msg["body"],
+                    data={"type": "daily_reminder"},
                 )
-                logger.info(f"Removed {len(invalid)} invalid tokens")
+                total_success += success
+                total_failure += failure
+                all_invalid.extend(invalid)
+                logger.info(f"Push [{lang}] — success: {success}, failure: {failure}, tokens: {len(tokens)}")
 
-        # 4. Create in-app notifications for ALL target users (even without device tokens)
+            if all_invalid:
+                await db.execute(
+                    delete(DeviceToken).where(DeviceToken.token.in_(all_invalid))
+                )
+                logger.info(f"Removed {len(all_invalid)} invalid tokens")
+
+        logger.info(f"Push total — success: {total_success}, failure: {total_failure}")
+
+        # 4. Create in-app notifications for ALL target users (use default language)
+        msg = MESSAGES[DEFAULT_LANG]
         for user_id in user_ids:
             db.add(Notification(
                 user_id=user_id,

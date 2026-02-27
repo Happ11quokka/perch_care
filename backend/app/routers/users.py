@@ -111,11 +111,13 @@ async def register_device_token(
     existing = result.scalar_one_or_none()
     if existing:
         existing.platform = request.platform
+        existing.language = request.language
     else:
         db.add(DeviceToken(
             user_id=current_user.id,
             token=request.token,
             platform=request.platform,
+            language=request.language,
         ))
     return {"status": "ok"}
 
