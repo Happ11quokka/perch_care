@@ -1,11 +1,11 @@
 """FCM push notification service using firebase-admin SDK."""
 import json
 import logging
-import tempfile
-import os
 
 import firebase_admin
 from firebase_admin import credentials, messaging
+from google.oauth2 import service_account
+import google.auth.transport.requests
 
 from app.config import get_settings
 
@@ -25,15 +25,17 @@ def _ensure_initialized():
     parsed = json.loads(settings.firebase_credentials_json)
     logger.info(f"Firebase init — project: {parsed.get('project_id')}, key_id: {parsed.get('private_key_id', '')[:12]}...")
 
-    # Write credentials to a temp file to avoid private_key encoding issues
-    fd, path = tempfile.mkstemp(suffix=".json")
+    # Diagnostic: test OAuth2 token acquisition directly
     try:
-        with os.fdopen(fd, "w") as f:
-            json.dump(parsed, f)
-        cred = credentials.Certificate(path)
-    finally:
-        os.unlink(path)
+        sa_creds = service_account.Credentials.from_service_account_info(
+            parsed, scopes=["https://www.googleapis.com/auth/firebase.messaging"]
+        )
+        sa_creds.refresh(google.auth.transport.requests.Request())
+        logger.info(f"OAuth2 token test — OK, expires: {sa_creds.expiry}")
+    except Exception:
+        logger.exception("OAuth2 token test — FAILED")
 
+    cred = credentials.Certificate(parsed)
     firebase_admin.initialize_app(cred)
     _initialized = True
     logger.info("Firebase Admin SDK initialized successfully")
