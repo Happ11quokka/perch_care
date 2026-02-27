@@ -874,6 +874,30 @@ abstract class AppLocalizations {
   /// **'새로운 아이 등록하기'**
   String get profile_addNewPet;
 
+  /// No description provided for @pet_delete.
+  ///
+  /// In ko, this message translates to:
+  /// **'반려동물 삭제'**
+  String get pet_delete;
+
+  /// No description provided for @pet_deleteConfirmTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'반려동물 삭제'**
+  String get pet_deleteConfirmTitle;
+
+  /// No description provided for @pet_deleteConfirmMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 반려동물을 삭제하시겠습니까? 체중, 사료, 수분 기록 등 모든 관련 데이터가 영구적으로 삭제됩니다.'**
+  String get pet_deleteConfirmMessage;
+
+  /// No description provided for @pet_deleteConfirmButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제'**
+  String get pet_deleteConfirmButton;
+
   /// No description provided for @profile_socialAccounts.
   ///
   /// In ko, this message translates to:
@@ -1191,6 +1215,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'등록되었습니다.'**
   String get snackbar_registered;
+
+  /// No description provided for @snackbar_deleted.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제되었습니다.'**
+  String get snackbar_deleted;
 
   /// No description provided for @snackbar_googleLinked.
   ///
@@ -2326,6 +2356,12 @@ abstract class AppLocalizations {
   /// **'기록 추가'**
   String get diet_addRecord;
 
+  /// No description provided for @diet_editRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록 수정'**
+  String get diet_editRecord;
+
   /// No description provided for @diet_totalServed.
   ///
   /// In ko, this message translates to:
@@ -2391,6 +2427,192 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'메모 (선택)'**
   String get diet_memo;
+
+  /// No description provided for @faq_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'자주 묻는 질문'**
+  String get faq_title;
+
+  /// No description provided for @faq_categoryGeneral.
+  ///
+  /// In ko, this message translates to:
+  /// **'일반'**
+  String get faq_categoryGeneral;
+
+  /// No description provided for @faq_categoryUsage.
+  ///
+  /// In ko, this message translates to:
+  /// **'기능 사용법'**
+  String get faq_categoryUsage;
+
+  /// No description provided for @faq_categoryAccount.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정 관리'**
+  String get faq_categoryAccount;
+
+  /// No description provided for @faq_categoryPet.
+  ///
+  /// In ko, this message translates to:
+  /// **'반려동물 관리'**
+  String get faq_categoryPet;
+
+  /// No description provided for @faq_q1.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 앱은 무료인가요?'**
+  String get faq_q1;
+
+  /// No description provided for @faq_a1.
+  ///
+  /// In ko, this message translates to:
+  /// **'네, Perch Care의 기본 기능은 모두 무료로 이용할 수 있습니다.'**
+  String get faq_a1;
+
+  /// No description provided for @faq_q2.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 건강 분석은 얼마나 정확한가요?'**
+  String get faq_q2;
+
+  /// No description provided for @faq_a2.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 분석은 참고용이며, 정확한 진단을 대체하지 않습니다. 반려동물의 건강에 이상이 있다면 반드시 수의사와 상담해 주세요.'**
+  String get faq_a2;
+
+  /// No description provided for @faq_q3.
+  ///
+  /// In ko, this message translates to:
+  /// **'데이터는 안전하게 보존되나요?'**
+  String get faq_q3;
+
+  /// No description provided for @faq_a3.
+  ///
+  /// In ko, this message translates to:
+  /// **'모든 데이터는 암호화되어 안전하게 서버에 저장됩니다. 기기를 변경하더라도 로그인하면 데이터가 복원됩니다.'**
+  String get faq_a3;
+
+  /// No description provided for @faq_q4.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중은 어떻게 기록하나요?'**
+  String get faq_q4;
+
+  /// No description provided for @faq_a4.
+  ///
+  /// In ko, this message translates to:
+  /// **'하단 네비게이션의 체중 탭에서 날짜를 선택하고 체중(g)을 입력하면 됩니다.'**
+  String get faq_a4;
+
+  /// No description provided for @faq_q5.
+  ///
+  /// In ko, this message translates to:
+  /// **'사료/수분 기록은 어떻게 하나요?'**
+  String get faq_q5;
+
+  /// No description provided for @faq_a5.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈 화면의 사료 또는 수분 카드를 탭하면 기록 화면으로 이동합니다. 각 항목을 추가하고 저장하세요.'**
+  String get faq_a5;
+
+  /// No description provided for @faq_q6.
+  ///
+  /// In ko, this message translates to:
+  /// **'BHI(건강지수)는 무엇인가요?'**
+  String get faq_q6;
+
+  /// No description provided for @faq_a6.
+  ///
+  /// In ko, this message translates to:
+  /// **'BHI(Bird Health Index)는 체중, 사료, 수분 기록을 종합하여 반려조의 건강 상태를 점수로 보여주는 지표입니다.'**
+  String get faq_a6;
+
+  /// No description provided for @faq_q7.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록을 수정하거나 삭제할 수 있나요?'**
+  String get faq_q7;
+
+  /// No description provided for @faq_a7.
+  ///
+  /// In ko, this message translates to:
+  /// **'네, 사료 기록은 항목을 탭하면 수정할 수 있습니다. 삭제는 항목을 왼쪽으로 스와이프하면 됩니다.'**
+  String get faq_a7;
+
+  /// No description provided for @faq_q8.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어를 변경하려면 어떻게 하나요?'**
+  String get faq_q8;
+
+  /// No description provided for @faq_a8.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 화면의 \'언어 설정\'에서 한국어, English, 中文 중 선택할 수 있습니다.'**
+  String get faq_a8;
+
+  /// No description provided for @faq_q9.
+  ///
+  /// In ko, this message translates to:
+  /// **'소셜 계정을 연동하거나 해제하려면?'**
+  String get faq_q9;
+
+  /// No description provided for @faq_a9.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 화면의 \'소셜 계정 연동\'에서 Google, Apple 계정을 연동하거나 해제할 수 있습니다.'**
+  String get faq_a9;
+
+  /// No description provided for @faq_q10.
+  ///
+  /// In ko, this message translates to:
+  /// **'회원 탈퇴하면 데이터는 어떻게 되나요?'**
+  String get faq_q10;
+
+  /// No description provided for @faq_a10.
+  ///
+  /// In ko, this message translates to:
+  /// **'탈퇴 시 모든 개인정보와 반려동물 기록이 영구적으로 삭제되며 복구할 수 없습니다.'**
+  String get faq_a10;
+
+  /// No description provided for @faq_q11.
+  ///
+  /// In ko, this message translates to:
+  /// **'반려동물을 추가하거나 삭제하려면?'**
+  String get faq_q11;
+
+  /// No description provided for @faq_a11.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 화면의 \'나의 반려가족\'에서 (+) 버튼으로 추가하고, (X) 버튼으로 삭제할 수 있습니다.'**
+  String get faq_a11;
+
+  /// No description provided for @faq_q12.
+  ///
+  /// In ko, this message translates to:
+  /// **'어떤 종을 지원하나요?'**
+  String get faq_q12;
+
+  /// No description provided for @faq_a12.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 앵무새류(사랑앵무, 왕관앵무 등)를 지원하고 있으며, 다른 조류 종은 추후 지원 예정입니다.'**
+  String get faq_a12;
+
+  /// No description provided for @faq_q13.
+  ///
+  /// In ko, this message translates to:
+  /// **'Android나 HarmonyOS도 지원하나요?'**
+  String get faq_q13;
+
+  /// No description provided for @faq_a13.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재는 iOS만 지원하고 있습니다. Android 및 HarmonyOS 버전은 개발 중이며, 추후 출시 예정입니다.'**
+  String get faq_a13;
 }
 
 class _AppLocalizationsDelegate

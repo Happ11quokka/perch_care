@@ -1,7 +1,7 @@
 name: perch_care
 description: "AI 기반 반려동물 건강 관리 앱"
 publish_to: "none"
-version: 1.1.0+2
+version: 1.2.0+3
 
 environment:
   sdk: ^3.8.1
@@ -28,7 +28,9 @@ dependencies:
   path: ^1.9.0
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
-  kakao_flutter_sdk_user: 1.9.5
+  kakao_flutter_sdk_user: ^1.10.0
+  firebase_core: ^3.12.1
+  firebase_messaging: ^15.2.4
 
 dev_dependencies:
   flutter_test:

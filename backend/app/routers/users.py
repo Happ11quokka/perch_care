@@ -6,6 +6,8 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.user import ProfileResponse, ProfileUpdateRequest, SocialAccountResponse, SocialAccountLinkRequest
+from app.schemas.device_token import DeviceTokenCreate, DeviceTokenDelete
+from app.models.device_token import DeviceToken
 from app.services import user_service
 from app.utils.security import verify_google_id_token, verify_kakao_access_token
 
@@ -91,3 +93,46 @@ async def unlink_social_account(
     db: AsyncSession = Depends(get_db),
 ):
     await user_service.unlink_social_account(db, current_user.id, provider)
+
+
+@router.post("/me/device-token", status_code=200)
+async def register_device_token(
+    request: DeviceTokenCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Register or update FCM device token (upsert)."""
+    result = await db.execute(
+        select(DeviceToken).where(
+            DeviceToken.user_id == current_user.id,
+            DeviceToken.token == request.token,
+        )
+    )
+    existing = result.scalar_one_or_none()
+    if existing:
+        existing.platform = request.platform
+    else:
+        db.add(DeviceToken(
+            user_id=current_user.id,
+            token=request.token,
+            platform=request.platform,
+        ))
+    return {"status": "ok"}
+
+
+@router.delete("/me/device-token", status_code=204)
+async def delete_device_token(
+    request: DeviceTokenDelete,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove FCM device token (e.g. on logout)."""
+    result = await db.execute(
+        select(DeviceToken).where(
+            DeviceToken.user_id == current_user.id,
+            DeviceToken.token == request.token,
+        )
+    )
+    token = result.scalar_one_or_none()
+    if token:
+        await db.delete(token)

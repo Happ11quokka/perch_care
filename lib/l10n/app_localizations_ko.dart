@@ -432,6 +432,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profile_addNewPet => '새로운 아이 등록하기';
 
   @override
+  String get pet_delete => '반려동물 삭제';
+
+  @override
+  String get pet_deleteConfirmTitle => '반려동물 삭제';
+
+  @override
+  String get pet_deleteConfirmMessage =>
+      '이 반려동물을 삭제하시겠습니까? 체중, 사료, 수분 기록 등 모든 관련 데이터가 영구적으로 삭제됩니다.';
+
+  @override
+  String get pet_deleteConfirmButton => '삭제';
+
+  @override
   String get profile_socialAccounts => '소셜 계정 연동';
 
   @override
@@ -598,6 +611,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get snackbar_registered => '등록되었습니다.';
+
+  @override
+  String get snackbar_deleted => '삭제되었습니다.';
 
   @override
   String get snackbar_googleLinked => 'Google 계정이 연동되었습니다.';
@@ -1213,6 +1229,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get diet_addRecord => '기록 추가';
 
   @override
+  String get diet_editRecord => '기록 수정';
+
+  @override
   String get diet_totalServed => '총 배식량';
 
   @override
@@ -1250,4 +1269,105 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get diet_memo => '메모 (선택)';
+
+  @override
+  String get faq_title => '자주 묻는 질문';
+
+  @override
+  String get faq_categoryGeneral => '일반';
+
+  @override
+  String get faq_categoryUsage => '기능 사용법';
+
+  @override
+  String get faq_categoryAccount => '계정 관리';
+
+  @override
+  String get faq_categoryPet => '반려동물 관리';
+
+  @override
+  String get faq_q1 => '이 앱은 무료인가요?';
+
+  @override
+  String get faq_a1 => '네, Perch Care의 기본 기능은 모두 무료로 이용할 수 있습니다.';
+
+  @override
+  String get faq_q2 => 'AI 건강 분석은 얼마나 정확한가요?';
+
+  @override
+  String get faq_a2 =>
+      'AI 분석은 참고용이며, 정확한 진단을 대체하지 않습니다. 반려동물의 건강에 이상이 있다면 반드시 수의사와 상담해 주세요.';
+
+  @override
+  String get faq_q3 => '데이터는 안전하게 보존되나요?';
+
+  @override
+  String get faq_a3 =>
+      '모든 데이터는 암호화되어 안전하게 서버에 저장됩니다. 기기를 변경하더라도 로그인하면 데이터가 복원됩니다.';
+
+  @override
+  String get faq_q4 => '체중은 어떻게 기록하나요?';
+
+  @override
+  String get faq_a4 => '하단 네비게이션의 체중 탭에서 날짜를 선택하고 체중(g)을 입력하면 됩니다.';
+
+  @override
+  String get faq_q5 => '사료/수분 기록은 어떻게 하나요?';
+
+  @override
+  String get faq_a5 =>
+      '홈 화면의 사료 또는 수분 카드를 탭하면 기록 화면으로 이동합니다. 각 항목을 추가하고 저장하세요.';
+
+  @override
+  String get faq_q6 => 'BHI(건강지수)는 무엇인가요?';
+
+  @override
+  String get faq_a6 =>
+      'BHI(Bird Health Index)는 체중, 사료, 수분 기록을 종합하여 반려조의 건강 상태를 점수로 보여주는 지표입니다.';
+
+  @override
+  String get faq_q7 => '기록을 수정하거나 삭제할 수 있나요?';
+
+  @override
+  String get faq_a7 => '네, 사료 기록은 항목을 탭하면 수정할 수 있습니다. 삭제는 항목을 왼쪽으로 스와이프하면 됩니다.';
+
+  @override
+  String get faq_q8 => '언어를 변경하려면 어떻게 하나요?';
+
+  @override
+  String get faq_a8 => '프로필 화면의 \'언어 설정\'에서 한국어, English, 中文 중 선택할 수 있습니다.';
+
+  @override
+  String get faq_q9 => '소셜 계정을 연동하거나 해제하려면?';
+
+  @override
+  String get faq_a9 =>
+      '프로필 화면의 \'소셜 계정 연동\'에서 Google, Apple 계정을 연동하거나 해제할 수 있습니다.';
+
+  @override
+  String get faq_q10 => '회원 탈퇴하면 데이터는 어떻게 되나요?';
+
+  @override
+  String get faq_a10 => '탈퇴 시 모든 개인정보와 반려동물 기록이 영구적으로 삭제되며 복구할 수 없습니다.';
+
+  @override
+  String get faq_q11 => '반려동물을 추가하거나 삭제하려면?';
+
+  @override
+  String get faq_a11 =>
+      '프로필 화면의 \'나의 반려가족\'에서 (+) 버튼으로 추가하고, (X) 버튼으로 삭제할 수 있습니다.';
+
+  @override
+  String get faq_q12 => '어떤 종을 지원하나요?';
+
+  @override
+  String get faq_a12 =>
+      '현재 앵무새류(사랑앵무, 왕관앵무 등)를 지원하고 있으며, 다른 조류 종은 추후 지원 예정입니다.';
+
+  @override
+  String get faq_q13 => 'Android나 HarmonyOS도 지원하나요?';
+
+  @override
+  String get faq_a13 =>
+      '현재는 iOS만 지원하고 있습니다. Android 및 HarmonyOS 버전은 개발 중이며, 추후 출시 예정입니다.';
 }

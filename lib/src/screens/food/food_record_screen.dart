@@ -175,17 +175,22 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     _saveEntries();
   }
 
-  // ── 기록 추가 모달 ──────────────────────────────────────────────────────────
+  // ── 기록 추가/수정 모달 ──────────────────────────────────────────────────────
 
-  Future<void> _openAddEntryModal() async {
+  Future<void> _openEntryModal({DietEntry? existing}) async {
     final l10n = AppLocalizations.of(context);
+    final isEditing = existing != null;
 
-    // 현재 탭에 맞게 기본값 설정
-    DietType selectedType = _showServing ? DietType.serving : DietType.eating;
-    final nameController = TextEditingController();
-    final gramsController = TextEditingController();
-    final memoController = TextEditingController();
-    TimeOfDay? selectedTime;
+    // 수정 시 기존 값, 추가 시 현재 탭 기본값
+    DietType selectedType = existing?.type ?? (_showServing ? DietType.serving : DietType.eating);
+    final nameController = TextEditingController(text: existing?.foodName ?? '');
+    final gramsController = TextEditingController(
+      text: existing != null ? existing.grams.toStringAsFixed(1) : '',
+    );
+    final memoController = TextEditingController(text: existing?.memo ?? '');
+    TimeOfDay? selectedTime = existing?.hasTime == true
+        ? TimeOfDay(hour: existing!.recordedHour!, minute: existing.recordedMinute!)
+        : null;
 
     final result = await showModalBottomSheet<DietEntry>(
       context: context,
@@ -211,7 +216,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                   children: [
                     // 타이틀
                     Text(
-                      l10n.diet_addRecord,
+                      isEditing ? l10n.diet_editRecord : l10n.diet_addRecord,
                       style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 16,
@@ -254,6 +259,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     // 음식 이름
                     TextField(
                       controller: nameController,
+                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         labelText: l10n.diet_foodName,
                         border: const OutlineInputBorder(),
@@ -272,6 +278,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     TextField(
                       controller: gramsController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         labelText: l10n.diet_amount,
                         border: const OutlineInputBorder(),
@@ -335,6 +342,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     // 메모 (선택)
                     TextField(
                       controller: memoController,
+                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         labelText: l10n.diet_memo,
                         border: const OutlineInputBorder(),
@@ -428,7 +436,16 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
     if (result == null || !mounted) return;
     setState(() {
-      _entries = [..._entries, result];
+      if (existing != null) {
+        // 수정: 기존 엔트리를 교체
+        final index = _entries.indexOf(existing);
+        if (index != -1) {
+          _entries = [..._entries]..[index] = result;
+        }
+      } else {
+        // 추가: 새 엔트리 추가
+        _entries = [..._entries, result];
+      }
     });
     await _saveEntries();
   }
@@ -584,7 +601,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       dashWidth: 6,
                       dashGap: 4,
                       child: InkWell(
-                        onTap: _openAddEntryModal,
+                        onTap: _openEntryModal,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 18),
@@ -791,7 +808,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   // ── 기록 카드 ──────────────────────────────────────────────────────────────
 
   Widget _buildEntryCard(DietEntry entry) {
-    return Container(
+    return GestureDetector(
+      onTap: () => _openEntryModal(existing: entry),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -879,6 +898,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 

@@ -63,6 +63,23 @@ class PetLocalCacheService {
     }
   }
 
+  /// 특정 펫 삭제
+  Future<void> removePet(String petId) async {
+    final pets = await getPets();
+    pets.removeWhere((pet) => pet.id == petId);
+    await _savePets(pets);
+
+    final prefs = await SharedPreferences.getInstance();
+    final activeId = prefs.getString(_activePetIdKey);
+    if (activeId == petId) {
+      if (pets.isNotEmpty) {
+        await prefs.setString(_activePetIdKey, pets.first.id);
+      } else {
+        await prefs.remove(_activePetIdKey);
+      }
+    }
+  }
+
   /// 모든 로컬 캐시 삭제
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();

@@ -427,6 +427,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile_addNewPet => '添加新宠物';
 
   @override
+  String get pet_delete => '删除宠物';
+
+  @override
+  String get pet_deleteConfirmTitle => '删除宠物';
+
+  @override
+  String get pet_deleteConfirmMessage => '确定要删除这只宠物吗？所有相关数据（体重、饮食、饮水记录）将被永久删除。';
+
+  @override
+  String get pet_deleteConfirmButton => '删除';
+
+  @override
   String get profile_socialAccounts => '社交账号绑定';
 
   @override
@@ -592,6 +604,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get snackbar_registered => '已注册。';
+
+  @override
+  String get snackbar_deleted => '已删除。';
 
   @override
   String get snackbar_googleLinked => 'Google账号已绑定。';
@@ -1201,6 +1216,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diet_addRecord => '添加记录';
 
   @override
+  String get diet_editRecord => '编辑记录';
+
+  @override
   String get diet_totalServed => '总投喂量';
 
   @override
@@ -1238,4 +1256,97 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diet_memo => '备注（选填）';
+
+  @override
+  String get faq_title => '常见问题';
+
+  @override
+  String get faq_categoryGeneral => '通用';
+
+  @override
+  String get faq_categoryUsage => '功能使用';
+
+  @override
+  String get faq_categoryAccount => '账户管理';
+
+  @override
+  String get faq_categoryPet => '宠物管理';
+
+  @override
+  String get faq_q1 => '这个应用是免费的吗？';
+
+  @override
+  String get faq_a1 => '是的，Perch Care 的所有基本功能均可免费使用。';
+
+  @override
+  String get faq_q2 => 'AI 健康分析有多准确？';
+
+  @override
+  String get faq_a2 => 'AI 分析仅供参考，不能替代专业诊断。如果您的宠物有健康问题，请咨询兽医。';
+
+  @override
+  String get faq_q3 => '我的数据安全吗？';
+
+  @override
+  String get faq_a3 => '所有数据都经过加密并安全存储在服务器上。更换设备后登录即可恢复数据。';
+
+  @override
+  String get faq_q4 => '如何记录体重？';
+
+  @override
+  String get faq_a4 => '在底部导航栏的体重标签页中，选择日期并输入体重（克）。';
+
+  @override
+  String get faq_q5 => '如何记录饮食和饮水？';
+
+  @override
+  String get faq_a5 => '点击主页上的饮食或饮水卡片，进入记录页面后添加并保存。';
+
+  @override
+  String get faq_q6 => '什么是 BHI（健康指数）？';
+
+  @override
+  String get faq_a6 => 'BHI（Bird Health Index）是综合体重、饮食和饮水记录，以分数形式展示鸟类健康状况的指标。';
+
+  @override
+  String get faq_q7 => '可以修改或删除记录吗？';
+
+  @override
+  String get faq_a7 => '可以，点击饮食记录即可修改。左滑可删除。';
+
+  @override
+  String get faq_q8 => '如何更改语言？';
+
+  @override
+  String get faq_a8 => '在个人资料页面的\"语言设置\"中，可以选择韩语、英语或中文。';
+
+  @override
+  String get faq_q9 => '如何关联或取消关联社交账户？';
+
+  @override
+  String get faq_a9 => '在个人资料页面的\"社交账户关联\"中，可以管理 Google 和 Apple 账户。';
+
+  @override
+  String get faq_q10 => '注销账户后数据会怎样？';
+
+  @override
+  String get faq_a10 => '注销后，所有个人信息和宠物记录将被永久删除，无法恢复。';
+
+  @override
+  String get faq_q11 => '如何添加或删除宠物？';
+
+  @override
+  String get faq_a11 => '在个人资料页面的\"我的宠物\"中，使用（+）按钮添加，使用（X）按钮删除。';
+
+  @override
+  String get faq_q12 => '支持哪些物种？';
+
+  @override
+  String get faq_a12 => '目前支持鹦鹉类（虎皮鹦鹉、玄凤鹦鹉等），其他鸟类将在未来支持。';
+
+  @override
+  String get faq_q13 => '支持 Android 或 HarmonyOS 吗？';
+
+  @override
+  String get faq_a13 => '目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。';
 }

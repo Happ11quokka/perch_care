@@ -28,6 +28,7 @@ class RouteNames {
   static const String profileSetup = 'profile-setup';
   static const String profileSetupComplete = 'profile-setup-complete';
   static const String termsDetail = 'terms-detail';
+  static const String faq = 'faq';
   static const String termsDetailPublic = 'terms-detail-public';
   // 추가 라우트 이름들을 여기에 정의
 }

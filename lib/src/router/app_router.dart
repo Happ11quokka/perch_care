@@ -26,6 +26,7 @@ import '../screens/forgot_password/forgot_password_reset_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/profile_setup/profile_setup_complete_screen.dart';
 import '../screens/terms/terms_detail_screen.dart';
+import '../screens/faq/faq_screen.dart';
 import '../data/terms_content.dart';
 import '../services/api/token_service.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -194,6 +195,11 @@ class AppRouter {
                           : TermsType.termsOfService;
                       return TermsDetailScreen(termsType: termsType);
                     },
+                  ),
+                  GoRoute(
+                    path: 'faq',
+                    name: RouteNames.faq,
+                    builder: (context, state) => const FaqScreen(),
                   ),
                   GoRoute(
                     path: 'profile/setup',

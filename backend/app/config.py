@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     langsmith_api_key: str = ""
     langsmith_project: str = "perch-care"
 
+    # Firebase (FCM push notifications)
+    firebase_credentials_json: str = ""
+
     # Server
     api_v1_prefix: str = "/api/v1"
     cors_origins: list[str] = ["*"]

@@ -189,6 +189,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
               TextField(
                 controller: totalController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                onTapOutside: (event) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   labelText: l10n.water_totalIntake,
                   border: const OutlineInputBorder(),
@@ -198,6 +199,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
               TextField(
                 controller: countController,
                 keyboardType: TextInputType.number,
+                onTapOutside: (event) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   labelText: l10n.water_intakeCount,
                   border: const OutlineInputBorder(),

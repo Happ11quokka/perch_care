@@ -220,6 +220,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
   }
 
   Future<void> _saveWeight() async {
+    FocusScope.of(context).unfocus();
     if (_activePetId == null) return;
     final l10n = AppLocalizations.of(context);
     final weight = double.tryParse(_weightController.text.trim());
@@ -478,6 +479,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                       controller: _weightController,
                       focusNode: _weightFocusNode,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
                       ],

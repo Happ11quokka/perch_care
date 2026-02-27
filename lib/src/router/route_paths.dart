@@ -31,6 +31,7 @@ class RoutePaths {
   static const String profileSetup = '/home/profile/setup';
   static const String profileSetupComplete = '/home/profile/setup/complete';
   static const String termsDetail = '/home/terms/detail';
+  static const String faq = '/home/faq';
 
   // 체중 탭 하위 경로 (full: /weight-detail/...)
   static const String weightRecord = '/weight-detail/record';

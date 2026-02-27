@@ -654,6 +654,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           _buildTermsRow(
+            label: l10n.faq_title,
+            onTap: () => context.pushNamed(RouteNames.faq),
+          ),
+          const SizedBox(height: 8),
+          _buildTermsRow(
             label: l10n.terms_termsOfService,
             onTap: () => context.pushNamed(
               RouteNames.termsDetail,

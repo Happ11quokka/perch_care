@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'src/router/app_router.dart';
 import 'src/theme/app_theme.dart';
 import 'src/providers/locale_provider.dart';
+import 'src/services/push/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // iOS에서 앱 재시작 시 secure storage 초기화 문제 방지
   await Future.delayed(const Duration(milliseconds: 50));
+
+  // Firebase 초기화
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // FCM 백그라운드 메시지 핸들러 등록
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   // LocaleProvider 초기화
   await LocaleProvider.instance.initialize();
@@ -65,6 +77,20 @@ class _MyAppState extends State<MyApp> {
       ],
       // null이면 기기 설정 따름, 아니면 사용자 선택 적용
       locale: LocaleProvider.instance.locale,
+      // zh_Hans, zh_CN 등 변형 로캘을 zh에 매칭 (중국어 사용자 첫 실행 시 한국어 표시 방지)
+      localeResolutionCallback: (locale, supportedLocales) {
+        if (LocaleProvider.instance.locale != null) {
+          return LocaleProvider.instance.locale;
+        }
+        if (locale != null) {
+          for (final supported in supportedLocales) {
+            if (supported.languageCode == locale.languageCode) {
+              return supported;
+            }
+          }
+        }
+        return const Locale('ko');
+      },
     );
   }
 }

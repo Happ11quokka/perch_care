@@ -87,6 +87,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
   /// 저장 버튼 클릭
   Future<void> _onSave() async {
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -583,6 +584,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     return TextFormField(
       controller: _weightController,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      onTapOutside: (event) => FocusScope.of(context).unfocus(),
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
       ],

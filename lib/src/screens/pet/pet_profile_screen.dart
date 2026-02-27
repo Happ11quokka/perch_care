@@ -7,6 +7,7 @@ import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 반려동물 프로필 목록 화면
@@ -94,6 +95,44 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
       });
     } catch (_) {
       // 프로필 로드 실패 시 기본값 사용
+    }
+  }
+
+  Future<void> _deletePet(String petId, String petName) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.pet_deleteConfirmTitle),
+        content: Text(l10n.pet_deleteConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.common_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(l10n.pet_deleteConfirmButton),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await _petService.deletePet(petId);
+      await _petCache.removePet(petId);
+      await _loadPets();
+      if (!mounted) return;
+      // 삭제 후 남은 펫이 있으면 첫 번째 펫을 활성화
+      if (_cachedPets.isNotEmpty) {
+        ActivePetNotifier.instance.notify(_cachedPets.first.id);
+      }
+      AppSnackBar.success(context, message: l10n.snackbar_deleted);
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.error(context, message: l10n.error_noPetFound);
     }
   }
 
@@ -398,6 +437,27 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                 Icons.edit,
                 size: 14,
                 color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // 삭제 버튼
+          GestureDetector(
+            onTap: () => _deletePet(
+              pet['id'] as String,
+              pet['name'] as String,
+            ),
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFD9D9D9),
+              ),
+              child: const Icon(
+                Icons.close,
+                size: 14,
+                color: Color(0xFF97928A),
               ),
             ),
           ),

@@ -68,3 +68,6 @@ backend/__pycache__/
 # Uploads
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+# Development logs
+docs/development-logs/

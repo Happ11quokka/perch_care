@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
+import '../../services/push/push_notification_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../router/route_paths.dart';
 import '../../theme/colors.dart';
@@ -296,6 +297,12 @@ class _SplashScreenState extends State<SplashScreen>
     final targetRoute =
         !isLoggedIn ? RoutePaths.onboarding : RoutePaths.home;
     debugPrint('[Splash] Navigating to: $targetRoute (isLoggedIn: $isLoggedIn)');
+
+    // 로그인 상태면 FCM 푸시 토큰 등록
+    if (isLoggedIn) {
+      PushNotificationService.instance.initialize();
+    }
+
     if (!mounted) return;
     context.go(targetRoute);
     debugPrint('[Splash] Navigation called');

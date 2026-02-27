@@ -15,5 +15,6 @@ aiofiles==24.1.0
 openai
 langsmith
 langchain-openai
+firebase-admin
 pytest==8.3.4
 pytest-asyncio==0.24.0

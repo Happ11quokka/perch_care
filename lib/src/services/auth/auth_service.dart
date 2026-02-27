@@ -2,6 +2,7 @@ import 'dart:async';
 import '../api/api_client.dart';
 import '../api/token_service.dart';
 import '../pet/pet_local_cache_service.dart';
+import '../push/push_notification_service.dart';
 import '../storage/local_image_storage_service.dart';
 
 /// 소셜 로그인 결과
@@ -89,6 +90,7 @@ class AuthService {
       accessToken: response['access_token'],
       refreshToken: response['refresh_token'],
     );
+    PushNotificationService.instance.initialize();
   }
 
   /// 이메일 로그인
@@ -105,6 +107,7 @@ class AuthService {
       accessToken: response['access_token'],
       refreshToken: response['refresh_token'],
     );
+    PushNotificationService.instance.initialize();
   }
 
   /// Google 로그인 (회원가입 필요 여부 확인)
@@ -160,6 +163,7 @@ class AuthService {
       accessToken: map['access_token'] as String,
       refreshToken: map['refresh_token'] as String,
     );
+    PushNotificationService.instance.initialize();
     return SocialLoginResult.authenticated();
   }
 

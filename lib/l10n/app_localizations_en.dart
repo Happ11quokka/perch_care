@@ -443,6 +443,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile_addNewPet => 'Add New Pet';
 
   @override
+  String get pet_delete => 'Delete Pet';
+
+  @override
+  String get pet_deleteConfirmTitle => 'Delete Pet';
+
+  @override
+  String get pet_deleteConfirmMessage =>
+      'Are you sure you want to delete this pet? All associated data (weight, food, water records) will be permanently deleted.';
+
+  @override
+  String get pet_deleteConfirmButton => 'Delete';
+
+  @override
   String get profile_socialAccounts => 'Linked Accounts';
 
   @override
@@ -610,6 +623,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get snackbar_registered => 'Registered.';
+
+  @override
+  String get snackbar_deleted => 'Deleted.';
 
   @override
   String get snackbar_googleLinked => 'Google account linked.';
@@ -1249,6 +1265,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diet_addRecord => 'Add Record';
 
   @override
+  String get diet_editRecord => 'Edit Record';
+
+  @override
   String get diet_totalServed => 'Total Served';
 
   @override
@@ -1286,4 +1305,109 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diet_memo => 'Memo (optional)';
+
+  @override
+  String get faq_title => 'FAQ';
+
+  @override
+  String get faq_categoryGeneral => 'General';
+
+  @override
+  String get faq_categoryUsage => 'How to Use';
+
+  @override
+  String get faq_categoryAccount => 'Account';
+
+  @override
+  String get faq_categoryPet => 'Pet Management';
+
+  @override
+  String get faq_q1 => 'Is this app free?';
+
+  @override
+  String get faq_a1 => 'Yes, all basic features of Perch Care are free to use.';
+
+  @override
+  String get faq_q2 => 'How accurate is the AI health analysis?';
+
+  @override
+  String get faq_a2 =>
+      'AI analysis is for reference only and does not replace professional diagnosis. If your pet has health concerns, please consult a veterinarian.';
+
+  @override
+  String get faq_q3 => 'Is my data stored safely?';
+
+  @override
+  String get faq_a3 =>
+      'All data is encrypted and securely stored on our servers. Your data is restored when you log in on a new device.';
+
+  @override
+  String get faq_q4 => 'How do I record weight?';
+
+  @override
+  String get faq_a4 =>
+      'Go to the Weight tab in the bottom navigation, select a date, and enter the weight in grams.';
+
+  @override
+  String get faq_q5 => 'How do I record food and water?';
+
+  @override
+  String get faq_a5 =>
+      'Tap the food or water card on the Home screen to go to the recording page. Add items and save.';
+
+  @override
+  String get faq_q6 => 'What is BHI (Health Index)?';
+
+  @override
+  String get faq_a6 =>
+      'BHI (Bird Health Index) is a score that combines weight, food, and water records to show your bird\'s overall health status.';
+
+  @override
+  String get faq_q7 => 'Can I edit or delete records?';
+
+  @override
+  String get faq_a7 =>
+      'Yes, tap a food record to edit it. Swipe left on an item to delete it.';
+
+  @override
+  String get faq_q8 => 'How do I change the language?';
+
+  @override
+  String get faq_a8 =>
+      'Go to Profile > Language Settings and choose between Korean, English, or Chinese.';
+
+  @override
+  String get faq_q9 => 'How do I link or unlink social accounts?';
+
+  @override
+  String get faq_a9 =>
+      'Go to Profile > Social Account Linking to manage Google and Apple account connections.';
+
+  @override
+  String get faq_q10 => 'What happens to my data if I delete my account?';
+
+  @override
+  String get faq_a10 =>
+      'All personal information and pet records are permanently deleted and cannot be recovered.';
+
+  @override
+  String get faq_q11 => 'How do I add or delete a pet?';
+
+  @override
+  String get faq_a11 =>
+      'Go to Profile > My Pets. Use the (+) button to add and the (X) button to delete.';
+
+  @override
+  String get faq_q12 => 'Which species are supported?';
+
+  @override
+  String get faq_a12 =>
+      'Currently parrots (budgies, cockatiels, etc.) are supported. Other bird species will be added in the future.';
+
+  @override
+  String get faq_q13 => 'Is Android or HarmonyOS supported?';
+
+  @override
+  String get faq_a13 =>
+      'Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future.';
 }

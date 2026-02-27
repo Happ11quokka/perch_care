@@ -9,5 +9,7 @@ from app.models.ai_health_check import AiHealthCheck
 from app.models.schedule import Schedule
 from app.models.notification import Notification
 from app.models.social_account import SocialAccount
+from app.models.ai_encyclopedia_log import AiEncyclopediaLog
+from app.models.device_token import DeviceToken
 
-__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "FoodRecord", "WaterRecord", "AiHealthCheck", "Schedule", "Notification", "SocialAccount"]
+__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "FoodRecord", "WaterRecord", "AiHealthCheck", "Schedule", "Notification", "SocialAccount", "AiEncyclopediaLog", "DeviceToken"]
