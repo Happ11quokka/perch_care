@@ -51,7 +51,8 @@ class AnalyticsService {
 
   // --- In-App Review ---
 
-  Future<void> openStoreListing() => _inAppReview.openStoreListing();
+  Future<void> openStoreListing() =>
+      _inAppReview.openStoreListing(appStoreId: '6758549078');
 
   static const _kWeightCountKey = 'analytics_weight_record_count';
   static const _kReviewPromptedKey = 'analytics_review_prompted';
