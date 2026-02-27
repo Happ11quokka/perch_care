@@ -31,6 +31,7 @@ def _get_access_token() -> str | None:
 
     if not _credentials.valid:
         _credentials.refresh(google.auth.transport.requests.Request())
+    logger.info(f"Access token acquired: {str(_credentials.token)[:20]}... valid={_credentials.valid} expiry={_credentials.expiry}")
     return _credentials.token
 
 
@@ -44,12 +45,14 @@ def _send_single(token: str, title: str, body: str, data: dict | None, access_to
             "data": data or {},
         }
     }
-    resp = httpx.post(url, json=payload, headers={"Authorization": f"Bearer {access_token}"}, timeout=10)
+    headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+    logger.info(f"Sending to FCM — auth header present: {bool(headers.get('Authorization'))}, token len: {len(access_token) if access_token else 0}")
+    resp = httpx.post(url, json=payload, headers=headers, timeout=10)
     if resp.status_code == 200:
         return True, False
+    logger.error(f"Token {token[:20]}... FCM response body: {resp.text}")
     error = resp.json().get("error", {})
     status = error.get("status", "")
-    logger.error(f"Token {token[:20]}... error: {resp.status_code} {status}: {error.get('message', '')}")
     return False, status == "NOT_FOUND" or "UNREGISTERED" in str(error)
 
 
