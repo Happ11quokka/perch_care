@@ -1,6 +1,8 @@
 """FCM push notification service using firebase-admin SDK."""
 import json
 import logging
+import tempfile
+import os
 
 import firebase_admin
 from firebase_admin import credentials, messaging
@@ -22,7 +24,16 @@ def _ensure_initialized():
         return
     parsed = json.loads(settings.firebase_credentials_json)
     logger.info(f"Firebase init — project: {parsed.get('project_id')}, key_id: {parsed.get('private_key_id', '')[:12]}...")
-    cred = credentials.Certificate(parsed)
+
+    # Write credentials to a temp file to avoid private_key encoding issues
+    fd, path = tempfile.mkstemp(suffix=".json")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(parsed, f)
+        cred = credentials.Certificate(path)
+    finally:
+        os.unlink(path)
+
     firebase_admin.initialize_app(cred)
     _initialized = True
     logger.info("Firebase Admin SDK initialized successfully")
