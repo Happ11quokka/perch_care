@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/terms_content.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 약관 상세 화면
 class TermsDetailScreen extends StatelessWidget {
@@ -9,8 +10,12 @@ class TermsDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = TermsContent.getTitle(termsType);
-    final content = TermsContent.getContent(termsType);
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).languageCode;
+    final title = termsType == TermsType.termsOfService
+        ? l10n.terms_termsOfService
+        : l10n.terms_privacyPolicy;
+    final content = TermsContent.getContent(termsType, locale: locale);
 
     return Scaffold(
       backgroundColor: Colors.white,

@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -29,7 +29,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   bool _isLoading = false;
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
-  bool _isKakaoLoading = false;
+
   bool _saveId = false;
   bool _obscurePassword = true;
   bool _emailHasFocus = false;
@@ -95,92 +95,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (result.success) {
       await _navigateAfterLogin();
     } else if (result.signupRequired) {
-      if (result.provider == 'kakao') {
-        _showKakaoSignupRequiredDialog();
-      } else {
-        // Apple/Google은 발생 안함
-        final l10n = AppLocalizations.of(context)!;
-        AppSnackBar.error(context, message: l10n.error_loginRetry);
-      }
+      final l10n = AppLocalizations.of(context)!;
+      AppSnackBar.error(context, message: l10n.error_loginRetry);
     }
-  }
-
-  /// 카카오 로그인 안내 다이얼로그
-  void _showKakaoSignupRequiredDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.info_outline, color: Color(0xFFFF9A42), size: 24),
-            const SizedBox(width: 8),
-            Text(
-              l10n.dialog_kakaoLoginTitle,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.dialog_kakaoLoginContent1,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.dialog_kakaoLoginContent2,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              l10n.common_close,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFF97928A),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.pushNamed(RouteNames.signup);
-            },
-            child: Text(
-              l10n.dialog_goSignup,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFFFF9A42),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   bool get _emailHasValue => _emailController.text.isNotEmpty;
@@ -536,17 +453,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // 카카오
-        _buildSocialLoginButton(
-          onTap: _handleKakaoLogin,
-          isLoading: _isKakaoLoading,
-          child: SvgPicture.asset(
-            'assets/images/btn_kakao/btn_kakao.svg',
-            width: 24,
-            height: 24,
-          ),
-        ),
-        const SizedBox(width: 8),
         // 구글
         _buildSocialLoginButton(
           onTap: _handleGoogleLogin,
@@ -708,25 +614,4 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     }
   }
 
-  Future<void> _handleKakaoLogin() async {
-    if (_isKakaoLoading) return;
-    setState(() => _isKakaoLoading = true);
-    final l10n = AppLocalizations.of(context)!;
-    try {
-      OAuthToken token;
-      if (await isKakaoTalkInstalled()) {
-        token = await UserApi.instance.loginWithKakaoTalk();
-      } else {
-        token = await UserApi.instance.loginWithKakaoAccount();
-      }
-      final result = await _authService.signInWithKakao(accessToken: token.accessToken);
-      if (!mounted) return;
-      _handleSocialLoginResult(result);
-    } catch (_) {
-      if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.error_kakaoLogin);
-    } finally {
-      if (mounted) setState(() => _isKakaoLoading = false);
-    }
-  }
 }

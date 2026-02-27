@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
-  bool _isKakaoLoading = false;
+
   bool _hasNavigatedAfterLogin = false;
 
   void _navigateToHomeAfterLogin() {
@@ -38,91 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (result.success) {
       _navigateToHomeAfterLogin();
     } else if (result.signupRequired) {
-      if (result.provider == 'kakao') {
-        _showKakaoSignupRequiredDialog();
-      } else {
-        // Apple/Google은 발생 안함
-        AppSnackBar.error(context, message: l10n.error_loginRetry);
-      }
+      AppSnackBar.error(context, message: l10n.error_loginRetry);
     }
-  }
-
-  /// 카카오 로그인 안내 다이얼로그
-  void _showKakaoSignupRequiredDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.info_outline, color: Color(0xFFFF9A42), size: 24),
-            const SizedBox(width: 8),
-            Text(
-              l10n.dialog_kakaoLoginTitle,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.dialog_kakaoLoginContent1,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.dialog_kakaoLoginContent2,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              l10n.common_close,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFF97928A),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.pushNamed(RouteNames.signup);
-            },
-            child: Text(
-              l10n.dialog_goSignup,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFFFF9A42),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _handleGoogleLogin() async {
@@ -202,35 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _handleKakaoLogin() async {
-    if (_isKakaoLoading) return;
-    setState(() => _isKakaoLoading = true);
-    final l10n = AppLocalizations.of(context)!;
-    try {
-      debugPrint('[Kakao] Starting login...');
-      OAuthToken token;
-      if (await isKakaoTalkInstalled()) {
-        debugPrint('[Kakao] KakaoTalk installed, using KakaoTalk login');
-        token = await UserApi.instance.loginWithKakaoTalk();
-      } else {
-        debugPrint('[Kakao] KakaoTalk not installed, using KakaoAccount login');
-        token = await UserApi.instance.loginWithKakaoAccount();
-      }
-      debugPrint('[Kakao] Got token: ${token.accessToken.substring(0, 20)}...');
-      final result = await _authService.signInWithKakao(accessToken: token.accessToken);
-      debugPrint('[Kakao] API result: success=${result.success}, signupRequired=${result.signupRequired}');
-      if (!mounted) return;
-      _handleSocialLoginResult(result);
-    } catch (e, stackTrace) {
-      debugPrint('[Kakao] Error: $e');
-      debugPrint('[Kakao] StackTrace: $stackTrace');
-      if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.error_kakaoLogin);
-    } finally {
-      if (mounted) setState(() => _isKakaoLoading = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -273,14 +161,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const SizedBox(height: 100),
                       // Social Login Buttons
-                      // TODO: 사업자 등록 완료 후 카카오 로그인 활성화
-                      // _buildSocialLoginButton(
-                      //   icon: _buildKakaoIcon(),
-                      //   label: l10n.login_kakao,
-                      //   onTap: _handleKakaoLogin,
-                      //   isLoading: _isKakaoLoading,
-                      // ),
-                      // const SizedBox(height: 16),
                       _buildSocialLoginButton(
                         icon: _buildGoogleIcon(),
                         label: l10n.login_google,
@@ -380,24 +260,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKakaoIcon() {
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: const BoxDecoration(
-        color: Color(0xFFFFE812),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: SvgPicture.asset(
-          'assets/images/btn_kakao/btn_kakao.svg',
-          width: 24,
-          height: 24,
         ),
       ),
     );

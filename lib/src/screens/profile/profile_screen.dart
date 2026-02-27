@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -124,33 +124,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       debugPrint('Apple Link Error: $e');
       final l10n = AppLocalizations.of(context);
       AppSnackBar.error(context, message: l10n.error_linkApple);
-    } finally {
-      if (mounted) setState(() => _isLinkingSocial = false);
-    }
-  }
-
-  Future<void> _handleLinkKakao() async {
-    if (_isLinkingSocial) return;
-    setState(() => _isLinkingSocial = true);
-    try {
-      OAuthToken token;
-      if (await isKakaoTalkInstalled()) {
-        token = await UserApi.instance.loginWithKakaoTalk();
-      } else {
-        token = await UserApi.instance.loginWithKakaoAccount();
-      }
-      await _authService.linkSocialAccount(
-        provider: 'kakao',
-        accessToken: token.accessToken,
-      );
-      await _loadSocialAccounts();
-      if (!mounted) return;
-      final l10n = AppLocalizations.of(context);
-      AppSnackBar.success(context, message: l10n.snackbar_kakaoLinked);
-    } catch (_) {
-      if (!mounted) return;
-      final l10n = AppLocalizations.of(context);
-      AppSnackBar.error(context, message: l10n.error_linkKakao);
     } finally {
       if (mounted) setState(() => _isLinkingSocial = false);
     }

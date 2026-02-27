@@ -60,9 +60,11 @@ class ApiClient {
   }
 
   /// DELETE 요청
-  Future<void> delete(String path) async {
+  Future<void> delete(String path, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('$_baseUrl$path');
-    final response = await _makeRequest(() => http.delete(uri, headers: _authHeaders));
+    final response = await _makeRequest(
+      () => http.delete(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
+    );
     if (response.statusCode != 204 && response.statusCode != 200) {
       _handleError(response);
     }

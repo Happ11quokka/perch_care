@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../api/api_client.dart';
 import '../api/token_service.dart';
 import '../pet/pet_local_cache_service.dart';
@@ -169,6 +170,15 @@ class AuthService {
 
   /// 로그아웃
   Future<void> signOut() async {
+    // FCM 디바이스 토큰 삭제 (서버에서 푸시 대상 제거)
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        await _api.delete('/users/me/device-token', body: {'token': fcmToken});
+      }
+    } catch (_) {
+      // 토큰 삭제 실패해도 로그아웃은 진행
+    }
     await _petCache.clearAll();
     await LocalImageStorageService.instance.clearAll();
     await _tokenService.clearTokens();

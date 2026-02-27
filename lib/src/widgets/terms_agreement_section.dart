@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/terms_content.dart';
 import '../theme/colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 회원가입 화면의 약관 동의 섹션 위젯
 class TermsAgreementSection extends StatefulWidget {
@@ -65,42 +66,46 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 전체 동의
-        _buildSelectAllRow(),
+        _buildSelectAllRow(l10n),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 8),
           child: Divider(height: 1, color: Color(0xFFF0F0F0)),
         ),
         // [필수] 이용약관
         _buildItemRow(
-          label: '[필수] 이용약관 동의',
+          label: l10n.terms_requiredTerms,
           checked: _agreeTerms,
           onChanged: (v) => _onItemChanged(terms: v),
           termsType: TermsType.termsOfService,
+          l10n: l10n,
         ),
         const SizedBox(height: 8),
         // [필수] 개인정보처리방침
         _buildItemRow(
-          label: '[필수] 개인정보 수집 및 이용 동의',
+          label: l10n.terms_requiredPrivacy,
           checked: _agreePrivacy,
           onChanged: (v) => _onItemChanged(privacy: v),
           termsType: TermsType.privacyPolicy,
+          l10n: l10n,
         ),
         const SizedBox(height: 8),
         // [선택] 마케팅
         _buildItemRow(
-          label: '[선택] 마케팅 정보 수신 동의',
+          label: l10n.terms_optionalMarketing,
           checked: _agreeMarketing,
           onChanged: (v) => _onItemChanged(marketing: v),
+          l10n: l10n,
         ),
       ],
     );
   }
 
-  Widget _buildSelectAllRow() {
+  Widget _buildSelectAllRow(AppLocalizations l10n) {
     return GestureDetector(
       onTap: () => _onAgreeAllChanged(!_agreeAll),
       behavior: HitTestBehavior.opaque,
@@ -108,10 +113,10 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
         children: [
           _buildCheckbox(_agreeAll),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              '전체 동의',
-              style: TextStyle(
+              l10n.terms_agreeAll,
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -128,6 +133,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
     required String label,
     required bool checked,
     required ValueChanged<bool> onChanged,
+    required AppLocalizations l10n,
     TermsType? termsType,
   }) {
     return GestureDetector(
@@ -151,9 +157,9 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
           if (termsType != null)
             GestureDetector(
               onTap: () => _openTerms(termsType),
-              child: const Text(
-                '보기',
-                style: TextStyle(
+              child: Text(
+                l10n.common_view,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w400,

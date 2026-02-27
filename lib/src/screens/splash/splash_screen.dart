@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
 import '../../services/push/push_notification_service.dart';
@@ -98,53 +98,44 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('[Splash] 1. dotenv load error: $e');
     }
 
-    // 2. SDK 초기화 (비동기 아님)
-    debugPrint('[Splash] 2. KakaoSdk initializing...');
-    try {
-      KakaoSdk.init(nativeAppKey: '23f9d1f1b79cea8566c54a44ba33b463');
-      debugPrint('[Splash] 2. KakaoSdk initialized');
-    } catch (e) {
-      debugPrint('[Splash] 2. KakaoSdk init error: $e');
-    }
-
-    // 3. 토큰 서비스 초기화
-    debugPrint('[Splash] 3. TokenService initializing...');
+    // 2. 토큰 서비스 초기화
+    debugPrint('[Splash] 2. TokenService initializing...');
     try {
       await TokenService.instance.init();
-      debugPrint('[Splash] 3. TokenService initialized');
+      debugPrint('[Splash] 2. TokenService initialized');
     } catch (e) {
-      debugPrint('[Splash] 3. TokenService init error: $e');
+      debugPrint('[Splash] 2. TokenService init error: $e');
     }
 
-    // 4. API 클라이언트 초기화
-    debugPrint('[Splash] 4. ApiClient initializing...');
+    // 3. API 클라이언트 초기화
+    debugPrint('[Splash] 3. ApiClient initializing...');
     try {
       ApiClient.initialize();
-      debugPrint('[Splash] 4. ApiClient initialized');
+      debugPrint('[Splash] 3. ApiClient initialized');
     } catch (e) {
-      debugPrint('[Splash] 4. ApiClient init error: $e');
+      debugPrint('[Splash] 3. ApiClient init error: $e');
     }
 
-    // 5. Google Sign-In 초기화
-    debugPrint('[Splash] 5. GoogleSignIn initializing...');
+    // 4. Google Sign-In 초기화
+    debugPrint('[Splash] 4. GoogleSignIn initializing...');
     try {
       await GoogleSignIn.instance.initialize(
         clientId: '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
         serverClientId: '351000470573-ivirja6bvfpqk0rsg1shd048erdk1tv4.apps.googleusercontent.com',
       );
-      debugPrint('[Splash] 5. GoogleSignIn initialized successfully');
+      debugPrint('[Splash] 4. GoogleSignIn initialized successfully');
     } catch (e, stackTrace) {
-      debugPrint('[Splash] 5. GoogleSignIn init error: $e');
-      debugPrint('[Splash] 5. GoogleSignIn init stackTrace: $stackTrace');
+      debugPrint('[Splash] 4. GoogleSignIn init error: $e');
+      debugPrint('[Splash] 4. GoogleSignIn init stackTrace: $stackTrace');
     }
 
-    // 6. 로컬 이미지 저장소 초기화
-    debugPrint('[Splash] 6. LocalImageStorageService initializing...');
+    // 5. 로컬 이미지 저장소 초기화
+    debugPrint('[Splash] 5. LocalImageStorageService initializing...');
     try {
       await LocalImageStorageService.instance.init();
-      debugPrint('[Splash] 6. LocalImageStorageService initialized');
+      debugPrint('[Splash] 5. LocalImageStorageService initialized');
     } catch (e) {
-      debugPrint('[Splash] 6. LocalImageStorageService init error: $e');
+      debugPrint('[Splash] 5. LocalImageStorageService init error: $e');
     }
 
     debugPrint('[Splash] All services initialized, navigating...');
