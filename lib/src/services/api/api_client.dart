@@ -129,12 +129,12 @@ class ApiClient {
         _refreshCompleter!.complete(true);
         return true;
       }
-      debugPrint('[ApiClient] Token refresh failed: ${response.statusCode}');
+      if (kDebugMode) debugPrint('[ApiClient] Token refresh failed: ${response.statusCode}');
       await _tokenService.clearTokens();
       _refreshCompleter!.complete(false);
       return false;
     } catch (e) {
-      debugPrint('[ApiClient] Token refresh error: $e');
+      if (kDebugMode) debugPrint('[ApiClient] Token refresh error: $e');
       await _tokenService.clearTokens();
       _refreshCompleter!.complete(false);
       return false;

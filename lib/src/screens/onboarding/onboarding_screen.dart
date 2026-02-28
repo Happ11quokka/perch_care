@@ -289,7 +289,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Positioned(
             left: treeLeft,
             top: treeTop,
-            child: SizedBox(
+            child: RepaintBoundary(
+              child: SizedBox(
               width: treeWidth,
               height: treeHeight,
               child: Stack(
@@ -563,6 +564,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ],
               ),
+            ),
             ),
           ),
         ],

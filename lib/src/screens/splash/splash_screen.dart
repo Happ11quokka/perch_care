@@ -98,44 +98,21 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('[Splash] 1. dotenv load error: $e');
     }
 
-    // 2. 토큰 서비스 초기화
-    debugPrint('[Splash] 2. TokenService initializing...');
-    try {
-      await TokenService.instance.init();
-      debugPrint('[Splash] 2. TokenService initialized');
-    } catch (e) {
-      debugPrint('[Splash] 2. TokenService init error: $e');
-    }
+    // 2-4. 독립 서비스 병렬 초기화
+    debugPrint('[Splash] 2-4. Parallel initialization...');
+    await Future.wait([
+      _initTokenService(),
+      _initGoogleSignIn(),
+      _initLocalImageStorage(),
+    ]);
 
-    // 3. API 클라이언트 초기화
-    debugPrint('[Splash] 3. ApiClient initializing...');
+    // 5. API 클라이언트 초기화 (TokenService 의존)
+    debugPrint('[Splash] 5. ApiClient initializing...');
     try {
       ApiClient.initialize();
-      debugPrint('[Splash] 3. ApiClient initialized');
+      debugPrint('[Splash] 5. ApiClient initialized');
     } catch (e) {
-      debugPrint('[Splash] 3. ApiClient init error: $e');
-    }
-
-    // 4. Google Sign-In 초기화
-    debugPrint('[Splash] 4. GoogleSignIn initializing...');
-    try {
-      await GoogleSignIn.instance.initialize(
-        clientId: '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
-        serverClientId: '351000470573-ivirja6bvfpqk0rsg1shd048erdk1tv4.apps.googleusercontent.com',
-      );
-      debugPrint('[Splash] 4. GoogleSignIn initialized successfully');
-    } catch (e, stackTrace) {
-      debugPrint('[Splash] 4. GoogleSignIn init error: $e');
-      debugPrint('[Splash] 4. GoogleSignIn init stackTrace: $stackTrace');
-    }
-
-    // 5. 로컬 이미지 저장소 초기화
-    debugPrint('[Splash] 5. LocalImageStorageService initializing...');
-    try {
-      await LocalImageStorageService.instance.init();
-      debugPrint('[Splash] 5. LocalImageStorageService initialized');
-    } catch (e) {
-      debugPrint('[Splash] 5. LocalImageStorageService init error: $e');
+      debugPrint('[Splash] 5. ApiClient init error: $e');
     }
 
     debugPrint('[Splash] All services initialized, navigating...');
@@ -143,14 +120,40 @@ class _SplashScreenState extends State<SplashScreen>
     _tryNavigate();
   }
 
+  Future<void> _initTokenService() async {
+    try {
+      await TokenService.instance.init();
+      debugPrint('[Splash] TokenService initialized');
+    } catch (e) {
+      debugPrint('[Splash] TokenService init error: $e');
+    }
+  }
+
+  Future<void> _initGoogleSignIn() async {
+    try {
+      await GoogleSignIn.instance.initialize(
+        clientId: '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
+        serverClientId: '351000470573-ivirja6bvfpqk0rsg1shd048erdk1tv4.apps.googleusercontent.com',
+      );
+      debugPrint('[Splash] GoogleSignIn initialized');
+    } catch (e) {
+      debugPrint('[Splash] GoogleSignIn init error: $e');
+    }
+  }
+
+  Future<void> _initLocalImageStorage() async {
+    try {
+      await LocalImageStorageService.instance.init();
+      debugPrint('[Splash] LocalImageStorageService initialized');
+    } catch (e) {
+      debugPrint('[Splash] LocalImageStorageService init error: $e');
+    }
+  }
+
   void _tryNavigate() {
     // 애니메이션과 서비스 초기화가 모두 완료되면 네비게이션
     if (_animationCompleted && _servicesInitialized && mounted && !_disposed) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted && !_disposed) {
-          _navigateToInitialRoute();
-        }
-      });
+      _navigateToInitialRoute();
     }
   }
 

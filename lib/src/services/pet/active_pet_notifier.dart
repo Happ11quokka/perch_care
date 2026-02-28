@@ -10,8 +10,9 @@ class ActivePetNotifier extends ChangeNotifier {
   String? _activePetId;
   String? get activePetId => _activePetId;
 
-  /// 활성 펫이 변경되었음을 알린다.
+  /// 활성 펫이 변경되었음을 알린다. (동일 petId 중복 알림 방지)
   void notify(String petId) {
+    if (_activePetId == petId) return;
     _activePetId = petId;
     notifyListeners();
   }

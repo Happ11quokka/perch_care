@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/splash/splash_screen.dart';
@@ -53,7 +54,7 @@ class AppRouter {
 
   static final GoRouter router = GoRouter(
     initialLocation: '/',
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: kDebugMode,
     observers: [AnalyticsService.instance.observer],
     redirect: (context, state) {
       final currentPath = state.uri.path;

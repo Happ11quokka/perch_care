@@ -15,16 +15,14 @@ void main() async {
   // iOS에서 앱 재시작 시 secure storage 초기화 문제 방지
   await Future.delayed(const Duration(milliseconds: 50));
 
-  // Firebase 초기화
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Firebase + LocaleProvider 병렬 초기화 (독립적)
+  await Future.wait([
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    LocaleProvider.instance.initialize(),
+  ]);
 
-  // FCM 백그라운드 메시지 핸들러 등록
+  // FCM 백그라운드 메시지 핸들러 등록 (Firebase 의존)
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  // LocaleProvider 초기화
-  await LocaleProvider.instance.initialize();
 
   // 모든 I/O 작업은 SplashScreen에서 수행 (UI 블로킹 최소화)
   runApp(const MyApp());

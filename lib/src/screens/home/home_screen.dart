@@ -136,19 +136,19 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    if (pet != null) {
+    // setState 단일 호출로 배치 처리 (불필요한 리빌드 방지)
+    if (pet != null || bhi != null) {
       setState(() {
-        _activePet = pet;
-      });
-    }
-
-    if (bhi != null) {
-      setState(() {
-        _bhiResult = bhi;
-        _wciLevel = bhi!.wciLevel;
-        _hasWeightData = bhi.hasWeightData;
-        _hasFoodData = bhi.hasFoodData;
-        _hasWaterData = bhi.hasWaterData;
+        if (pet != null) {
+          _activePet = pet;
+        }
+        if (bhi != null) {
+          _bhiResult = bhi;
+          _wciLevel = bhi.wciLevel;
+          _hasWeightData = bhi.hasWeightData;
+          _hasFoodData = bhi.hasFoodData;
+          _hasWaterData = bhi.hasWaterData;
+        }
       });
     }
   }
@@ -722,6 +722,8 @@ class _HomeScreenState extends State<HomeScreen> {
               'assets/images/home_vector/lv$_wciLevel.png',
               width: 160,
               height: 240,
+              cacheWidth: 320,
+              cacheHeight: 480,
             ),
           const SizedBox(height: 13),
           // 설명 텍스트

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,10 @@ class WeightService {
 
   // 로컬 ID 생성용 카운터
   int _localIdCounter = 0;
+
+  // 디바운스 저장
+  Timer? _persistTimer;
+  static const _persistDebounceDelay = Duration(seconds: 2);
 
   /// 로컬 전용 고유 ID 생성
   String _generateLocalId() {
@@ -82,7 +87,7 @@ class WeightService {
 
       _recordsByPet[petId] = records
         ..sort(_compareRecords);
-      await _persistToStorage();
+      _schedulePersist();
 
       return List.unmodifiable(_recordsByPet[petId]!);
     }
@@ -119,7 +124,7 @@ class WeightService {
       if (response != null) {
         final record = WeightRecord.fromJson(response);
         _insertLocal(record);
-        await _persistToStorage();
+        _schedulePersist();
         return record;
       }
     }
@@ -167,7 +172,7 @@ class WeightService {
       date: normalizedDate,
     );
     _insertLocal(recordWithId);
-    await _persistToStorage();
+    _schedulePersist();
   }
 
   /// 특정 ID의 체중 기록 삭제 (로컬)
@@ -180,7 +185,7 @@ class WeightService {
     if (records.isEmpty) {
       _recordsByPet.remove(petId);
     }
-    await _persistToStorage();
+    _schedulePersist();
   }
 
   /// 특정 날짜의 체중 기록 삭제
@@ -199,7 +204,7 @@ class WeightService {
     if (records != null && records.isEmpty) {
       _recordsByPet.remove(petId);
     }
-    await _persistToStorage();
+    _schedulePersist();
   }
 
   /// 날짜 정규화 (시간 정보 제거, 날짜만 비교)
@@ -210,7 +215,7 @@ class WeightService {
   /// 모든 데이터 클리어 (테스트용)
   void clearAllRecords() {
     _recordsByPet.clear();
-    _persistToStorage();
+    _schedulePersist();
   }
 
   /// 특정 기간의 체중 기록 조회
@@ -327,7 +332,15 @@ class WeightService {
       ..addAll(loaded);
   }
 
-  Future<void> _persistToStorage() async {
+  /// 디바운스된 저장 스케줄링 (연속 호출 시 2초 후 한 번만 저장)
+  void _schedulePersist() {
+    _persistTimer?.cancel();
+    _persistTimer = Timer(_persistDebounceDelay, () {
+      _persistToStorageImmediate();
+    });
+  }
+
+  Future<void> _persistToStorageImmediate() async {
     final prefs = await SharedPreferences.getInstance();
     final data = _recordsByPet.values
         .expand((records) => records)

@@ -12,11 +12,12 @@ class ImageOwnerType {
   static const healthCheck = 'health_check';
 }
 
-/// SQLite 기반 로컬 이미지 저장 서비스
+/// SQLite 기반 로컬 이미지 저장 서비스 (인메모리 LRU 캐시 포함)
 class LocalImageStorageService {
   static const _dbName = 'perch_care_images.db';
   static const _dbVersion = 1;
   static const _tableName = 'local_images';
+  static const _maxCacheSize = 20;
 
   static LocalImageStorageService? _instance;
   static LocalImageStorageService get instance =>
@@ -25,6 +26,11 @@ class LocalImageStorageService {
   LocalImageStorageService._();
 
   Database? _db;
+
+  // 인메모리 LRU 캐시
+  final Map<String, Uint8List> _memoryCache = {};
+
+  String _cacheKey(String ownerType, String ownerId) => '${ownerType}_$ownerId';
 
   /// 앱 시작 시 호출 (main.dart)
   Future<void> init() async {
@@ -77,13 +83,25 @@ class LocalImageStorageService {
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    // 메모리 캐시 동기화
+    final key = _cacheKey(ownerType, ownerId);
+    _memoryCache[key] = imageBytes;
+    _evictIfNeeded();
   }
 
-  /// 이미지 조회 (없으면 null)
+  /// 이미지 조회 (메모리 캐시 → SQLite fallback)
   Future<Uint8List?> getImage({
     required String ownerType,
     required String ownerId,
   }) async {
+    final key = _cacheKey(ownerType, ownerId);
+
+    // 1순위: 메모리 캐시
+    if (_memoryCache.containsKey(key)) {
+      return _memoryCache[key];
+    }
+
+    // 2순위: SQLite
     final rows = await _db!.query(
       _tableName,
       columns: ['image_bytes'],
@@ -92,7 +110,13 @@ class LocalImageStorageService {
       limit: 1,
     );
     if (rows.isEmpty) return null;
-    return rows.first['image_bytes'] as Uint8List?;
+
+    final bytes = rows.first['image_bytes'] as Uint8List?;
+    if (bytes != null) {
+      _memoryCache[key] = bytes;
+      _evictIfNeeded();
+    }
+    return bytes;
   }
 
   /// 특정 이미지 삭제
@@ -105,6 +129,7 @@ class LocalImageStorageService {
       where: 'owner_type = ? AND owner_id = ?',
       whereArgs: [ownerType, ownerId],
     );
+    _memoryCache.remove(_cacheKey(ownerType, ownerId));
   }
 
   /// 특정 타입의 모든 이미지 삭제
@@ -114,10 +139,19 @@ class LocalImageStorageService {
       where: 'owner_type = ?',
       whereArgs: [ownerType],
     );
+    _memoryCache.removeWhere((key, _) => key.startsWith('${ownerType}_'));
   }
 
   /// 전체 이미지 삭제 (로그아웃/탈퇴 시)
   Future<void> clearAll() async {
     await _db!.delete(_tableName);
+    _memoryCache.clear();
+  }
+
+  /// LRU 캐시 크기 초과 시 가장 오래된 항목 제거
+  void _evictIfNeeded() {
+    while (_memoryCache.length > _maxCacheSize) {
+      _memoryCache.remove(_memoryCache.keys.first);
+    }
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -14,6 +15,11 @@ class PushNotificationService {
 
   final _messaging = FirebaseMessaging.instance;
   final _api = ApiClient.instance;
+
+  // 스트림 구독 관리
+  StreamSubscription<String>? _tokenRefreshSub;
+  StreamSubscription<RemoteMessage>? _foregroundMessageSub;
+  StreamSubscription<RemoteMessage>? _messageOpenedAppSub;
 
   /// 초기화: 권한 요청 + 토큰 등록 + 리스너 설정
   Future<void> initialize() async {
@@ -36,15 +42,22 @@ class PushNotificationService {
     }
 
     // 3. 토큰 갱신 리스너
-    _messaging.onTokenRefresh.listen(_registerToken);
+    _tokenRefreshSub = _messaging.onTokenRefresh.listen(_registerToken);
 
     // 4. 포그라운드 메시지 핸들링
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    _foregroundMessageSub = FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
     // 5. 백그라운드에서 알림 탭 시
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+    _messageOpenedAppSub = FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
     debugPrint('[Push] PushNotificationService initialized');
+  }
+
+  /// 스트림 구독 해제
+  Future<void> dispose() async {
+    await _tokenRefreshSub?.cancel();
+    await _foregroundMessageSub?.cancel();
+    await _messageOpenedAppSub?.cancel();
   }
 
   /// 서버에 FCM 토큰 등록

@@ -651,7 +651,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   right: 0,
                   top: 0,
                   bottom: labelHeight,
-                  child: LineChart(
+                  child: RepaintBoundary(
+                    child: LineChart(
                     LineChartData(
                       minX: minX,
                       maxX: maxX,
@@ -693,6 +694,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                       borderData: FlBorderData(show: false),
                       lineTouchData: const LineTouchData(enabled: false),
                     ),
+                  ),
                   ),
                 ),
                 // 3) 라벨 (하단)

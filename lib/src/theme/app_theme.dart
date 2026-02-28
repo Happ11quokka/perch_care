@@ -9,8 +9,8 @@ import 'radius.dart';
 class AppTheme {
   AppTheme._();
 
-  /// 라이트 테마
-  static ThemeData get light => ThemeData(
+  /// 라이트 테마 (정적 상수 - 매번 재생성 방지)
+  static final ThemeData light = ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
 
@@ -144,8 +144,8 @@ class AppTheme {
         ),
       );
 
-  /// 다크 테마 (필요시 활성화)
-  static ThemeData get dark => ThemeData(
+  /// 다크 테마 (정적 상수 - 매번 재생성 방지)
+  static final ThemeData dark = ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
 
