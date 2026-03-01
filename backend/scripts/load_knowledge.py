@@ -123,8 +123,23 @@ async def load_knowledge(reset: bool = False) -> dict:
             batch = all_chunks[i : i + DB_INSERT_BATCH_SIZE]
             batch_embs = all_embeddings[i : i + DB_INSERT_BATCH_SIZE]
 
-            params_list = [
-                {
+            sql = text("""
+                INSERT INTO knowledge_chunks
+                    (id, content, embedding, source, category, language,
+                     section_title, chunk_hash, created_at)
+                VALUES
+                    (gen_random_uuid(), :content, CAST(:embedding AS vector), :source, :category,
+                     :language, :section_title, :chunk_hash, now())
+                ON CONFLICT (chunk_hash) DO UPDATE SET
+                    content = EXCLUDED.content,
+                    embedding = EXCLUDED.embedding,
+                    source = EXCLUDED.source,
+                    category = EXCLUDED.category,
+                    language = EXCLUDED.language,
+                    section_title = EXCLUDED.section_title
+            """)
+            for chunk, embedding in zip(batch, batch_embs):
+                await db.execute(sql, {
                     "content": chunk["content"],
                     "embedding": str(embedding),
                     "source": chunk["source"],
@@ -132,28 +147,8 @@ async def load_knowledge(reset: bool = False) -> dict:
                     "language": chunk["language"],
                     "section_title": chunk["section_title"] or "",
                     "chunk_hash": chunk["chunk_hash"],
-                }
-                for chunk, embedding in zip(batch, batch_embs)
-            ]
-            await db.execute(
-                text("""
-                    INSERT INTO knowledge_chunks
-                        (content, embedding, source, category, language,
-                         section_title, chunk_hash)
-                    VALUES
-                        (:content, :embedding::vector, :source, :category,
-                         :language, :section_title, :chunk_hash)
-                    ON CONFLICT (chunk_hash) DO UPDATE SET
-                        content = EXCLUDED.content,
-                        embedding = EXCLUDED.embedding,
-                        source = EXCLUDED.source,
-                        category = EXCLUDED.category,
-                        language = EXCLUDED.language,
-                        section_title = EXCLUDED.section_title
-                """),
-                params_list,
-            )
-            inserted += len(params_list)
+                })
+            inserted += len(batch)
 
             await db.commit()
             done = min(i + DB_INSERT_BATCH_SIZE, len(all_chunks))
