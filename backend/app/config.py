@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str = ""
 
+    # Embedding / Vector Search
+    embedding_model: str = "text-embedding-3-large"
+    hyde_model: str = "gpt-4o-mini"
+    vector_search_top_k: int = 5
+    vector_search_min_similarity: float = 0.3
+
     # LangSmith
     langsmith_api_key: str = ""
     langsmith_project: str = "perch-care"

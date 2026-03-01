@@ -85,7 +85,6 @@ async def encyclopedia_stream(
     request: Request,
     current_user: User = Depends(get_current_user),
     tier: str = Depends(get_current_tier),
-    db: AsyncSession = Depends(get_db),
 ):
     """SSE 스트리밍으로 AI 백과사전 응답을 실시간 전송한다."""
     start_time = time.monotonic()
@@ -98,9 +97,15 @@ async def encyclopedia_stream(
         except (ValueError, AttributeError):
             pass
 
-    # P1: 스트리밍 시작 전 DB 조회(RAG) 완료 후 시스템 메시지 사전 구성
-    rag_context = await ai_service._build_rag_context(db, body.pet_id, user_id=current_user.id)
-    system_message = ai_service._build_system_message(rag_context, body.pet_profile_context)
+    # 짧은 세션으로 사전 조회 후 즉시 반환 (스트리밍 중 커넥션 점유 방지)
+    async with async_session_factory() as prefetch_db:
+        system_message = await ai_service.prepare_system_message(
+            db=prefetch_db,
+            query=body.query,
+            pet_id=body.pet_id,
+            pet_profile_context=body.pet_profile_context,
+            user_id=current_user.id,
+        )
 
     # 캡처한 값들 — 제너레이터 내부에서 DB 불필요
     user_id = current_user.id

@@ -138,9 +138,17 @@ async def _build_rag_context(db: AsyncSession, pet_id: str | None, user_id: UUID
 def _build_system_message(
     rag_context: str | None,
     pet_profile_context: str | None,
+    knowledge_context: str | None = None,
 ) -> str:
-    """시스템 프롬프트 + RAG 컨텍스트를 결합한 시스템 메시지를 구성한다."""
+    """시스템 프롬프트 + 지식 베이스 + RAG 컨텍스트를 결합한 시스템 메시지를 구성한다."""
     system_parts = [SYSTEM_PROMPT]
+    if knowledge_context:
+        system_parts.append(
+            f"\n\n{knowledge_context}\n\n"
+            "Use the knowledge base information above to provide accurate, evidence-based answers. "
+            "Cite specific details from the knowledge base when relevant. "
+            "Do not make up information not supported by the knowledge base."
+        )
     if rag_context:
         system_parts.append(
             f"\n\n{rag_context}\n\n"
@@ -152,6 +160,22 @@ def _build_system_message(
     elif pet_profile_context:
         system_parts.append(f"\n\n{pet_profile_context}")
     return "".join(system_parts)
+
+
+async def prepare_system_message(
+    db: AsyncSession,
+    query: str,
+    pet_id: str | None = None,
+    pet_profile_context: str | None = None,
+    user_id: UUID | None = None,
+) -> str:
+    """벡터 검색 + RAG 컨텍스트 조회 후 시스템 메시지를 반환한다. 라우터에서 호출용."""
+    from app.services.vector_search_service import search_knowledge, format_knowledge_context
+
+    knowledge_results = await search_knowledge(db, query)
+    knowledge_context = format_knowledge_context(knowledge_results)
+    rag_context = await _build_rag_context(db, pet_id, user_id=user_id)
+    return _build_system_message(rag_context, pet_profile_context, knowledge_context)
 
 
 def _select_model(tier: str) -> tuple[str, int]:
@@ -174,10 +198,7 @@ async def ask(
     user_id: UUID | None = None,
 ) -> str:
     """사용자 질문에 대해 티어별 모델로 답변을 생성한다."""
-
-    # RAG: DB에서 펫 데이터 조회 (소유자 검증 포함)
-    rag_context = await _build_rag_context(db, pet_id, user_id=user_id)
-    system_message = _build_system_message(rag_context, pet_profile_context)
+    system_message = await prepare_system_message(db, query, pet_id, pet_profile_context, user_id)
 
     # 티어별 모델 선택
     model, tier_max_tokens = _select_model(tier)
@@ -224,8 +245,7 @@ async def ask_stream(
     user_id: UUID | None = None,
 ):
     """SSE 스트리밍 응답 생성기. DB에서 RAG 컨텍스트를 조회 후 토큰 단위로 yield한다."""
-    rag_context = await _build_rag_context(db, pet_id, user_id=user_id)
-    system_message = _build_system_message(rag_context, pet_profile_context)
+    system_message = await prepare_system_message(db, query, pet_id, pet_profile_context, user_id)
 
     async for token in ask_stream_with_message(
         system_message=system_message,
