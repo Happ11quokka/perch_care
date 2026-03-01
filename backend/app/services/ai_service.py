@@ -42,7 +42,7 @@ SYSTEM_PROMPT = (
 )
 
 
-async def _build_rag_context(db: AsyncSession, pet_id: str | None) -> str | None:
+async def _build_rag_context(db: AsyncSession, pet_id: str | None, user_id: UUID | None = None) -> str | None:
     """펫 ID 기반으로 DB에서 최근 건강 데이터를 조회하여 RAG context 텍스트를 구성한다."""
     if not pet_id:
         return None
@@ -52,8 +52,11 @@ async def _build_rag_context(db: AsyncSession, pet_id: str | None) -> str | None
     except (ValueError, AttributeError):
         return None
 
-    # 펫 프로필 조회
-    result = await db.execute(select(Pet).where(Pet.id == pid))
+    # 펫 프로필 조회 (소유자 검증 포함 — IDOR 방지)
+    query = select(Pet).where(Pet.id == pid)
+    if user_id is not None:
+        query = query.where(Pet.user_id == user_id)
+    result = await db.execute(query)
     pet = result.scalar_one_or_none()
     if pet is None:
         return None
@@ -168,11 +171,12 @@ async def ask(
     pet_profile_context: str | None = None,
     temperature: float = 0.2,
     max_tokens: int = 512,
+    user_id: UUID | None = None,
 ) -> str:
     """사용자 질문에 대해 티어별 모델로 답변을 생성한다."""
 
-    # RAG: DB에서 펫 데이터 조회
-    rag_context = await _build_rag_context(db, pet_id)
+    # RAG: DB에서 펫 데이터 조회 (소유자 검증 포함)
+    rag_context = await _build_rag_context(db, pet_id, user_id=user_id)
     system_message = _build_system_message(rag_context, pet_profile_context)
 
     # 티어별 모델 선택
@@ -217,11 +221,33 @@ async def ask_stream(
     pet_profile_context: str | None = None,
     temperature: float = 0.2,
     max_tokens: int = 1024,
+    user_id: UUID | None = None,
 ):
-    """SSE 스트리밍 응답 생성기. 토큰 단위로 yield한다."""
-    rag_context = await _build_rag_context(db, pet_id)
+    """SSE 스트리밍 응답 생성기. DB에서 RAG 컨텍스트를 조회 후 토큰 단위로 yield한다."""
+    rag_context = await _build_rag_context(db, pet_id, user_id=user_id)
     system_message = _build_system_message(rag_context, pet_profile_context)
 
+    async for token in ask_stream_with_message(
+        system_message=system_message,
+        query=query,
+        history=history,
+        tier=tier,
+        temperature=temperature,
+        max_tokens=max_tokens,
+    ):
+        yield token
+
+
+@traceable(name="ai_encyclopedia_ask_stream_core", run_type="chain")
+async def ask_stream_with_message(
+    system_message: str,
+    query: str,
+    history: list[dict[str, str]],
+    tier: str,
+    temperature: float = 0.2,
+    max_tokens: int = 1024,
+):
+    """사전 구성된 시스템 메시지로 스트리밍. DB 세션 불필요."""
     model, tier_max_tokens = _select_model(tier)
     effective_max_tokens = min(max_tokens, tier_max_tokens)
 
