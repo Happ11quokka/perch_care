@@ -194,7 +194,7 @@ async def ask(
     pet_id: str | None = None,
     pet_profile_context: str | None = None,
     temperature: float = 0.2,
-    max_tokens: int = 512,
+    max_tokens: int = 2048,
     user_id: UUID | None = None,
 ) -> str:
     """사용자 질문에 대해 티어별 모델로 답변을 생성한다."""
