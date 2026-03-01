@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str = ""
 
+    # DeepSeek
+    deepseek_api_key: str = ""
+
     # Vector Database (separate pgvector instance)
     vector_database_url: str = ""  # pgvector DB URL, empty = vector search disabled
 
