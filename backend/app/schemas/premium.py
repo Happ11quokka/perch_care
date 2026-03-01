@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from pydantic import BaseModel, field_validator
 
@@ -17,10 +18,9 @@ class PremiumCodeRequest(BaseModel):
 
 class PremiumCodeResponse(BaseModel):
     success: bool
-    expires_at: str | None = None
-    error: str | None = None
+    expires_at: datetime | None = None
 
 
 class TierResponse(BaseModel):
     tier: str
-    premium_expires_at: str | None = None
+    premium_expires_at: datetime | None = None

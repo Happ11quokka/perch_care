@@ -1,4 +1,6 @@
+import logging
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,8 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user_tier import UserTier
 from app.models.premium_code import PremiumCode
 
+logger = logging.getLogger(__name__)
 
-async def get_user_tier(db: AsyncSession, user_id) -> str:
+
+class PremiumActivationError(Exception):
+    """프리미엄 코드 활성화 실패."""
+
+    def __init__(self, detail: str = "유효하지 않거나 이미 사용된 코드입니다"):
+        self.detail = detail
+        super().__init__(detail)
+
+
+async def get_user_tier(db: AsyncSession, user_id: UUID) -> str:
     """사용자 티어 조회. 없으면 'free' 반환. 만료된 프리미엄은 DB도 갱신 후 'free' 반환."""
     result = await db.execute(
         select(UserTier).where(UserTier.user_id == user_id)
@@ -19,18 +31,42 @@ async def get_user_tier(db: AsyncSession, user_id) -> str:
         if tier.premium_expires_at < datetime.now(timezone.utc):
             tier.tier = "free"
             tier.updated_at = datetime.now(timezone.utc)
-            await db.commit()
+            await db.flush()
             return "free"
     return tier.tier
 
 
-async def activate_premium_code(db: AsyncSession, user_id, code: str) -> dict:
-    """프리미엄 코드 입력 -> 30일 프리미엄 활성화.
+async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
+    """사용자 티어 + 만료일을 한번에 반환. 이중 조회 방지용."""
+    result = await db.execute(
+        select(UserTier).where(UserTier.user_id == user_id)
+    )
+    tier_row = result.scalar_one_or_none()
+    if not tier_row:
+        return {"tier": "free", "premium_expires_at": None}
+    # 만료 체크
+    if tier_row.tier == "premium" and tier_row.premium_expires_at:
+        if tier_row.premium_expires_at < datetime.now(timezone.utc):
+            tier_row.tier = "free"
+            tier_row.updated_at = datetime.now(timezone.utc)
+            await db.flush()
+            return {"tier": "free", "premium_expires_at": None}
+    return {
+        "tier": tier_row.tier,
+        "premium_expires_at": tier_row.premium_expires_at,
+    }
+
+
+async def activate_premium_code(db: AsyncSession, user_id: UUID, code: str) -> UserTier:
+    """프리미엄 코드 입력 -> 프리미엄 활성화.
 
     보안 정책:
-    - SELECT ... FOR UPDATE로 레이스 컨디션 방지
+    - SELECT ... FOR UPDATE로 레이스 컨디션 방지 (PremiumCode + UserTier)
     - 에러 메시지 단일화 (코드 존재 여부 노출 방지)
     - 같은 사용자가 같은 코드로 재시도 시 멱등 성공 처리
+
+    Raises:
+        PremiumActivationError: 코드가 유효하지 않거나 이미 사용된 경우
     """
     # 1. 코드 조회 -- SELECT ... FOR UPDATE (레이스 컨디션 방지)
     result = await db.execute(
@@ -41,7 +77,8 @@ async def activate_premium_code(db: AsyncSession, user_id, code: str) -> dict:
     premium_code = result.scalar_one_or_none()
 
     if not premium_code:
-        return {"success": False, "error": "유효하지 않거나 이미 사용된 코드입니다"}
+        logger.warning("Premium activation failed: user=%s, code_prefix=%s***", user_id, code[:5])
+        raise PremiumActivationError()
 
     # 멱등성: 같은 사용자가 이미 사용한 코드로 재시도 시 기존 결과 반환
     if premium_code.is_used:
@@ -50,9 +87,11 @@ async def activate_premium_code(db: AsyncSession, user_id, code: str) -> dict:
                 select(UserTier).where(UserTier.user_id == user_id)
             )
             user_tier = tier_result.scalar_one_or_none()
-            if user_tier and user_tier.premium_expires_at:
-                return {"success": True, "expires_at": user_tier.premium_expires_at.isoformat()}
-        return {"success": False, "error": "유효하지 않거나 이미 사용된 코드입니다"}
+            if user_tier:
+                logger.info("Premium idempotent hit: user=%s, code_prefix=%s***", user_id, code[:5])
+                return user_tier
+        logger.warning("Premium activation failed: user=%s, code_prefix=%s***", user_id, code[:5])
+        raise PremiumActivationError()
 
     # 2. 코드 사용 처리
     now = datetime.now(timezone.utc)
@@ -60,11 +99,14 @@ async def activate_premium_code(db: AsyncSession, user_id, code: str) -> dict:
     premium_code.used_by = user_id
     premium_code.used_at = now
 
-    # 3. user_tiers 업서트 (입력일 기준 30일)
-    expires_at = now + timedelta(days=30)
+    # 3. user_tiers 업서트 (코드의 duration_days 사용)
+    expires_at = now + timedelta(days=premium_code.duration_days)
 
+    # UserTier도 FOR UPDATE로 잠금
     result = await db.execute(
-        select(UserTier).where(UserTier.user_id == user_id)
+        select(UserTier)
+        .where(UserTier.user_id == user_id)
+        .with_for_update()
     )
     user_tier = result.scalar_one_or_none()
 
@@ -84,6 +126,7 @@ async def activate_premium_code(db: AsyncSession, user_id, code: str) -> dict:
         )
         db.add(user_tier)
 
-    await db.commit()
+    await db.flush()
 
-    return {"success": True, "expires_at": expires_at.isoformat()}
+    logger.info("Premium activated: user=%s, code_prefix=%s***, expires=%s", user_id, code[:5], expires_at)
+    return user_tier

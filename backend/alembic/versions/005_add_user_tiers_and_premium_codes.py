@@ -29,11 +29,13 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
+    op.create_check_constraint('ck_user_tiers_tier', 'user_tiers', "tier IN ('free', 'premium')")
 
     op.create_table(
         'premium_codes',
         sa.Column('id', UUID(as_uuid=True), primary_key=True),
         sa.Column('code', sa.String(20), unique=True, nullable=False),
+        sa.Column('duration_days', sa.Integer(), nullable=False, server_default='30'),
         sa.Column('is_used', sa.Boolean(), server_default='false'),
         sa.Column('used_by', UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=True),
         sa.Column('used_at', sa.DateTime(timezone=True), nullable=True),
@@ -41,9 +43,12 @@ def upgrade() -> None:
     )
 
     op.create_index('ix_premium_codes_code', 'premium_codes', ['code'])
+    op.create_index('ix_premium_codes_used_by', 'premium_codes', ['used_by'])
 
 
 def downgrade() -> None:
+    op.drop_index('ix_premium_codes_used_by', table_name='premium_codes')
     op.drop_index('ix_premium_codes_code', table_name='premium_codes')
     op.drop_table('premium_codes')
+    op.drop_constraint('ck_user_tiers_tier', 'user_tiers', type_='check')
     op.drop_table('user_tiers')
