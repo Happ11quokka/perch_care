@@ -75,7 +75,7 @@ async def search_knowledge(
     category: str | None = None,
     language: str | None = None,
     use_hyde: bool = True,
-    timeout_seconds: float = 5.0,
+    timeout_seconds: float = 15.0,
 ) -> list[dict]:
     """Search knowledge base using HyDE + pgvector cosine similarity.
 
