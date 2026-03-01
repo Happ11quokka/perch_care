@@ -1,0 +1,30 @@
+# Newcastle Disease (Paramyxovirus-1)
+
+## Overview
+Newcastle disease (ND) is a highly contagious and often fatal viral infection caused by Avian Paramyxovirus serotype 1 (APMV-1), also classified as Avian Orthoavulavirus 1. It is one of the most economically significant poultry diseases worldwide and is a reportable disease in most countries, requiring mandatory notification to government veterinary authorities upon suspicion or confirmation. While primarily a disease of poultry, Newcastle disease can affect pet parrots and other psittacine birds, causing severe neurological, respiratory, and gastrointestinal signs. The virus also has mild zoonotic potential, occasionally causing conjunctivitis in humans handling infected birds.
+
+## Affected Species
+All bird species are considered susceptible to Newcastle disease virus (NDV), though susceptibility and clinical severity vary. Chickens are the most severely affected domestic species. Among psittacines, Amazon parrots, conures, macaws, and cockatoos have been reported with clinical disease. Pet parrots are at risk when housed outdoors or in areas where they may contact wild birds or poultry. Imported psittacines have historically been implicated in international spread of the virus. Pigeons and doves carry their own variant (pigeon paramyxovirus-1, PPMV-1), which can occasionally cause disease in other species.
+
+## Causes
+Newcastle disease virus (NDV) is a single-stranded, negative-sense RNA virus belonging to the family Paramyxoviridae. NDV strains are classified by their pathogenicity into three pathotypes: lentogenic (low virulence), mesogenic (moderate virulence), and velogenic (high virulence, including viscerotropic and neurotropic forms). Transmission occurs through direct contact with infected birds or their secretions (respiratory droplets, feces), ingestion of contaminated feed or water, and via fomites (clothing, equipment, vehicles). The virus is shed in large quantities in respiratory secretions and feces. It can survive for extended periods in the environment, particularly in cool, moist conditions and in organic material.
+
+## Symptoms
+Clinical signs depend on the pathotype of virus involved, the species affected, and the bird's immune status. Velogenic neurotropic strains cause severe neurological signs including tremors, torticollis (head twisting), circling, paralysis of wings and legs, opisthotonus, and seizures. Respiratory signs include gasping, coughing, and nasal discharge. Velogenic viscerotropic strains cause hemorrhagic gastrointestinal disease with green, watery, or bloody diarrhea, in addition to respiratory and neurological signs. Depression, anorexia, and sudden death may occur before other signs develop. Mesogenic strains cause respiratory disease with moderate mortality. Lentogenic strains cause mild respiratory signs or subclinical infection. In psittacines, neurological signs often predominate.
+
+## Diagnosis
+Diagnosis requires laboratory confirmation and coordination with government veterinary authorities. Virus isolation from oropharyngeal or cloacal swabs, or from tissues at necropsy, is the gold standard. Real-time reverse transcriptase PCR (rRT-PCR) provides rapid detection and initial characterization. Pathotyping through intracerebral pathogenicity index (ICPI) testing or molecular characterization of the fusion protein cleavage site determines the virulence classification. Serology using hemagglutination inhibition (HI) can detect antibodies. Post-mortem findings in virulent infections include hemorrhagic lesions in the gastrointestinal tract, enlarged and congested organs, and airsacculitis. Any suspicion of Newcastle disease must be reported to veterinary authorities immediately.
+
+## Treatment
+There is no specific antiviral treatment for Newcastle disease. Treatment of individual pet birds is supportive and includes fluid therapy, nutritional support, anti-inflammatory medications, and management of secondary infections. Neurological supportive care may be necessary for birds with CNS involvement. In the context of an outbreak, particularly involving virulent strains, government-mandated control measures typically take precedence and may include quarantine, movement restrictions, depopulation of affected flocks, and environmental decontamination. Treatment decisions for individual pet birds must be made in consultation with government veterinary authorities.
+
+## Prevention
+Vaccination is the primary prevention strategy in poultry and is also used in some pet bird collections. Live and killed vaccines are available, though their use in pet parrots is less common than in poultry. The most important preventive measures for pet parrot owners include preventing contact with wild birds, poultry, and their droppings. House birds indoors and use screens on outdoor enclosures. Practice strict biosecurity if you also keep poultry or have contact with other bird species. Quarantine all new birds. Do not bring pet birds to poultry farms or areas where poultry are kept. Report any unusual illness or mortality in birds to veterinary authorities promptly.
+
+## Prognosis
+The prognosis depends on the virulence of the virus strain involved. Infections with lentogenic strains have a good prognosis, as most birds recover without significant complications. Mesogenic infections carry a guarded prognosis with moderate mortality. Velogenic infections have a poor to grave prognosis, with mortality rates in susceptible species potentially reaching 100%. Surviving birds with neurological damage may have permanent deficits. Given the reportable nature of the disease, the prognosis for individual birds must be considered alongside broader disease control implications.
+
+## References
+- [Merck Veterinary Manual - Newcastle Disease](https://www.merckvetmanual.com/exotic-and-laboratory-animals/pet-birds/viral-diseases-of-pet-birds)
+- [PetMD - Newcastle Disease in Birds](https://www.petmd.com/bird/conditions/infectious-parasitic/newcastle-disease-birds)
+- [The Spruce Pets - Newcastle Disease in Pet Birds](https://www.thesprucepets.com/newcastle-disease-in-birds-390478)
