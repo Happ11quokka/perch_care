@@ -30,5 +30,9 @@ class RouteNames {
   static const String termsDetail = 'terms-detail';
   static const String faq = 'faq';
   static const String termsDetailPublic = 'terms-detail-public';
-  // 추가 라우트 이름들을 여기에 정의
+  // 건강체크
+  static const String healthCheck = 'health-check';
+  static const String healthCheckCapture = 'health-check-capture';
+  static const String healthCheckAnalyzing = 'health-check-analyzing';
+  static const String healthCheckResult = 'health-check-result';
 }

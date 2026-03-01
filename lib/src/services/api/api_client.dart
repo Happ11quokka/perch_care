@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import '../../config/environment.dart';
 import 'token_service.dart';
 
@@ -88,6 +89,47 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  /// 멀티파트 업로드 (여러 필드 + 파일)
+  Future<dynamic> uploadMultipart(
+    String path, {
+    required Map<String, String> fields,
+    required Uint8List fileBytes,
+    required String fileName,
+    String fileFieldName = 'image',
+    Duration? timeout,
+  }) async {
+    final effectiveTimeout = timeout ?? const Duration(seconds: 60);
+    final uri = Uri.parse('$_baseUrl$path');
+
+    Future<http.Response> sendRequest() async {
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer ${_tokenService.accessToken}';
+      request.fields.addAll(fields);
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          fileFieldName,
+          fileBytes,
+          filename: fileName,
+          contentType: _inferMediaType(fileName),
+        ),
+      );
+      final streamedResponse = await request.send().timeout(effectiveTimeout);
+      return http.Response.fromStream(streamedResponse);
+    }
+
+    var response = await sendRequest();
+
+    // 401이면 토큰 갱신 후 재시도
+    if (response.statusCode == 401 && _tokenService.refreshToken != null) {
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        response = await sendRequest();
+      }
+    }
+
+    return _handleResponse(response);
+  }
+
   /// 토큰 갱신이 포함된 요청 래퍼
   Future<http.Response> _makeRequest(Future<http.Response> Function() request) async {
     var response = await request().timeout(_requestTimeout);
@@ -141,6 +183,18 @@ class ApiClient {
     } finally {
       _refreshCompleter = null;
     }
+  }
+
+  static MediaType _inferMediaType(String fileName) {
+    final ext = fileName.split('.').last.toLowerCase();
+    return switch (ext) {
+      'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+      'png' => MediaType('image', 'png'),
+      'gif' => MediaType('image', 'gif'),
+      'webp' => MediaType('image', 'webp'),
+      'heic' || 'heif' => MediaType('image', 'jpeg'),
+      _ => MediaType('application', 'octet-stream'),
+    };
   }
 
   dynamic _handleResponse(http.Response response) {

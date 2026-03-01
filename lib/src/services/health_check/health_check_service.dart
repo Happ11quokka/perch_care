@@ -4,7 +4,8 @@ import '../api/api_client.dart';
 
 /// AI 건강 체크 서비스
 class HealthCheckService {
-  HealthCheckService();
+  HealthCheckService._();
+  static final instance = HealthCheckService._();
 
   final _api = ApiClient.instance;
 
@@ -121,5 +122,29 @@ class HealthCheckService {
     return (response as List)
         .map((json) => AiHealthCheck.fromJson(json))
         .toList();
+  }
+
+  /// Vision API를 통해 이미지 분석 요청 (multipart/form-data)
+  Future<Map<String, dynamic>> analyzeImage({
+    required String petId,
+    required String mode,
+    String? part,
+    String? notes,
+    required Uint8List imageBytes,
+    required String fileName,
+  }) async {
+    final fields = <String, String>{
+      'mode': mode,
+      if (part != null) 'part': part,
+      if (notes != null) 'notes': notes,
+    };
+    final response = await _api.uploadMultipart(
+      '/pets/$petId/health-checks/analyze',
+      fields: fields,
+      fileBytes: imageBytes,
+      fileName: fileName,
+      timeout: const Duration(seconds: 60),
+    );
+    return response as Map<String, dynamic>;
   }
 }

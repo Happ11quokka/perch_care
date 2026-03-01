@@ -295,6 +295,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               // WCI 건강 상태 카드
                               Container(key: _wciCardKey, child: _buildWCICard()),
                               const SizedBox(height: 12),
+                              // AI 건강체크 배너
+                              _buildAiHealthCheckBanner(),
+                              const SizedBox(height: 12),
                               // 하단 4개 카드
                               _buildBottomCards(),
                               const SizedBox(height: 24),
@@ -835,6 +838,57 @@ class _HomeScreenState extends State<HomeScreen> {
         border: Border.all(
           color: const Color(0xFFF0F0F0),
           width: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAiHealthCheckBanner() {
+    return GestureDetector(
+      onTap: () => context.pushNamed(RouteNames.healthCheck),
+      child: Container(
+        width: double.infinity,
+        height: 80,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'AI 건강체크',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '사진 한 장으로 건강 상태를 확인하세요',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 32),
+          ],
         ),
       ),
     );

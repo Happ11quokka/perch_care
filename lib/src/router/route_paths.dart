@@ -38,5 +38,9 @@ class RoutePaths {
   static const String weightAddToday = '/weight-detail/add/today';
   static const String weightAdd = '/weight-detail/add/:date';
 
-  // 추가 라우트 경로들을 여기에 정의
+  // 건강체크 하위 경로 (full: /home/health-check/...)
+  static const String healthCheck = '/home/health-check';
+  static const String healthCheckCapture = '/home/health-check/capture';
+  static const String healthCheckAnalyzing = '/home/health-check/analyzing';
+  static const String healthCheckResult = '/home/health-check/result';
 }

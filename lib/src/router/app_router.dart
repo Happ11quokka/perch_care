@@ -16,6 +16,12 @@ import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/pet_profile_detail_screen.dart';
 import '../screens/ai_encyclopedia/ai_encyclopedia_screen.dart';
+import '../screens/health_check/health_check_main_screen.dart';
+import '../screens/health_check/health_check_capture_screen.dart';
+import '../screens/health_check/health_check_analyzing_screen.dart';
+import '../screens/health_check/health_check_result_screen.dart';
+import '../models/ai_health_check.dart';
+import 'dart:typed_data';
 import '../screens/wci/wci_index_screen.dart';
 import '../screens/bhi/bhi_detail_screen.dart';
 import '../models/bhi_result.dart';
@@ -221,6 +227,72 @@ class AppRouter {
                         petName: map?['petName'] ?? '점점이',
                       );
                     },
+                  ),
+                  // 건강체크 라우트
+                  GoRoute(
+                    path: 'health-check',
+                    name: RouteNames.healthCheck,
+                    builder: (context, state) =>
+                        const HealthCheckMainScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'capture',
+                        name: RouteNames.healthCheckCapture,
+                        builder: (context, state) {
+                          final extra = state.extra;
+                          final map =
+                              extra is Map<String, dynamic> ? extra : null;
+                          if (map == null || map['mode'] is! VisionMode) {
+                            return const HealthCheckMainScreen();
+                          }
+                          return HealthCheckCaptureScreen(
+                            mode: map['mode'] as VisionMode,
+                          );
+                        },
+                      ),
+                      GoRoute(
+                        path: 'analyzing',
+                        name: RouteNames.healthCheckAnalyzing,
+                        builder: (context, state) {
+                          final extra = state.extra;
+                          final map =
+                              extra is Map<String, dynamic> ? extra : null;
+                          if (map == null ||
+                              map['mode'] is! VisionMode ||
+                              map['imageBytes'] is! Uint8List ||
+                              map['fileName'] is! String) {
+                            return const HealthCheckMainScreen();
+                          }
+                          return HealthCheckAnalyzingScreen(
+                            mode: map['mode'] as VisionMode,
+                            part: map['part'] as BodyPart?,
+                            imageBytes: map['imageBytes'] as Uint8List,
+                            fileName: map['fileName'] as String,
+                          );
+                        },
+                      ),
+                      GoRoute(
+                        path: 'result',
+                        name: RouteNames.healthCheckResult,
+                        builder: (context, state) {
+                          final extra = state.extra;
+                          final map =
+                              extra is Map<String, dynamic> ? extra : null;
+                          if (map == null ||
+                              map['mode'] is! VisionMode ||
+                              map['result'] is! Map<String, dynamic>) {
+                            return const HealthCheckMainScreen();
+                          }
+                          return HealthCheckResultScreen(
+                            mode: map['mode'] as VisionMode,
+                            result:
+                                map['result'] as Map<String, dynamic>,
+                            imageBytes:
+                                map['imageBytes'] as Uint8List?,
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -138,3 +138,43 @@ enum HealthStatus {
     );
   }
 }
+
+/// Vision 분석 모드
+enum VisionMode {
+  fullBody('full_body', '전체 외형'),
+  partSpecific('part_specific', '부위별 검사'),
+  droppings('droppings', '배변 분석'),
+  food('food', '먹이 안전성');
+
+  final String value;
+  final String label;
+
+  const VisionMode(this.value, this.label);
+
+  static VisionMode fromValue(String value) {
+    return VisionMode.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => VisionMode.fullBody,
+    );
+  }
+}
+
+/// 부위별 검사 대상 (part_specific 모드용)
+enum BodyPart {
+  eye('eye', '눈'),
+  beak('beak', '부리'),
+  feather('feather', '깃털'),
+  foot('foot', '발');
+
+  final String value;
+  final String label;
+
+  const BodyPart(this.value, this.label);
+
+  static BodyPart fromValue(String value) {
+    return BodyPart.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => BodyPart.eye,
+    );
+  }
+}
