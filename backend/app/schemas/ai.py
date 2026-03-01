@@ -12,3 +12,6 @@ class AiEncyclopediaRequest(BaseModel):
 
 class AiEncyclopediaResponse(BaseModel):
     answer: str
+    category: str | None = None  # "disease" | "nutrition" | "behavior" | "species" | "general"
+    severity: str | None = None  # "normal" | "caution" | "warning" | "critical"
+    vet_recommended: bool | None = None

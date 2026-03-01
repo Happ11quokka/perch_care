@@ -44,7 +44,7 @@ async def encyclopedia(
     start = time.monotonic()
     model, _ = ai_service._select_model(tier)
 
-    answer = await ai_service.ask(
+    raw_answer = await ai_service.ask(
         db=db,
         query=body.query,
         history=body.history,
@@ -55,6 +55,9 @@ async def encyclopedia(
         max_tokens=body.max_tokens,
         user_id=current_user.id,
     )
+
+    # 메타데이터 파싱 (category/severity/vet_recommended 추출)
+    parsed = ai_service.parse_response_metadata(raw_answer)
 
     elapsed_ms = int((time.monotonic() - start) * 1000)
 
@@ -68,14 +71,19 @@ async def encyclopedia(
         user_id=current_user.id,
         pet_id=pet_uuid,
         query_length=len(body.query),
-        response_length=len(answer),
+        response_length=len(parsed["answer"]),
         response_time_ms=elapsed_ms,
         model=model,
         tokens_used=None,
     )
     db.add(log_entry)
 
-    return AiEncyclopediaResponse(answer=answer)
+    return AiEncyclopediaResponse(
+        answer=parsed["answer"],
+        category=parsed["category"],
+        severity=parsed["severity"],
+        vet_recommended=parsed["vet_recommended"],
+    )
 
 
 @router.post("/encyclopedia/stream")
@@ -106,6 +114,7 @@ async def encyclopedia_stream(
             pet_id=body.pet_id,
             pet_profile_context=body.pet_profile_context,
             user_id=current_user.id,
+            tier=tier,
         )
 
     # 캡처한 값들 — 제너레이터 내부에서 DB 불필요
@@ -116,6 +125,8 @@ async def encyclopedia_stream(
 
     async def event_generator():
         accumulated = []
+        meta_stripped = False
+        meta_buffer = ""
         try:
             async for token in ai_service.ask_stream_with_message(
                 system_message=system_message,
@@ -126,10 +137,31 @@ async def encyclopedia_stream(
                 effective_max_tokens=effective_max_tokens,
             ):
                 accumulated.append(token)
+                # 메타데이터 태그가 응답 첫 부분에 포함 — 클라이언트에 보내지 않음
+                if not meta_stripped:
+                    meta_buffer += token
+                    if "-->" in meta_buffer:
+                        # 메타 태그 종료: 태그 이후 텍스트만 전송
+                        meta_stripped = True
+                        remainder = meta_buffer.split("-->", 1)[1].lstrip("\n")
+                        if remainder:
+                            yield f"data: {json.dumps({'token': remainder}, ensure_ascii=False)}\n\n"
+                    continue
                 yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
 
-            # P2: done 이벤트는 스트림 완료 후 즉시 전송
-            yield f"data: {json.dumps({'done': True})}\n\n"
+            # 전체 응답에서 메타데이터 파싱
+            full_raw = "".join(accumulated)
+            parsed = ai_service.parse_response_metadata(full_raw)
+
+            # P2: done 이벤트에 메타데이터 포함
+            done_payload = {"done": True}
+            if parsed["category"]:
+                done_payload["category"] = parsed["category"]
+            if parsed["severity"]:
+                done_payload["severity"] = parsed["severity"]
+            if parsed["vet_recommended"] is not None:
+                done_payload["vet_recommended"] = parsed["vet_recommended"]
+            yield f"data: {json.dumps(done_payload, ensure_ascii=False)}\n\n"
 
         except Exception as e:
             logger.error(f"AI stream error: {e}", exc_info=True)
