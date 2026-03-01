@@ -8,8 +8,20 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.premium import PremiumCodeRequest, PremiumCodeResponse, TierResponse
 from app.services.tier_service import activate_premium_code, get_user_tier_info, PremiumActivationError
+from app.utils.security import decode_token
 
-limiter = Limiter(key_func=get_remote_address)
+
+def _get_user_rate_limit_key(request: Request) -> str:
+    """JWT에서 사용자 ID 추출하여 rate limit 키로 사용. 실패 시 IP fallback."""
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        payload = decode_token(auth_header[7:])
+        if payload and payload.get("sub"):
+            return f"user:{payload['sub']}"
+    return f"ip:{get_remote_address(request)}"
+
+
+limiter = Limiter(key_func=_get_user_rate_limit_key)
 router = APIRouter(prefix="/premium", tags=["premium"])
 
 

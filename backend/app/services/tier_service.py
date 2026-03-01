@@ -1,9 +1,11 @@
 import logging
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.dialects.postgresql import insert
 
 from app.models.user_tier import UserTier
 from app.models.premium_code import PremiumCode
@@ -19,8 +21,12 @@ class PremiumActivationError(Exception):
         super().__init__(detail)
 
 
-async def get_user_tier(db: AsyncSession, user_id: UUID) -> str:
-    """사용자 티어 조회. 없으면 'free' 반환. 만료된 프리미엄은 DB도 갱신 후 'free' 반환."""
+async def get_user_tier(db: AsyncSession, user_id: UUID) -> Literal["free", "premium"]:
+    """사용자 티어 조회. 없으면 'free' 반환. 만료된 프리미엄은 DB도 갱신 후 'free' 반환.
+
+    P1-1 Fix: 조건부 원자적 UPDATE로 lost update 방지.
+    WHERE 절에 만료 조건 포함 → activate_premium_code가 만료일을 연장했다면 조건 불일치로 UPDATE 안 됨.
+    """
     result = await db.execute(
         select(UserTier).where(UserTier.user_id == user_id)
     )
@@ -29,15 +35,26 @@ async def get_user_tier(db: AsyncSession, user_id: UUID) -> str:
         return "free"
     if tier.tier == "premium" and tier.premium_expires_at:
         if tier.premium_expires_at < datetime.now(timezone.utc):
-            tier.tier = "free"
-            tier.updated_at = datetime.now(timezone.utc)
+            now = datetime.now(timezone.utc)
+            await db.execute(
+                update(UserTier)
+                .where(
+                    UserTier.user_id == user_id,
+                    UserTier.tier == "premium",
+                    UserTier.premium_expires_at < now,
+                )
+                .values(tier="free", updated_at=now)
+            )
             await db.flush()
             return "free"
     return tier.tier
 
 
 async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
-    """사용자 티어 + 만료일을 한번에 반환. 이중 조회 방지용."""
+    """사용자 티어 + 만료일을 한번에 반환. 이중 조회 방지용.
+
+    P1-1 Fix: 조건부 원자적 UPDATE로 lost update 방지.
+    """
     result = await db.execute(
         select(UserTier).where(UserTier.user_id == user_id)
     )
@@ -47,8 +64,16 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
     # 만료 체크
     if tier_row.tier == "premium" and tier_row.premium_expires_at:
         if tier_row.premium_expires_at < datetime.now(timezone.utc):
-            tier_row.tier = "free"
-            tier_row.updated_at = datetime.now(timezone.utc)
+            now = datetime.now(timezone.utc)
+            await db.execute(
+                update(UserTier)
+                .where(
+                    UserTier.user_id == user_id,
+                    UserTier.tier == "premium",
+                    UserTier.premium_expires_at < now,
+                )
+                .values(tier="free", updated_at=now)
+            )
             await db.flush()
             return {"tier": "free", "premium_expires_at": None}
     return {
@@ -100,33 +125,38 @@ async def activate_premium_code(db: AsyncSession, user_id: UUID, code: str) -> U
     premium_code.used_at = now
 
     # 3. user_tiers 업서트 (코드의 duration_days 사용)
+    # P1-2 Fix: INSERT ... ON CONFLICT DO UPDATE로 first-time insert race 방지.
+    # FOR UPDATE는 row가 없으면 lock 불가 → 동시 INSERT 시 unique 충돌.
+    # 업서트 패턴으로 원자적 처리 (기존 weight_service 패턴 재사용).
     expires_at = now + timedelta(days=premium_code.duration_days)
 
-    # UserTier도 FOR UPDATE로 잠금
-    result = await db.execute(
-        select(UserTier)
-        .where(UserTier.user_id == user_id)
-        .with_for_update()
+    stmt = insert(UserTier).values(
+        user_id=user_id,
+        tier="premium",
+        premium_started_at=now,
+        premium_expires_at=expires_at,
+        activated_code=code,
+        created_at=now,
+        updated_at=now,
     )
-    user_tier = result.scalar_one_or_none()
-
-    if user_tier:
-        user_tier.tier = "premium"
-        user_tier.premium_started_at = now
-        user_tier.premium_expires_at = expires_at
-        user_tier.activated_code = code
-        user_tier.updated_at = now
-    else:
-        user_tier = UserTier(
-            user_id=user_id,
-            tier="premium",
-            premium_started_at=now,
-            premium_expires_at=expires_at,
-            activated_code=code,
-        )
-        db.add(user_tier)
-
+    stmt = stmt.on_conflict_do_update(
+        constraint="user_tiers_user_id_key",
+        set_={
+            "tier": "premium",
+            "premium_started_at": now,
+            "premium_expires_at": expires_at,
+            "activated_code": code,
+            "updated_at": now,
+        },
+    )
+    await db.execute(stmt)
     await db.flush()
+
+    # 반환용 재조회
+    result = await db.execute(
+        select(UserTier).where(UserTier.user_id == user_id)
+    )
+    user_tier = result.scalar_one()
 
     logger.info("Premium activated: user=%s, code_prefix=%s***, expires=%s", user_id, code[:5], expires_at)
     return user_tier

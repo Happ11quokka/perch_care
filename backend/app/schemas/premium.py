@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
@@ -22,5 +23,5 @@ class PremiumCodeResponse(BaseModel):
 
 
 class TierResponse(BaseModel):
-    tier: str
+    tier: Literal["free", "premium"]
     premium_expires_at: datetime | None = None

@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -36,6 +37,6 @@ async def get_current_user(
 async def get_current_tier(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> str:
+) -> Literal["free", "premium"]:
     """현재 사용자의 티어 반환 ('free' 또는 'premium')."""
     return await get_user_tier(db, current_user.id)
