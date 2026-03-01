@@ -88,7 +88,8 @@ async def encyclopedia_stream(
 ):
     """SSE 스트리밍으로 AI 백과사전 응답을 실시간 전송한다."""
     start_time = time.monotonic()
-    model, _ = ai_service._select_model(tier)
+    model, tier_max_tokens = ai_service._select_model(tier)
+    effective_max_tokens = min(body.max_tokens, tier_max_tokens)
 
     pet_uuid = None
     if body.pet_id:
@@ -112,7 +113,6 @@ async def encyclopedia_stream(
     query_text = body.query
     history = body.history
     temperature = body.temperature
-    max_tokens = body.max_tokens
 
     async def event_generator():
         accumulated = []
@@ -121,9 +121,9 @@ async def encyclopedia_stream(
                 system_message=system_message,
                 query=query_text,
                 history=history,
-                tier=tier,
+                model=model,
                 temperature=temperature,
-                max_tokens=max_tokens,
+                effective_max_tokens=effective_max_tokens,
             ):
                 accumulated.append(token)
                 yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"

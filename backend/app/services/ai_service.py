@@ -185,7 +185,6 @@ def _select_model(tier: str) -> tuple[str, int]:
     return MODEL, 1024
 
 
-@traceable(name="ai_encyclopedia_ask", run_type="chain")
 async def ask(
     db: AsyncSession,
     query: str,
@@ -204,6 +203,26 @@ async def ask(
     model, tier_max_tokens = _select_model(tier)
     effective_max_tokens = min(max_tokens, tier_max_tokens)
 
+    return await _ask_core(
+        system_message=system_message,
+        query=query,
+        history=history,
+        model=model,
+        temperature=temperature,
+        effective_max_tokens=effective_max_tokens,
+    )
+
+
+@traceable(name="ai_encyclopedia_ask", run_type="chain")
+async def _ask_core(
+    system_message: str,
+    query: str,
+    history: list[dict[str, str]],
+    model: str,
+    temperature: float,
+    effective_max_tokens: int,
+) -> str:
+    """LangSmith에 model/effective_max_tokens가 기록되는 실제 LLM 호출."""
     # 메시지 구성
     messages = [{"role": "system", "content": system_message}]
     for h in history:
@@ -213,9 +232,6 @@ async def ask(
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": query})
 
-    import logging
-    logger = logging.getLogger(__name__)
-
     response = await _openai_client.chat.completions.create(
         model=model,
         messages=messages,
@@ -224,15 +240,12 @@ async def ask(
     )
 
     choice = response.choices[0]
-    logger.warning(f"[AI DEBUG] finish_reason={choice.finish_reason}, content={choice.message.content!r}, refusal={getattr(choice.message, 'refusal', None)!r}")
-
     if choice.message.content:
         return choice.message.content
 
     return "답변을 생성하지 못했습니다."
 
 
-@traceable(name="ai_encyclopedia_ask_stream", run_type="chain")
 async def ask_stream(
     db: AsyncSession,
     query: str,
@@ -247,13 +260,17 @@ async def ask_stream(
     """SSE 스트리밍 응답 생성기. DB에서 RAG 컨텍스트를 조회 후 토큰 단위로 yield한다."""
     system_message = await prepare_system_message(db, query, pet_id, pet_profile_context, user_id)
 
+    # 티어별 모델 선택 (LangSmith에 기록되도록 미리 계산)
+    model, tier_max_tokens = _select_model(tier)
+    effective_max_tokens = min(max_tokens, tier_max_tokens)
+
     async for token in ask_stream_with_message(
         system_message=system_message,
         query=query,
         history=history,
-        tier=tier,
+        model=model,
         temperature=temperature,
-        max_tokens=max_tokens,
+        effective_max_tokens=effective_max_tokens,
     ):
         yield token
 
@@ -263,14 +280,11 @@ async def ask_stream_with_message(
     system_message: str,
     query: str,
     history: list[dict[str, str]],
-    tier: str,
+    model: str,
     temperature: float = 0.2,
-    max_tokens: int = 1024,
+    effective_max_tokens: int = 1024,
 ):
-    """사전 구성된 시스템 메시지로 스트리밍. DB 세션 불필요."""
-    model, tier_max_tokens = _select_model(tier)
-    effective_max_tokens = min(max_tokens, tier_max_tokens)
-
+    """사전 구성된 시스템 메시지로 스트리밍. DB 세션 불필요. model/effective_max_tokens가 LangSmith에 기록된다."""
     messages = [{"role": "system", "content": system_message}]
     for h in history:
         role = h.get("role", "user")
