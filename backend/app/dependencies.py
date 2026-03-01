@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.user import User
 from app.utils.security import decode_token
+from app.services.tier_service import get_user_tier
 
 security = HTTPBearer()
 
@@ -30,3 +31,11 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return user
+
+
+async def get_current_tier(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> str:
+    """현재 사용자의 티어 반환 ('free' 또는 'premium')."""
+    return await get_user_tier(db, current_user.id)

@@ -20,3 +20,4 @@ class User(Base):
     pets = relationship("Pet", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     social_accounts = relationship("SocialAccount", back_populates="user", cascade="all, delete-orphan")
+    tier_info = relationship("UserTier", back_populates="user", uselist=False, cascade="all, delete-orphan")
