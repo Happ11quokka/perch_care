@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
+import '../../services/ai/ai_stream_service.dart';
 import '../../services/api/token_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/storage/chat_storage_service.dart';
@@ -35,10 +37,15 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _inputController = TextEditingController();
   final AiEncyclopediaService _aiService = AiEncyclopediaService();
+  final AiStreamService _streamService = AiStreamService();
   final PetService _petService = PetService.instance;
   final ChatStorageService _chatStorage = ChatStorageService.instance;
   final List<ChatMessage> _messages = [];
   Pet? _activePet;
+  StreamSubscription<String>? _streamSubscription;
+  int? _assistantPlaceholderIndex; // 스트리밍 중 assistant 메시지 인덱스 고정
+  int _receivedTokenCount = 0; // P1: fallback 판단용 수신 토큰 수
+  Timer? _throttleTimer; // P2: setState 쓰로틀링
 
   // Coach mark target keys
   final _suggestionKey = GlobalKey();
@@ -140,6 +147,8 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
 
   @override
   void dispose() {
+    _streamSubscription?.cancel();
+    _throttleTimer?.cancel();
     _inputController.removeListener(_onInputChanged);
     _floatController.dispose();
     _peekController.dispose();
@@ -154,11 +163,13 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     if (text.isEmpty) return;
     AnalyticsService.instance.logAiChatSent();
 
-    final l10n = AppLocalizations.of(context);
     final history = _buildCleanHistory();
+    final petId = _activePet?.id;
+    final petProfileContext = _buildPetProfileContext();
 
     setState(() {
       _isSending = true;
+      _receivedTokenCount = 0;
       _messages.add(
         ChatMessage(
           role: MessageRole.user,
@@ -166,13 +177,16 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
           timestamp: DateTime.now(),
         ),
       );
+      // 스트리밍 시작: 빈 placeholder로 시작
       _messages.add(
         ChatMessage(
           role: MessageRole.assistant,
-          text: l10n.chatbot_preparingAnswer,
+          text: '',
           timestamp: DateTime.now(),
         ),
       );
+      // P1: placeholder 인덱스 고정 (race condition 방지)
+      _assistantPlaceholderIndex = _messages.length - 1;
     });
 
     setState(() {
@@ -182,39 +196,183 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     _scrollToBottom();
 
     try {
-      final answer = await _aiService.ask(
+      // SSE 스트리밍 시도
+      await _handleStreamResponse(
         query: text,
         history: history,
-        petId: _activePet?.id,
-        petProfileContext: _buildPetProfileContext(),
+        petId: petId,
+        petProfileContext: petProfileContext,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // P1: 토큰을 하나도 못 받았을 때만 동기 API fallback
+      if (_receivedTokenCount == 0) {
+        debugPrint('[AIEncyclopedia] SSE failed (0 tokens), falling back: $e');
+        await _handleFallbackResponse(
+          query: text,
+          history: history,
+          petId: petId,
+          petProfileContext: petProfileContext,
+        );
+      } else {
+        // 일부 토큰 수신 후 실패 → 연결 끊김 처리
+        debugPrint('[AIEncyclopedia] SSE interrupted after $_receivedTokenCount tokens: $e');
+        _finishStreaming();
+      }
+    }
+  }
+
+  /// P1: assistant placeholder 인덱스가 유효한지 확인하고 메시지를 업데이트.
+  void _updateAssistantMessage({String? text, DateTime? timestamp}) {
+    final idx = _assistantPlaceholderIndex;
+    if (idx == null || idx >= _messages.length) return;
+    final msg = _messages[idx];
+    if (msg.role != MessageRole.assistant) return;
+    _messages[idx] = msg.copyWith(
+      text: text ?? msg.text,
+      timestamp: timestamp ?? msg.timestamp,
+    );
+  }
+
+  /// 스트리밍 종료 공통 처리.
+  void _finishStreaming() {
+    _throttleTimer?.cancel();
+    _throttleTimer = null;
+    if (mounted) {
+      setState(() {
+        _isSending = false;
+      });
+      _saveMessages();
+      _scrollToBottom();
+    }
+    _assistantPlaceholderIndex = null;
+  }
+
+  /// SSE 스트리밍으로 토큰별 실시간 응답을 처리한다.
+  Future<void> _handleStreamResponse({
+    required String query,
+    required List<Map<String, String>> history,
+    String? petId,
+    String? petProfileContext,
+  }) async {
+    final completer = Completer<void>();
+    // P2: 토큰 버퍼 (쓰로틀링용)
+    final tokenBuffer = StringBuffer();
+
+    _streamSubscription = _streamService
+        .streamEncyclopedia(
+          query: query,
+          history: history,
+          petId: petId,
+          petProfileContext: petProfileContext,
+        )
+        .listen(
+      (token) {
+        if (!mounted) return;
+        _receivedTokenCount++;
+        tokenBuffer.write(token);
+
+        // P2: 50ms 쓰로틀링 — 버퍼에 모아서 일괄 반영
+        _throttleTimer ??= Timer(const Duration(milliseconds: 50), () {
+          _throttleTimer = null;
+          if (!mounted) return;
+          final buffered = tokenBuffer.toString();
+          tokenBuffer.clear();
+          if (buffered.isEmpty) return;
+
+          setState(() {
+            final idx = _assistantPlaceholderIndex;
+            if (idx != null && idx < _messages.length) {
+              final msg = _messages[idx];
+              _messages[idx] = msg.copyWith(text: msg.text + buffered);
+            }
+          });
+          _scrollToBottom();
+        });
+      },
+      onDone: () {
+        // 남은 버퍼 플러시
+        final remaining = tokenBuffer.toString();
+        tokenBuffer.clear();
+        if (remaining.isNotEmpty && mounted) {
+          setState(() {
+            final idx = _assistantPlaceholderIndex;
+            if (idx != null && idx < _messages.length) {
+              final msg = _messages[idx];
+              _messages[idx] = msg.copyWith(text: msg.text + remaining);
+            }
+          });
+        }
+        _finishStreaming();
+        _streamSubscription = null;
+        if (!completer.isCompleted) completer.complete();
+      },
+      onError: (error) {
+        // 남은 버퍼 플러시
+        final remaining = tokenBuffer.toString();
+        tokenBuffer.clear();
+        if (remaining.isNotEmpty && mounted) {
+          setState(() {
+            final idx = _assistantPlaceholderIndex;
+            if (idx != null && idx < _messages.length) {
+              final msg = _messages[idx];
+              _messages[idx] = msg.copyWith(text: msg.text + remaining);
+            }
+          });
+        }
+        _streamSubscription = null;
+        if (!completer.isCompleted) completer.completeError(error);
+      },
+      cancelOnError: true,
+    );
+
+    return completer.future;
+  }
+
+  /// SSE 실패 시 기존 동기 API로 fallback.
+  Future<void> _handleFallbackResponse({
+    required String query,
+    required List<Map<String, String>> history,
+    String? petId,
+    String? petProfileContext,
+  }) async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+
+    // placeholder를 "준비 중..."으로 변경
+    setState(() {
+      _updateAssistantMessage(text: l10n.chatbot_preparingAnswer);
+    });
+
+    try {
+      final answer = await _aiService.ask(
+        query: query,
+        history: history,
+        petId: petId,
+        petProfileContext: petProfileContext,
       );
 
+      if (!mounted) return;
       setState(() {
-        _messages[_messages.length - 1] = _messages.last.copyWith(
-          text: answer,
-          timestamp: DateTime.now(),
-        );
+        _updateAssistantMessage(text: answer, timestamp: DateTime.now());
       });
-
-      // AI 응답 성공 시 대화 저장
       await _saveMessages();
     } catch (e) {
-      if (mounted) {
-        final l10nErr = AppLocalizations.of(context);
-        setState(() {
-          _messages[_messages.length - 1] = _messages.last.copyWith(
-            text: l10nErr.chatbot_aiError,
-            timestamp: DateTime.now(),
-          );
-        });
-        AppSnackBar.error(context, message: l10nErr.chatbot_aiCallFailed(e.toString()));
-      }
+      if (!mounted) return;
+      final l10nErr = AppLocalizations.of(context);
+      setState(() {
+        _updateAssistantMessage(text: l10nErr.chatbot_aiError, timestamp: DateTime.now());
+      });
+      // P2: 에러 상세는 디버그 로그로만, 사용자에겐 일반화된 메시지
+      debugPrint('[AIEncyclopedia] Fallback API error: $e');
+      AppSnackBar.error(context, message: l10nErr.chatbot_aiCallFailed(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
           _isSending = false;
         });
       }
+      _assistantPlaceholderIndex = null;
       _scrollToBottom();
     }
   }
@@ -260,8 +418,9 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     await _chatStorage.saveMessages(_activePet?.id, _messages);
   }
 
-  /// 대화 내역 삭제
+  /// 대화 내역 삭제 (P1: 스트리밍 중에는 비활성화)
   Future<void> _clearMessages() async {
+    if (_isSending) return;
     final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
