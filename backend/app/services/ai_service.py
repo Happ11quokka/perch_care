@@ -132,22 +132,11 @@ async def _build_rag_context(db: AsyncSession, pet_id: str | None) -> str | None
     return "\n".join(lines)
 
 
-@traceable(name="ai_encyclopedia_ask", run_type="chain")
-async def ask(
-    db: AsyncSession,
-    query: str,
-    history: list[dict[str, str]],
-    pet_id: str | None = None,
-    pet_profile_context: str | None = None,
-    temperature: float = 0.2,
-    max_tokens: int = 512,
+def _build_system_message(
+    rag_context: str | None,
+    pet_profile_context: str | None,
 ) -> str:
-    """사용자 질문에 대해 OpenAI gpt-5-nano로 답변을 생성한다."""
-
-    # RAG: DB에서 펫 데이터 조회
-    rag_context = await _build_rag_context(db, pet_id)
-
-    # system prompt 구성
+    """시스템 프롬프트 + RAG 컨텍스트를 결합한 시스템 메시지를 구성한다."""
     system_parts = [SYSTEM_PROMPT]
     if rag_context:
         system_parts.append(
@@ -158,10 +147,37 @@ async def ask(
             "Do not give generic answers when specific data is available."
         )
     elif pet_profile_context:
-        # pet_id가 없으면 프론트엔드에서 보낸 프로필 컨텍스트 사용
         system_parts.append(f"\n\n{pet_profile_context}")
+    return "".join(system_parts)
 
-    system_message = "".join(system_parts)
+
+def _select_model(tier: str) -> tuple[str, int]:
+    """티어별 모델과 최대 토큰 수를 반환한다."""
+    if tier == "premium":
+        return "gpt-4.1-nano", 2048
+    return MODEL, 1024
+
+
+@traceable(name="ai_encyclopedia_ask", run_type="chain")
+async def ask(
+    db: AsyncSession,
+    query: str,
+    history: list[dict[str, str]],
+    tier: str = "free",
+    pet_id: str | None = None,
+    pet_profile_context: str | None = None,
+    temperature: float = 0.2,
+    max_tokens: int = 512,
+) -> str:
+    """사용자 질문에 대해 티어별 모델로 답변을 생성한다."""
+
+    # RAG: DB에서 펫 데이터 조회
+    rag_context = await _build_rag_context(db, pet_id)
+    system_message = _build_system_message(rag_context, pet_profile_context)
+
+    # 티어별 모델 선택
+    model, tier_max_tokens = _select_model(tier)
+    effective_max_tokens = min(max_tokens, tier_max_tokens)
 
     # 메시지 구성
     messages = [{"role": "system", "content": system_message}]
@@ -176,10 +192,10 @@ async def ask(
     logger = logging.getLogger(__name__)
 
     response = await _openai_client.chat.completions.create(
-        model=MODEL,
+        model=model,
         messages=messages,
         temperature=temperature,
-        max_tokens=max_tokens,
+        max_tokens=effective_max_tokens,
     )
 
     choice = response.choices[0]
@@ -189,3 +205,42 @@ async def ask(
         return choice.message.content
 
     return "답변을 생성하지 못했습니다."
+
+
+@traceable(name="ai_encyclopedia_ask_stream", run_type="chain")
+async def ask_stream(
+    db: AsyncSession,
+    query: str,
+    history: list[dict[str, str]],
+    tier: str,
+    pet_id: str | None = None,
+    pet_profile_context: str | None = None,
+    temperature: float = 0.2,
+    max_tokens: int = 1024,
+):
+    """SSE 스트리밍 응답 생성기. 토큰 단위로 yield한다."""
+    rag_context = await _build_rag_context(db, pet_id)
+    system_message = _build_system_message(rag_context, pet_profile_context)
+
+    model, tier_max_tokens = _select_model(tier)
+    effective_max_tokens = min(max_tokens, tier_max_tokens)
+
+    messages = [{"role": "system", "content": system_message}]
+    for h in history:
+        role = h.get("role", "user")
+        content = h.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": query})
+
+    stream = await _openai_client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=effective_max_tokens,
+        stream=True,
+    )
+
+    async for chunk in stream:
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield chunk.choices[0].delta.content
