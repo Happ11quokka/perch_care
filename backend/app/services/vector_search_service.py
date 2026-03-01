@@ -139,11 +139,11 @@ async def _search_knowledge_impl(
 
     sql = text(f"""
         SELECT content, source, category, language, section_title,
-               1 - (embedding <=> :embedding::vector) AS similarity
+               1 - (embedding <=> CAST(:embedding AS vector)) AS similarity
         FROM knowledge_chunks
-        WHERE (embedding <=> :embedding::vector) < :max_distance
+        WHERE (embedding <=> CAST(:embedding AS vector)) < :max_distance
         {where_sql}
-        ORDER BY embedding <=> :embedding::vector
+        ORDER BY embedding <=> CAST(:embedding AS vector)
         LIMIT :top_k
     """)
 
