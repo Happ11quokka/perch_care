@@ -6,8 +6,8 @@ Usage:
     python -m scripts.load_knowledge              # Load (skip existing)
     python -m scripts.load_knowledge --reset       # Truncate and reload all
 
-    # Against Railway DB (set DATABASE_URL env var)
-    DATABASE_URL=postgresql+asyncpg://... python -m scripts.load_knowledge --reset
+    # Against Railway vector DB (set VECTOR_DATABASE_URL env var)
+    VECTOR_DATABASE_URL=postgresql+asyncpg://... python -m scripts.load_knowledge --reset
 """
 import argparse
 import asyncio
@@ -38,10 +38,14 @@ DB_INSERT_BATCH_SIZE = 50
 async def load_knowledge(reset: bool = False) -> dict:
     """Main loading function."""
     from app.config import get_settings
-    from app.database import async_session_factory
+    from app.database import vector_session_factory
     from app.services.embedding_service import create_embeddings_batch
 
     get_settings()  # ensure settings are loaded
+
+    if vector_session_factory is None:
+        logger.error("VECTOR_DATABASE_URL not set — cannot load knowledge.")
+        return {"status": "error", "message": "VECTOR_DATABASE_URL not configured"}
 
     # Step 1: Chunk all knowledge files
     logger.info("Step 1: Chunking knowledge files...")
@@ -84,7 +88,7 @@ async def load_knowledge(reset: bool = False) -> dict:
     # Step 2: Reset if requested
     if reset:
         logger.info("Step 2: Resetting knowledge_chunks table...")
-        async with async_session_factory() as db:
+        async with vector_session_factory() as db:
             from sqlalchemy import text
             await db.execute(text("TRUNCATE knowledge_chunks"))
             await db.commit()
@@ -112,7 +116,7 @@ async def load_knowledge(reset: bool = False) -> dict:
     insert_start = time.time()
     inserted = 0
 
-    async with async_session_factory() as db:
+    async with vector_session_factory() as db:
         from sqlalchemy import text
 
         for i in range(0, len(all_chunks), DB_INSERT_BATCH_SIZE):

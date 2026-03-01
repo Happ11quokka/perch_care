@@ -1,6 +1,7 @@
 """
 Vector search service — HyDE + pgvector cosine similarity search.
 
+Uses a SEPARATE vector database (vector_session_factory) from the main app DB.
 Graceful degradation: returns empty list on any failure.
 The AI service continues to work normally without knowledge context.
 """
@@ -24,8 +25,14 @@ _last_check_time: float = 0.0
 _RECHECK_INTERVAL_SECONDS: float = 60.0  # False 상태에서 60초마다 재확인
 
 
+def _get_vector_session_factory():
+    """Lazy import to avoid circular dependency at module load time."""
+    from app.database import vector_session_factory
+    return vector_session_factory
+
+
 async def check_vector_search_available(db: AsyncSession) -> bool:
-    """Check if pgvector extension and knowledge_chunks table exist and have data."""
+    """Check if knowledge_chunks table exists and has data."""
     global _vector_search_available, _last_check_time
     try:
         result = await db.execute(text("SELECT 1 FROM knowledge_chunks LIMIT 1"))
@@ -43,20 +50,26 @@ async def check_vector_search_available(db: AsyncSession) -> bool:
     return _vector_search_available
 
 
-async def _is_vector_search_available(db: AsyncSession) -> bool:
+async def _ensure_available() -> bool:
     """Return cached availability, re-checking with TTL if currently False."""
     global _vector_search_available, _last_check_time
+
+    factory = _get_vector_session_factory()
+    if factory is None:
+        return False
+
     if _vector_search_available:
         return True
+
     # False 상태일 때만 TTL 기반 재확인
     now = time.monotonic()
     if now - _last_check_time >= _RECHECK_INTERVAL_SECONDS:
-        await check_vector_search_available(db)
+        async with factory() as vdb:
+            await check_vector_search_available(vdb)
     return _vector_search_available
 
 
 async def search_knowledge(
-    db: AsyncSession,
     query: str,
     top_k: int | None = None,
     category: str | None = None,
@@ -66,11 +79,10 @@ async def search_knowledge(
 ) -> list[dict]:
     """Search knowledge base using HyDE + pgvector cosine similarity.
 
-    Returns list of dicts with keys: content, source, category, language,
-    section_title, similarity.
+    Uses its own vector DB session internally — no external db parameter needed.
     Returns empty list on any failure (graceful degradation).
     """
-    if not await _is_vector_search_available(db):
+    if not await _ensure_available():
         return []
 
     if top_k is None:
@@ -78,7 +90,7 @@ async def search_knowledge(
 
     try:
         return await asyncio.wait_for(
-            _search_knowledge_impl(db, query, top_k, category, language, use_hyde),
+            _search_knowledge_impl(query, top_k, category, language, use_hyde),
             timeout=timeout_seconds,
         )
     except asyncio.TimeoutError:
@@ -90,7 +102,6 @@ async def search_knowledge(
 
 
 async def _search_knowledge_impl(
-    db: AsyncSession,
     query: str,
     top_k: int,
     category: str | None,
@@ -106,7 +117,6 @@ async def _search_knowledge_impl(
         query_embedding = await create_embedding(query)
 
     # Step 2: pgvector cosine distance search
-    # cosine_distance = 1 - cosine_similarity, so ORDER BY ASC
     max_distance = 1.0 - settings.vector_search_min_similarity
 
     where_clauses = []
@@ -137,8 +147,10 @@ async def _search_knowledge_impl(
         LIMIT :top_k
     """)
 
-    result = await db.execute(sql, params)
-    rows = result.all()
+    factory = _get_vector_session_factory()
+    async with factory() as vdb:
+        result = await vdb.execute(sql, params)
+        rows = result.all()
 
     return [
         {

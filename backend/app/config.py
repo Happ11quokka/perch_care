@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str = ""
 
+    # Vector Database (separate pgvector instance)
+    vector_database_url: str = ""  # pgvector DB URL, empty = vector search disabled
+
     # Embedding / Vector Search
     embedding_model: str = "text-embedding-3-large"
     hyde_model: str = "gpt-4o-mini"

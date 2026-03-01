@@ -172,7 +172,7 @@ async def prepare_system_message(
     """벡터 검색 + RAG 컨텍스트 조회 후 시스템 메시지를 반환한다. 라우터에서 호출용."""
     from app.services.vector_search_service import search_knowledge, format_knowledge_context
 
-    knowledge_results = await search_knowledge(db, query)
+    knowledge_results = await search_knowledge(query)
     knowledge_context = format_knowledge_context(knowledge_results)
     rag_context = await _build_rag_context(db, pet_id, user_id=user_id)
     return _build_system_message(rag_context, pet_profile_context, knowledge_context)

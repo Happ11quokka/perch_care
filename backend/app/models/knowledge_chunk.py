@@ -2,12 +2,16 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import DateTime, String, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from pgvector.sqlalchemy import Vector
-from app.models.base import Base
 
 
-class KnowledgeChunk(Base):
+class VectorBase(DeclarativeBase):
+    """Separate Base for vector DB models (not included in main DB create_all)."""
+    pass
+
+
+class KnowledgeChunk(VectorBase):
     __tablename__ = "knowledge_chunks"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

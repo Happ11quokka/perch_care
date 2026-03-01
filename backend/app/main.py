@@ -16,24 +16,35 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import logging
+    _logger = logging.getLogger(__name__)
+
     # Ensure upload directory exists
     os.makedirs(settings.upload_dir, exist_ok=True)
-    # Create all tables on startup (if not exist)
-    from app.database import engine, async_session_factory
-    from app.models import Base
-    async with engine.begin() as conn:
-        # pgvector 확장을 테이블 생성 전에 활성화 (Vector 타입 의존)
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        await conn.run_sync(Base.metadata.create_all)
 
-    # Check vector search availability (graceful — does not block startup)
-    try:
-        from app.services.vector_search_service import check_vector_search_available
-        async with async_session_factory() as db:
-            await check_vector_search_available(db)
-    except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning(f"Vector search health check skipped: {e}")
+    # ── Main DB: create tables (KnowledgeChunk 제외) ──
+    from app.database import engine, vector_engine, vector_session_factory
+    from app.models.base import Base as MainBase
+    async with engine.begin() as conn:
+        await conn.run_sync(MainBase.metadata.create_all)
+
+    # ── Vector DB: pgvector 확장 + knowledge_chunks 테이블 ──
+    if vector_engine is not None:
+        try:
+            from app.models.knowledge_chunk import KnowledgeChunk
+            async with vector_engine.begin() as conn:
+                await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                await conn.run_sync(KnowledgeChunk.metadata.create_all)
+            _logger.info("Vector DB initialized (pgvector extension + knowledge_chunks)")
+
+            # 벡터 검색 가용성 확인
+            from app.services.vector_search_service import check_vector_search_available
+            async with vector_session_factory() as vdb:
+                await check_vector_search_available(vdb)
+        except Exception as e:
+            _logger.warning(f"Vector DB init skipped: {e}")
+    else:
+        _logger.info("Vector DB not configured — vector search disabled")
 
     yield
 
