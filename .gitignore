@@ -1,6 +1,10 @@
 # Environment variables
 .env
 backend/.env
+agent/.env
+
+# Agent local data
+agent/chroma_data/
 
 # Miscellaneous
 *.class
