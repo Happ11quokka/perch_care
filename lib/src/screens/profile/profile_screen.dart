@@ -16,6 +16,7 @@ import '../../widgets/local_image_avatar.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/api/token_service.dart';
+import '../../services/premium/premium_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../providers/locale_provider.dart';
 import '../../../l10n/app_localizations.dart';
@@ -40,6 +41,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<LinkedSocialAccount> _socialAccounts = [];
   bool _isLoadingSocial = true;
   bool _isLinkingSocial = false;
+  String _premiumTier = 'free';
+  DateTime? _premiumExpiresAt;
+  bool _isLoadingPremium = true;
 
   @override
   void initState() {
@@ -52,6 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _loadPets(),
       _loadUserProfile(),
       _loadSocialAccounts(),
+      _loadPremiumStatus(),
     ]);
   }
 
@@ -66,6 +71,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoadingSocial = false);
+    }
+  }
+
+  Future<void> _loadPremiumStatus() async {
+    try {
+      final status = await PremiumService.instance.getTier();
+      if (!mounted) return;
+      setState(() {
+        _premiumTier = status.tier;
+        _premiumExpiresAt = status.premiumExpiresAt;
+        _isLoadingPremium = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoadingPremium = false);
     }
   }
 
@@ -328,6 +348,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: const Color(0xFFF0F0F0),
                     ),
 
+                    // 프리미엄 섹션
+                    _buildPremiumSection(l10n),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: const Color(0xFFF0F0F0),
+                    ),
+
                     // "나의 반려가족" 타이틀
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -420,6 +450,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 프리미엄 섹션
+  Widget _buildPremiumSection(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.premium_sectionTitle,
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1A1A1A),
+              height: 22 / 16,
+              letterSpacing: 0.08,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_isLoadingPremium)
+            const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          else
+            _buildPremiumStatusCard(l10n),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumStatusCard(AppLocalizations l10n) {
+    final isPremium = _premiumTier == 'premium';
+
+    return GestureDetector(
+      onTap: isPremium
+          ? null
+          : () async {
+              await context.pushNamed(RouteNames.premium);
+              _loadPremiumStatus();
+            },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isPremium ? AppColors.brandPrimary : const Color(0xFFE7E5E1),
+          ),
+          borderRadius: BorderRadius.circular(12),
+          color: isPremium ? const Color(0xFFFFF5ED) : Colors.white,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isPremium
+                    ? AppColors.brandPrimary
+                    : const Color(0xFFE7E5E1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.workspace_premium,
+                size: 22,
+                color: isPremium ? Colors.white : const Color(0xFF97928A),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isPremium
+                        ? l10n.premium_badgePremium
+                        : l10n.premium_badgeFree,
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isPremium
+                          ? AppColors.brandPrimary
+                          : const Color(0xFF6B6B6B),
+                    ),
+                  ),
+                  if (isPremium && _premiumExpiresAt != null)
+                    Text(
+                      l10n.premium_expiresAt(
+                        '${_premiumExpiresAt!.year}.${_premiumExpiresAt!.month.toString().padLeft(2, '0')}.${_premiumExpiresAt!.day.toString().padLeft(2, '0')}',
+                      ),
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF97928A),
+                      ),
+                    )
+                  else if (!isPremium)
+                    Text(
+                      l10n.premium_enterCode,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF97928A),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (!isPremium)
+              const Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: Color(0xFF97928A),
+              ),
           ],
         ),
       ),

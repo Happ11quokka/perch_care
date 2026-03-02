@@ -1358,4 +1358,77 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get faq_a13 => '目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。';
+
+  @override
+  String get premium_sectionTitle => '高级版';
+
+  @override
+  String get premium_title => '输入高级版代码';
+
+  @override
+  String get premium_badgeFree => 'Free';
+
+  @override
+  String get premium_badgePremium => 'Premium';
+
+  @override
+  String premium_expiresAt(String date) {
+    return '有效期至 $date';
+  }
+
+  @override
+  String get premium_enterCode => '请输入高级版代码';
+
+  @override
+  String get premium_benefitsTitle => '高级版权益';
+
+  @override
+  String get premium_benefit1 => '无限使用AI视觉健康检查';
+
+  @override
+  String get premium_benefit2 => '基于图像的健康状态精密分析';
+
+  @override
+  String get premium_benefit3 => '及早发现健康异常征兆';
+
+  @override
+  String get premium_codeInputTitle => '高级版代码';
+
+  @override
+  String get premium_codeInputHint => 'PERCH-XXXX-XXXX';
+
+  @override
+  String get premium_activateButton => '激活代码';
+
+  @override
+  String get premium_invalidCodeFormat => '代码格式不正确。(PERCH-XXXX-XXXX)';
+
+  @override
+  String get premium_activationFailed => '代码激活失败，请检查代码。';
+
+  @override
+  String get premium_activationError => '激活过程中出错，请稍后重试。';
+
+  @override
+  String get premium_rateLimitExceeded => '请求过多，请稍后重试。';
+
+  @override
+  String get premium_activationSuccessTitle => '高级版已激活！';
+
+  @override
+  String premium_activationSuccessContent(String date) {
+    return '可使用高级版服务至 $date。';
+  }
+
+  @override
+  String get premium_activationSuccessContentNoDate => '高级版服务已激活。';
+
+  @override
+  String get premium_upgradeToPremium => '升级到高级版';
+
+  @override
+  String get premium_healthCheckBlocked => '这是高级版专属功能。\n请升级到高级版。';
+
+  @override
+  String get premium_healthCheckBlockedTitle => '高级版专属功能';
 }

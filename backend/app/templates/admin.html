@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perch Care Admin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #FF9A42, #FF7C2A); color: #fff; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header .badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 13px; }
+
+  /* Login */
+  .login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .login-card { background: #fff; border-radius: 16px; padding: 40px; width: 400px; max-width: 90vw; text-align: center; }
+  .login-card h2 { margin-bottom: 8px; font-size: 22px; }
+  .login-card p { color: #888; margin-bottom: 24px; font-size: 14px; }
+  .login-card input { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; outline: none; }
+  .login-card input:focus { border-color: #FF9A42; }
+  .login-card button { width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #FF9A42, #FF7C2A); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+  .login-card .error { color: #e74c3c; font-size: 13px; margin-top: 8px; }
+
+  /* Layout */
+  .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { padding: 10px 20px; border-radius: 10px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+  .tab.active { background: #FF9A42; color: #fff; border-color: #FF9A42; }
+
+  /* Card */
+  .card { background: #fff; border-radius: 14px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .card h3 { font-size: 17px; margin-bottom: 16px; color: #222; }
+
+  /* Form */
+  .form-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 13px; color: #666; font-weight: 500; }
+  .form-group input, .form-group select { padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; min-width: 120px; }
+  .form-group input:focus, .form-group select:focus { border-color: #FF9A42; }
+  .btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg, #FF9A42, #FF7C2A); color: #fff; }
+  .btn-danger { background: #e74c3c; color: #fff; }
+  .btn-outline { background: #fff; border: 1px solid #ddd; color: #666; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 10px 12px; border-bottom: 2px solid #eee; color: #888; font-weight: 600; font-size: 12px; text-transform: uppercase; white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  tr:hover td { background: #fafafa; }
+  .badge-used { background: #e8f5e9; color: #2e7d32; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .badge-unused { background: #fff3e0; color: #e65100; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .badge-free { background: #f5f5f5; color: #666; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .badge-premium { background: #fff3e0; color: #FF7C2A; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+  /* Toast */
+  .toast { position: fixed; top: 24px; right: 24px; padding: 14px 24px; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 500; z-index: 200; animation: slideIn 0.3s ease; }
+  .toast.success { background: #2e7d32; }
+  .toast.error { background: #e74c3c; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* Empty */
+  .empty { text-align: center; color: #aaa; padding: 40px; font-size: 14px; }
+
+  /* Stats */
+  .stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-card { flex: 1; min-width: 140px; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); text-align: center; }
+  .stat-card .number { font-size: 28px; font-weight: 700; color: #FF9A42; }
+  .stat-card .label { font-size: 13px; color: #888; margin-top: 4px; }
+
+  .hidden { display: none; }
+  .code-text { font-family: 'Courier New', monospace; font-weight: 700; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-card">
+    <h2>Perch Care Admin</h2>
+    <p>관리자 API 키를 입력하세요</p>
+    <input type="password" id="apiKeyInput" placeholder="API Key" autofocus>
+    <div id="loginError" class="error hidden"></div>
+    <button onclick="login()">로그인</button>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <h1>Perch Care Admin</h1>
+  <span class="badge" id="logoutBtn" style="cursor:pointer" onclick="logout()">로그아웃</span>
+</div>
+
+<!-- Content -->
+<div class="container">
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card"><div class="number" id="statTotal">-</div><div class="label">전체 코드</div></div>
+    <div class="stat-card"><div class="number" id="statUnused">-</div><div class="label">미사용</div></div>
+    <div class="stat-card"><div class="number" id="statUsed">-</div><div class="label">사용됨</div></div>
+    <div class="stat-card"><div class="number" id="statPremium">-</div><div class="label">프리미엄 사용자</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('generate')">코드 생성</div>
+    <div class="tab" onclick="switchTab('codes')">코드 관리</div>
+    <div class="tab" onclick="switchTab('users')">사용자 관리</div>
+  </div>
+
+  <!-- Tab: Generate -->
+  <div id="tab-generate" class="tab-content">
+    <div class="card">
+      <h3>프리미엄 코드 생성</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>생성 개수</label>
+          <input type="number" id="genCount" value="1" min="1" max="50">
+        </div>
+        <div class="form-group">
+          <label>유효 기간 (일)</label>
+          <input type="number" id="genDuration" value="30" min="1" max="365">
+        </div>
+        <button class="btn btn-primary" onclick="generateCodes()" id="genBtn">코드 생성</button>
+      </div>
+    </div>
+    <div id="generatedResult" class="card hidden">
+      <h3>생성된 코드</h3>
+      <div id="generatedList"></div>
+    </div>
+  </div>
+
+  <!-- Tab: Codes -->
+  <div id="tab-codes" class="tab-content hidden">
+    <div class="card">
+      <h3>코드 목록</h3>
+      <div class="form-row" style="margin-bottom:16px">
+        <div class="form-group">
+          <label>필터</label>
+          <select id="codeFilter" onchange="loadCodes()">
+            <option value="">전체</option>
+            <option value="false">미사용</option>
+            <option value="true">사용됨</option>
+          </select>
+        </div>
+        <button class="btn btn-outline" onclick="loadCodes()">새로고침</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>코드</th><th>기간</th><th>상태</th><th>사용자</th><th>사용일</th><th>생성일</th><th></th></tr></thead>
+          <tbody id="codesBody"></tbody>
+        </table>
+      </div>
+      <div id="codesEmpty" class="empty hidden">코드가 없습니다</div>
+    </div>
+  </div>
+
+  <!-- Tab: Users -->
+  <div id="tab-users" class="tab-content hidden">
+    <div class="card">
+      <h3>사용자 프리미엄 관리</h3>
+      <div class="form-row" style="margin-bottom:16px">
+        <div class="form-group">
+          <label>이메일 검색</label>
+          <input type="text" id="userSearch" placeholder="이메일 입력" style="min-width:200px">
+        </div>
+        <div class="form-group">
+          <label>티어 필터</label>
+          <select id="tierFilter">
+            <option value="">전체</option>
+            <option value="premium">프리미엄</option>
+            <option value="free">무료</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="loadUsers()">검색</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>이메일</th><th>닉네임</th><th>티어</th><th>활성화 코드</th><th>시작일</th><th>만료일</th><th></th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+      <div id="usersEmpty" class="empty hidden">사용자가 없습니다</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE = window.location.origin + '/api/v1/premium';
+let API_KEY = '';
+
+// ── Auth ──
+function login() {
+  API_KEY = document.getElementById('apiKeyInput').value.trim();
+  if (!API_KEY) return;
+  apiFetch('/admin/codes?used=false').then(() => {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    localStorage.setItem('adminKey', API_KEY);
+    loadAll();
+  }).catch(() => {
+    document.getElementById('loginError').textContent = 'API 키가 올바르지 않습니다';
+    document.getElementById('loginError').classList.remove('hidden');
+  });
+}
+function logout() {
+  localStorage.removeItem('adminKey');
+  API_KEY = '';
+  location.reload();
+}
+document.getElementById('apiKeyInput').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+// Auto-login
+const saved = localStorage.getItem('adminKey');
+if (saved) { API_KEY = saved; document.getElementById('apiKeyInput').value = saved; login(); }
+
+// ── API ──
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(BASE + path, {
+    ...opts,
+    headers: { 'X-Admin-API-Key': API_KEY, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ── Tabs ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  event.target.classList.add('active');
+  if (name === 'codes') loadCodes();
+  if (name === 'users') loadUsers();
+}
+
+// ── Load all ──
+function loadAll() { loadStats(); }
+
+async function loadStats() {
+  try {
+    const [all, unused, users] = await Promise.all([
+      apiFetch('/admin/codes'),
+      apiFetch('/admin/codes?used=false'),
+      apiFetch('/admin/users?tier=premium'),
+    ]);
+    document.getElementById('statTotal').textContent = all.length;
+    document.getElementById('statUnused').textContent = unused.length;
+    document.getElementById('statUsed').textContent = all.length - unused.length;
+    document.getElementById('statPremium').textContent = users.length;
+  } catch (e) { console.error(e); }
+}
+
+// ── Generate ──
+async function generateCodes() {
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  try {
+    const count = parseInt(document.getElementById('genCount').value) || 1;
+    const duration = parseInt(document.getElementById('genDuration').value) || 30;
+    const data = await apiFetch('/admin/generate', {
+      method: 'POST',
+      body: JSON.stringify({ count, duration_days: duration }),
+    });
+    const list = document.getElementById('generatedList');
+    list.innerHTML = data.codes.map(c =>
+      `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0">
+        <span class="code-text" style="font-size:16px">${c.code}</span>
+        <div>
+          <span style="color:#888;font-size:13px;margin-right:12px">${c.duration_days}일</span>
+          <button class="btn btn-outline" style="padding:6px 12px;font-size:12px" onclick="copyCode('${c.code}')">복사</button>
+        </div>
+      </div>`
+    ).join('');
+    document.getElementById('generatedResult').classList.remove('hidden');
+    toast('success', `${data.codes.length}개 코드가 생성되었습니다`);
+    loadStats();
+  } catch (e) {
+    toast('error', e.message);
+  } finally { btn.disabled = false; }
+}
+
+function copyCode(code) {
+  navigator.clipboard.writeText(code).then(() => toast('success', '복사됨: ' + code));
+}
+
+// ── Codes ──
+async function loadCodes() {
+  const filter = document.getElementById('codeFilter').value;
+  const query = filter ? `?used=${filter}` : '';
+  try {
+    const codes = await apiFetch('/admin/codes' + query);
+    const body = document.getElementById('codesBody');
+    if (codes.length === 0) {
+      body.innerHTML = '';
+      document.getElementById('codesEmpty').classList.remove('hidden');
+      return;
+    }
+    document.getElementById('codesEmpty').classList.add('hidden');
+    body.innerHTML = codes.map(c => `<tr>
+      <td class="code-text">${c.code}</td>
+      <td>${c.duration_days}일</td>
+      <td>${c.is_used ? '<span class="badge-used">사용됨</span>' : '<span class="badge-unused">미사용</span>'}</td>
+      <td>${c.used_by_email || '-'}</td>
+      <td>${c.used_at ? formatDate(c.used_at) : '-'}</td>
+      <td>${formatDate(c.created_at)}</td>
+      <td>${!c.is_used ? `<button class="btn btn-danger" style="padding:4px 12px;font-size:12px" onclick="deleteCode('${c.code}')">삭제</button>` : ''}</td>
+    </tr>`).join('');
+  } catch (e) { toast('error', e.message); }
+}
+
+async function deleteCode(code) {
+  if (!confirm(`코드 ${code}를 삭제하시겠습니까?`)) return;
+  try {
+    await apiFetch('/admin/codes/' + code, { method: 'DELETE' });
+    toast('success', '코드가 삭제되었습니다');
+    loadCodes();
+    loadStats();
+  } catch (e) { toast('error', e.message); }
+}
+
+// ── Users ──
+async function loadUsers() {
+  const email = document.getElementById('userSearch').value.trim();
+  const tier = document.getElementById('tierFilter').value;
+  let query = [];
+  if (email) query.push('email=' + encodeURIComponent(email));
+  if (tier) query.push('tier=' + tier);
+  const qs = query.length ? '?' + query.join('&') : '';
+  try {
+    const users = await apiFetch('/admin/users' + qs);
+    const body = document.getElementById('usersBody');
+    if (users.length === 0) {
+      body.innerHTML = '';
+      document.getElementById('usersEmpty').classList.remove('hidden');
+      return;
+    }
+    document.getElementById('usersEmpty').classList.add('hidden');
+    body.innerHTML = users.map(u => `<tr>
+      <td>${u.email}</td>
+      <td>${u.nickname || '-'}</td>
+      <td>${u.tier === 'premium' ? '<span class="badge-premium">Premium</span>' : '<span class="badge-free">Free</span>'}</td>
+      <td class="code-text">${u.activated_code || '-'}</td>
+      <td>${u.premium_started_at ? formatDate(u.premium_started_at) : '-'}</td>
+      <td>${u.premium_expires_at ? formatDate(u.premium_expires_at) : '-'}</td>
+      <td>${u.tier === 'premium' ? `<button class="btn btn-danger" style="padding:4px 12px;font-size:12px" onclick="revokeUser('${u.user_id}','${u.email}')">해지</button>` : ''}</td>
+    </tr>`).join('');
+  } catch (e) { toast('error', e.message); }
+}
+
+async function revokeUser(userId, email) {
+  if (!confirm(`${email} 사용자의 프리미엄을 해지하시겠습니까?`)) return;
+  try {
+    await apiFetch('/admin/users/' + userId + '/revoke', { method: 'POST' });
+    toast('success', '프리미엄이 해지되었습니다');
+    loadUsers();
+    loadStats();
+  } catch (e) { toast('error', e.message); }
+}
+
+// ── Utils ──
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function toast(type, msg) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+document.getElementById('userSearch').addEventListener('keydown', e => { if (e.key === 'Enter') loadUsers(); });
+</script>
+</body>
+</html>

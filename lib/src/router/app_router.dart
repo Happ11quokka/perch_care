@@ -34,6 +34,7 @@ import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/profile_setup/profile_setup_complete_screen.dart';
 import '../screens/terms/terms_detail_screen.dart';
 import '../screens/faq/faq_screen.dart';
+import '../screens/premium/premium_screen.dart';
 import '../data/terms_content.dart';
 import '../services/api/token_service.dart';
 import '../services/analytics/analytics_service.dart';
@@ -209,6 +210,11 @@ class AppRouter {
                     path: 'faq',
                     name: RouteNames.faq,
                     builder: (context, state) => const FaqScreen(),
+                  ),
+                  GoRoute(
+                    path: 'premium',
+                    name: RouteNames.premium,
+                    builder: (context, state) => const PremiumScreen(),
                   ),
                   GoRoute(
                     path: 'profile/setup',

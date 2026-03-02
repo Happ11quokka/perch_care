@@ -38,6 +38,9 @@ class RoutePaths {
   static const String weightAddToday = '/weight-detail/add/today';
   static const String weightAdd = '/weight-detail/add/:date';
 
+  // 프리미엄 (full: /home/premium)
+  static const String premium = '/home/premium';
+
   // 건강체크 하위 경로 (full: /home/health-check/...)
   static const String healthCheck = '/home/health-check';
   static const String healthCheckCapture = '/home/health-check/capture';

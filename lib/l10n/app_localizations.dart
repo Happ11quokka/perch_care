@@ -2631,6 +2631,144 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'현재는 iOS만 지원하고 있습니다. Android 및 HarmonyOS 버전은 개발 중이며, 추후 출시 예정입니다.'**
   String get faq_a13;
+
+  /// No description provided for @premium_sectionTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄'**
+  String get premium_sectionTitle;
+
+  /// No description provided for @premium_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 코드 입력'**
+  String get premium_title;
+
+  /// No description provided for @premium_badgeFree.
+  ///
+  /// In ko, this message translates to:
+  /// **'Free'**
+  String get premium_badgeFree;
+
+  /// No description provided for @premium_badgePremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'Premium'**
+  String get premium_badgePremium;
+
+  /// No description provided for @premium_expiresAt.
+  ///
+  /// In ko, this message translates to:
+  /// **'{date}까지'**
+  String premium_expiresAt(String date);
+
+  /// No description provided for @premium_enterCode.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 코드를 입력해 보세요'**
+  String get premium_enterCode;
+
+  /// No description provided for @premium_benefitsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 혜택'**
+  String get premium_benefitsTitle;
+
+  /// No description provided for @premium_benefit1.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 비전 건강 체크 무제한 이용'**
+  String get premium_benefit1;
+
+  /// No description provided for @premium_benefit2.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지 기반 건강 상태 정밀 분석'**
+  String get premium_benefit2;
+
+  /// No description provided for @premium_benefit3.
+  ///
+  /// In ko, this message translates to:
+  /// **'조기 건강 이상 징후 감지'**
+  String get premium_benefit3;
+
+  /// No description provided for @premium_codeInputTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 코드'**
+  String get premium_codeInputTitle;
+
+  /// No description provided for @premium_codeInputHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'PERCH-XXXX-XXXX'**
+  String get premium_codeInputHint;
+
+  /// No description provided for @premium_activateButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'코드 활성화'**
+  String get premium_activateButton;
+
+  /// No description provided for @premium_invalidCodeFormat.
+  ///
+  /// In ko, this message translates to:
+  /// **'올바른 코드 형식이 아닙니다. (PERCH-XXXX-XXXX)'**
+  String get premium_invalidCodeFormat;
+
+  /// No description provided for @premium_activationFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'코드 활성화에 실패했습니다. 코드를 다시 확인해주세요.'**
+  String get premium_activationFailed;
+
+  /// No description provided for @premium_activationError.
+  ///
+  /// In ko, this message translates to:
+  /// **'코드 활성화 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'**
+  String get premium_activationError;
+
+  /// No description provided for @premium_rateLimitExceeded.
+  ///
+  /// In ko, this message translates to:
+  /// **'요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'**
+  String get premium_rateLimitExceeded;
+
+  /// No description provided for @premium_activationSuccessTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 활성화 완료!'**
+  String get premium_activationSuccessTitle;
+
+  /// No description provided for @premium_activationSuccessContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'{date}까지 프리미엄 서비스를 이용할 수 있습니다.'**
+  String premium_activationSuccessContent(String date);
+
+  /// No description provided for @premium_activationSuccessContentNoDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 서비스가 활성화되었습니다.'**
+  String get premium_activationSuccessContentNoDate;
+
+  /// No description provided for @premium_upgradeToPremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 업그레이드'**
+  String get premium_upgradeToPremium;
+
+  /// No description provided for @premium_healthCheckBlocked.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.'**
+  String get premium_healthCheckBlocked;
+
+  /// No description provided for @premium_healthCheckBlockedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 전용 기능'**
+  String get premium_healthCheckBlockedTitle;
 }
 
 class _AppLocalizationsDelegate

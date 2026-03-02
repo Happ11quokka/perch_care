@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     # Firebase (FCM push notifications)
     firebase_credentials_json: str = ""
 
+    # Admin
+    admin_api_key: str = ""  # 관리자 API 키 (코드 생성 등)
+
     # Server
     api_v1_prefix: str = "/api/v1"
     cors_origins: list[str] = ["*"]

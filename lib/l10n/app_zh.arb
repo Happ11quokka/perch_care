@@ -653,5 +653,39 @@
   "faq_q12": "支持哪些物种？",
   "faq_a12": "目前支持鹦鹉类（虎皮鹦鹉、玄凤鹦鹉等），其他鸟类将在未来支持。",
   "faq_q13": "支持 Android 或 HarmonyOS 吗？",
-  "faq_a13": "目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。"
+  "faq_a13": "目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。",
+
+  "premium_sectionTitle": "高级版",
+  "premium_title": "输入高级版代码",
+  "premium_badgeFree": "Free",
+  "premium_badgePremium": "Premium",
+  "premium_expiresAt": "有效期至 {date}",
+  "@premium_expiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "premium_enterCode": "请输入高级版代码",
+  "premium_benefitsTitle": "高级版权益",
+  "premium_benefit1": "无限使用AI视觉健康检查",
+  "premium_benefit2": "基于图像的健康状态精密分析",
+  "premium_benefit3": "及早发现健康异常征兆",
+  "premium_codeInputTitle": "高级版代码",
+  "premium_codeInputHint": "PERCH-XXXX-XXXX",
+  "premium_activateButton": "激活代码",
+  "premium_invalidCodeFormat": "代码格式不正确。(PERCH-XXXX-XXXX)",
+  "premium_activationFailed": "代码激活失败，请检查代码。",
+  "premium_activationError": "激活过程中出错，请稍后重试。",
+  "premium_rateLimitExceeded": "请求过多，请稍后重试。",
+  "premium_activationSuccessTitle": "高级版已激活！",
+  "premium_activationSuccessContent": "可使用高级版服务至 {date}。",
+  "@premium_activationSuccessContent": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "premium_activationSuccessContentNoDate": "高级版服务已激活。",
+  "premium_upgradeToPremium": "升级到高级版",
+  "premium_healthCheckBlocked": "这是高级版专属功能。\n请升级到高级版。",
+  "premium_healthCheckBlockedTitle": "高级版专属功能"
 }

@@ -7,6 +7,7 @@ import '../../theme/colors.dart';
 import '../../services/health_check/health_check_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
 import '../../services/api/api_client.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 건강체크 분석 중 로딩 화면
 class HealthCheckAnalyzingScreen extends StatefulWidget {
@@ -33,6 +34,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
   bool _isAnalyzing = true;
   bool _cancelled = false;
   String? _errorMessage;
+  bool _isPremiumError = false;
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
 
@@ -62,6 +64,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
     setState(() {
       _isAnalyzing = true;
       _errorMessage = null;
+      _isPremiumError = false;
     });
 
     try {
@@ -112,10 +115,12 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
     } on ApiException catch (e) {
       debugPrint('[HealthCheck] ApiException: $e');
       if (!mounted || _cancelled) return;
+      final l10n = AppLocalizations.of(context);
       setState(() {
         _isAnalyzing = false;
+        _isPremiumError = e.statusCode == 403;
         _errorMessage = e.statusCode == 403
-            ? '프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.'
+            ? l10n.premium_healthCheckBlocked
             : e.message;
       });
     } catch (e, st) {
@@ -241,21 +246,27 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
   }
 
   Widget _buildErrorState() {
+    final l10n = AppLocalizations.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
+            Icon(
+              _isPremiumError ? Icons.workspace_premium : Icons.error_outline,
               size: 64,
-              color: Color(0xFFFF572D),
+              color: _isPremiumError
+                  ? AppColors.brandPrimary
+                  : const Color(0xFFFF572D),
             ),
             const SizedBox(height: 24),
-            const Text(
-              '분석 중 오류가 발생했습니다',
-              style: TextStyle(
+            Text(
+              _isPremiumError
+                  ? l10n.premium_healthCheckBlockedTitle
+                  : '분석 중 오류가 발생했습니다',
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -277,30 +288,59 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
               ),
             ),
             const SizedBox(height: 32),
-            GestureDetector(
-              onTap: _startAnalysis,
-              child: Container(
-                width: 200,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            if (_isPremiumError) ...[
+              // 프리미엄 업그레이드 버튼 (primary)
+              GestureDetector(
+                onTap: () => context.pushNamed(RouteNames.premium),
+                child: Container(
+                  width: 200,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  '다시 시도',
-                  style: TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: -0.3,
+                  alignment: Alignment.center,
+                  child: Text(
+                    l10n.premium_upgradeToPremium,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: -0.3,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ] else ...[
+              // 다시 시도 버튼 (primary)
+              GestureDetector(
+                onTap: _startAnalysis,
+                child: Container(
+                  width: 200,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    '다시 시도',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () => context.pop(),

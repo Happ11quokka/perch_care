@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 import os
@@ -90,3 +91,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page():
+    """관리자 대시보드 페이지."""
+    html_path = Path(__file__).parent / "templates" / "admin.html"
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))

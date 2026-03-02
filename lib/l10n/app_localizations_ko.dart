@@ -1379,4 +1379,78 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get faq_a13 =>
       '현재는 iOS만 지원하고 있습니다. Android 및 HarmonyOS 버전은 개발 중이며, 추후 출시 예정입니다.';
+
+  @override
+  String get premium_sectionTitle => '프리미엄';
+
+  @override
+  String get premium_title => '프리미엄 코드 입력';
+
+  @override
+  String get premium_badgeFree => 'Free';
+
+  @override
+  String get premium_badgePremium => 'Premium';
+
+  @override
+  String premium_expiresAt(String date) {
+    return '$date까지';
+  }
+
+  @override
+  String get premium_enterCode => '프리미엄 코드를 입력해 보세요';
+
+  @override
+  String get premium_benefitsTitle => '프리미엄 혜택';
+
+  @override
+  String get premium_benefit1 => 'AI 비전 건강 체크 무제한 이용';
+
+  @override
+  String get premium_benefit2 => '이미지 기반 건강 상태 정밀 분석';
+
+  @override
+  String get premium_benefit3 => '조기 건강 이상 징후 감지';
+
+  @override
+  String get premium_codeInputTitle => '프리미엄 코드';
+
+  @override
+  String get premium_codeInputHint => 'PERCH-XXXX-XXXX';
+
+  @override
+  String get premium_activateButton => '코드 활성화';
+
+  @override
+  String get premium_invalidCodeFormat => '올바른 코드 형식이 아닙니다. (PERCH-XXXX-XXXX)';
+
+  @override
+  String get premium_activationFailed => '코드 활성화에 실패했습니다. 코드를 다시 확인해주세요.';
+
+  @override
+  String get premium_activationError => '코드 활성화 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+
+  @override
+  String get premium_rateLimitExceeded => '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+
+  @override
+  String get premium_activationSuccessTitle => '프리미엄 활성화 완료!';
+
+  @override
+  String premium_activationSuccessContent(String date) {
+    return '$date까지 프리미엄 서비스를 이용할 수 있습니다.';
+  }
+
+  @override
+  String get premium_activationSuccessContentNoDate => '프리미엄 서비스가 활성화되었습니다.';
+
+  @override
+  String get premium_upgradeToPremium => '프리미엄 업그레이드';
+
+  @override
+  String get premium_healthCheckBlocked =>
+      '프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.';
+
+  @override
+  String get premium_healthCheckBlockedTitle => '프리미엄 전용 기능';
 }

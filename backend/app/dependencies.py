@@ -1,6 +1,6 @@
 from typing import Literal
 from uuid import UUID
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models.user import User
 from app.utils.security import decode_token
 from app.services.tier_service import get_user_tier
+from app.config import get_settings
 
 security = HTTPBearer()
 
@@ -32,6 +33,17 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return user
+
+
+async def verify_admin_api_key(
+    x_admin_api_key: str = Header(..., alias="X-Admin-API-Key"),
+) -> None:
+    """관리자 API 키 검증. X-Admin-API-Key 헤더 필수."""
+    settings = get_settings()
+    if not settings.admin_api_key:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Admin API not configured")
+    if x_admin_api_key != settings.admin_api_key:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid admin API key")
 
 
 async def get_current_tier(

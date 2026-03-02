@@ -1419,4 +1419,83 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get faq_a13 =>
       'Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future.';
+
+  @override
+  String get premium_sectionTitle => 'Premium';
+
+  @override
+  String get premium_title => 'Enter Premium Code';
+
+  @override
+  String get premium_badgeFree => 'Free';
+
+  @override
+  String get premium_badgePremium => 'Premium';
+
+  @override
+  String premium_expiresAt(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String get premium_enterCode => 'Enter your premium code';
+
+  @override
+  String get premium_benefitsTitle => 'Premium Benefits';
+
+  @override
+  String get premium_benefit1 => 'Unlimited AI vision health checks';
+
+  @override
+  String get premium_benefit2 => 'Image-based health analysis';
+
+  @override
+  String get premium_benefit3 => 'Early health abnormality detection';
+
+  @override
+  String get premium_codeInputTitle => 'Premium Code';
+
+  @override
+  String get premium_codeInputHint => 'PERCH-XXXX-XXXX';
+
+  @override
+  String get premium_activateButton => 'Activate Code';
+
+  @override
+  String get premium_invalidCodeFormat =>
+      'Invalid code format. (PERCH-XXXX-XXXX)';
+
+  @override
+  String get premium_activationFailed =>
+      'Code activation failed. Please check your code.';
+
+  @override
+  String get premium_activationError =>
+      'An error occurred during activation. Please try again.';
+
+  @override
+  String get premium_rateLimitExceeded =>
+      'Too many requests. Please try again later.';
+
+  @override
+  String get premium_activationSuccessTitle => 'Premium Activated!';
+
+  @override
+  String premium_activationSuccessContent(String date) {
+    return 'Premium service is available until $date.';
+  }
+
+  @override
+  String get premium_activationSuccessContentNoDate =>
+      'Premium service has been activated.';
+
+  @override
+  String get premium_upgradeToPremium => 'Upgrade to Premium';
+
+  @override
+  String get premium_healthCheckBlocked =>
+      'This is a premium-only feature.\nPlease upgrade to Premium.';
+
+  @override
+  String get premium_healthCheckBlockedTitle => 'Premium Feature';
 }

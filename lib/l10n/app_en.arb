@@ -486,5 +486,39 @@
   "faq_q12": "Which species are supported?",
   "faq_a12": "Currently parrots (budgies, cockatiels, etc.) are supported. Other bird species will be added in the future.",
   "faq_q13": "Is Android or HarmonyOS supported?",
-  "faq_a13": "Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future."
+  "faq_a13": "Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future.",
+
+  "premium_sectionTitle": "Premium",
+  "premium_title": "Enter Premium Code",
+  "premium_badgeFree": "Free",
+  "premium_badgePremium": "Premium",
+  "premium_expiresAt": "Until {date}",
+  "@premium_expiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "premium_enterCode": "Enter your premium code",
+  "premium_benefitsTitle": "Premium Benefits",
+  "premium_benefit1": "Unlimited AI vision health checks",
+  "premium_benefit2": "Image-based health analysis",
+  "premium_benefit3": "Early health abnormality detection",
+  "premium_codeInputTitle": "Premium Code",
+  "premium_codeInputHint": "PERCH-XXXX-XXXX",
+  "premium_activateButton": "Activate Code",
+  "premium_invalidCodeFormat": "Invalid code format. (PERCH-XXXX-XXXX)",
+  "premium_activationFailed": "Code activation failed. Please check your code.",
+  "premium_activationError": "An error occurred during activation. Please try again.",
+  "premium_rateLimitExceeded": "Too many requests. Please try again later.",
+  "premium_activationSuccessTitle": "Premium Activated!",
+  "premium_activationSuccessContent": "Premium service is available until {date}.",
+  "@premium_activationSuccessContent": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "premium_activationSuccessContentNoDate": "Premium service has been activated.",
+  "premium_upgradeToPremium": "Upgrade to Premium",
+  "premium_healthCheckBlocked": "This is a premium-only feature.\nPlease upgrade to Premium.",
+  "premium_healthCheckBlockedTitle": "Premium Feature"
 }
