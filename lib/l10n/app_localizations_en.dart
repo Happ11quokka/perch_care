@@ -1498,4 +1498,222 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_healthCheckBlockedTitle => 'Premium Feature';
+
+  @override
+  String get hc_title => 'AI Health Check';
+
+  @override
+  String get hc_selectTarget => 'Please select an analysis target';
+
+  @override
+  String get hc_analyze => 'Analyze';
+
+  @override
+  String get hc_modeFullBody => 'Full Body';
+
+  @override
+  String get hc_modeFullBodyDesc =>
+      'Analyze appearance by photographing the full body';
+
+  @override
+  String get hc_modePartSpecific => 'Part-Specific';
+
+  @override
+  String get hc_modePartSpecificDesc =>
+      'Analyze specific parts such as eyes, beak, feathers, feet';
+
+  @override
+  String get hc_modeDroppings => 'Droppings Analysis';
+
+  @override
+  String get hc_modeDroppingsDesc =>
+      'Check health status through droppings photos';
+
+  @override
+  String get hc_modeFood => 'Food Safety';
+
+  @override
+  String get hc_modeFoodDesc => 'Check if food is safe to feed through photos';
+
+  @override
+  String get hc_partEye => 'Eye';
+
+  @override
+  String get hc_partBeak => 'Beak';
+
+  @override
+  String get hc_partFeather => 'Feather';
+
+  @override
+  String get hc_partFoot => 'Foot';
+
+  @override
+  String get hc_imageSizeExceeded => 'Image size exceeds 10MB';
+
+  @override
+  String hc_imagePickError(String error) {
+    return 'Error while selecting image: $error';
+  }
+
+  @override
+  String get hc_takePhoto => 'Take Photo';
+
+  @override
+  String get hc_selectFromAlbum => 'Select from Album';
+
+  @override
+  String get hc_photoHint => 'Take a photo or\nselect from album';
+
+  @override
+  String get hc_registerPetFirst => 'Please register your pet first';
+
+  @override
+  String get hc_analysisError =>
+      'An error occurred during analysis.\nPlease try again.';
+
+  @override
+  String get hc_cancelAnalysis => 'Cancel Analysis';
+
+  @override
+  String get hc_cancelAnalysisConfirm => 'Cancel the analysis?';
+
+  @override
+  String get hc_continueAnalysis => 'Continue';
+
+  @override
+  String get hc_analyzing => 'Analyzing...';
+
+  @override
+  String get hc_aiAnalyzing => 'AI is analyzing the image';
+
+  @override
+  String get hc_analysisErrorTitle => 'An error occurred during analysis';
+
+  @override
+  String get hc_retry => 'Retry';
+
+  @override
+  String get hc_goBack => 'Go Back';
+
+  @override
+  String get hc_resultTitle => 'Analysis Results';
+
+  @override
+  String get hc_analysisItems => 'Analysis Items';
+
+  @override
+  String get hc_recommendations => 'Recommendations';
+
+  @override
+  String get hc_overallStatus => 'Overall Status';
+
+  @override
+  String get hc_confidence => 'Confidence';
+
+  @override
+  String get hc_vetVisitRecommended => 'Veterinary visit recommended';
+
+  @override
+  String get hc_possibleCauses => 'Possible Causes';
+
+  @override
+  String get hc_possibleCausesPrefix => 'Possible causes: ';
+
+  @override
+  String get hc_nutritionBalance => 'Nutrition Balance';
+
+  @override
+  String get hc_goHome => 'Go Home';
+
+  @override
+  String get hc_recheckButton => 'Check Again';
+
+  @override
+  String hc_colorTexture(String color, String texture) {
+    return 'Color: $color, Texture: $texture';
+  }
+
+  @override
+  String get hc_severityNormal => 'Normal';
+
+  @override
+  String get hc_severityCaution => 'Caution';
+
+  @override
+  String get hc_severityWarning => 'Warning';
+
+  @override
+  String get hc_severityCritical => 'Critical';
+
+  @override
+  String get hc_severityUnknown => 'Check Required';
+
+  @override
+  String get hc_areaFeather => 'Feather Condition';
+
+  @override
+  String get hc_areaPosture => 'Posture/Balance';
+
+  @override
+  String get hc_areaEye => 'Eye Condition';
+
+  @override
+  String get hc_areaBeak => 'Beak Condition';
+
+  @override
+  String get hc_areaFoot => 'Feet/Claws';
+
+  @override
+  String get hc_areaBodyShape => 'Body Shape';
+
+  @override
+  String get hc_areaFeces => 'Feces';
+
+  @override
+  String get hc_areaUrates => 'Urates';
+
+  @override
+  String get hc_areaUrine => 'Urine';
+
+  @override
+  String get ai_petInfoPrefix => 'Name';
+
+  @override
+  String get ai_breedPrefix => 'Breed';
+
+  @override
+  String get ai_agePrefix => 'Age';
+
+  @override
+  String get ai_birthdayPrefix => 'Birthday';
+
+  @override
+  String get ai_genderMale => 'Male';
+
+  @override
+  String get ai_genderFemale => 'Female';
+
+  @override
+  String get ai_genderUnknown => 'Gender unknown';
+
+  @override
+  String get ai_petContextInstruction =>
+      'Refer to the parrot information selected from multiple profiles.';
+
+  @override
+  String get ai_petContextAdvice =>
+      'Provide customized advice based on the above parrot conditions, especially breed.';
+
+  @override
+  String ai_ageYears(int years) {
+    return '$years years old';
+  }
+
+  @override
+  String ai_ageMonths(int months) {
+    return '$months months';
+  }
+
+  @override
+  String get ai_ageLessThanMonth => 'Less than 1 month';
 }

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
@@ -40,8 +41,9 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
       final bytes = await photo.readAsBytes();
       if (bytes.length > 10 * 1024 * 1024) {
         if (!mounted) return;
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미지 크기가 10MB를 초과합니다')),
+          SnackBar(content: Text(l10n.hc_imageSizeExceeded)),
         );
         return;
       }
@@ -58,8 +60,9 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이미지 선택 중 오류가 발생했습니다: $e')),
+        SnackBar(content: Text(l10n.hc_imagePickError(e.toString()))),
       );
     } finally {
       if (mounted) setState(() => _isPickingImage = false);
@@ -80,8 +83,36 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
     );
   }
 
+  String _getModeLabel(AppLocalizations l10n, VisionMode mode) {
+    switch (mode) {
+      case VisionMode.fullBody:
+        return l10n.hc_modeFullBody;
+      case VisionMode.partSpecific:
+        return l10n.hc_modePartSpecific;
+      case VisionMode.droppings:
+        return l10n.hc_modeDroppings;
+      case VisionMode.food:
+        return l10n.hc_modeFood;
+    }
+  }
+
+  String _getPartLabel(AppLocalizations l10n, BodyPart part) {
+    switch (part) {
+      case BodyPart.eye:
+        return l10n.hc_partEye;
+      case BodyPart.beak:
+        return l10n.hc_partBeak;
+      case BodyPart.feather:
+        return l10n.hc_partFeather;
+      case BodyPart.foot:
+        return l10n.hc_partFoot;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -94,7 +125,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          widget.mode.label,
+          _getModeLabel(l10n, widget.mode),
           style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
@@ -110,12 +141,12 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
           child: Column(
             children: [
               // 이미지 프리뷰 영역
-              Expanded(child: _buildImagePreview()),
+              Expanded(child: _buildImagePreview(l10n)),
               const SizedBox(height: 16),
 
               // 부위 선택 (part_specific 모드)
               if (widget.mode == VisionMode.partSpecific) ...[
-                _buildPartSelector(),
+                _buildPartSelector(l10n),
                 const SizedBox(height: 16),
               ],
 
@@ -124,13 +155,13 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
                 children: [
                   Expanded(child: _buildPickerButton(
                     icon: Icons.camera_alt,
-                    label: '촬영하기',
+                    label: l10n.hc_takePhoto,
                     onTap: () => _pickImage(ImageSource.camera),
                   )),
                   const SizedBox(width: 12),
                   Expanded(child: _buildPickerButton(
                     icon: Icons.photo_library,
-                    label: '앨범에서 선택',
+                    label: l10n.hc_selectFromAlbum,
                     onTap: () => _pickImage(ImageSource.gallery),
                   )),
                 ],
@@ -138,7 +169,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
               const SizedBox(height: 16),
 
               // 분석하기 버튼
-              _buildAnalyzeButton(),
+              _buildAnalyzeButton(l10n),
             ],
           ),
         ),
@@ -146,7 +177,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
     );
   }
 
-  Widget _buildImagePreview() {
+  Widget _buildImagePreview(AppLocalizations l10n) {
     if (_selectedImage != null) {
       return Stack(
         children: [
@@ -204,10 +235,10 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
               color: const Color(0xFFBDBDBD),
             ),
             const SizedBox(height: 16),
-            const Text(
-              '사진을 촬영하거나\n앨범에서 선택해주세요',
+            Text(
+              l10n.hc_photoHint,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
@@ -222,7 +253,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
     );
   }
 
-  Widget _buildPartSelector() {
+  Widget _buildPartSelector(AppLocalizations l10n) {
     return SizedBox(
       height: 36,
       child: Row(
@@ -244,7 +275,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  part.label,
+                  _getPartLabel(l10n, part),
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
@@ -296,7 +327,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
     );
   }
 
-  Widget _buildAnalyzeButton() {
+  Widget _buildAnalyzeButton(AppLocalizations l10n) {
     final isEnabled = _selectedImage != null;
     return GestureDetector(
       onTap: isEnabled ? _onAnalyze : null,
@@ -314,7 +345,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
         ),
         alignment: Alignment.center,
         child: Text(
-          '분석하기',
+          l10n.hc_analyze,
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 16,

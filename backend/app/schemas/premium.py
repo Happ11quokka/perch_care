@@ -87,3 +87,38 @@ class RevokeResponse(BaseModel):
 class DeleteCodeResponse(BaseModel):
     success: bool
     message: str
+
+
+# ── Admin: 사용 분석 ──
+
+class UsageSummaryResponse(BaseModel):
+    period_days: int
+    encyclopedia_total: int
+    encyclopedia_free: int
+    encyclopedia_premium: int
+    vision_total: int
+    vision_by_mode: dict[str, int]
+    active_users: int
+
+
+class DailyUsageItem(BaseModel):
+    date: str
+    encyclopedia_count: int
+    vision_count: int
+
+
+class UserUsageItem(BaseModel):
+    user_id: str
+    email: str
+    nickname: str | None = None
+    tier: str
+    encyclopedia_count: int
+    vision_count: int
+    last_used_at: datetime | None = None
+
+
+class ModelUsageItem(BaseModel):
+    model: str
+    call_count: int
+    avg_response_ms: int
+    estimated_cost_usd: float

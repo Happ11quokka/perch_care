@@ -75,6 +75,25 @@
 
   .hidden { display: none; }
   .code-text { font-family: 'Courier New', monospace; font-weight: 700; letter-spacing: 1px; }
+
+  /* Chart */
+  .chart-container { position: relative; height: 200px; display: flex; align-items: flex-end; gap: 2px; padding: 0 4px; }
+  .chart-bar-group { flex: 1; display: flex; gap: 1px; align-items: flex-end; min-width: 0; }
+  .chart-bar { flex: 1; min-width: 2px; border-radius: 2px 2px 0 0; transition: height 0.3s ease; cursor: pointer; position: relative; }
+  .chart-bar.enc { background: #FF9A42; }
+  .chart-bar.vis { background: #4A90D9; }
+  .chart-bar:hover { opacity: 0.8; }
+  .chart-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: #888; }
+  .chart-legend span { display: flex; align-items: center; gap: 4px; }
+  .chart-legend .dot { width: 10px; height: 10px; border-radius: 2px; }
+  .chart-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #aaa; }
+  .chart-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; pointer-events: none; display: none; margin-bottom: 4px; }
+  .chart-bar:hover .chart-tooltip { display: block; }
+
+  /* Period selector */
+  .period-selector { display: flex; gap: 8px; }
+  .period-btn { padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 500; }
+  .period-btn.active { background: #FF9A42; color: #fff; border-color: #FF9A42; }
 </style>
 </head>
 <body>
@@ -111,6 +130,7 @@
     <div class="tab active" onclick="switchTab('generate')">코드 생성</div>
     <div class="tab" onclick="switchTab('codes')">코드 관리</div>
     <div class="tab" onclick="switchTab('users')">사용자 관리</div>
+    <div class="tab" onclick="switchTab('usage')">사용 분석</div>
   </div>
 
   <!-- Tab: Generate -->
@@ -188,11 +208,93 @@
       <div id="usersEmpty" class="empty hidden">사용자가 없습니다</div>
     </div>
   </div>
+
+  <!-- Tab: Usage Analytics -->
+  <div id="tab-usage" class="tab-content hidden">
+    <!-- Period selector -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <h3 style="margin-bottom:0">AI 기능 사용 분석</h3>
+        <div class="period-selector">
+          <div class="period-btn" onclick="setUsagePeriod(7)">7일</div>
+          <div class="period-btn active" onclick="setUsagePeriod(30)">30일</div>
+          <div class="period-btn" onclick="setUsagePeriod(90)">90일</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage summary stats -->
+    <div class="stats" id="usageStats">
+      <div class="stat-card"><div class="number" id="usageEncTotal">-</div><div class="label">백과사전 호출</div></div>
+      <div class="stat-card"><div class="number" id="usageVisTotal">-</div><div class="label">Vision 호출</div></div>
+      <div class="stat-card"><div class="number" id="usageActiveUsers">-</div><div class="label">활성 사용자</div></div>
+      <div class="stat-card"><div class="number" id="usageTotalCost">-</div><div class="label">예상 비용 (USD)</div></div>
+    </div>
+
+    <!-- Tier breakdown -->
+    <div class="card">
+      <h3>티어별 백과사전 사용</h3>
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div style="text-align:center;flex:1">
+          <div style="font-size:24px;font-weight:700;color:#888" id="usageEncFree">-</div>
+          <div style="font-size:13px;color:#888;margin-top:4px">Free 사용자</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:24px;font-weight:700;color:#FF9A42" id="usageEncPremium">-</div>
+          <div style="font-size:13px;color:#888;margin-top:4px">Premium 사용자</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vision mode breakdown -->
+    <div class="card">
+      <h3>Vision 모드별 사용</h3>
+      <div id="visionModeBreakdown" style="display:flex;gap:16px;flex-wrap:wrap"></div>
+      <div id="visionModeEmpty" class="empty hidden" style="padding:20px">Vision 사용 데이터가 없습니다</div>
+    </div>
+
+    <!-- Daily chart -->
+    <div class="card">
+      <h3>일별 사용 추이</h3>
+      <div class="chart-container" id="dailyChart"></div>
+      <div class="chart-labels" id="dailyChartLabels"></div>
+      <div class="chart-legend">
+        <span><span class="dot" style="background:#FF9A42"></span>백과사전</span>
+        <span><span class="dot" style="background:#4A90D9"></span>Vision</span>
+      </div>
+      <div id="dailyChartEmpty" class="empty hidden" style="padding:20px">사용 데이터가 없습니다</div>
+    </div>
+
+    <!-- Per-user usage -->
+    <div class="card">
+      <h3>사용자별 사용 현황</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>이메일</th><th>닉네임</th><th>티어</th><th>백과사전</th><th>Vision</th><th>합계</th><th>마지막 사용</th></tr></thead>
+          <tbody id="usageUsersBody"></tbody>
+        </table>
+      </div>
+      <div id="usageUsersEmpty" class="empty hidden">사용 데이터가 없습니다</div>
+    </div>
+
+    <!-- Model cost breakdown -->
+    <div class="card">
+      <h3>모델별 비용 분석</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>모델</th><th>호출 수</th><th>평균 응답 (ms)</th><th>예상 비용 (USD)</th></tr></thead>
+          <tbody id="usageModelsBody"></tbody>
+        </table>
+      </div>
+      <div id="usageModelsEmpty" class="empty hidden">모델 사용 데이터가 없습니다</div>
+    </div>
+  </div>
 </div>
 
 <script>
 const BASE = window.location.origin + '/api/v1/premium';
 let API_KEY = '';
+let usagePeriod = 30;
 
 // ── Auth ──
 function login() {
@@ -239,6 +341,7 @@ function switchTab(name) {
   event.target.classList.add('active');
   if (name === 'codes') loadCodes();
   if (name === 'users') loadUsers();
+  if (name === 'usage') loadUsageData();
 }
 
 // ── Load all ──
@@ -363,6 +466,140 @@ async function revokeUser(userId, email) {
     loadUsers();
     loadStats();
   } catch (e) { toast('error', e.message); }
+}
+
+// ── Usage Analytics ──
+function setUsagePeriod(days) {
+  usagePeriod = days;
+  document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  loadUsageData();
+}
+
+async function loadUsageData() {
+  try {
+    const [summary, daily, users, models] = await Promise.all([
+      apiFetch(`/admin/usage/summary?days=${usagePeriod}`),
+      apiFetch(`/admin/usage/daily?days=${usagePeriod}`),
+      apiFetch(`/admin/usage/users?days=${usagePeriod}&limit=50`),
+      apiFetch(`/admin/usage/models?days=${usagePeriod}`),
+    ]);
+    renderUsageSummary(summary);
+    renderDailyChart(daily);
+    renderUsageUsers(users);
+    renderUsageModels(models, summary);
+  } catch (e) {
+    console.error('Usage data load failed:', e);
+    toast('error', '사용 분석 데이터 로드 실패');
+  }
+}
+
+function renderUsageSummary(summary) {
+  document.getElementById('usageEncTotal').textContent = summary.encyclopedia_total.toLocaleString();
+  document.getElementById('usageVisTotal').textContent = summary.vision_total.toLocaleString();
+  document.getElementById('usageActiveUsers').textContent = summary.active_users.toLocaleString();
+  document.getElementById('usageEncFree').textContent = summary.encyclopedia_free.toLocaleString();
+  document.getElementById('usageEncPremium').textContent = summary.encyclopedia_premium.toLocaleString();
+
+  // Vision mode breakdown
+  const modeContainer = document.getElementById('visionModeBreakdown');
+  const modeEmpty = document.getElementById('visionModeEmpty');
+  const modeLabels = { full_body: '전체 외형', part_specific: '부위별', droppings: '배변', food: '먹이' };
+  const modeColors = { full_body: '#4A90D9', part_specific: '#7B61FF', droppings: '#E67E22', food: '#27AE60' };
+  const modes = summary.vision_by_mode || {};
+  if (Object.keys(modes).length === 0) {
+    modeContainer.innerHTML = '';
+    modeEmpty.classList.remove('hidden');
+  } else {
+    modeEmpty.classList.add('hidden');
+    modeContainer.innerHTML = Object.entries(modes).map(([mode, count]) =>
+      `<div style="text-align:center;flex:1;min-width:100px">
+        <div style="font-size:24px;font-weight:700;color:${modeColors[mode] || '#888'}">${count}</div>
+        <div style="font-size:13px;color:#888;margin-top:4px">${modeLabels[mode] || mode}</div>
+      </div>`
+    ).join('');
+  }
+}
+
+function renderDailyChart(daily) {
+  const container = document.getElementById('dailyChart');
+  const labels = document.getElementById('dailyChartLabels');
+  const emptyEl = document.getElementById('dailyChartEmpty');
+
+  if (daily.length === 0) {
+    container.innerHTML = '';
+    labels.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+  emptyEl.classList.add('hidden');
+
+  const maxVal = Math.max(...daily.map(d => Math.max(d.encyclopedia_count, d.vision_count)), 1);
+
+  container.innerHTML = daily.map(d => {
+    const encH = Math.max((d.encyclopedia_count / maxVal) * 180, d.encyclopedia_count > 0 ? 4 : 0);
+    const visH = Math.max((d.vision_count / maxVal) * 180, d.vision_count > 0 ? 4 : 0);
+    return `<div class="chart-bar-group">
+      <div class="chart-bar enc" style="height:${encH}px">
+        <div class="chart-tooltip">${d.date}<br>백과사전: ${d.encyclopedia_count}</div>
+      </div>
+      <div class="chart-bar vis" style="height:${visH}px">
+        <div class="chart-tooltip">${d.date}<br>Vision: ${d.vision_count}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Show first and last date labels
+  if (daily.length > 0) {
+    const first = daily[0].date;
+    const last = daily[daily.length - 1].date;
+    labels.innerHTML = `<span>${first}</span><span>${last}</span>`;
+  }
+}
+
+function renderUsageUsers(users) {
+  const body = document.getElementById('usageUsersBody');
+  const emptyEl = document.getElementById('usageUsersEmpty');
+  if (users.length === 0) {
+    body.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+  emptyEl.classList.add('hidden');
+  body.innerHTML = users.map(u => `<tr>
+    <td>${u.email}</td>
+    <td>${u.nickname || '-'}</td>
+    <td>${u.tier === 'premium' ? '<span class="badge-premium">Premium</span>' : '<span class="badge-free">Free</span>'}</td>
+    <td style="text-align:right">${u.encyclopedia_count}</td>
+    <td style="text-align:right">${u.vision_count}</td>
+    <td style="text-align:right;font-weight:600">${u.encyclopedia_count + u.vision_count}</td>
+    <td>${u.last_used_at ? formatDate(u.last_used_at) : '-'}</td>
+  </tr>`).join('');
+}
+
+function renderUsageModels(models, summary) {
+  const body = document.getElementById('usageModelsBody');
+  const emptyEl = document.getElementById('usageModelsEmpty');
+  if (models.length === 0) {
+    body.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+    document.getElementById('usageTotalCost').textContent = '$0';
+    return;
+  }
+  emptyEl.classList.add('hidden');
+
+  let totalCost = 0;
+  body.innerHTML = models.map(m => {
+    totalCost += m.estimated_cost_usd;
+    return `<tr>
+      <td><span class="code-text" style="font-weight:500">${m.model}</span></td>
+      <td style="text-align:right">${m.call_count.toLocaleString()}</td>
+      <td style="text-align:right">${m.avg_response_ms.toLocaleString()}ms</td>
+      <td style="text-align:right;font-weight:600">$${m.estimated_cost_usd.toFixed(4)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('usageTotalCost').textContent = '$' + totalCost.toFixed(2);
 }
 
 // ── Utils ──

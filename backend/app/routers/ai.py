@@ -14,6 +14,7 @@ from app.database import get_db, async_session_factory
 from app.dependencies import get_current_user, get_current_tier
 from app.models.user import User
 from app.models.ai_encyclopedia_log import AiEncyclopediaLog
+from app.models.ai_vision_log import AiVisionLog
 from app.schemas.ai import AiEncyclopediaRequest, AiEncyclopediaResponse
 from app.services import ai_service
 from app.utils.security import decode_token
@@ -148,6 +149,12 @@ async def encyclopedia_stream(
                         remainder = meta_buffer.split("-->", 1)[1].lstrip("\n")
                         if remainder:
                             yield f"data: {json.dumps({'token': remainder}, ensure_ascii=False)}\n\n"
+                        continue
+                    # 안전장치: 200자 초과 시 메타태그 없는 것으로 판단하고 버퍼 플러시
+                    if len(meta_buffer) > 200:
+                        meta_stripped = True
+                        yield f"data: {json.dumps({'token': meta_buffer}, ensure_ascii=False)}\n\n"
+                        continue
                     continue
                 yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
 
@@ -240,6 +247,7 @@ async def analyze_vision_no_pet(
 
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
+    start_time = time.monotonic()
     try:
         result = await ai_service.analyze_vision_health_check(
             db=db,
@@ -258,5 +266,26 @@ async def analyze_vision_no_pet(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="이미지 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
         )
+
+    # Vision 사용 로그 기록
+    elapsed_ms = int((time.monotonic() - start_time) * 1000)
+    confidence = None
+    overall_status = None
+    if isinstance(result, dict):
+        cs = result.get("confidence_score")
+        confidence = float(cs) if isinstance(cs, (int, float)) else None
+        overall_status = result.get("overall_status")
+    vision_log = AiVisionLog(
+        user_id=current_user.id,
+        pet_id=None,
+        mode=mode,
+        part=part,
+        image_size_bytes=len(image_bytes),
+        response_time_ms=elapsed_ms,
+        model="gpt-4o",
+        confidence_score=confidence,
+        overall_status=overall_status,
+    )
+    db.add(vision_log)
 
     return {"result": result}

@@ -295,6 +295,7 @@ def _build_system_message(
     knowledge_context: str | None = None,
     deepseek_context: str | None = None,
     tier: str = "free",
+    user_language: str | None = None,
 ) -> str:
     """시스템 프롬프트 + 지식 베이스 + RAG 컨텍스트 + DeepSeek 보충을 결합한 시스템 메시지를 구성한다."""
     system_parts = [_build_system_prompt(tier)]
@@ -326,12 +327,30 @@ def _build_system_message(
         )
     elif pet_profile_context:
         system_parts.append(f"\n\n{pet_profile_context}")
+
+    # 한국어가 아닌 경우 시스템 메시지 끝에 강제 언어 지시 추가 (recency bias 활용)
+    if user_language and user_language != "Korean":
+        system_parts.append(
+            f"\n\nCRITICAL LANGUAGE REMINDER: The user is writing in {user_language}. "
+            f"You MUST respond ENTIRELY in {user_language}. "
+            f"Do NOT respond in Korean. All text, headers, and explanations must be in {user_language}."
+        )
+
     return "".join(system_parts)
 
 
 def _contains_chinese(text: str) -> bool:
     """텍스트에 CJK Unified Ideographs가 포함되어 있는지 확인한다."""
     return any("\u4e00" <= ch <= "\u9fff" for ch in text)
+
+
+def _detect_language(text: str) -> str:
+    """사용자 메시지의 주요 언어를 감지한다."""
+    if _contains_chinese(text):
+        return "Chinese"
+    if any("\uac00" <= ch <= "\ud7af" or "\u3131" <= ch <= "\u3163" for ch in text):
+        return "Korean"
+    return "English"
 
 
 async def prepare_system_message(
@@ -366,9 +385,12 @@ async def prepare_system_message(
     if is_chinese_premium and len(results) > 2:
         deepseek_context = results[2] if not isinstance(results[2], BaseException) else None
 
+    user_language = _detect_language(query)
+
     return _build_system_message(
         rag_context, pet_profile_context, knowledge_context,
         deepseek_context=deepseek_context, tier=tier,
+        user_language=user_language,
     )
 
 
@@ -692,7 +714,24 @@ def _build_vision_system_message(
     return "".join(parts)
 
 
-@traceable(name="ai_vision_health_check", run_type="chain")
+def _vision_trace_inputs(inputs: dict) -> dict:
+    """LangSmith 트레이스용 입력 가공: DB 세션 제거, 이미지를 data URI로 변환."""
+    processed = {}
+    for k, v in inputs.items():
+        if k == "db":
+            continue
+        if k == "image_base64":
+            mime = inputs.get("mime_type", "image/jpeg")
+            processed["image_preview"] = {
+                "type": "image_url",
+                "image_url": {"url": f"data:{mime};base64,{v}"},
+            }
+            continue
+        processed[k] = v
+    return processed
+
+
+@traceable(name="ai_vision_health_check", run_type="chain", process_inputs=_vision_trace_inputs)
 async def analyze_vision_health_check(
     db: AsyncSession,
     pet_id: str | None,

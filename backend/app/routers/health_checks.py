@@ -1,5 +1,6 @@
 import base64
 import logging
+import time
 from uuid import UUID
 from datetime import datetime, timezone
 
@@ -12,6 +13,7 @@ from sqlalchemy import select
 from app.config import get_settings
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_tier
+from app.models.ai_vision_log import AiVisionLog
 from app.models.pet import Pet
 from app.models.user import User
 from app.schemas.health_check import (
@@ -220,6 +222,7 @@ async def analyze_health_check_vision(
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
     # 6. AI Vision 분석
+    start_time = time.monotonic()
     try:
         result = await ai_service.analyze_vision_health_check(
             db=db,
@@ -255,5 +258,20 @@ async def analyze_health_check_vision(
         checked_at=datetime.now(timezone.utc),
     )
     saved_check = await health_check_service.create_check(db, pet_id, check_data)
+
+    # 8. Vision 사용 로그 기록
+    elapsed_ms = int((time.monotonic() - start_time) * 1000)
+    vision_log = AiVisionLog(
+        user_id=current_user.id,
+        pet_id=pet_id,
+        mode=mode,
+        part=part,
+        image_size_bytes=len(image_bytes),
+        response_time_ms=elapsed_ms,
+        model="gpt-4o",
+        confidence_score=confidence,
+        overall_status=overall_status,
+    )
+    db.add(vision_log)
 
     return saved_check

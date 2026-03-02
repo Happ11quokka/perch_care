@@ -520,5 +520,103 @@
   "premium_activationSuccessContentNoDate": "Premium service has been activated.",
   "premium_upgradeToPremium": "Upgrade to Premium",
   "premium_healthCheckBlocked": "This is a premium-only feature.\nPlease upgrade to Premium.",
-  "premium_healthCheckBlockedTitle": "Premium Feature"
+  "premium_healthCheckBlockedTitle": "Premium Feature",
+
+  "hc_title": "AI Health Check",
+  "hc_selectTarget": "Please select an analysis target",
+  "hc_analyze": "Analyze",
+
+  "hc_modeFullBody": "Full Body",
+  "hc_modeFullBodyDesc": "Analyze appearance by photographing the full body",
+  "hc_modePartSpecific": "Part-Specific",
+  "hc_modePartSpecificDesc": "Analyze specific parts such as eyes, beak, feathers, feet",
+  "hc_modeDroppings": "Droppings Analysis",
+  "hc_modeDroppingsDesc": "Check health status through droppings photos",
+  "hc_modeFood": "Food Safety",
+  "hc_modeFoodDesc": "Check if food is safe to feed through photos",
+
+  "hc_partEye": "Eye",
+  "hc_partBeak": "Beak",
+  "hc_partFeather": "Feather",
+  "hc_partFoot": "Foot",
+
+  "hc_imageSizeExceeded": "Image size exceeds 10MB",
+  "hc_imagePickError": "Error while selecting image: {error}",
+  "@hc_imagePickError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "hc_takePhoto": "Take Photo",
+  "hc_selectFromAlbum": "Select from Album",
+  "hc_photoHint": "Take a photo or\nselect from album",
+
+  "hc_registerPetFirst": "Please register your pet first",
+  "hc_analysisError": "An error occurred during analysis.\nPlease try again.",
+  "hc_cancelAnalysis": "Cancel Analysis",
+  "hc_cancelAnalysisConfirm": "Cancel the analysis?",
+  "hc_continueAnalysis": "Continue",
+  "hc_analyzing": "Analyzing...",
+  "hc_aiAnalyzing": "AI is analyzing the image",
+  "hc_analysisErrorTitle": "An error occurred during analysis",
+  "hc_retry": "Retry",
+  "hc_goBack": "Go Back",
+
+  "hc_resultTitle": "Analysis Results",
+  "hc_analysisItems": "Analysis Items",
+  "hc_recommendations": "Recommendations",
+  "hc_overallStatus": "Overall Status",
+  "hc_confidence": "Confidence",
+  "hc_vetVisitRecommended": "Veterinary visit recommended",
+  "hc_possibleCauses": "Possible Causes",
+  "hc_possibleCausesPrefix": "Possible causes: ",
+  "hc_nutritionBalance": "Nutrition Balance",
+  "hc_goHome": "Go Home",
+  "hc_recheckButton": "Check Again",
+  "hc_colorTexture": "Color: {color}, Texture: {texture}",
+  "@hc_colorTexture": {
+    "placeholders": {
+      "color": {"type": "String"},
+      "texture": {"type": "String"}
+    }
+  },
+
+  "hc_severityNormal": "Normal",
+  "hc_severityCaution": "Caution",
+  "hc_severityWarning": "Warning",
+  "hc_severityCritical": "Critical",
+  "hc_severityUnknown": "Check Required",
+
+  "hc_areaFeather": "Feather Condition",
+  "hc_areaPosture": "Posture/Balance",
+  "hc_areaEye": "Eye Condition",
+  "hc_areaBeak": "Beak Condition",
+  "hc_areaFoot": "Feet/Claws",
+  "hc_areaBodyShape": "Body Shape",
+  "hc_areaFeces": "Feces",
+  "hc_areaUrates": "Urates",
+  "hc_areaUrine": "Urine",
+
+  "ai_petInfoPrefix": "Name",
+  "ai_breedPrefix": "Breed",
+  "ai_agePrefix": "Age",
+  "ai_birthdayPrefix": "Birthday",
+  "ai_genderMale": "Male",
+  "ai_genderFemale": "Female",
+  "ai_genderUnknown": "Gender unknown",
+  "ai_petContextInstruction": "Refer to the parrot information selected from multiple profiles.",
+  "ai_petContextAdvice": "Provide customized advice based on the above parrot conditions, especially breed.",
+  "ai_ageYears": "{years} years old",
+  "@ai_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "ai_ageMonths": "{months} months",
+  "@ai_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "ai_ageLessThanMonth": "Less than 1 month"
 }

@@ -127,39 +127,41 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
       debugPrint('[HealthCheck] Error: $e');
       debugPrint('[HealthCheck] StackTrace: $st');
       if (!mounted || _cancelled) return;
+      final l10n = AppLocalizations.of(context);
       setState(() {
         _isAnalyzing = false;
-        _errorMessage = '분석 중 오류가 발생했습니다.\n다시 시도해주세요.';
+        _errorMessage = l10n.hc_analysisError;
       });
     }
   }
 
   Future<bool> _onWillPop() async {
     if (!_isAnalyzing) return true;
+    final l10n = AppLocalizations.of(context);
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          '분석 취소',
-          style: TextStyle(
+        title: Text(
+          l10n.hc_cancelAnalysis,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: const Text(
-          '분석을 취소하시겠습니까?',
-          style: TextStyle(fontFamily: 'Pretendard'),
+        content: Text(
+          l10n.hc_cancelAnalysisConfirm,
+          style: const TextStyle(fontFamily: 'Pretendard'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('계속 분석',
-                style: TextStyle(fontFamily: 'Pretendard')),
+            child: Text(l10n.hc_continueAnalysis,
+                style: const TextStyle(fontFamily: 'Pretendard')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('취소',
-                style: TextStyle(
+            child: Text(l10n.common_cancel,
+                style: const TextStyle(
                     fontFamily: 'Pretendard', color: AppColors.brandPrimary)),
           ),
         ],
@@ -189,6 +191,8 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
   }
 
   Widget _buildLoadingState() {
+    final l10n = AppLocalizations.of(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -210,9 +214,9 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
             ),
           ),
           const SizedBox(height: 32),
-          const Text(
-            '분석 중입니다...',
-            style: TextStyle(
+          Text(
+            l10n.hc_analyzing,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -221,9 +225,9 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'AI가 이미지를 분석하고 있어요',
-            style: TextStyle(
+          Text(
+            l10n.hc_aiAnalyzing,
+            style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -265,7 +269,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
             Text(
               _isPremiumError
                   ? l10n.premium_healthCheckBlockedTitle
-                  : '분석 중 오류가 발생했습니다',
+                  : l10n.hc_analysisErrorTitle,
               style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 18,
@@ -328,9 +332,9 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
-                  child: const Text(
-                    '다시 시도',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.hc_retry,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -352,9 +356,9 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
                   border: Border.all(color: const Color(0xFFE0E0E0)),
                 ),
                 alignment: Alignment.center,
-                child: const Text(
-                  '돌아가기',
-                  style: TextStyle(
+                child: Text(
+                  l10n.hc_goBack,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 15,
                     fontWeight: FontWeight.w500,

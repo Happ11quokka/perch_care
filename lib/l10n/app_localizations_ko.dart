@@ -1453,4 +1453,216 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premium_healthCheckBlockedTitle => '프리미엄 전용 기능';
+
+  @override
+  String get hc_title => 'AI 건강체크';
+
+  @override
+  String get hc_selectTarget => '분석 대상을 선택해주세요';
+
+  @override
+  String get hc_analyze => '분석하기';
+
+  @override
+  String get hc_modeFullBody => '전체 외형';
+
+  @override
+  String get hc_modeFullBodyDesc => '전체 모습을 촬영하여 외형을 분석합니다';
+
+  @override
+  String get hc_modePartSpecific => '부위별 검사';
+
+  @override
+  String get hc_modePartSpecificDesc => '눈, 부리, 깃털, 발 등 특정 부위를 분석합니다';
+
+  @override
+  String get hc_modeDroppings => '배변 분석';
+
+  @override
+  String get hc_modeDroppingsDesc => '배변 사진으로 건강 상태를 확인합니다';
+
+  @override
+  String get hc_modeFood => '먹이 안전성';
+
+  @override
+  String get hc_modeFoodDesc => '먹이 사진으로 급여 가능 여부를 확인합니다';
+
+  @override
+  String get hc_partEye => '눈';
+
+  @override
+  String get hc_partBeak => '부리';
+
+  @override
+  String get hc_partFeather => '깃털';
+
+  @override
+  String get hc_partFoot => '발';
+
+  @override
+  String get hc_imageSizeExceeded => '이미지 크기가 10MB를 초과합니다';
+
+  @override
+  String hc_imagePickError(String error) {
+    return '이미지 선택 중 오류가 발생했습니다: $error';
+  }
+
+  @override
+  String get hc_takePhoto => '촬영하기';
+
+  @override
+  String get hc_selectFromAlbum => '앨범에서 선택';
+
+  @override
+  String get hc_photoHint => '사진을 촬영하거나\n앨범에서 선택해주세요';
+
+  @override
+  String get hc_registerPetFirst => '펫을 먼저 등록해주세요';
+
+  @override
+  String get hc_analysisError => '분석 중 오류가 발생했습니다.\n다시 시도해주세요.';
+
+  @override
+  String get hc_cancelAnalysis => '분석 취소';
+
+  @override
+  String get hc_cancelAnalysisConfirm => '분석을 취소하시겠습니까?';
+
+  @override
+  String get hc_continueAnalysis => '계속 분석';
+
+  @override
+  String get hc_analyzing => '분석 중입니다...';
+
+  @override
+  String get hc_aiAnalyzing => 'AI가 이미지를 분석하고 있어요';
+
+  @override
+  String get hc_analysisErrorTitle => '분석 중 오류가 발생했습니다';
+
+  @override
+  String get hc_retry => '다시 시도';
+
+  @override
+  String get hc_goBack => '돌아가기';
+
+  @override
+  String get hc_resultTitle => '분석 결과';
+
+  @override
+  String get hc_analysisItems => '분석 항목';
+
+  @override
+  String get hc_recommendations => '권장 사항';
+
+  @override
+  String get hc_overallStatus => '종합 상태';
+
+  @override
+  String get hc_confidence => '신뢰도';
+
+  @override
+  String get hc_vetVisitRecommended => '수의사 방문을 권장합니다';
+
+  @override
+  String get hc_possibleCauses => '가능한 원인';
+
+  @override
+  String get hc_possibleCausesPrefix => '가능 원인: ';
+
+  @override
+  String get hc_nutritionBalance => '영양 균형';
+
+  @override
+  String get hc_goHome => '홈으로';
+
+  @override
+  String get hc_recheckButton => '다시 체크하기';
+
+  @override
+  String hc_colorTexture(String color, String texture) {
+    return '색상: $color, 질감: $texture';
+  }
+
+  @override
+  String get hc_severityNormal => '정상';
+
+  @override
+  String get hc_severityCaution => '주의';
+
+  @override
+  String get hc_severityWarning => '경고';
+
+  @override
+  String get hc_severityCritical => '위험';
+
+  @override
+  String get hc_severityUnknown => '확인 필요';
+
+  @override
+  String get hc_areaFeather => '깃털 상태';
+
+  @override
+  String get hc_areaPosture => '자세/균형';
+
+  @override
+  String get hc_areaEye => '눈 상태';
+
+  @override
+  String get hc_areaBeak => '부리 상태';
+
+  @override
+  String get hc_areaFoot => '발/발톱';
+
+  @override
+  String get hc_areaBodyShape => '체형';
+
+  @override
+  String get hc_areaFeces => '변';
+
+  @override
+  String get hc_areaUrates => '요산';
+
+  @override
+  String get hc_areaUrine => '소변';
+
+  @override
+  String get ai_petInfoPrefix => '이름';
+
+  @override
+  String get ai_breedPrefix => '품종';
+
+  @override
+  String get ai_agePrefix => '나이';
+
+  @override
+  String get ai_birthdayPrefix => '생일';
+
+  @override
+  String get ai_genderMale => '수컷';
+
+  @override
+  String get ai_genderFemale => '암컷';
+
+  @override
+  String get ai_genderUnknown => '성별 미상';
+
+  @override
+  String get ai_petContextInstruction => '사용자가 다중 프로필에서 선택한 앵무새 정보를 참고해.';
+
+  @override
+  String get ai_petContextAdvice => '가능한 한 위 앵무새 조건(특히 품종)을 기준으로 맞춤 조언을 제공해.';
+
+  @override
+  String ai_ageYears(int years) {
+    return '$years세';
+  }
+
+  @override
+  String ai_ageMonths(int months) {
+    return '$months개월';
+  }
+
+  @override
+  String get ai_ageLessThanMonth => '1개월 미만';
 }

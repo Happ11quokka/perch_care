@@ -718,5 +718,103 @@
   "premium_activationSuccessContentNoDate": "프리미엄 서비스가 활성화되었습니다.",
   "premium_upgradeToPremium": "프리미엄 업그레이드",
   "premium_healthCheckBlocked": "프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.",
-  "premium_healthCheckBlockedTitle": "프리미엄 전용 기능"
+  "premium_healthCheckBlockedTitle": "프리미엄 전용 기능",
+
+  "hc_title": "AI 건강체크",
+  "hc_selectTarget": "분석 대상을 선택해주세요",
+  "hc_analyze": "분석하기",
+
+  "hc_modeFullBody": "전체 외형",
+  "hc_modeFullBodyDesc": "전체 모습을 촬영하여 외형을 분석합니다",
+  "hc_modePartSpecific": "부위별 검사",
+  "hc_modePartSpecificDesc": "눈, 부리, 깃털, 발 등 특정 부위를 분석합니다",
+  "hc_modeDroppings": "배변 분석",
+  "hc_modeDroppingsDesc": "배변 사진으로 건강 상태를 확인합니다",
+  "hc_modeFood": "먹이 안전성",
+  "hc_modeFoodDesc": "먹이 사진으로 급여 가능 여부를 확인합니다",
+
+  "hc_partEye": "눈",
+  "hc_partBeak": "부리",
+  "hc_partFeather": "깃털",
+  "hc_partFoot": "발",
+
+  "hc_imageSizeExceeded": "이미지 크기가 10MB를 초과합니다",
+  "hc_imagePickError": "이미지 선택 중 오류가 발생했습니다: {error}",
+  "@hc_imagePickError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "hc_takePhoto": "촬영하기",
+  "hc_selectFromAlbum": "앨범에서 선택",
+  "hc_photoHint": "사진을 촬영하거나\n앨범에서 선택해주세요",
+
+  "hc_registerPetFirst": "펫을 먼저 등록해주세요",
+  "hc_analysisError": "분석 중 오류가 발생했습니다.\n다시 시도해주세요.",
+  "hc_cancelAnalysis": "분석 취소",
+  "hc_cancelAnalysisConfirm": "분석을 취소하시겠습니까?",
+  "hc_continueAnalysis": "계속 분석",
+  "hc_analyzing": "분석 중입니다...",
+  "hc_aiAnalyzing": "AI가 이미지를 분석하고 있어요",
+  "hc_analysisErrorTitle": "분석 중 오류가 발생했습니다",
+  "hc_retry": "다시 시도",
+  "hc_goBack": "돌아가기",
+
+  "hc_resultTitle": "분석 결과",
+  "hc_analysisItems": "분석 항목",
+  "hc_recommendations": "권장 사항",
+  "hc_overallStatus": "종합 상태",
+  "hc_confidence": "신뢰도",
+  "hc_vetVisitRecommended": "수의사 방문을 권장합니다",
+  "hc_possibleCauses": "가능한 원인",
+  "hc_possibleCausesPrefix": "가능 원인: ",
+  "hc_nutritionBalance": "영양 균형",
+  "hc_goHome": "홈으로",
+  "hc_recheckButton": "다시 체크하기",
+  "hc_colorTexture": "색상: {color}, 질감: {texture}",
+  "@hc_colorTexture": {
+    "placeholders": {
+      "color": {"type": "String"},
+      "texture": {"type": "String"}
+    }
+  },
+
+  "hc_severityNormal": "정상",
+  "hc_severityCaution": "주의",
+  "hc_severityWarning": "경고",
+  "hc_severityCritical": "위험",
+  "hc_severityUnknown": "확인 필요",
+
+  "hc_areaFeather": "깃털 상태",
+  "hc_areaPosture": "자세/균형",
+  "hc_areaEye": "눈 상태",
+  "hc_areaBeak": "부리 상태",
+  "hc_areaFoot": "발/발톱",
+  "hc_areaBodyShape": "체형",
+  "hc_areaFeces": "변",
+  "hc_areaUrates": "요산",
+  "hc_areaUrine": "소변",
+
+  "ai_petInfoPrefix": "이름",
+  "ai_breedPrefix": "품종",
+  "ai_agePrefix": "나이",
+  "ai_birthdayPrefix": "생일",
+  "ai_genderMale": "수컷",
+  "ai_genderFemale": "암컷",
+  "ai_genderUnknown": "성별 미상",
+  "ai_petContextInstruction": "사용자가 다중 프로필에서 선택한 앵무새 정보를 참고해.",
+  "ai_petContextAdvice": "가능한 한 위 앵무새 조건(특히 품종)을 기준으로 맞춤 조언을 제공해.",
+  "ai_ageYears": "{years}세",
+  "@ai_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "ai_ageMonths": "{months}개월",
+  "@ai_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "ai_ageLessThanMonth": "1개월 미만"
 }

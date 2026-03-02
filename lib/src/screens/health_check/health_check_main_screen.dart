@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
@@ -10,6 +11,8 @@ class HealthCheckMainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -27,9 +30,9 @@ class HealthCheckMainScreen extends StatelessWidget {
             }
           },
         ),
-        title: const Text(
-          'AI 건강체크',
-          style: TextStyle(
+        title: Text(
+          l10n.hc_title,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -44,9 +47,9 @@ class HealthCheckMainScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '분석 대상을 선택해주세요',
-                style: TextStyle(
+              Text(
+                l10n.hc_selectTarget,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -57,30 +60,34 @@ class HealthCheckMainScreen extends StatelessWidget {
               const SizedBox(height: 20),
               _buildModeCard(
                 context,
+                l10n: l10n,
                 mode: VisionMode.fullBody,
                 icon: Icons.pets,
-                description: '전체 모습을 촬영하여 외형을 분석합니다',
+                description: l10n.hc_modeFullBodyDesc,
               ),
               const SizedBox(height: 12),
               _buildModeCard(
                 context,
+                l10n: l10n,
                 mode: VisionMode.partSpecific,
                 icon: Icons.search,
-                description: '눈, 부리, 깃털, 발 등 특정 부위를 분석합니다',
+                description: l10n.hc_modePartSpecificDesc,
               ),
               const SizedBox(height: 12),
               _buildModeCard(
                 context,
+                l10n: l10n,
                 mode: VisionMode.droppings,
                 icon: Icons.science_outlined,
-                description: '배변 사진으로 건강 상태를 확인합니다',
+                description: l10n.hc_modeDroppingsDesc,
               ),
               const SizedBox(height: 12),
               _buildModeCard(
                 context,
+                l10n: l10n,
                 mode: VisionMode.food,
                 icon: Icons.restaurant,
-                description: '먹이 사진으로 급여 가능 여부를 확인합니다',
+                description: l10n.hc_modeFoodDesc,
               ),
             ],
           ),
@@ -89,8 +96,22 @@ class HealthCheckMainScreen extends StatelessWidget {
     );
   }
 
+  String _getModeLabel(AppLocalizations l10n, VisionMode mode) {
+    switch (mode) {
+      case VisionMode.fullBody:
+        return l10n.hc_modeFullBody;
+      case VisionMode.partSpecific:
+        return l10n.hc_modePartSpecific;
+      case VisionMode.droppings:
+        return l10n.hc_modeDroppings;
+      case VisionMode.food:
+        return l10n.hc_modeFood;
+    }
+  }
+
   Widget _buildModeCard(
     BuildContext context, {
+    required AppLocalizations l10n,
     required VisionMode mode,
     required IconData icon,
     required String description,
@@ -125,7 +146,7 @@ class HealthCheckMainScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    mode.label,
+                    _getModeLabel(l10n, mode),
                     style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 16,

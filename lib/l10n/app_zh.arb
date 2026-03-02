@@ -687,5 +687,103 @@
   "premium_activationSuccessContentNoDate": "高级版服务已激活。",
   "premium_upgradeToPremium": "升级到高级版",
   "premium_healthCheckBlocked": "这是高级版专属功能。\n请升级到高级版。",
-  "premium_healthCheckBlockedTitle": "高级版专属功能"
+  "premium_healthCheckBlockedTitle": "高级版专属功能",
+
+  "hc_title": "AI健康检查",
+  "hc_selectTarget": "请选择分析对象",
+  "hc_analyze": "开始分析",
+
+  "hc_modeFullBody": "全身外观",
+  "hc_modeFullBodyDesc": "拍摄全身照片分析外观",
+  "hc_modePartSpecific": "部位检查",
+  "hc_modePartSpecificDesc": "分析眼睛、喙、羽毛、脚等特定部位",
+  "hc_modeDroppings": "粪便分析",
+  "hc_modeDroppingsDesc": "通过粪便照片检查健康状况",
+  "hc_modeFood": "食物安全",
+  "hc_modeFoodDesc": "通过食物照片检查喂食安全性",
+
+  "hc_partEye": "眼睛",
+  "hc_partBeak": "喙",
+  "hc_partFeather": "羽毛",
+  "hc_partFoot": "脚",
+
+  "hc_imageSizeExceeded": "图片大小超过10MB",
+  "hc_imagePickError": "选择图片时出错：{error}",
+  "@hc_imagePickError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "hc_takePhoto": "拍照",
+  "hc_selectFromAlbum": "从相册选择",
+  "hc_photoHint": "请拍照或\n从相册选择",
+
+  "hc_registerPetFirst": "请先注册您的宠物",
+  "hc_analysisError": "分析过程中出错。\n请重试。",
+  "hc_cancelAnalysis": "取消分析",
+  "hc_cancelAnalysisConfirm": "确定取消分析吗？",
+  "hc_continueAnalysis": "继续分析",
+  "hc_analyzing": "分析中...",
+  "hc_aiAnalyzing": "AI正在分析图片",
+  "hc_analysisErrorTitle": "分析过程中出错",
+  "hc_retry": "重试",
+  "hc_goBack": "返回",
+
+  "hc_resultTitle": "分析结果",
+  "hc_analysisItems": "分析项目",
+  "hc_recommendations": "建议",
+  "hc_overallStatus": "综合状态",
+  "hc_confidence": "置信度",
+  "hc_vetVisitRecommended": "建议就医",
+  "hc_possibleCauses": "可能原因",
+  "hc_possibleCausesPrefix": "可能原因：",
+  "hc_nutritionBalance": "营养均衡",
+  "hc_goHome": "返回首页",
+  "hc_recheckButton": "重新检查",
+  "hc_colorTexture": "颜色：{color}，质地：{texture}",
+  "@hc_colorTexture": {
+    "placeholders": {
+      "color": {"type": "String"},
+      "texture": {"type": "String"}
+    }
+  },
+
+  "hc_severityNormal": "正常",
+  "hc_severityCaution": "注意",
+  "hc_severityWarning": "警告",
+  "hc_severityCritical": "危险",
+  "hc_severityUnknown": "需确认",
+
+  "hc_areaFeather": "羽毛状态",
+  "hc_areaPosture": "姿势/平衡",
+  "hc_areaEye": "眼睛状态",
+  "hc_areaBeak": "喙状态",
+  "hc_areaFoot": "脚/爪",
+  "hc_areaBodyShape": "体型",
+  "hc_areaFeces": "粪便",
+  "hc_areaUrates": "尿酸盐",
+  "hc_areaUrine": "尿液",
+
+  "ai_petInfoPrefix": "名字",
+  "ai_breedPrefix": "品种",
+  "ai_agePrefix": "年龄",
+  "ai_birthdayPrefix": "生日",
+  "ai_genderMale": "雄性",
+  "ai_genderFemale": "雌性",
+  "ai_genderUnknown": "性别不详",
+  "ai_petContextInstruction": "请参考用户从多个档案中选择的鹦鹉信息。",
+  "ai_petContextAdvice": "请尽量根据上述鹦鹉条件（特别是品种）提供定制建议。",
+  "ai_ageYears": "{years}岁",
+  "@ai_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "ai_ageMonths": "{months}个月",
+  "@ai_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "ai_ageLessThanMonth": "不到1个月"
 }

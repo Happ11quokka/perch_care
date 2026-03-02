@@ -2769,6 +2769,414 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'프리미엄 전용 기능'**
   String get premium_healthCheckBlockedTitle;
+
+  /// No description provided for @hc_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 건강체크'**
+  String get hc_title;
+
+  /// No description provided for @hc_selectTarget.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 대상을 선택해주세요'**
+  String get hc_selectTarget;
+
+  /// No description provided for @hc_analyze.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석하기'**
+  String get hc_analyze;
+
+  /// No description provided for @hc_modeFullBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 외형'**
+  String get hc_modeFullBody;
+
+  /// No description provided for @hc_modeFullBodyDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 모습을 촬영하여 외형을 분석합니다'**
+  String get hc_modeFullBodyDesc;
+
+  /// No description provided for @hc_modePartSpecific.
+  ///
+  /// In ko, this message translates to:
+  /// **'부위별 검사'**
+  String get hc_modePartSpecific;
+
+  /// No description provided for @hc_modePartSpecificDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'눈, 부리, 깃털, 발 등 특정 부위를 분석합니다'**
+  String get hc_modePartSpecificDesc;
+
+  /// No description provided for @hc_modeDroppings.
+  ///
+  /// In ko, this message translates to:
+  /// **'배변 분석'**
+  String get hc_modeDroppings;
+
+  /// No description provided for @hc_modeDroppingsDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'배변 사진으로 건강 상태를 확인합니다'**
+  String get hc_modeDroppingsDesc;
+
+  /// No description provided for @hc_modeFood.
+  ///
+  /// In ko, this message translates to:
+  /// **'먹이 안전성'**
+  String get hc_modeFood;
+
+  /// No description provided for @hc_modeFoodDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'먹이 사진으로 급여 가능 여부를 확인합니다'**
+  String get hc_modeFoodDesc;
+
+  /// No description provided for @hc_partEye.
+  ///
+  /// In ko, this message translates to:
+  /// **'눈'**
+  String get hc_partEye;
+
+  /// No description provided for @hc_partBeak.
+  ///
+  /// In ko, this message translates to:
+  /// **'부리'**
+  String get hc_partBeak;
+
+  /// No description provided for @hc_partFeather.
+  ///
+  /// In ko, this message translates to:
+  /// **'깃털'**
+  String get hc_partFeather;
+
+  /// No description provided for @hc_partFoot.
+  ///
+  /// In ko, this message translates to:
+  /// **'발'**
+  String get hc_partFoot;
+
+  /// No description provided for @hc_imageSizeExceeded.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지 크기가 10MB를 초과합니다'**
+  String get hc_imageSizeExceeded;
+
+  /// No description provided for @hc_imagePickError.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지 선택 중 오류가 발생했습니다: {error}'**
+  String hc_imagePickError(String error);
+
+  /// No description provided for @hc_takePhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'촬영하기'**
+  String get hc_takePhoto;
+
+  /// No description provided for @hc_selectFromAlbum.
+  ///
+  /// In ko, this message translates to:
+  /// **'앨범에서 선택'**
+  String get hc_selectFromAlbum;
+
+  /// No description provided for @hc_photoHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진을 촬영하거나\n앨범에서 선택해주세요'**
+  String get hc_photoHint;
+
+  /// No description provided for @hc_registerPetFirst.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫을 먼저 등록해주세요'**
+  String get hc_registerPetFirst;
+
+  /// No description provided for @hc_analysisError.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 중 오류가 발생했습니다.\n다시 시도해주세요.'**
+  String get hc_analysisError;
+
+  /// No description provided for @hc_cancelAnalysis.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 취소'**
+  String get hc_cancelAnalysis;
+
+  /// No description provided for @hc_cancelAnalysisConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석을 취소하시겠습니까?'**
+  String get hc_cancelAnalysisConfirm;
+
+  /// No description provided for @hc_continueAnalysis.
+  ///
+  /// In ko, this message translates to:
+  /// **'계속 분석'**
+  String get hc_continueAnalysis;
+
+  /// No description provided for @hc_analyzing.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 중입니다...'**
+  String get hc_analyzing;
+
+  /// No description provided for @hc_aiAnalyzing.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI가 이미지를 분석하고 있어요'**
+  String get hc_aiAnalyzing;
+
+  /// No description provided for @hc_analysisErrorTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 중 오류가 발생했습니다'**
+  String get hc_analysisErrorTitle;
+
+  /// No description provided for @hc_retry.
+  ///
+  /// In ko, this message translates to:
+  /// **'다시 시도'**
+  String get hc_retry;
+
+  /// No description provided for @hc_goBack.
+  ///
+  /// In ko, this message translates to:
+  /// **'돌아가기'**
+  String get hc_goBack;
+
+  /// No description provided for @hc_resultTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 결과'**
+  String get hc_resultTitle;
+
+  /// No description provided for @hc_analysisItems.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 항목'**
+  String get hc_analysisItems;
+
+  /// No description provided for @hc_recommendations.
+  ///
+  /// In ko, this message translates to:
+  /// **'권장 사항'**
+  String get hc_recommendations;
+
+  /// No description provided for @hc_overallStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'종합 상태'**
+  String get hc_overallStatus;
+
+  /// No description provided for @hc_confidence.
+  ///
+  /// In ko, this message translates to:
+  /// **'신뢰도'**
+  String get hc_confidence;
+
+  /// No description provided for @hc_vetVisitRecommended.
+  ///
+  /// In ko, this message translates to:
+  /// **'수의사 방문을 권장합니다'**
+  String get hc_vetVisitRecommended;
+
+  /// No description provided for @hc_possibleCauses.
+  ///
+  /// In ko, this message translates to:
+  /// **'가능한 원인'**
+  String get hc_possibleCauses;
+
+  /// No description provided for @hc_possibleCausesPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'가능 원인: '**
+  String get hc_possibleCausesPrefix;
+
+  /// No description provided for @hc_nutritionBalance.
+  ///
+  /// In ko, this message translates to:
+  /// **'영양 균형'**
+  String get hc_nutritionBalance;
+
+  /// No description provided for @hc_goHome.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈으로'**
+  String get hc_goHome;
+
+  /// No description provided for @hc_recheckButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'다시 체크하기'**
+  String get hc_recheckButton;
+
+  /// No description provided for @hc_colorTexture.
+  ///
+  /// In ko, this message translates to:
+  /// **'색상: {color}, 질감: {texture}'**
+  String hc_colorTexture(String color, String texture);
+
+  /// No description provided for @hc_severityNormal.
+  ///
+  /// In ko, this message translates to:
+  /// **'정상'**
+  String get hc_severityNormal;
+
+  /// No description provided for @hc_severityCaution.
+  ///
+  /// In ko, this message translates to:
+  /// **'주의'**
+  String get hc_severityCaution;
+
+  /// No description provided for @hc_severityWarning.
+  ///
+  /// In ko, this message translates to:
+  /// **'경고'**
+  String get hc_severityWarning;
+
+  /// No description provided for @hc_severityCritical.
+  ///
+  /// In ko, this message translates to:
+  /// **'위험'**
+  String get hc_severityCritical;
+
+  /// No description provided for @hc_severityUnknown.
+  ///
+  /// In ko, this message translates to:
+  /// **'확인 필요'**
+  String get hc_severityUnknown;
+
+  /// No description provided for @hc_areaFeather.
+  ///
+  /// In ko, this message translates to:
+  /// **'깃털 상태'**
+  String get hc_areaFeather;
+
+  /// No description provided for @hc_areaPosture.
+  ///
+  /// In ko, this message translates to:
+  /// **'자세/균형'**
+  String get hc_areaPosture;
+
+  /// No description provided for @hc_areaEye.
+  ///
+  /// In ko, this message translates to:
+  /// **'눈 상태'**
+  String get hc_areaEye;
+
+  /// No description provided for @hc_areaBeak.
+  ///
+  /// In ko, this message translates to:
+  /// **'부리 상태'**
+  String get hc_areaBeak;
+
+  /// No description provided for @hc_areaFoot.
+  ///
+  /// In ko, this message translates to:
+  /// **'발/발톱'**
+  String get hc_areaFoot;
+
+  /// No description provided for @hc_areaBodyShape.
+  ///
+  /// In ko, this message translates to:
+  /// **'체형'**
+  String get hc_areaBodyShape;
+
+  /// No description provided for @hc_areaFeces.
+  ///
+  /// In ko, this message translates to:
+  /// **'변'**
+  String get hc_areaFeces;
+
+  /// No description provided for @hc_areaUrates.
+  ///
+  /// In ko, this message translates to:
+  /// **'요산'**
+  String get hc_areaUrates;
+
+  /// No description provided for @hc_areaUrine.
+  ///
+  /// In ko, this message translates to:
+  /// **'소변'**
+  String get hc_areaUrine;
+
+  /// No description provided for @ai_petInfoPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'이름'**
+  String get ai_petInfoPrefix;
+
+  /// No description provided for @ai_breedPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'품종'**
+  String get ai_breedPrefix;
+
+  /// No description provided for @ai_agePrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'나이'**
+  String get ai_agePrefix;
+
+  /// No description provided for @ai_birthdayPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'생일'**
+  String get ai_birthdayPrefix;
+
+  /// No description provided for @ai_genderMale.
+  ///
+  /// In ko, this message translates to:
+  /// **'수컷'**
+  String get ai_genderMale;
+
+  /// No description provided for @ai_genderFemale.
+  ///
+  /// In ko, this message translates to:
+  /// **'암컷'**
+  String get ai_genderFemale;
+
+  /// No description provided for @ai_genderUnknown.
+  ///
+  /// In ko, this message translates to:
+  /// **'성별 미상'**
+  String get ai_genderUnknown;
+
+  /// No description provided for @ai_petContextInstruction.
+  ///
+  /// In ko, this message translates to:
+  /// **'사용자가 다중 프로필에서 선택한 앵무새 정보를 참고해.'**
+  String get ai_petContextInstruction;
+
+  /// No description provided for @ai_petContextAdvice.
+  ///
+  /// In ko, this message translates to:
+  /// **'가능한 한 위 앵무새 조건(특히 품종)을 기준으로 맞춤 조언을 제공해.'**
+  String get ai_petContextAdvice;
+
+  /// No description provided for @ai_ageYears.
+  ///
+  /// In ko, this message translates to:
+  /// **'{years}세'**
+  String ai_ageYears(int years);
+
+  /// No description provided for @ai_ageMonths.
+  ///
+  /// In ko, this message translates to:
+  /// **'{months}개월'**
+  String ai_ageMonths(int months);
+
+  /// No description provided for @ai_ageLessThanMonth.
+  ///
+  /// In ko, this message translates to:
+  /// **'1개월 미만'**
+  String get ai_ageLessThanMonth;
 }
 
 class _AppLocalizationsDelegate

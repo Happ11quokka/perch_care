@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 건강체크 분석 결과 화면
 class HealthCheckResultScreen extends StatelessWidget {
@@ -20,6 +21,8 @@ class HealthCheckResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -31,9 +34,9 @@ class HealthCheckResultScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
           onPressed: () => context.goNamed(RouteNames.home),
         ),
-        title: const Text(
-          '분석 결과',
-          style: TextStyle(
+        title: Text(
+          l10n.hc_resultTitle,
+          style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -48,25 +51,25 @@ class HealthCheckResultScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildOverallStatusCard(),
+              _buildOverallStatusCard(l10n),
               const SizedBox(height: 12),
 
               if (result['vet_visit_needed'] == true) ...[
-                _buildVetAlert(),
+                _buildVetAlert(l10n),
                 const SizedBox(height: 12),
               ],
 
-              _buildSectionTitle('분석 항목'),
+              _buildSectionTitle(l10n.hc_analysisItems),
               const SizedBox(height: 12),
-              _buildFindings(),
+              _buildFindings(l10n),
               const SizedBox(height: 20),
 
-              _buildSectionTitle('권장 사항'),
+              _buildSectionTitle(l10n.hc_recommendations),
               const SizedBox(height: 12),
               _buildRecommendations(),
               const SizedBox(height: 24),
 
-              _buildActionButtons(context),
+              _buildActionButtons(context, l10n),
               const SizedBox(height: 16),
             ],
           ),
@@ -75,13 +78,11 @@ class HealthCheckResultScreen extends StatelessWidget {
     );
   }
 
-  // --- 종합 상태 카드 ---
-
-  Widget _buildOverallStatusCard() {
+  Widget _buildOverallStatusCard(AppLocalizations l10n) {
     final status = _getOverallStatus();
     final rawConfidence = (result['confidence_score'] as num?)?.toDouble();
     final confidence = rawConfidence?.clamp(0.0, 100.0);
-    final (statusColor, statusBg, statusLabel) = _getSeverityStyle(status);
+    final (statusColor, statusBg, statusLabel) = _getSeverityStyle(status, l10n);
 
     return Container(
       width: double.infinity,
@@ -95,9 +96,9 @@ class HealthCheckResultScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '종합 상태',
-                style: TextStyle(
+              Text(
+                l10n.hc_overallStatus,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -129,9 +130,9 @@ class HealthCheckResultScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text(
-                  '신뢰도',
-                  style: TextStyle(
+                Text(
+                  l10n.hc_confidence,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
@@ -170,9 +171,7 @@ class HealthCheckResultScreen extends StatelessWidget {
     );
   }
 
-  // --- 수의사 방문 알림 ---
-
-  Widget _buildVetAlert() {
+  Widget _buildVetAlert(AppLocalizations l10n) {
     final reason = result['vet_reason'] as String?;
     return Container(
       padding: const EdgeInsets.all(16),
@@ -190,9 +189,9 @@ class HealthCheckResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '수의사 방문을 권장합니다',
-                  style: TextStyle(
+                Text(
+                  l10n.hc_vetVisitRecommended,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -222,21 +221,19 @@ class HealthCheckResultScreen extends StatelessWidget {
     );
   }
 
-  // --- 분석 항목 (모드별 분기) ---
-
-  Widget _buildFindings() {
+  Widget _buildFindings(AppLocalizations l10n) {
     switch (mode) {
       case VisionMode.fullBody:
       case VisionMode.partSpecific:
-        return _buildBodyFindings();
+        return _buildBodyFindings(l10n);
       case VisionMode.droppings:
-        return _buildDroppingsFindings();
+        return _buildDroppingsFindings(l10n);
       case VisionMode.food:
-        return _buildFoodFindings();
+        return _buildFoodFindings(l10n);
     }
   }
 
-  Widget _buildBodyFindings() {
+  Widget _buildBodyFindings(AppLocalizations l10n) {
     final findings = (result['findings'] as List<dynamic>?) ?? [];
     return Column(
       children: findings.map((finding) {
@@ -251,7 +248,8 @@ class HealthCheckResultScreen extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: _buildFindingCard(
-            title: _getAreaLabel(areaKey.toString()),
+            l10n: l10n,
+            title: _getAreaLabel(areaKey.toString(), l10n),
             observation: observation,
             severity: severity,
             details: causes,
@@ -261,7 +259,7 @@ class HealthCheckResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDroppingsFindings() {
+  Widget _buildDroppingsFindings(AppLocalizations l10n) {
     final findings = (result['findings'] as List<dynamic>?) ?? [];
     final conditions =
         (result['possible_conditions'] as List<dynamic>?)
@@ -280,8 +278,9 @@ class HealthCheckResultScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _buildFindingCard(
-              title: _getAreaLabel(component),
-              observation: '색상: $color, 질감: $texture',
+              l10n: l10n,
+              title: _getAreaLabel(component, l10n),
+              observation: l10n.hc_colorTexture(color, texture),
               severity: status,
             ),
           );
@@ -298,9 +297,9 @@ class HealthCheckResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '가능한 원인',
-                  style: TextStyle(
+                Text(
+                  l10n.hc_possibleCauses,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -341,7 +340,7 @@ class HealthCheckResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFoodFindings() {
+  Widget _buildFoodFindings(AppLocalizations l10n) {
     final items = (result['identified_items'] as List<dynamic>?) ?? [];
     final nutritionBalance = result['nutrition_balance'] as String?;
 
@@ -356,6 +355,7 @@ class HealthCheckResultScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _buildFindingCard(
+              l10n: l10n,
               title: name,
               observation: note,
               severity: safety,
@@ -374,9 +374,9 @@ class HealthCheckResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '영양 균형',
-                  style: TextStyle(
+                Text(
+                  l10n.hc_nutritionBalance,
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -403,8 +403,6 @@ class HealthCheckResultScreen extends StatelessWidget {
       ],
     );
   }
-
-  // --- 권장 사항 ---
 
   Widget _buildRecommendations() {
     final recommendations =
@@ -462,9 +460,7 @@ class HealthCheckResultScreen extends StatelessWidget {
     );
   }
 
-  // --- 액션 버튼 ---
-
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons(BuildContext context, AppLocalizations l10n) {
     return Row(
       children: [
         Expanded(
@@ -478,9 +474,9 @@ class HealthCheckResultScreen extends StatelessWidget {
                 color: Colors.white,
               ),
               alignment: Alignment.center,
-              child: const Text(
-                '홈으로',
-                style: TextStyle(
+              child: Text(
+                l10n.hc_goHome,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
@@ -504,9 +500,9 @@ class HealthCheckResultScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               alignment: Alignment.center,
-              child: const Text(
-                '다시 체크하기',
-                style: TextStyle(
+              child: Text(
+                l10n.hc_recheckButton,
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -520,8 +516,6 @@ class HealthCheckResultScreen extends StatelessWidget {
       ],
     );
   }
-
-  // --- 공통 위젯 ---
 
   Widget _buildSectionTitle(String title) {
     return Text(
@@ -537,13 +531,14 @@ class HealthCheckResultScreen extends StatelessWidget {
   }
 
   Widget _buildFindingCard({
+    required AppLocalizations l10n,
     required String title,
     required String observation,
     required String severity,
     List<String>? details,
   }) {
     final (severityColor, severityBg, severityLabel) =
-        _getSeverityStyle(severity);
+        _getSeverityStyle(severity, l10n);
 
     return Container(
       width: double.infinity,
@@ -605,7 +600,7 @@ class HealthCheckResultScreen extends StatelessWidget {
           if (details != null && details.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              '가능 원인: ${details.join(', ')}',
+              '${l10n.hc_possibleCausesPrefix}${details.join(', ')}',
               style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 12,
@@ -620,8 +615,6 @@ class HealthCheckResultScreen extends StatelessWidget {
     );
   }
 
-  // --- 유틸리티 ---
-
   String _getOverallStatus() {
     return (result['overall_status'] ??
             result['overall_diet_assessment'] ??
@@ -629,47 +622,47 @@ class HealthCheckResultScreen extends StatelessWidget {
         .toString();
   }
 
-  static (Color, Color, String) _getSeverityStyle(String severity) {
+  (Color, Color, String) _getSeverityStyle(String severity, AppLocalizations l10n) {
     return switch (severity.toLowerCase()) {
       'normal' || 'safe' => (
         const Color(0xFF4CAF50),
         const Color(0xFFE8F5E9),
-        '정상',
+        l10n.hc_severityNormal,
       ),
       'caution' => (
         const Color(0xFFFF9800),
         const Color(0xFFFFF3E0),
-        '주의',
+        l10n.hc_severityCaution,
       ),
       'warning' => (
         const Color(0xFFFF9A42),
         const Color(0xFFFFF5ED),
-        '경고',
+        l10n.hc_severityWarning,
       ),
       'critical' || 'toxic' || 'danger' || 'dangerous' => (
         const Color(0xFFFF572D),
         const Color(0xFFFFEBEE),
-        '위험',
+        l10n.hc_severityCritical,
       ),
       _ => (
         const Color(0xFF9E9E9E),
         const Color(0xFFF5F5F5),
-        '확인 필요',
+        l10n.hc_severityUnknown,
       ),
     };
   }
 
-  static String _getAreaLabel(String area) {
+  String _getAreaLabel(String area, AppLocalizations l10n) {
     return switch (area.toLowerCase()) {
-      'feather' => '깃털 상태',
-      'posture' => '자세/균형',
-      'eye' => '눈 상태',
-      'beak' => '부리 상태',
-      'foot' => '발/발톱',
-      'body_shape' => '체형',
-      'feces' => '변',
-      'urates' => '요산',
-      'urine' => '소변',
+      'feather' => l10n.hc_areaFeather,
+      'posture' => l10n.hc_areaPosture,
+      'eye' => l10n.hc_areaEye,
+      'beak' => l10n.hc_areaBeak,
+      'foot' => l10n.hc_areaFoot,
+      'body_shape' => l10n.hc_areaBodyShape,
+      'feces' => l10n.hc_areaFeces,
+      'urates' => l10n.hc_areaUrates,
+      'urine' => l10n.hc_areaUrine,
       _ => area,
     };
   }

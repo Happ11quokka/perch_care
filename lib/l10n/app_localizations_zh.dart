@@ -1431,4 +1431,216 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premium_healthCheckBlockedTitle => '高级版专属功能';
+
+  @override
+  String get hc_title => 'AI健康检查';
+
+  @override
+  String get hc_selectTarget => '请选择分析对象';
+
+  @override
+  String get hc_analyze => '开始分析';
+
+  @override
+  String get hc_modeFullBody => '全身外观';
+
+  @override
+  String get hc_modeFullBodyDesc => '拍摄全身照片分析外观';
+
+  @override
+  String get hc_modePartSpecific => '部位检查';
+
+  @override
+  String get hc_modePartSpecificDesc => '分析眼睛、喙、羽毛、脚等特定部位';
+
+  @override
+  String get hc_modeDroppings => '粪便分析';
+
+  @override
+  String get hc_modeDroppingsDesc => '通过粪便照片检查健康状况';
+
+  @override
+  String get hc_modeFood => '食物安全';
+
+  @override
+  String get hc_modeFoodDesc => '通过食物照片检查喂食安全性';
+
+  @override
+  String get hc_partEye => '眼睛';
+
+  @override
+  String get hc_partBeak => '喙';
+
+  @override
+  String get hc_partFeather => '羽毛';
+
+  @override
+  String get hc_partFoot => '脚';
+
+  @override
+  String get hc_imageSizeExceeded => '图片大小超过10MB';
+
+  @override
+  String hc_imagePickError(String error) {
+    return '选择图片时出错：$error';
+  }
+
+  @override
+  String get hc_takePhoto => '拍照';
+
+  @override
+  String get hc_selectFromAlbum => '从相册选择';
+
+  @override
+  String get hc_photoHint => '请拍照或\n从相册选择';
+
+  @override
+  String get hc_registerPetFirst => '请先注册您的宠物';
+
+  @override
+  String get hc_analysisError => '分析过程中出错。\n请重试。';
+
+  @override
+  String get hc_cancelAnalysis => '取消分析';
+
+  @override
+  String get hc_cancelAnalysisConfirm => '确定取消分析吗？';
+
+  @override
+  String get hc_continueAnalysis => '继续分析';
+
+  @override
+  String get hc_analyzing => '分析中...';
+
+  @override
+  String get hc_aiAnalyzing => 'AI正在分析图片';
+
+  @override
+  String get hc_analysisErrorTitle => '分析过程中出错';
+
+  @override
+  String get hc_retry => '重试';
+
+  @override
+  String get hc_goBack => '返回';
+
+  @override
+  String get hc_resultTitle => '分析结果';
+
+  @override
+  String get hc_analysisItems => '分析项目';
+
+  @override
+  String get hc_recommendations => '建议';
+
+  @override
+  String get hc_overallStatus => '综合状态';
+
+  @override
+  String get hc_confidence => '置信度';
+
+  @override
+  String get hc_vetVisitRecommended => '建议就医';
+
+  @override
+  String get hc_possibleCauses => '可能原因';
+
+  @override
+  String get hc_possibleCausesPrefix => '可能原因：';
+
+  @override
+  String get hc_nutritionBalance => '营养均衡';
+
+  @override
+  String get hc_goHome => '返回首页';
+
+  @override
+  String get hc_recheckButton => '重新检查';
+
+  @override
+  String hc_colorTexture(String color, String texture) {
+    return '颜色：$color，质地：$texture';
+  }
+
+  @override
+  String get hc_severityNormal => '正常';
+
+  @override
+  String get hc_severityCaution => '注意';
+
+  @override
+  String get hc_severityWarning => '警告';
+
+  @override
+  String get hc_severityCritical => '危险';
+
+  @override
+  String get hc_severityUnknown => '需确认';
+
+  @override
+  String get hc_areaFeather => '羽毛状态';
+
+  @override
+  String get hc_areaPosture => '姿势/平衡';
+
+  @override
+  String get hc_areaEye => '眼睛状态';
+
+  @override
+  String get hc_areaBeak => '喙状态';
+
+  @override
+  String get hc_areaFoot => '脚/爪';
+
+  @override
+  String get hc_areaBodyShape => '体型';
+
+  @override
+  String get hc_areaFeces => '粪便';
+
+  @override
+  String get hc_areaUrates => '尿酸盐';
+
+  @override
+  String get hc_areaUrine => '尿液';
+
+  @override
+  String get ai_petInfoPrefix => '名字';
+
+  @override
+  String get ai_breedPrefix => '品种';
+
+  @override
+  String get ai_agePrefix => '年龄';
+
+  @override
+  String get ai_birthdayPrefix => '生日';
+
+  @override
+  String get ai_genderMale => '雄性';
+
+  @override
+  String get ai_genderFemale => '雌性';
+
+  @override
+  String get ai_genderUnknown => '性别不详';
+
+  @override
+  String get ai_petContextInstruction => '请参考用户从多个档案中选择的鹦鹉信息。';
+
+  @override
+  String get ai_petContextAdvice => '请尽量根据上述鹦鹉条件（特别是品种）提供定制建议。';
+
+  @override
+  String ai_ageYears(int years) {
+    return '$years岁';
+  }
+
+  @override
+  String ai_ageMonths(int months) {
+    return '$months个月';
+  }
+
+  @override
+  String get ai_ageLessThanMonth => '不到1个月';
 }

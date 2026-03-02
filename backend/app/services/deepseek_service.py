@@ -8,6 +8,7 @@ enrichment layer for premium users — failures are silently ignored.
 import logging
 
 import httpx
+from langsmith import traceable
 
 from app.config import get_settings
 
@@ -45,10 +46,11 @@ VISION_SUPPLEMENT_PROMPT = """你是一位熟悉中国宠物鸟饲养文化的�
 回答控制在150-300字。"""
 
 
+@traceable(name="deepseek_chinese_supplement", run_type="chain")
 async def get_chinese_supplement(
     query: str,
     mode: str = "text",
-    timeout: float = 5.0,
+    timeout: float = 8.0,
 ) -> str | None:
     """Generate Chinese cultural context supplement via DeepSeek API.
 

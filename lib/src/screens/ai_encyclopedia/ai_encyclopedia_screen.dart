@@ -12,7 +12,6 @@ import '../../router/route_names.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
 import '../../services/ai/ai_stream_service.dart';
-import '../../services/api/token_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/storage/chat_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
@@ -653,16 +652,19 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   // ── Small user avatar for message bubbles ──────────────────────────
 
   Widget _buildSmallUserAvatar() {
-    final userId = TokenService.instance.userId;
-    if (userId != null) {
+    final pet = _activePet;
+    if (pet != null) {
       return LocalImageAvatar(
-        ownerType: ImageOwnerType.userProfile,
-        ownerId: userId,
+        ownerType: ImageOwnerType.petProfile,
+        ownerId: pet.id,
         size: 36,
-        placeholder: SvgPicture.asset(
-          'assets/images/profile/profile.svg',
-          width: 36,
-          height: 36,
+        placeholder: ClipOval(
+          child: SvgPicture.asset(
+            'assets/images/profile/pet_profile_placeholder.svg',
+            width: 36,
+            height: 36,
+            fit: BoxFit.cover,
+          ),
         ),
       );
     }
@@ -807,15 +809,52 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
                 bottomRight: Radius.circular(AppRadius.lg),
               ),
             ),
-            child: Text(
-              message.text,
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.nearBlack,
-              ),
-            ),
+            child: message.text.isEmpty && _isSending
+                ? _buildTypingIndicator()
+                : Text(
+                    message.text,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.nearBlack,
+                    ),
+                  ),
           ),
         ),
       ],
+    );
+  }
+
+  // ── Typing indicator (3 dots animation) ──────────────────────────
+
+  Widget _buildTypingIndicator() {
+    return AnimatedBuilder(
+      animation: _floatController,
+      builder: (context, _) {
+        // _floatController cycles 0→1→0 over 2400ms.
+        // Use its value to stagger 3 dots with phase offsets.
+        final t = _floatController.value;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (i) {
+            // Each dot peaks at a different phase (0.0, 0.33, 0.66)
+            final phase = (t + i * 0.33) % 1.0;
+            final opacity = 0.3 + 0.7 * (phase < 0.5 ? phase * 2 : (1.0 - phase) * 2);
+            return Padding(
+              padding: EdgeInsets.only(right: i < 2 ? 4.0 : 0.0),
+              child: Opacity(
+                opacity: opacity.clamp(0.3, 1.0),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray400,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 
@@ -895,47 +934,51 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     final pet = _activePet;
     if (pet == null) return null;
 
+    final l10n = AppLocalizations.of(context);
+
     final details = <String>[
-      '- 이름: ${pet.name}',
+      '- ${l10n.ai_petInfoPrefix}: ${pet.name}',
     ];
 
     final breed = pet.breed?.trim();
     if (breed != null && breed.isNotEmpty) {
-      details.add('- 품종: $breed');
+      details.add('- ${l10n.ai_breedPrefix}: $breed');
     }
 
     if (pet.birthDate != null) {
-      details.add('- 나이: ${_formatAge(pet.birthDate!)} (생일 ${pet.birthDate!.toIso8601String().split('T').first})');
+      details.add('- ${l10n.ai_agePrefix}: ${_formatAge(pet.birthDate!)} (${l10n.ai_birthdayPrefix} ${pet.birthDate!.toIso8601String().split('T').first})');
     }
 
     final gender = _mapGender(pet.gender);
     if (gender != null) {
-      details.add('- 성별: $gender');
+      details.add('- $gender');
     }
 
     if (details.isEmpty) return null;
 
     return [
-      '사용자가 다중 프로필에서 선택한 앵무새 정보를 참고해.',
+      l10n.ai_petContextInstruction,
       ...details,
-      '가능한 한 위 앵무새 조건(특히 품종)을 기준으로 맞춤 조언을 제공해.',
+      l10n.ai_petContextAdvice,
     ].join('\n');
   }
 
   String? _mapGender(String? gender) {
+    final l10n = AppLocalizations.of(context);
     switch (gender) {
       case 'male':
-        return '수컷';
+        return l10n.ai_genderMale;
       case 'female':
-        return '암컷';
+        return l10n.ai_genderFemale;
       case 'unknown':
-        return '성별 미상';
+        return l10n.ai_genderUnknown;
       default:
         return null;
     }
   }
 
   String _formatAge(DateTime birthDate) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     int years = now.year - birthDate.year;
     int months = now.month - birthDate.month;
@@ -950,9 +993,9 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     }
 
     final segments = <String>[];
-    if (years > 0) segments.add('$years세');
-    if (months > 0) segments.add('$months개월');
-    if (segments.isEmpty) segments.add('1개월 미만');
+    if (years > 0) segments.add(l10n.ai_ageYears(years));
+    if (months > 0) segments.add(l10n.ai_ageMonths(months));
+    if (segments.isEmpty) segments.add(l10n.ai_ageLessThanMonth);
 
     return segments.join(' ');
   }

@@ -12,7 +12,7 @@ class AiEncyclopediaService {
     List<Map<String, String>> history = const [],
     String? petId,
     double temperature = 0.2,
-    int maxTokens = 512,
+    int maxTokens = 2048,
     String? petProfileContext,
   }) async {
     final body = <String, dynamic>{
