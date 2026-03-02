@@ -604,6 +604,7 @@ _VISION_FOOD_PROMPT = (
     "    }\n"
     "  ],\n"
     '  "overall_diet_assessment": "<normal|caution|warning|critical>",\n'
+    '  "confidence_score": <0-100>,\n'
     '  "nutrition_balance": "<assessment>",\n'
     '  "recommendations": ["<rec1>"],\n'
     '  "vet_visit_needed": <true|false>\n'
