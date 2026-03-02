@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../models/pet.dart';
 import '../api/api_client.dart';
+import 'active_pet_notifier.dart';
 import 'pet_local_cache_service.dart';
 
 /// 반려동물 CRUD 서비스 (인메모리 캐시 + 로컬 캐시 폴백)
@@ -91,8 +92,9 @@ class PetService {
       _lastActivePetFetch = DateTime.now();
       debugPrint('[PetService] getActivePet() → server (${pet?.name})');
 
-      // 로컬 캐시 동기화
+      // ActivePetNotifier + 로컬 캐시 동기화
       if (pet != null) {
+        ActivePetNotifier.instance.notify(pet.id);
         await _petCache.upsertPet(
           PetProfileCache(
             id: pet.id,

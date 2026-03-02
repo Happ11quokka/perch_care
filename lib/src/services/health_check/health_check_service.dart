@@ -147,4 +147,24 @@ class HealthCheckService {
     );
     return response as Map<String, dynamic>;
   }
+
+  /// 펫 없이 food 모드 분석 (POST /ai/vision/analyze)
+  Future<Map<String, dynamic>> analyzeFood({
+    String? notes,
+    required Uint8List imageBytes,
+    required String fileName,
+  }) async {
+    final fields = <String, String>{
+      'mode': 'food',
+      if (notes != null) 'notes': notes,
+    };
+    final response = await _api.uploadMultipart(
+      '/ai/vision/analyze',
+      fields: fields,
+      fileBytes: imageBytes,
+      fileName: fileName,
+      timeout: const Duration(seconds: 60),
+    );
+    return response as Map<String, dynamic>;
+  }
 }

@@ -55,6 +55,10 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>반려동물 건강 체크를 위해 카메라를 사용합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>반려동물 사진을 선택하기 위해 사진 라이브러리에 접근합니다.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Flutter 디버그 모드에서 핫 리로드를 위해 사용됩니다.</string>
 	<key>NSBonjourServices</key>

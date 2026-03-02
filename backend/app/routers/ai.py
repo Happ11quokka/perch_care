@@ -1,13 +1,15 @@
+import base64
 import json
 import time
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile, File, status
 from fastapi.responses import StreamingResponse
 from slowapi import Limiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.database import get_db, async_session_factory
 from app.dependencies import get_current_user, get_current_tier
 from app.models.user import User
@@ -191,3 +193,70 @@ async def encyclopedia_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+_ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+
+@router.post("/vision/analyze")
+@limiter.limit("10/minute")
+async def analyze_vision_no_pet(
+    request: Request,
+    mode: str = Form(...),
+    part: str | None = Form(None),
+    notes: str | None = Form(None),
+    image: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    tier: str = Depends(get_current_tier),
+    db: AsyncSession = Depends(get_db),
+):
+    """펫 없이 Vision 분석 (food 모드 전용). DB 저장 없이 결과만 반환."""
+    settings = get_settings()
+
+    if mode != "food":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="펫 없이는 food 모드만 사용할 수 있습니다",
+        )
+
+    content_type = image.content_type or ""
+    if content_type not in _ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"지원하지 않는 이미지 형식입니다. {', '.join(_ALLOWED_MIME_TYPES)}만 허용됩니다",
+        )
+
+    image_bytes = await image.read()
+    if len(image_bytes) > settings.max_upload_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"이미지 크기가 {settings.max_upload_size // (1024 * 1024)}MB를 초과합니다",
+        )
+    if len(image_bytes) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="빈 이미지 파일입니다",
+        )
+
+    image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
+    try:
+        result = await ai_service.analyze_vision_health_check(
+            db=db,
+            pet_id=None,
+            user_id=current_user.id,
+            image_base64=image_base64,
+            mime_type=content_type,
+            mode=mode,
+            part=part,
+            notes=notes,
+            tier=tier,
+        )
+    except Exception as e:
+        logger.error("Vision analysis (no pet) failed: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="이미지 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        )
+
+    return {"result": result}

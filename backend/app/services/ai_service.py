@@ -694,7 +694,7 @@ def _build_vision_system_message(
 @traceable(name="ai_vision_health_check", run_type="chain")
 async def analyze_vision_health_check(
     db: AsyncSession,
-    pet_id: str,
+    pet_id: str | None,
     user_id: UUID,
     image_base64: str,
     mime_type: str,

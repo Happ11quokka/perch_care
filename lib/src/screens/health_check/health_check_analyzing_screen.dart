@@ -66,17 +66,34 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
 
     try {
       final activePetId = ActivePetNotifier.instance.activePetId;
-      if (activePetId == null) throw Exception('펫을 먼저 등록해주세요');
+      debugPrint('[HealthCheck] activePetId=$activePetId, mode=${widget.mode.value}, '
+          'part=${widget.part?.value}, fileName=${widget.fileName}, '
+          'imageSize=${widget.imageBytes.length} bytes');
 
-      final response = await HealthCheckService.instance.analyzeImage(
-        petId: activePetId,
-        mode: widget.mode.value,
-        part: widget.part?.value,
-        imageBytes: widget.imageBytes,
-        fileName: widget.fileName,
-      );
+      // food 모드는 펫 없이도 가능, 다른 모드는 펫 필수
+      final isFoodMode = widget.mode == VisionMode.food;
+      if (activePetId == null && !isFoodMode) {
+        throw Exception('펫을 먼저 등록해주세요');
+      }
+
+      final Map<String, dynamic> response;
+      if (activePetId == null && isFoodMode) {
+        response = await HealthCheckService.instance.analyzeFood(
+          imageBytes: widget.imageBytes,
+          fileName: widget.fileName,
+        );
+      } else {
+        response = await HealthCheckService.instance.analyzeImage(
+          petId: activePetId!,
+          mode: widget.mode.value,
+          part: widget.part?.value,
+          imageBytes: widget.imageBytes,
+          fileName: widget.fileName,
+        );
+      }
 
       if (!mounted || _cancelled) return;
+      debugPrint('[HealthCheck] Analysis response received');
 
       // 백엔드 응답: { id, pet_id, check_type, result: { findings, ... }, ... }
       // result 필드 안에 실제 분석 데이터가 중첩되어 있음
@@ -93,6 +110,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
         },
       );
     } on ApiException catch (e) {
+      debugPrint('[HealthCheck] ApiException: $e');
       if (!mounted || _cancelled) return;
       setState(() {
         _isAnalyzing = false;
@@ -100,7 +118,9 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
             ? '프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.'
             : e.message;
       });
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[HealthCheck] Error: $e');
+      debugPrint('[HealthCheck] StackTrace: $st');
       if (!mounted || _cancelled) return;
       setState(() {
         _isAnalyzing = false;
