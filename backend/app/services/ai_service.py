@@ -42,7 +42,8 @@ _ROLE_AND_LANGUAGE = (
 _CATEGORY_CLASSIFICATION = (
     "\n\nCATEGORY CLASSIFICATION:\n"
     "Before answering, silently classify the user's question into ONE of these categories:\n"
-    "- disease: symptoms, illness, injury, emergency, health concerns\n"
+    "- disease: symptoms, illness, injury, burns, trauma, fractures, bite wounds, "
+    "environmental hazards (Teflon, chemicals, toxic fumes), poisoning, emergency, health concerns\n"
     "- nutrition: food safety, diet, supplements, feeding\n"
     "- behavior: training, habits, behavioral issues, socialization\n"
     "- species: breed info, characteristics, lifespan, origin\n"
@@ -54,9 +55,10 @@ _VET_POLICY = (
     "\n\nVETERINARY RECOMMENDATION POLICY:\n"
     "- Do NOT recommend veterinary visits for general nutrition, behavior, "
     "training, or species information questions.\n"
-    "- Only recommend a vet visit when there are genuine warning signs: "
-    "active bleeding, breathing difficulty, seizures, loss of consciousness, "
-    "suspected infection, tumors, or symptoms persisting 48+ hours.\n"
+    "- ALWAYS recommend immediate vet for: burns (thermal, chemical, electrical), "
+    "cat/dog bite wounds (Pasteurella risk), suspected fractures, eye injuries, "
+    "chemical/fume exposure, active bleeding, breathing difficulty, seizures, "
+    "loss of consciousness, suspected infection, tumors, or symptoms persisting 48+ hours.\n"
     "- For mild concerns (severity: caution), suggest monitoring and home care "
     "first, with 'consult a vet if symptoms worsen' as a secondary note.\n"
     "- Never add a generic 'consult a veterinarian' disclaimer to every response."
@@ -78,7 +80,7 @@ _FREE_FORMAT = (
 
 _PREMIUM_FORMAT = (
     "\n\nRESPONSE FORMAT (Structured by category):\n\n"
-    "For 'disease' questions:\n"
+    "For 'disease' questions (general illness):\n"
     "🔍 가능한 원인\n"
     "- Cause 1 (likelihood)\n"
     "- Cause 2\n\n"
@@ -88,6 +90,14 @@ _PREMIUM_FORMAT = (
     "(Only if severity is warning/critical)\n"
     "🏥 병원 방문이 필요한 경우\n"
     "- Specific conditions\n\n"
+    "For 'disease' questions involving INJURIES or ENVIRONMENTAL HAZARDS:\n"
+    "🚨 부상 유형\n"
+    "- Type classification and description\n\n"
+    "🆘 응급 처치\n"
+    "- Step-by-step immediate first aid actions\n\n"
+    "⚠️ 응급도: [일반 / 주의 / 긴급]\n\n"
+    "🏥 병원 방문\n"
+    "- Injuries usually require vet visit — specify urgency\n\n"
     "---\n"
     "For 'nutrition' questions:\n"
     "✅ 안전 여부: [안전 / 주의 / 금지]\n\n"
@@ -544,8 +554,10 @@ _VISION_COMMON_RULES = (
     "LANGUAGE RULE: You MUST respond in the language specified by the user. "
     "If no language is specified, respond in Korean.\n\n"
     "VETERINARY RECOMMENDATION POLICY:\n"
-    "- Only recommend a vet visit when there are genuine warning signs: "
-    "active bleeding, breathing difficulty, seizures, suspected infection, "
+    "- Recommend IMMEDIATE vet visit for: burns (thermal, chemical, electrical), "
+    "cat/dog bite wounds (Pasteurella risk), open fractures, chemical exposure, "
+    "eye injuries, active bleeding that won't stop.\n"
+    "- Also recommend vet for: breathing difficulty, seizures, suspected infection, "
     "tumors, or symptoms persisting 48+ hours.\n"
     "- For mild concerns (severity: caution), suggest monitoring first.\n\n"
     "RESPONSE FORMAT: You MUST respond with a valid JSON object. No markdown, no extra text."
@@ -553,17 +565,36 @@ _VISION_COMMON_RULES = (
 
 _VISION_FULL_BODY_PROMPT = (
     f"{_VISION_COMMON_RULES}\n\n"
-    "TASK: Analyze the overall health of this parrot from the photo.\n"
-    "Check these 6 areas in order: feather, posture, eye, beak, foot, body_shape.\n\n"
+    "TASK: Analyze the overall health of this parrot from the photo.\n\n"
+    "PHASE 0 — INJURY/TRAUMA SCAN (do this FIRST):\n"
+    "Before checking the 6 standard body areas, scan the ENTIRE image for signs of:\n"
+    "- External injuries: burns (reddened/blistered/charred skin or feathers), "
+    "lacerations, puncture wounds, bite marks, missing/torn feathers from trauma\n"
+    "- Environmental damage: chemical burns, Teflon fume damage (bird collapsed/fluffed), "
+    "hot liquid scalds, contact burns from hot surfaces\n"
+    "- Trauma signs: swelling not from disease, bleeding, abnormal limb positioning "
+    "suggesting fracture, head trauma indicators\n\n"
+    "If you detect ANY injury or trauma, add an EXTRA finding BEFORE the 6 standard areas with:\n"
+    '  "area": "injury_detected",\n'
+    '  "injury_type": "<burn|laceration|bite_wound|fracture|chemical_exposure|scald|other>",\n'
+    '  "first_aid": ["<immediate action 1>", "<action 2>"]\n'
+    "(plus the standard observation, severity, possible_causes fields)\n\n"
+    "If user notes mention an accident, injury, or environmental hazard, "
+    "PRIORITIZE injury assessment over disease assessment.\n\n"
+    "PHASE 1 — STANDARD BODY CHECK:\n"
+    "Check these 6 areas in order: feather, posture, eye, beak, foot, body_shape.\n"
+    "Note how any detected injury affects each area.\n\n"
     "JSON schema:\n"
     "{\n"
     '  "mode": "full_body",\n'
     '  "findings": [\n'
     "    {\n"
-    '      "area": "<feather|posture|eye|beak|foot|body_shape>",\n'
+    '      "area": "<injury_detected|feather|posture|eye|beak|foot|body_shape>",\n'
     '      "observation": "<detailed observation in user\'s language>",\n'
     '      "severity": "<normal|caution|warning|critical>",\n'
-    '      "possible_causes": ["<cause1>", "<cause2>"]\n'
+    '      "possible_causes": ["<cause1>", "<cause2>"],\n'
+    '      "injury_type": "<optional, only for injury_detected>",\n'
+    '      "first_aid": ["<optional, only for injury_detected>"]\n'
     "    }\n"
     "  ],\n"
     '  "overall_status": "<normal|caution|warning|critical>",\n'
@@ -572,29 +603,41 @@ _VISION_FULL_BODY_PROMPT = (
     '  "vet_visit_needed": <true|false>,\n'
     '  "vet_reason": "<reason or null>"\n'
     "}\n\n"
-    "Include ALL 6 areas in findings even if they appear normal."
+    "Include ALL 6 standard areas in findings even if they appear normal. "
+    "Add injury_detected ONLY if injury/trauma is actually visible."
 )
 
 _VISION_PART_SPECIFIC_PROMPTS = {
     "eye": (
         "TASK: Analyze this parrot's EYE in detail.\n"
-        "Check: discharge, swelling, pupil response, corneal clarity, "
-        "periorbital area, symmetry between eyes."
+        "Check for both DISEASE and INJURY indicators:\n"
+        "Disease: discharge, swelling, pupil response, corneal clarity, "
+        "periorbital area, symmetry between eyes.\n"
+        "Injury: corneal scratches/trauma, chemical burn damage, thermal damage, "
+        "foreign body, blunt force trauma indicators, periorbital bruising."
     ),
     "beak": (
         "TASK: Analyze this parrot's BEAK in detail.\n"
-        "Check: symmetry, color, texture, overgrowth, cracks, "
-        "peeling, cere condition, alignment."
+        "Check for both DISEASE and INJURY indicators:\n"
+        "Disease: symmetry, color, texture, overgrowth, cracks, "
+        "peeling, cere condition, alignment.\n"
+        "Injury: fractures, chips from collision, burns on cere area, bite damage."
     ),
     "feather": (
         "TASK: Analyze this parrot's FEATHERS in detail.\n"
-        "Check: density, luster, discoloration, damage patterns, "
-        "plucking signs, pin feathers, stress bars, molting status."
+        "Check for both DISEASE and INJURY indicators:\n"
+        "Disease: density, luster, discoloration, damage patterns, "
+        "plucking signs, pin feathers, stress bars, molting status.\n"
+        "Injury: localized burn damage (singed/melted feathers), "
+        "trauma-induced bare patches (vs plucking), wound-related feather loss."
     ),
     "foot": (
         "TASK: Analyze this parrot's FOOT in detail.\n"
-        "Check: plantar surface (bumblefoot), nail length, swelling, "
-        "skin texture, grip strength indicators, toe alignment."
+        "Check for both DISEASE and INJURY indicators:\n"
+        "Disease: plantar surface (bumblefoot), nail length, swelling, "
+        "skin texture, grip strength indicators, toe alignment.\n"
+        "Injury: burns from hot surfaces, lacerations, fractures, "
+        "bite wounds, band injuries."
     ),
 }
 
@@ -649,7 +692,7 @@ _VISION_FOOD_PROMPT = (
 )
 
 _VISION_SEARCH_QUERIES = {
-    "full_body": "parrot health assessment feather posture eye beak foot body condition",
+    "full_body": "parrot health assessment feather posture eye beak foot body condition burns injuries trauma wounds emergency first aid",
     "droppings": "parrot droppings fecal analysis disease indicators urates",
     "food": "parrot food safety toxic nutrition feeding guide",
 }
@@ -658,7 +701,7 @@ _VISION_SEARCH_QUERIES = {
 def _get_vision_search_query(mode: str, part: str | None = None) -> str:
     """모드와 부위에 따라 벡터 검색 쿼리를 반환한다."""
     if mode == "part_specific" and part:
-        return f"parrot {part} health diseases symptoms examination"
+        return f"parrot {part} health diseases symptoms examination injuries trauma burns"
     return _VISION_SEARCH_QUERIES.get(mode, "parrot health assessment")
 
 

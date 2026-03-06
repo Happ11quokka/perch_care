@@ -17,12 +17,14 @@ class HealthCheckAnalyzingScreen extends StatefulWidget {
     this.part,
     required this.imageBytes,
     required this.fileName,
+    this.notes,
   });
 
   final VisionMode mode;
   final BodyPart? part;
   final Uint8List imageBytes;
   final String fileName;
+  final String? notes;
 
   @override
   State<HealthCheckAnalyzingScreen> createState() =>
@@ -87,6 +89,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
         response = await HealthCheckService.instance.analyzeFood(
           imageBytes: widget.imageBytes,
           fileName: widget.fileName,
+          notes: widget.notes,
           language: language,
         );
       } else {
@@ -94,6 +97,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
           petId: activePetId!,
           mode: widget.mode.value,
           part: widget.part?.value,
+          notes: widget.notes,
           imageBytes: widget.imageBytes,
           fileName: widget.fileName,
           language: language,

@@ -213,6 +213,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get input_confirmPassword => 'Confirm Password';
 
   @override
+  String get password_strength_weak => 'Weak';
+
+  @override
+  String get password_strength_medium => 'Medium';
+
+  @override
+  String get password_strength_strong => 'Strong';
+
+  @override
   String get btn_resetComplete => 'Reset Complete';
 
   @override
@@ -1677,6 +1686,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hc_areaUrine => 'Urine';
+
+  @override
+  String get hc_areaInjuryDetected => 'Injury Detected';
+
+  @override
+  String get hc_notesHint => 'Describe any injuries or incidents (optional)';
 
   @override
   String get ai_petInfoPrefix => 'Name';

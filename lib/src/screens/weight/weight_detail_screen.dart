@@ -697,7 +697,36 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   ),
                   ),
                 ),
-                // 3) 라벨 (하단)
+                // 3) 데이터 포인트 수치 라벨 (선택된 포인트 제외 - pill이 이미 표시)
+                ...List.generate(spots.length, (index) {
+                  if (index == selectedSpotIndex) {
+                    return const SizedBox.shrink();
+                  }
+                  final spot = spots[index];
+                  final labelX =
+                      _dataXToPixel(spot.x, minX, maxX, chartWidth);
+                  final labelY = _dataYToPixel(
+                      spot.y, minY, maxY, chartAreaHeight);
+                  return Positioned(
+                    left: labelX - 30,
+                    top: labelY - 22,
+                    child: SizedBox(
+                      width: 60,
+                      child: Center(
+                        child: Text(
+                          '${spot.y.toStringAsFixed(1)} g',
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF999999),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                // 4) 라벨 (하단)
                 Positioned(
                   left: 0,
                   right: 0,

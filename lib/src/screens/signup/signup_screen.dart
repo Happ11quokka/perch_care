@@ -6,6 +6,7 @@ import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/api/token_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/password_strength_indicator.dart';
 import '../../widgets/terms_agreement_section.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -22,10 +23,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   final _nameFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
+  final _confirmPasswordFocusNode = FocusNode();
 
   bool _isLoading = false;
   bool _hasNavigatedAfterSignup = false;
@@ -33,6 +36,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _nameHasFocus = false;
   bool _emailHasFocus = false;
   bool _passwordHasFocus = false;
+  bool _confirmPasswordHasFocus = false;
   final AuthService _authService = AuthService();
 
   // 아이콘 에셋 경로
@@ -46,6 +50,7 @@ class _SignupScreenState extends State<SignupScreen> {
     _nameFocusNode.addListener(_onNameFocusChange);
     _emailFocusNode.addListener(_onEmailFocusChange);
     _passwordFocusNode.addListener(_onPasswordFocusChange);
+    _confirmPasswordFocusNode.addListener(_onConfirmPasswordFocusChange);
   }
 
   @override
@@ -56,19 +61,24 @@ class _SignupScreenState extends State<SignupScreen> {
     _nameFocusNode.removeListener(_onNameFocusChange);
     _emailFocusNode.removeListener(_onEmailFocusChange);
     _passwordFocusNode.removeListener(_onPasswordFocusChange);
+    _confirmPasswordFocusNode.removeListener(_onConfirmPasswordFocusChange);
     _nameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _confirmPasswordController.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
   void _onNameFocusChange() => setState(() => _nameHasFocus = _nameFocusNode.hasFocus);
   void _onEmailFocusChange() => setState(() => _emailHasFocus = _emailFocusNode.hasFocus);
   void _onPasswordFocusChange() => setState(() => _passwordHasFocus = _passwordFocusNode.hasFocus);
+  void _onConfirmPasswordFocusChange() => setState(() => _confirmPasswordHasFocus = _confirmPasswordFocusNode.hasFocus);
 
   bool get _nameHasValue => _nameController.text.isNotEmpty;
   bool get _emailHasValue => _emailController.text.isNotEmpty;
   bool get _passwordHasValue => _passwordController.text.isNotEmpty;
+  bool get _confirmPasswordHasValue => _confirmPasswordController.text.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +179,39 @@ class _SignupScreenState extends State<SignupScreen> {
                             return null;
                           },
                         ),
+                        // 비밀번호 강도 표시기
+                        PasswordStrengthIndicator(
+                          password: _passwordController.text,
+                        ),
+                        const SizedBox(height: 16),
+                        // 비밀번호 확인 필드
+                        _buildInputField(
+                          label: l10n.input_confirmPassword,
+                          controller: _confirmPasswordController,
+                          focusNode: _confirmPasswordFocusNode,
+                          hintText: l10n.validation_confirmPassword,
+                          iconPath: _lockIconPath,
+                          hasFocus: _confirmPasswordHasFocus,
+                          hasValue: _confirmPasswordHasValue,
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          suffixWidget: (_confirmPasswordHasValue &&
+                                  _passwordController.text.isNotEmpty &&
+                                  _confirmPasswordController.text ==
+                                      _passwordController.text)
+                              ? const Icon(Icons.check_circle,
+                                  color: Color(0xFF4CAF50), size: 20)
+                              : null,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.validation_confirmPassword;
+                            }
+                            if (value != _passwordController.text) {
+                              return l10n.validation_passwordMismatch;
+                            }
+                            return null;
+                          },
+                        ),
                         const SizedBox(height: 24),
                         // 약관 동의
                         TermsAgreementSection(
@@ -240,6 +283,8 @@ class _SignupScreenState extends State<SignupScreen> {
     TextInputType? keyboardType,
     bool obscureText = false,
     String? Function(String?)? validator,
+    Widget? suffixWidget,
+    TextInputAction textInputAction = TextInputAction.next,
   }) {
     // 활성 상태: 포커스가 있거나 값이 있을 때
     final isActive = hasFocus || hasValue;
@@ -287,7 +332,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   keyboardType: keyboardType,
                   obscureText: obscureText,
                   validator: validator,
-                  textInputAction: TextInputAction.next,
+                  textInputAction: textInputAction,
                   onChanged: (_) => setState(() {}),
                   style: const TextStyle(
                     fontFamily: 'Pretendard',
@@ -317,7 +362,12 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 20),
+              if (suffixWidget != null) ...[
+                suffixWidget,
+                const SizedBox(width: 12),
+              ] else ...[
+                const SizedBox(width: 20),
+              ],
             ],
           ),
         ),
@@ -445,6 +495,11 @@ class _SignupScreenState extends State<SignupScreen> {
     if (!_formKey.currentState!.validate()) {
       // 유효성 검사 실패 시 에러 메시지 표시
       AppSnackBar.warning(context, message: l10n.validation_checkInput);
+      return;
+    }
+    // 비밀번호 일치 이중 검사 (안전 장치)
+    if (_passwordController.text != _confirmPasswordController.text) {
+      AppSnackBar.warning(context, message: l10n.validation_passwordMismatch);
       return;
     }
     if (_isLoading) return;

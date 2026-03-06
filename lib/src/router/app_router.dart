@@ -274,6 +274,7 @@ class AppRouter {
                             part: map['part'] as BodyPart?,
                             imageBytes: map['imageBytes'] as Uint8List,
                             fileName: map['fileName'] as String,
+                            notes: map['notes'] as String?,
                           );
                         },
                       ),

@@ -207,6 +207,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get input_confirmPassword => '确认密码';
 
   @override
+  String get password_strength_weak => '弱';
+
+  @override
+  String get password_strength_medium => '中等';
+
+  @override
+  String get password_strength_strong => '强';
+
+  @override
   String get btn_resetComplete => '完成重置';
 
   @override
@@ -1606,6 +1615,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hc_areaUrine => '尿液';
+
+  @override
+  String get hc_areaInjuryDetected => '检测到外伤';
+
+  @override
+  String get hc_notesHint => '描述伤情或事故（选填）';
 
   @override
   String get ai_petInfoPrefix => '名字';

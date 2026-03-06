@@ -76,6 +76,9 @@
   "forgot_newPasswordDescription": "Please enter a new password.\nYou cannot use a previously used password.",
   "input_newPassword": "New Password",
   "input_confirmPassword": "Confirm Password",
+  "password_strength_weak": "Weak",
+  "password_strength_medium": "Medium",
+  "password_strength_strong": "Strong",
   "btn_resetComplete": "Reset Complete",
 
   "home_monthlyUnit": "Monthly",
@@ -597,6 +600,8 @@
   "hc_areaFeces": "Feces",
   "hc_areaUrates": "Urates",
   "hc_areaUrine": "Urine",
+  "hc_areaInjuryDetected": "Injury Detected",
+  "hc_notesHint": "Describe any injuries or incidents (optional)",
 
   "ai_petInfoPrefix": "Name",
   "ai_breedPrefix": "Breed",

@@ -26,6 +26,13 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
   String _fileName = '';
   BodyPart _selectedPart = BodyPart.eye;
   bool _isPickingImage = false;
+  final _notesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     if (_isPickingImage) return;
@@ -71,6 +78,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
 
   void _onAnalyze() {
     if (_selectedImage == null) return;
+    final notes = _notesController.text.trim();
     context.pushNamed(
       RouteNames.healthCheckAnalyzing,
       extra: {
@@ -79,6 +87,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
             widget.mode == VisionMode.partSpecific ? _selectedPart : null,
         'imageBytes': _selectedImage!,
         'fileName': _fileName,
+        if (notes.isNotEmpty) 'notes': notes,
       },
     );
   }
@@ -149,6 +158,10 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
                 _buildPartSelector(l10n),
                 const SizedBox(height: 16),
               ],
+
+              // 상황 설명 (선택)
+              _buildNotesField(l10n),
+              const SizedBox(height: 12),
 
               // 카메라/갤러리 버튼
               Row(
@@ -288,6 +301,47 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildNotesField(AppLocalizations l10n) {
+    return TextField(
+      controller: _notesController,
+      maxLines: 2,
+      maxLength: 200,
+      style: const TextStyle(
+        fontFamily: 'Pretendard',
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: Color(0xFF1A1A1A),
+        letterSpacing: -0.3,
+      ),
+      decoration: InputDecoration(
+        hintText: l10n.hc_notesHint,
+        hintStyle: const TextStyle(
+          fontFamily: 'Pretendard',
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFF97928A),
+          letterSpacing: -0.3,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        counterText: '',
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.brandPrimary),
+        ),
       ),
     );
   }

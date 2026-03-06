@@ -211,6 +211,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get input_confirmPassword => '비밀번호 재입력';
 
   @override
+  String get password_strength_weak => '약함';
+
+  @override
+  String get password_strength_medium => '보통';
+
+  @override
+  String get password_strength_strong => '강함';
+
+  @override
   String get btn_resetComplete => '재설정 완료';
 
   @override
@@ -1628,6 +1637,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get hc_areaUrine => '소변';
+
+  @override
+  String get hc_areaInjuryDetected => '부상 감지';
+
+  @override
+  String get hc_notesHint => '부상이나 사고 상황을 설명해 주세요 (선택사항)';
 
   @override
   String get ai_petInfoPrefix => '이름';

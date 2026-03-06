@@ -478,6 +478,24 @@ abstract class AppLocalizations {
   /// **'비밀번호 재입력'**
   String get input_confirmPassword;
 
+  /// No description provided for @password_strength_weak.
+  ///
+  /// In ko, this message translates to:
+  /// **'약함'**
+  String get password_strength_weak;
+
+  /// No description provided for @password_strength_medium.
+  ///
+  /// In ko, this message translates to:
+  /// **'보통'**
+  String get password_strength_medium;
+
+  /// No description provided for @password_strength_strong.
+  ///
+  /// In ko, this message translates to:
+  /// **'강함'**
+  String get password_strength_strong;
+
   /// No description provided for @btn_resetComplete.
   ///
   /// In ko, this message translates to:
@@ -3111,6 +3129,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'소변'**
   String get hc_areaUrine;
+
+  /// No description provided for @hc_areaInjuryDetected.
+  ///
+  /// In ko, this message translates to:
+  /// **'부상 감지'**
+  String get hc_areaInjuryDetected;
+
+  /// No description provided for @hc_notesHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'부상이나 사고 상황을 설명해 주세요 (선택사항)'**
+  String get hc_notesHint;
 
   /// No description provided for @ai_petInfoPrefix.
   ///

@@ -91,6 +91,9 @@
   "forgot_newPasswordDescription": "새로운 비밀번호를 입력해 주세요,\n이전에 사용하신 비밀번호는 사용 하실 수 없습니다.",
   "input_newPassword": "새로운 비밀번호",
   "input_confirmPassword": "비밀번호 재입력",
+  "password_strength_weak": "약함",
+  "password_strength_medium": "보통",
+  "password_strength_strong": "강함",
   "btn_resetComplete": "재설정 완료",
 
   "home_monthlyUnit": "매월 단위",
@@ -795,6 +798,8 @@
   "hc_areaFeces": "변",
   "hc_areaUrates": "요산",
   "hc_areaUrine": "소변",
+  "hc_areaInjuryDetected": "부상 감지",
+  "hc_notesHint": "부상이나 사고 상황을 설명해 주세요 (선택사항)",
 
   "ai_petInfoPrefix": "이름",
   "ai_breedPrefix": "품종",

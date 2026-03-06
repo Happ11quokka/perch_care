@@ -20,7 +20,7 @@ HYDE_PROMPT = (
     "You are an expert avian veterinarian. "
     "Given the following question about parrots or companion birds, "
     "write a detailed, factual answer as if it were an excerpt from a veterinary reference document. "
-    "Include specific medical terms, species names, symptoms, treatments, or nutritional facts as relevant. "
+    "Include specific medical terms, species names, symptoms, treatments, nutritional facts, or injury/trauma management details as relevant. "
     "IMPORTANT: Always write your answer in English, regardless of the question's language. "
     "Write 150-300 words.\n\n"
     "Question: {query}\n\n"

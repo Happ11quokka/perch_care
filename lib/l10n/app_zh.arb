@@ -86,6 +86,9 @@
   "forgot_newPasswordDescription": "请输入新密码，\n不能使用之前使用过的密码。",
   "input_newPassword": "新密码",
   "input_confirmPassword": "确认密码",
+  "password_strength_weak": "弱",
+  "password_strength_medium": "中等",
+  "password_strength_strong": "强",
   "btn_resetComplete": "完成重置",
 
   "home_monthlyUnit": "月度",
@@ -764,6 +767,8 @@
   "hc_areaFeces": "粪便",
   "hc_areaUrates": "尿酸盐",
   "hc_areaUrine": "尿液",
+  "hc_areaInjuryDetected": "检测到外伤",
+  "hc_notesHint": "描述伤情或事故（选填）",
 
   "ai_petInfoPrefix": "名字",
   "ai_breedPrefix": "品种",

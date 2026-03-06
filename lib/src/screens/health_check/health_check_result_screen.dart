@@ -663,6 +663,7 @@ class HealthCheckResultScreen extends StatelessWidget {
       'feces' => l10n.hc_areaFeces,
       'urates' => l10n.hc_areaUrates,
       'urine' => l10n.hc_areaUrine,
+      'injury_detected' => l10n.hc_areaInjuryDetected,
       _ => area,
     };
   }
