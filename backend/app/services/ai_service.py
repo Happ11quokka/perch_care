@@ -353,6 +353,21 @@ def _detect_language(text: str) -> str:
     return "English"
 
 
+_LOCALE_TO_LANGUAGE = {"ko": "Korean", "en": "English", "zh": "Chinese"}
+
+
+def _resolve_language(language_code: str | None, notes: str | None) -> str:
+    """클라이언트 locale 코드 또는 notes 텍스트에서 응답 언어를 결정한다.
+
+    우선순위: 1) 명시적 locale 코드  2) notes 텍스트 감지  3) Korean 기본값
+    """
+    if language_code:
+        return _LOCALE_TO_LANGUAGE.get(language_code, "English")
+    if notes:
+        return _detect_language(notes)
+    return "Korean"
+
+
 async def prepare_system_message(
     db: AsyncSession,
     query: str,
@@ -526,8 +541,8 @@ async def ask_stream_with_message(
 
 _VISION_COMMON_RULES = (
     "You are '앵박사', an expert AI avian veterinarian analyzing a photo.\n\n"
-    "LANGUAGE RULE: Always respond in the SAME language as the user's notes. "
-    "If no notes are provided, respond in Korean.\n\n"
+    "LANGUAGE RULE: You MUST respond in the language specified by the user. "
+    "If no language is specified, respond in Korean.\n\n"
     "VETERINARY RECOMMENDATION POLICY:\n"
     "- Only recommend a vet visit when there are genuine warning signs: "
     "active bleeding, breathing difficulty, seizures, suspected infection, "
@@ -687,6 +702,7 @@ def _build_vision_system_message(
     rag_context: str | None = None,
     knowledge_context: str | None = None,
     deepseek_context: str | None = None,
+    language: str = "Korean",
 ) -> str:
     """Vision 프롬프트 + RAG + 벡터 지식 + DeepSeek 보충을 결합한다."""
     parts = [mode_prompt]
@@ -711,6 +727,18 @@ def _build_vision_system_message(
             "Consider this pet's health history when analyzing the image. "
             "Reference specific data points (weight trends, diet) when relevant."
         )
+
+    # 한국어가 아닌 경우 시스템 메시지 끝에 강제 언어 지시 추가 (recency bias 활용)
+    if language and language != "Korean":
+        parts.append(
+            f"\n\nCRITICAL LANGUAGE REMINDER: The user's language is {language}. "
+            f"You MUST write ALL JSON string values (observations, recommendations, "
+            f"possible_causes, names, notes, reasons, assessments) ENTIRELY in {language}. "
+            f"Do NOT use Korean or English for any text content. "
+            f"Only field keys and enum values (normal/caution/warning/critical, "
+            f"true/false, mode names) should remain in English."
+        )
+
     return "".join(parts)
 
 
@@ -742,15 +770,19 @@ async def analyze_vision_health_check(
     part: str | None = None,
     notes: str | None = None,
     tier: str = "premium",
+    language: str | None = None,
 ) -> dict:
     """GPT-4o Vision으로 이미지를 분석하여 구조화 JSON 결과를 반환한다."""
     import json as _json
     from app.services.vector_search_service import search_knowledge, format_knowledge_context
     from app.services.deepseek_service import get_chinese_supplement
 
+    # 0. 응답 언어 결정
+    resolved_language = _resolve_language(language, notes)
+
     # 1. 병렬 I/O: 벡터 검색 + RAG 컨텍스트 + (중국어) DeepSeek 보충
     search_query = _get_vision_search_query(mode, part)
-    is_chinese = notes and _contains_chinese(notes)
+    is_chinese = resolved_language == "Chinese"
 
     tasks = [
         search_knowledge(search_query),
@@ -772,6 +804,7 @@ async def analyze_vision_health_check(
     mode_prompt = _build_vision_prompt(mode, part)
     system_message = _build_vision_system_message(
         mode_prompt, rag_context, knowledge_context, deepseek_context,
+        language=resolved_language,
     )
 
     # 3. 사용자 메시지 구성 (이미지 + 텍스트)
@@ -780,6 +813,7 @@ async def analyze_vision_health_check(
         user_text += f" Focus on: {part}."
     if notes:
         user_text += f"\nUser notes: {notes}"
+    user_text += f"\nRespond in {resolved_language}."
 
     messages = [
         {"role": "system", "content": system_message},

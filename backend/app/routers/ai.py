@@ -212,6 +212,7 @@ async def analyze_vision_no_pet(
     mode: str = Form(...),
     part: str | None = Form(None),
     notes: str | None = Form(None),
+    language: str | None = Form(None),
     image: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     tier: str = Depends(get_current_tier),
@@ -259,6 +260,7 @@ async def analyze_vision_no_pet(
             part=part,
             notes=notes,
             tier=tier,
+            language=language,
         )
     except Exception as e:
         logger.error("Vision analysis (no pet) failed: %s", e, exc_info=True)

@@ -130,6 +130,7 @@ class HealthCheckService {
     required String mode,
     String? part,
     String? notes,
+    String? language,
     required Uint8List imageBytes,
     required String fileName,
   }) async {
@@ -137,6 +138,7 @@ class HealthCheckService {
       'mode': mode,
       if (part != null) 'part': part,
       if (notes != null) 'notes': notes,
+      if (language != null) 'language': language,
     };
     final response = await _api.uploadMultipart(
       '/pets/$petId/health-checks/analyze',
@@ -151,12 +153,14 @@ class HealthCheckService {
   /// 펫 없이 food 모드 분석 (POST /ai/vision/analyze)
   Future<Map<String, dynamic>> analyzeFood({
     String? notes,
+    String? language,
     required Uint8List imageBytes,
     required String fileName,
   }) async {
     final fields = <String, String>{
       'mode': 'food',
       if (notes != null) 'notes': notes,
+      if (language != null) 'language': language,
     };
     final response = await _api.uploadMultipart(
       '/ai/vision/analyze',

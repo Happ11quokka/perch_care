@@ -69,9 +69,10 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
 
     try {
       final activePetId = ActivePetNotifier.instance.activePetId;
+      final language = Localizations.localeOf(context).languageCode;
       debugPrint('[HealthCheck] activePetId=$activePetId, mode=${widget.mode.value}, '
           'part=${widget.part?.value}, fileName=${widget.fileName}, '
-          'imageSize=${widget.imageBytes.length} bytes');
+          'imageSize=${widget.imageBytes.length} bytes, language=$language');
 
       // food 모드는 펫 없이도 가능, 다른 모드는 펫 필수
       final isFoodMode = widget.mode == VisionMode.food;
@@ -84,6 +85,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
         response = await HealthCheckService.instance.analyzeFood(
           imageBytes: widget.imageBytes,
           fileName: widget.fileName,
+          language: language,
         );
       } else {
         response = await HealthCheckService.instance.analyzeImage(
@@ -92,6 +94,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
           part: widget.part?.value,
           imageBytes: widget.imageBytes,
           fileName: widget.fileName,
+          language: language,
         );
       }
 
