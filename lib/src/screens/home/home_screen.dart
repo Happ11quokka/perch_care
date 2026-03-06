@@ -862,10 +862,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    'AI 건강체크',
-                    style: TextStyle(
+                    AppLocalizations.of(context).hc_title,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -873,10 +873,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       letterSpacing: -0.4,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    '사진 한 장으로 건강 상태를 확인하세요',
-                    style: TextStyle(
+                    AppLocalizations.of(context).hc_photoSubtitle,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w400,

@@ -48,6 +48,8 @@ class WeightRecord {
       'recorded_date': date.toIso8601String().split('T').first,
       'weight': weight,
       if (memo != null) 'memo': memo,
+      if (recordedHour != null) 'recorded_hour': recordedHour,
+      if (recordedMinute != null) 'recorded_minute': recordedMinute,
     };
   }
 
@@ -58,6 +60,8 @@ class WeightRecord {
       'recorded_date': date.toIso8601String().split('T').first,
       'weight': weight,
       if (memo != null) 'memo': memo,
+      if (recordedHour != null) 'recorded_hour': recordedHour,
+      if (recordedMinute != null) 'recorded_minute': recordedMinute,
     };
   }
 

@@ -2776,6 +2776,12 @@ abstract class AppLocalizations {
   /// **'AI 건강체크'**
   String get hc_title;
 
+  /// No description provided for @hc_photoSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 한 장으로 건강 상태를 확인하세요'**
+  String get hc_photoSubtitle;
+
   /// No description provided for @hc_selectTarget.
   ///
   /// In ko, this message translates to:

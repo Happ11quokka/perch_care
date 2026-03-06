@@ -75,9 +75,8 @@ class AiStreamService {
       // P1: 401 시 토큰 갱신 후 1회 재시도
       if (response.statusCode == 401 && !isRetry) {
         client.close();
-        // ApiClient의 토큰 갱신 로직 활용을 위해 간단한 GET으로 갱신 유도
-        // 또는 직접 refresh 시도
-        final refreshed = await _refreshTokenIfNeeded();
+        // ApiClient의 Completer 기반 토큰 갱신 로직 활용
+        final refreshed = await ApiClient.instance.tryRefreshToken();
         if (refreshed) {
           yield* _tryStream(
             query: query,
@@ -148,32 +147,4 @@ class AiStreamService {
     }
   }
 
-  /// 토큰 갱신 시도. ApiClient의 refresh 엔드포인트를 직접 호출.
-  Future<bool> _refreshTokenIfNeeded() async {
-    final refreshToken = TokenService.instance.refreshToken;
-    if (refreshToken == null) return false;
-
-    try {
-      final uri = Uri.parse('${Environment.apiBaseUrl}/auth/refresh');
-      final response = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refresh_token': refreshToken}),
-      ).timeout(const Duration(seconds: 5));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        await TokenService.instance.saveTokens(
-          accessToken: data['access_token'],
-          refreshToken: data['refresh_token'],
-        );
-        return true;
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[AiStreamService] Token refresh failed: $e');
-      }
-    }
-    return false;
-  }
 }

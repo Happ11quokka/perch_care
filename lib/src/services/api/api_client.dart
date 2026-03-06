@@ -145,6 +145,9 @@ class ApiClient {
     return response;
   }
 
+  /// 외부에서 토큰 갱신이 필요할 때 (예: SSE 스트리밍)
+  Future<bool> tryRefreshToken() => _refreshToken();
+
   /// 토큰 갱신 (동시 요청 시 Completer로 중복 방지)
   Future<bool> _refreshToken() async {
     // 이미 갱신 진행 중이면 해당 결과를 공유

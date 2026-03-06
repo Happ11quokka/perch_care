@@ -41,4 +41,36 @@ class WaterIntakeRecord {
       'count': count,
     };
   }
+
+  WaterIntakeRecord copyWith({
+    String? id,
+    String? petId,
+    DateTime? recordedDate,
+    double? totalMl,
+    double? targetMl,
+    int? count,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return WaterIntakeRecord(
+      id: id ?? this.id,
+      petId: petId ?? this.petId,
+      recordedDate: recordedDate ?? this.recordedDate,
+      totalMl: totalMl ?? this.totalMl,
+      targetMl: targetMl ?? this.targetMl,
+      count: count ?? this.count,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WaterIntakeRecord &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

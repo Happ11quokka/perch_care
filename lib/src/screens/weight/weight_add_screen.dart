@@ -30,7 +30,7 @@ class WeightAddScreen extends StatefulWidget {
 class _WeightAddScreenState extends State<WeightAddScreen> {
   final _weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _weightService = WeightService();
+  final _weightService = WeightService.instance;
   final _petCache = PetLocalCacheService.instance;
   bool _isLoading = false;
   TimeOfDay _selectedTime = TimeOfDay.now();

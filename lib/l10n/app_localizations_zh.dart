@@ -1436,6 +1436,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hc_title => 'AI健康检查';
 
   @override
+  String get hc_photoSubtitle => '一张照片即可确认健康状态';
+
+  @override
   String get hc_selectTarget => '请选择分析对象';
 
   @override

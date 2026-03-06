@@ -721,6 +721,7 @@
   "premium_healthCheckBlockedTitle": "프리미엄 전용 기능",
 
   "hc_title": "AI 건강체크",
+  "hc_photoSubtitle": "사진 한 장으로 건강 상태를 확인하세요",
   "hc_selectTarget": "분석 대상을 선택해주세요",
   "hc_analyze": "분석하기",
 

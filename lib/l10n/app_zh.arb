@@ -690,6 +690,7 @@
   "premium_healthCheckBlockedTitle": "高级版专属功能",
 
   "hc_title": "AI健康检查",
+  "hc_photoSubtitle": "一张照片即可确认健康状态",
   "hc_selectTarget": "请选择分析对象",
   "hc_analyze": "开始分析",
 

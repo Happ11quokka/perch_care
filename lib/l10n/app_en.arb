@@ -523,6 +523,7 @@
   "premium_healthCheckBlockedTitle": "Premium Feature",
 
   "hc_title": "AI Health Check",
+  "hc_photoSubtitle": "Check health status with just one photo",
   "hc_selectTarget": "Please select an analysis target",
   "hc_analyze": "Analyze",
 

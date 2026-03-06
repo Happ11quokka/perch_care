@@ -9,7 +9,8 @@ import '../api/api_client.dart';
 /// 체중 데이터 관리 서비스
 /// FastAPI 백엔드와 연동, 1일 다중 기록 지원
 class WeightService {
-  WeightService();
+  WeightService._();
+  static final instance = WeightService._();
 
   final _api = ApiClient.instance;
 
@@ -159,8 +160,13 @@ class WeightService {
       if (record.memo != null) 'memo': record.memo,
     });
 
-    // 서버 API는 날짜 기반 upsert이므로, 로컬에서만 다중 기록 관리
-    // 서버 전송은 가장 최근 기록으로 덮어쓰기됨
+    // 로컬 캐시도 업데이트
+    final recordWithId = record.copyWith(
+      id: record.id ?? _generateLocalId(),
+      date: normalizedDate,
+    );
+    _insertLocal(recordWithId);
+    _schedulePersist();
   }
 
   /// 로컬 캐시에 체중 기록 추가 (다중 기록 지원)

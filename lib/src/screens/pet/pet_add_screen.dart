@@ -234,7 +234,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
       // 새 펫 생성 시 초기 체중을 WeightRecord로 자동 생성
       if (weightValue != null && _existingPet == null) {
         try {
-          final weightService = WeightService();
+          final weightService = WeightService.instance;
           final record = WeightRecord(
             petId: savedPet.id,
             date: DateTime.now(),

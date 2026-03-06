@@ -45,4 +45,36 @@ class FoodRecord {
       if (entriesJson != null) 'entries_json': entriesJson,
     };
   }
+
+  FoodRecord copyWith({
+    String? id,
+    String? petId,
+    DateTime? recordedDate,
+    double? totalGrams,
+    double? targetGrams,
+    int? count,
+    String? entriesJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return FoodRecord(
+      id: id ?? this.id,
+      petId: petId ?? this.petId,
+      recordedDate: recordedDate ?? this.recordedDate,
+      totalGrams: totalGrams ?? this.totalGrams,
+      targetGrams: targetGrams ?? this.targetGrams,
+      count: count ?? this.count,
+      entriesJson: entriesJson ?? this.entriesJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FoodRecord && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

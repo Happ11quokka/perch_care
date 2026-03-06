@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../api/api_client.dart';
@@ -21,8 +22,12 @@ class PushNotificationService {
   StreamSubscription<RemoteMessage>? _foregroundMessageSub;
   StreamSubscription<RemoteMessage>? _messageOpenedAppSub;
 
+  bool _isInitialized = false;
+
   /// 초기화: 권한 요청 + 토큰 등록 + 리스너 설정
   Future<void> initialize() async {
+    if (_isInitialized) return;
+
     // 1. 알림 권한 요청
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -31,7 +36,7 @@ class PushNotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.denied) {
-      debugPrint('[Push] Notification permission denied');
+      if (kDebugMode) debugPrint('[Push] Notification permission denied');
       return;
     }
 
@@ -50,7 +55,8 @@ class PushNotificationService {
     // 5. 백그라운드에서 알림 탭 시
     _messageOpenedAppSub = FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
-    debugPrint('[Push] PushNotificationService initialized');
+    _isInitialized = true;
+    if (kDebugMode) debugPrint('[Push] PushNotificationService initialized');
   }
 
   /// 스트림 구독 해제
@@ -58,6 +64,7 @@ class PushNotificationService {
     await _tokenRefreshSub?.cancel();
     await _foregroundMessageSub?.cancel();
     await _messageOpenedAppSub?.cancel();
+    _isInitialized = false;
   }
 
   /// 서버에 FCM 토큰 등록
@@ -73,22 +80,22 @@ class PushNotificationService {
         'platform': platform,
         'language': language,
       });
-      debugPrint('[Push] Token registered: ${token.substring(0, 20)}...');
+      if (kDebugMode) debugPrint('[Push] Token registered');
     } catch (e) {
-      debugPrint('[Push] Failed to register token: $e');
+      if (kDebugMode) debugPrint('[Push] Failed to register token: $e');
     }
   }
 
   /// 포그라운드 메시지 수신
   void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('[Push] Foreground message: ${message.notification?.title}');
+    if (kDebugMode) debugPrint('[Push] Foreground message: ${message.notification?.title}');
     // 인앱 알림은 기존 NotificationService polling으로 처리되므로
     // 여기서는 별도 UI 표시 불필요
   }
 
   /// 백그라운드에서 알림 탭으로 앱 열기
   void _handleMessageOpenedApp(RemoteMessage message) {
-    debugPrint('[Push] Opened from notification: ${message.data}');
+    if (kDebugMode) debugPrint('[Push] Opened from notification: ${message.data}');
     // 필요 시 특정 화면으로 네비게이션
   }
 }
@@ -96,5 +103,5 @@ class PushNotificationService {
 /// 백그라운드 메시지 핸들러 (top-level function 필수)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('[Push] Background message: ${message.messageId}');
+  if (kDebugMode) debugPrint('[Push] Background message: ${message.messageId}');
 }

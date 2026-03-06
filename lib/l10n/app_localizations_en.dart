@@ -1503,6 +1503,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hc_title => 'AI Health Check';
 
   @override
+  String get hc_photoSubtitle => 'Check health status with just one photo';
+
+  @override
   String get hc_selectTarget => 'Please select an analysis target';
 
   @override

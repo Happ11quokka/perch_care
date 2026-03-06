@@ -51,4 +51,19 @@ class BhiResult {
       debugWaterTarget: (json['debug_water_target'] as num?)?.toDouble(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'bhi_score': bhiScore,
+      'weight_score': weightScore,
+      'food_score': foodScore,
+      'water_score': waterScore,
+      'wci_level': wciLevel,
+      if (growthStage != null) 'growth_stage': growthStage,
+      'target_date': targetDate.toIso8601String().split('T').first,
+      'has_weight_data': hasWeightData,
+      'has_food_data': hasFoodData,
+      'has_water_data': hasWaterData,
+    };
+  }
 }

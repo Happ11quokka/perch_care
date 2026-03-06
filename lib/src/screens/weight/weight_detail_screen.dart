@@ -25,7 +25,7 @@ class WeightDetailScreen extends StatefulWidget {
 }
 
 class _WeightDetailScreenState extends State<WeightDetailScreen> {
-  final _weightService = WeightService();
+  final _weightService = WeightService.instance;
   final _scheduleService = ScheduleService();
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;

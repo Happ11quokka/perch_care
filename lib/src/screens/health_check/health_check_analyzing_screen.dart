@@ -49,7 +49,9 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
     _animController.repeat(reverse: true);
-    _startAnalysis();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAnalysis();
+    });
   }
 
   @override

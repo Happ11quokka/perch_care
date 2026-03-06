@@ -95,22 +95,21 @@ class AiHealthCheck {
           id == other.id;
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => (id ?? '').hashCode;
 }
 
 /// 건강 체크 타입 enum
 enum HealthCheckType {
-  eye('eye', '눈 건강'),
-  skin('skin', '피부 건강'),
-  posture('posture', '자세/체형'),
-  oral('oral', '구강 건강'),
-  ear('ear', '귀 건강'),
-  general('general', '전체 건강');
+  eye('eye'),
+  skin('skin'),
+  posture('posture'),
+  oral('oral'),
+  ear('ear'),
+  general('general');
 
   final String value;
-  final String label;
 
-  const HealthCheckType(this.value, this.label);
+  const HealthCheckType(this.value);
 
   static HealthCheckType fromValue(String value) {
     return HealthCheckType.values.firstWhere(
@@ -122,14 +121,13 @@ enum HealthCheckType {
 
 /// 건강 상태 enum
 enum HealthStatus {
-  normal('normal', '정상'),
-  warning('warning', '주의'),
-  danger('danger', '위험');
+  normal('normal'),
+  warning('warning'),
+  danger('danger');
 
   final String value;
-  final String label;
 
-  const HealthStatus(this.value, this.label);
+  const HealthStatus(this.value);
 
   static HealthStatus fromValue(String value) {
     return HealthStatus.values.firstWhere(
@@ -141,15 +139,14 @@ enum HealthStatus {
 
 /// Vision 분석 모드
 enum VisionMode {
-  fullBody('full_body', '전체 외형'),
-  partSpecific('part_specific', '부위별 검사'),
-  droppings('droppings', '배변 분석'),
-  food('food', '먹이 안전성');
+  fullBody('full_body'),
+  partSpecific('part_specific'),
+  droppings('droppings'),
+  food('food');
 
   final String value;
-  final String label;
 
-  const VisionMode(this.value, this.label);
+  const VisionMode(this.value);
 
   static VisionMode fromValue(String value) {
     return VisionMode.values.firstWhere(
@@ -161,15 +158,14 @@ enum VisionMode {
 
 /// 부위별 검사 대상 (part_specific 모드용)
 enum BodyPart {
-  eye('eye', '눈'),
-  beak('beak', '부리'),
-  feather('feather', '깃털'),
-  foot('foot', '발');
+  eye('eye'),
+  beak('beak'),
+  feather('feather'),
+  foot('foot');
 
   final String value;
-  final String label;
 
-  const BodyPart(this.value, this.label);
+  const BodyPart(this.value);
 
   static BodyPart fromValue(String value) {
     return BodyPart.values.firstWhere(

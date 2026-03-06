@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -26,18 +27,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _hasNavigatedAfterLogin = false;
 
-  void _navigateToHomeAfterLogin() {
+  Future<void> _navigateAfterLogin() async {
     if (!mounted || _hasNavigatedAfterLogin) return;
     _hasNavigatedAfterLogin = true;
-    context.goNamed(RouteNames.home);
+
+    // 펫 유무 확인 — 없으면 첫 로그인으로 간주하여 프로필 설정으로
+    final hasPets = await _authService.hasPets();
+    if (!mounted) return;
+
+    if (hasPets) {
+      context.goNamed(RouteNames.home);
+    } else {
+      context.goNamed(RouteNames.profileSetup);
+    }
   }
 
   /// 소셜 로그인 결과 처리
-  void _handleSocialLoginResult(SocialLoginResult result) {
-    final l10n = AppLocalizations.of(context)!;
+  Future<void> _handleSocialLoginResult(SocialLoginResult result) async {
     if (result.success) {
-      _navigateToHomeAfterLogin();
+      await _navigateAfterLogin();
     } else if (result.signupRequired) {
+      final l10n = AppLocalizations.of(context)!;
       AppSnackBar.error(context, message: l10n.error_loginRetry);
     }
   }
@@ -47,26 +57,25 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isGoogleLoading = true);
     final l10n = AppLocalizations.of(context)!;
     try {
-      debugPrint('[Google] Starting login...');
+      if (kDebugMode) debugPrint('[Google] Starting login...');
       final signIn = GoogleSignIn.instance;
-      debugPrint('[Google] Calling authenticate...');
       final account = await signIn.authenticate();
-      debugPrint('[Google] Got account: ${account.email}');
+      if (kDebugMode) debugPrint('[Google] Got account');
       final idToken = account.authentication.idToken;
-      debugPrint('[Google] Got idToken: ${idToken?.substring(0, 20)}...');
+      if (kDebugMode) debugPrint('[Google] idToken received: ${idToken != null}');
       if (idToken == null) throw Exception('idToken is null');
       final result = await _authService.signInWithGoogle(idToken: idToken);
-      debugPrint('[Google] API result: success=${result.success}');
+      if (kDebugMode) debugPrint('[Google] API result: success=${result.success}');
       if (!mounted) return;
       _handleSocialLoginResult(result);
     } on GoogleSignInException catch (e) {
-      debugPrint('[Google] GoogleSignInException: code=${e.code}');
+      if (kDebugMode) debugPrint('[Google] GoogleSignInException: code=${e.code}');
       if (!mounted) return;
       if (e.code == GoogleSignInExceptionCode.canceled) return;
       AppSnackBar.error(context, message: l10n.error_googleLogin);
     } catch (e, stackTrace) {
-      debugPrint('[Google] Error: $e');
-      debugPrint('[Google] StackTrace: $stackTrace');
+      if (kDebugMode) debugPrint('[Google] Error: $e');
+      if (kDebugMode) debugPrint('[Google] StackTrace: $stackTrace');
       if (!mounted) return;
       AppSnackBar.error(context, message: l10n.error_googleLogin);
     } finally {
@@ -108,11 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
     } on SignInWithAppleAuthorizationException catch (e) {
       if (!mounted) return;
       if (e.code == AuthorizationErrorCode.canceled) return;
-      debugPrint('Apple Sign In Error: ${e.code} - ${e.message}');
+      if (kDebugMode) debugPrint('[Apple] Error: ${e.code}');
       AppSnackBar.error(context, message: l10n.error_appleLogin);
     } catch (e) {
       if (!mounted) return;
-      debugPrint('Apple Sign In Error: $e');
+      if (kDebugMode) debugPrint('[Apple] Error: $e');
       AppSnackBar.error(context, message: l10n.error_appleLogin);
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);

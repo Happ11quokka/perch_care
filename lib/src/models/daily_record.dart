@@ -86,21 +86,20 @@ class DailyRecord {
       other is DailyRecord && runtimeType == other.runtimeType && id == other.id;
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => (id ?? '').hashCode;
 }
 
 /// 기분 enum
 enum Mood {
-  great('great', '최고'),
-  good('good', '좋음'),
-  normal('normal', '보통'),
-  bad('bad', '나쁨'),
-  sick('sick', '아픔');
+  great('great'),
+  good('good'),
+  normal('normal'),
+  bad('bad'),
+  sick('sick');
 
   final String value;
-  final String label;
 
-  const Mood(this.value, this.label);
+  const Mood(this.value);
 
   static Mood? fromValue(String? value) {
     if (value == null) return null;

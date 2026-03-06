@@ -99,7 +99,7 @@ class PetService {
           PetProfileCache(
             id: pet.id,
             name: pet.name,
-            species: pet.breed,
+            species: pet.species,
             gender: pet.gender,
             birthDate: pet.birthDate,
           ),

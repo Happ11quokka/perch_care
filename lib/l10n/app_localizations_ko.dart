@@ -1458,6 +1458,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get hc_title => 'AI 건강체크';
 
   @override
+  String get hc_photoSubtitle => '사진 한 장으로 건강 상태를 확인하세요';
+
+  @override
   String get hc_selectTarget => '분석 대상을 선택해주세요';
 
   @override

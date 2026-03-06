@@ -176,5 +176,106 @@ class AppTheme {
           labelMedium: AppTypography.labelMedium,
           labelSmall: AppTypography.labelSmall,
         ),
+
+        // AppBar Theme
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: AppColors.nearBlack,
+          foregroundColor: AppColors.white,
+        ),
+
+        // Card Theme
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.card,
+          ),
+        ),
+
+        // Button Themes
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+            textStyle: AppTypography.button,
+          ),
+        ),
+
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+            textStyle: AppTypography.button,
+          ),
+        ),
+
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+            textStyle: AppTypography.button,
+          ),
+        ),
+
+        // Input Decoration Theme
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF2C2C2C),
+          border: OutlineInputBorder(
+            borderRadius: AppRadius.textField,
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: AppRadius.textField,
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: AppRadius.textField,
+            borderSide: const BorderSide(
+              color: AppColors.primary,
+              width: 2,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: AppRadius.textField,
+            borderSide: const BorderSide(
+              color: AppColors.error,
+              width: 1,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: AppRadius.textField,
+            borderSide: const BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
+          ),
+        ),
+
+        // Chip Theme
+        chipTheme: ChipThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.chip,
+          ),
+        ),
+
+        // Dialog Theme
+        dialogTheme: DialogThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.dialog,
+          ),
+        ),
+
+        // Bottom Sheet Theme
+        bottomSheetTheme: const BottomSheetThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.bottomSheet,
+          ),
+        ),
       );
 }
