@@ -358,6 +358,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get weight_unitGram => '克';
 
   @override
+  String get weight_breedRange => '品种体重范围';
+
+  @override
+  String weight_breedRangeIdeal(double min, double max) {
+    return '理想：$min克 - $max克';
+  }
+
+  @override
+  String weight_breedRangeFull(double min, double max) {
+    return '范围：$min克 - $max克';
+  }
+
+  @override
+  String get breed_selectTitle => '选择品种';
+
+  @override
+  String get breed_searchHint => '搜索品种...';
+
+  @override
+  String get breed_noBreeds => '暂无品种数据';
+
+  @override
+  String get breed_notFound => '未找到品种';
+
+  @override
   String get weightDetail_title => '记录';
 
   @override
@@ -1618,6 +1643,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hc_areaInjuryDetected => '检测到外伤';
+
+  @override
+  String get hc_firstAidTitle => '应急处理';
 
   @override
   String get hc_notesHint => '描述伤情或事故（选填）';

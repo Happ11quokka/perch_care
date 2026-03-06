@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -31,12 +32,18 @@ class ApiClient {
     };
   }
 
+  String get _acceptLanguage {
+    final locale = ui.PlatformDispatcher.instance.locale;
+    return locale.toLanguageTag();
+  }
+
   Map<String, String> get _authHeaders {
     final token = _tokenService.accessToken;
     if (token == null) throw Exception('Not authenticated');
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
+      'Accept-Language': _acceptLanguage,
     };
   }
 

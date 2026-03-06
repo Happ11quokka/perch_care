@@ -698,34 +698,51 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   ),
                 ),
                 // 3) 데이터 포인트 수치 라벨 (선택된 포인트 제외 - pill이 이미 표시)
-                ...List.generate(spots.length, (index) {
-                  if (index == selectedSpotIndex) {
-                    return const SizedBox.shrink();
-                  }
-                  final spot = spots[index];
-                  final labelX =
-                      _dataXToPixel(spot.x, minX, maxX, chartWidth);
-                  final labelY = _dataYToPixel(
-                      spot.y, minY, maxY, chartAreaHeight);
-                  return Positioned(
-                    left: labelX - 30,
-                    top: labelY - 22,
-                    child: SizedBox(
-                      width: 60,
-                      child: Center(
-                        child: Text(
-                          '${spot.y.toStringAsFixed(1)} g',
-                          style: const TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF999999),
+                ...() {
+                  const double labelW = 60;
+                  const double labelH = 22;
+                  const double minGap = 50;
+                  // 겹침 방지: 표시할 라벨의 X 좌표 추적
+                  final List<double> visibleXs = [];
+                  return List.generate(spots.length, (index) {
+                    if (index == selectedSpotIndex) {
+                      return const SizedBox.shrink();
+                    }
+                    final spot = spots[index];
+                    final labelX =
+                        _dataXToPixel(spot.x, minX, maxX, chartWidth);
+                    final labelY = _dataYToPixel(
+                        spot.y, minY, maxY, chartAreaHeight);
+                    // 인접 라벨과 간격 체크 — 너무 가까우면 숨김
+                    final tooClose = visibleXs.any(
+                        (vx) => (vx - labelX).abs() < minGap);
+                    if (tooClose) return const SizedBox.shrink();
+                    visibleXs.add(labelX);
+                    // 경계 클램프
+                    final clampedLeft = (labelX - labelW / 2)
+                        .clamp(0.0, chartWidth - labelW);
+                    final clampedTop =
+                        (labelY - labelH).clamp(0.0, chartAreaHeight - labelH);
+                    return Positioned(
+                      left: clampedLeft,
+                      top: clampedTop,
+                      child: SizedBox(
+                        width: labelW,
+                        child: Center(
+                          child: Text(
+                            '${spot.y.toStringAsFixed(1)} g',
+                            style: const TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF999999),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  });
+                }(),
                 // 4) 라벨 (하단)
                 Positioned(
                   left: 0,

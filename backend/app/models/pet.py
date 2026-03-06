@@ -18,11 +18,13 @@ class Pet(Base):
     gender: Mapped[str | None] = mapped_column(String(20), nullable=True)
     profile_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     growth_stage: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    breed_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("breed_standards.id", ondelete="SET NULL"), nullable=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="pets")
+    breed_standard = relationship("BreedStandard", foreign_keys=[breed_id])
     weight_records = relationship("WeightRecord", back_populates="pet", cascade="all, delete-orphan")
     daily_records = relationship("DailyRecord", back_populates="pet", cascade="all, delete-orphan")
     health_checks = relationship("AiHealthCheck", back_populates="pet", cascade="all, delete-orphan")

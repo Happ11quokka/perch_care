@@ -11,6 +11,9 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/analog_time_picker.dart';
+import '../../widgets/weight_range_indicator.dart';
+import '../../models/breed_standard.dart';
+import '../../services/breed/breed_service.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WeightRecordScreen extends StatefulWidget {
@@ -33,6 +36,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   List<WeightRecord> _records = [];
+  BreedStandard? _breedStandard;
 
   @override
   void initState() {
@@ -56,6 +60,15 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         setState(() {
           _activePetId = apiPet.id;
         });
+        // 품종 정보 로드
+        if (apiPet.breedId != null) {
+          try {
+            final breed = await BreedService.instance.fetchBreedById(apiPet.breedId!);
+            if (mounted && breed != null) {
+              setState(() => _breedStandard = breed);
+            }
+          } catch (_) {}
+        }
       } else {
         // 로컬 캐시 폴백
         final cachedPet = await _petCache.getActivePet();
@@ -409,6 +422,52 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         letterSpacing: -0.3,
                       ),
                     ),
+                    // 품종 체중 범위 표시 (breed_id가 있을 때만)
+                    if (_breedStandard != null && hasData) ...[
+                      const SizedBox(height: 24),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF6F6F6),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.weight_breedRange,
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.nearBlack,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${_breedStandard!.displayName}  •  ${l10n.weight_breedRangeIdeal(_breedStandard!.weightIdealMinG, _breedStandard!.weightIdealMaxG)}',
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 11,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.gray600,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            WeightRangeIndicator(
+                              currentWeight: current.weight,
+                              minG: _breedStandard!.weightMinG,
+                              idealMinG: _breedStandard!.weightIdealMinG,
+                              idealMaxG: _breedStandard!.weightIdealMaxG,
+                              maxG: _breedStandard!.weightMaxG,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 28),
                     Container(
                       width: double.infinity,

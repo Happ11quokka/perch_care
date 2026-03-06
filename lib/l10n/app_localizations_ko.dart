@@ -363,6 +363,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get weight_unitGram => 'g';
 
   @override
+  String get weight_breedRange => '품종별 체중 범위';
+
+  @override
+  String weight_breedRangeIdeal(double min, double max) {
+    return '이상적: ${min}g - ${max}g';
+  }
+
+  @override
+  String weight_breedRangeFull(double min, double max) {
+    return '범위: ${min}g - ${max}g';
+  }
+
+  @override
+  String get breed_selectTitle => '품종 선택';
+
+  @override
+  String get breed_searchHint => '품종 검색...';
+
+  @override
+  String get breed_noBreeds => '등록된 품종이 없습니다';
+
+  @override
+  String get breed_notFound => '검색 결과가 없습니다';
+
+  @override
   String get weightDetail_title => '기록';
 
   @override
@@ -1640,6 +1665,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get hc_areaInjuryDetected => '부상 감지';
+
+  @override
+  String get hc_firstAidTitle => '응급 처치';
 
   @override
   String get hc_notesHint => '부상이나 사고 상황을 설명해 주세요 (선택사항)';

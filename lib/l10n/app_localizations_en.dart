@@ -372,6 +372,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weight_unitGram => 'g';
 
   @override
+  String get weight_breedRange => 'Breed Weight Range';
+
+  @override
+  String weight_breedRangeIdeal(double min, double max) {
+    return 'Ideal: ${min}g - ${max}g';
+  }
+
+  @override
+  String weight_breedRangeFull(double min, double max) {
+    return 'Range: ${min}g - ${max}g';
+  }
+
+  @override
+  String get breed_selectTitle => 'Select Breed';
+
+  @override
+  String get breed_searchHint => 'Search breeds...';
+
+  @override
+  String get breed_noBreeds => 'No breeds available';
+
+  @override
+  String get breed_notFound => 'No breeds found';
+
+  @override
   String get weightDetail_title => 'Records';
 
   @override
@@ -1689,6 +1714,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hc_areaInjuryDetected => 'Injury Detected';
+
+  @override
+  String get hc_firstAidTitle => 'Emergency First Aid';
 
   @override
   String get hc_notesHint => 'Describe any injuries or incidents (optional)';

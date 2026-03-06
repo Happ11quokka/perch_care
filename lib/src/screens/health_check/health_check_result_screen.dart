@@ -244,6 +244,10 @@ class HealthCheckResultScreen extends StatelessWidget {
         final causes = (f['possible_causes'] as List<dynamic>?)
             ?.map((e) => e.toString())
             .toList();
+        final rawFirstAid = f['first_aid'];
+        final firstAid = rawFirstAid is List
+            ? rawFirstAid.map((e) => e.toString()).toList()
+            : null;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -253,6 +257,7 @@ class HealthCheckResultScreen extends StatelessWidget {
             observation: observation,
             severity: severity,
             details: causes,
+            firstAidSteps: firstAid,
           ),
         );
       }).toList(),
@@ -536,6 +541,7 @@ class HealthCheckResultScreen extends StatelessWidget {
     required String observation,
     required String severity,
     List<String>? details,
+    List<String>? firstAidSteps,
   }) {
     final (severityColor, severityBg, severityLabel) =
         _getSeverityStyle(severity, l10n);
@@ -607,6 +613,47 @@ class HealthCheckResultScreen extends StatelessWidget {
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF97928A),
                 letterSpacing: -0.3,
+              ),
+            ),
+          ],
+          if (firstAidSteps != null && firstAidSteps.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.hc_firstAidTitle,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFE65100),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  ...firstAidSteps.asMap().entries.map((e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Text(
+                      '${e.key + 1}. ${e.value}',
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF6B6B6B),
+                        letterSpacing: -0.3,
+                        height: 1.4,
+                      ),
+                    ),
+                  )),
+                ],
               ),
             ),
           ],

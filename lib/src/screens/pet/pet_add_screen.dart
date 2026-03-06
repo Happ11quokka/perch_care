@@ -16,6 +16,8 @@ import '../../services/weight/weight_service.dart';
 import '../../models/weight_record.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../services/breed/breed_service.dart';
+import '../../widgets/breed_selector.dart';
 
 /// 반려동물 등록/수정 화면 - Figma 디자인 기반
 class PetAddScreen extends StatefulWidget {
@@ -53,6 +55,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
   String? _selectedGrowthStage;
   DateTime? _selectedBirthDate;
   DateTime? _selectedAdoptionDate;
+  String? _selectedBreedId;
+  String? _selectedBreedDisplayName;
+  bool _showOtherBreedField = false;
 
   bool _isLoading = false;
   bool _isLoadingData = false;
@@ -86,11 +91,23 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
       _existingPet = pet;
       _nameController.text = pet.name;
-      _speciesController.text = pet.breed ?? '';
       _selectedGender = pet.gender;
       _selectedGrowthStage = pet.growthStage;
       _selectedBirthDate = pet.birthDate;
       _selectedAdoptionDate = pet.adoptionDate;
+      if (pet.breedId != null) {
+        _selectedBreedId = pet.breedId;
+        // breed display name 초기화 (수정 화면에서 null 저장 방지)
+        final breed = await BreedService.instance.fetchBreedById(pet.breedId!);
+        if (breed != null) {
+          _selectedBreedDisplayName = breed.displayName;
+        } else {
+          _selectedBreedDisplayName = pet.breed;
+        }
+      } else {
+        _speciesController.text = pet.breed ?? '';
+        _showOtherBreedField = pet.breed != null && pet.breed!.isNotEmpty;
+      }
       if (pet.weight != null) {
         _weightController.text = pet.weight!.toStringAsFixed(1);
       }
@@ -204,13 +221,23 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
       Pet savedPet;
 
+      // 품종 선택 여부에 따라 species/breed 결정
+      final effectiveSpecies = _selectedBreedId != null
+          ? 'bird'
+          : (species.isEmpty ? l10n.pet_defaultName : species);
+      final effectiveBreed = _selectedBreedId != null
+          ? _selectedBreedDisplayName
+          : (species.isEmpty ? null : species);
+
       if (_existingPet != null) {
         // 기존 펫 수정
         savedPet = await _petService.updatePet(
           petId: _existingPet!.id,
           name: petName,
-          species: species.isEmpty ? null : species,
-          breed: species.isEmpty ? null : species,
+          species: effectiveSpecies,
+          breed: effectiveBreed,
+          breedId: _selectedBreedId,
+          updateBreedFields: true,
           birthDate: _selectedBirthDate,
           gender: gender,
           growthStage: growthStage,
@@ -221,8 +248,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
         // 새 펫 생성
         savedPet = await _petService.createPet(
           name: petName,
-          species: species.isEmpty ? l10n.pet_defaultName : species,
-          breed: species.isEmpty ? null : species,
+          species: effectiveSpecies,
+          breed: effectiveBreed,
+          breedId: _selectedBreedId,
           birthDate: _selectedBirthDate,
           gender: gender,
           growthStage: growthStage,
@@ -266,7 +294,7 @@ class _PetAddScreenState extends State<PetAddScreen> {
         PetProfileCache(
           id: savedPet.id,
           name: savedPet.name,
-          species: savedPet.breed,
+          species: savedPet.breed ?? _selectedBreedDisplayName,
           gender: savedPet.gender,
           birthDate: savedPet.birthDate,
         ),
@@ -446,13 +474,37 @@ class _PetAddScreenState extends State<PetAddScreen> {
                         onTap: () => _selectDate(context, false),
                       ),
                       const SizedBox(height: 16),
-                      // 종
-                      _buildTextField(
-                        controller: _speciesController,
-                        focusNode: _speciesFocusNode,
-                        hasFocus: _speciesHasFocus,
+                      // 품종 선택
+                      BreedSelector(
+                        selectedBreedId: _selectedBreedId,
+                        selectedBreedDisplayName: _selectedBreedDisplayName,
+                        onBreedSelected: (breed) {
+                          setState(() {
+                            if (breed != null) {
+                              _selectedBreedId = breed.id;
+                              _selectedBreedDisplayName = breed.displayName;
+                              _showOtherBreedField = false;
+                              _speciesController.clear();
+                            } else {
+                              // "기타" 선택
+                              _selectedBreedId = null;
+                              _selectedBreedDisplayName = null;
+                              _showOtherBreedField = true;
+                            }
+                          });
+                        },
                         hintText: l10n.pet_species_hint,
+                        otherOptionText: l10n.pet_species_hint,
                       ),
+                      if (_showOtherBreedField) ...[
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: _speciesController,
+                          focusNode: _speciesFocusNode,
+                          hasFocus: _speciesHasFocus,
+                          hintText: l10n.pet_species_hint,
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       // 성장 단계 (새 전용)
                       _buildGrowthStageDropdown(l10n),

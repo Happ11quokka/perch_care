@@ -161,6 +161,26 @@
   "weight_level5Title": "Level 5 | 偏重",
   "weight_level5Desc": "体重增加较多。需要调整饮食和活动。",
   "weight_unitGram": "克",
+  "weight_breedRange": "品种体重范围",
+  "weight_breedRangeIdeal": "理想：{min}克 - {max}克",
+  "@weight_breedRangeIdeal": {
+    "placeholders": {
+      "min": {"type": "double"},
+      "max": {"type": "double"}
+    }
+  },
+  "weight_breedRangeFull": "范围：{min}克 - {max}克",
+  "@weight_breedRangeFull": {
+    "placeholders": {
+      "min": {"type": "double"},
+      "max": {"type": "double"}
+    }
+  },
+
+  "breed_selectTitle": "选择品种",
+  "breed_searchHint": "搜索品种...",
+  "breed_noBreeds": "暂无品种数据",
+  "breed_notFound": "未找到品种",
 
   "weightDetail_title": "记录",
   "weightDetail_headerLine1": "坚持记录",
@@ -768,6 +788,7 @@
   "hc_areaUrates": "尿酸盐",
   "hc_areaUrine": "尿液",
   "hc_areaInjuryDetected": "检测到外伤",
+  "hc_firstAidTitle": "应急处理",
   "hc_notesHint": "描述伤情或事故（选填）",
 
   "ai_petInfoPrefix": "名字",

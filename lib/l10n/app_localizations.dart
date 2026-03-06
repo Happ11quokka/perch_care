@@ -760,6 +760,48 @@ abstract class AppLocalizations {
   /// **'g'**
   String get weight_unitGram;
 
+  /// No description provided for @weight_breedRange.
+  ///
+  /// In ko, this message translates to:
+  /// **'품종별 체중 범위'**
+  String get weight_breedRange;
+
+  /// No description provided for @weight_breedRangeIdeal.
+  ///
+  /// In ko, this message translates to:
+  /// **'이상적: {min}g - {max}g'**
+  String weight_breedRangeIdeal(double min, double max);
+
+  /// No description provided for @weight_breedRangeFull.
+  ///
+  /// In ko, this message translates to:
+  /// **'범위: {min}g - {max}g'**
+  String weight_breedRangeFull(double min, double max);
+
+  /// No description provided for @breed_selectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Breed'**
+  String get breed_selectTitle;
+
+  /// No description provided for @breed_searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search breeds...'**
+  String get breed_searchHint;
+
+  /// No description provided for @breed_noBreeds.
+  ///
+  /// In en, this message translates to:
+  /// **'No breeds available'**
+  String get breed_noBreeds;
+
+  /// No description provided for @breed_notFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No breeds found'**
+  String get breed_notFound;
+
   /// No description provided for @weightDetail_title.
   ///
   /// In ko, this message translates to:
@@ -3135,6 +3177,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'부상 감지'**
   String get hc_areaInjuryDetected;
+
+  /// No description provided for @hc_firstAidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency First Aid'**
+  String get hc_firstAidTitle;
 
   /// No description provided for @hc_notesHint.
   ///

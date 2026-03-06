@@ -5,6 +5,7 @@ class Pet {
   final String name;
   final String species; // 'dog', 'cat', 'bird', 'hamster' 등
   final String? breed;
+  final String? breedId; // breed_standards 테이블 FK
   final DateTime? birthDate;
   final String? gender; // 'male', 'female', 'unknown'
   final String? growthStage; // 'rapid_growth', 'post_growth', 'adult' (새 전용)
@@ -21,6 +22,7 @@ class Pet {
     required this.name,
     required this.species,
     this.breed,
+    this.breedId,
     this.birthDate,
     this.gender,
     this.growthStage,
@@ -39,6 +41,7 @@ class Pet {
       name: json['name'] as String,
       species: json['species'] as String,
       breed: json['breed'] as String?,
+      breedId: json['breed_id'] as String?,
       birthDate: json['birth_date'] != null
           ? DateTime.parse(json['birth_date'] as String)
           : null,
@@ -62,6 +65,7 @@ class Pet {
       'name': name,
       'species': species,
       'breed': breed,
+      if (breedId != null) 'breed_id': breedId,
       'birth_date': birthDate?.toIso8601String().split('T').first,
       'gender': gender,
       'growth_stage': growthStage,
@@ -79,6 +83,7 @@ class Pet {
       'name': name,
       'species': species,
       if (breed != null) 'breed': breed,
+      if (breedId != null) 'breed_id': breedId,
       if (birthDate != null)
         'birth_date': birthDate!.toIso8601String().split('T').first,
       if (gender != null) 'gender': gender,
@@ -97,6 +102,7 @@ class Pet {
     String? name,
     String? species,
     String? breed,
+    String? breedId,
     DateTime? birthDate,
     String? gender,
     String? growthStage,
@@ -113,6 +119,7 @@ class Pet {
       name: name ?? this.name,
       species: species ?? this.species,
       breed: breed ?? this.breed,
+      breedId: breedId ?? this.breedId,
       birthDate: birthDate ?? this.birthDate,
       gender: gender ?? this.gender,
       growthStage: growthStage ?? this.growthStage,

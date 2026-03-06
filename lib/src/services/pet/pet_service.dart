@@ -161,6 +161,7 @@ class PetService {
     required String name,
     required String species,
     String? breed,
+    String? breedId,
     DateTime? birthDate,
     String? gender,
     String? growthStage,
@@ -172,6 +173,7 @@ class PetService {
       'name': name,
       'species': species,
       if (breed != null) 'breed': breed,
+      if (breedId != null) 'breed_id': breedId,
       if (birthDate != null)
         'birth_date': birthDate.toIso8601String().split('T').first,
       if (gender != null) 'gender': gender,
@@ -194,6 +196,8 @@ class PetService {
     String? name,
     String? species,
     String? breed,
+    String? breedId,
+    bool updateBreedFields = false,
     DateTime? birthDate,
     String? gender,
     String? growthStage,
@@ -204,7 +208,13 @@ class PetService {
     final updates = <String, dynamic>{};
     if (name != null) updates['name'] = name;
     if (species != null) updates['species'] = species;
-    if (breed != null) updates['breed'] = breed;
+    if (updateBreedFields) {
+      updates['breed'] = breed;
+      updates['breed_id'] = breedId;
+    } else {
+      if (breed != null) updates['breed'] = breed;
+      if (breedId != null) updates['breed_id'] = breedId;
+    }
     if (birthDate != null) {
       updates['birth_date'] = birthDate.toIso8601String().split('T').first;
     }

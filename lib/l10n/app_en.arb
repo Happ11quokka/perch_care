@@ -126,6 +126,26 @@
   "weight_level5Title": "Level 5 | Heavy",
   "weight_level5Desc": "Significant weight gain. Diet and activity adjustment needed.",
   "weight_unitGram": "g",
+  "weight_breedRange": "Breed Weight Range",
+  "weight_breedRangeIdeal": "Ideal: {min}g - {max}g",
+  "@weight_breedRangeIdeal": {
+    "placeholders": {
+      "min": {"type": "double"},
+      "max": {"type": "double"}
+    }
+  },
+  "weight_breedRangeFull": "Range: {min}g - {max}g",
+  "@weight_breedRangeFull": {
+    "placeholders": {
+      "min": {"type": "double"},
+      "max": {"type": "double"}
+    }
+  },
+
+  "breed_selectTitle": "Select Breed",
+  "breed_searchHint": "Search breeds...",
+  "breed_noBreeds": "No breeds available",
+  "breed_notFound": "No breeds found",
 
   "weightDetail_title": "Records",
   "weightDetail_headerLine1": "Keep recording consistently",
@@ -601,6 +621,7 @@
   "hc_areaUrates": "Urates",
   "hc_areaUrine": "Urine",
   "hc_areaInjuryDetected": "Injury Detected",
+  "hc_firstAidTitle": "Emergency First Aid",
   "hc_notesHint": "Describe any injuries or incidents (optional)",
 
   "ai_petInfoPrefix": "Name",
