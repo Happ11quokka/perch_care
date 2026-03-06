@@ -233,6 +233,19 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String home_updatedHoursAgo(int hours) {
+    return '$hours小时前更新';
+  }
+
+  @override
+  String home_updatedOnDate(int month, int day) {
+    return '$month月$day日更新';
+  }
+
+  @override
+  String get home_noUpdateData => '暂无数据';
+
+  @override
   String home_enterDataPrompt(String petName) {
     return '输入数据查看$petName的';
   }
@@ -1651,6 +1664,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hc_notesHint => '描述伤情或事故（选填）';
 
   @override
+  String get hc_notesHintFullBody => '描述整体健康状况或异常情况（选填）';
+
+  @override
+  String get hc_notesHintDroppings => '描述粪便颜色、形状、频率等异常情况（选填）';
+
+  @override
+  String get hc_notesHintFood => '描述食物种类、进食量、食欲变化等（选填）';
+
+  @override
   String get ai_petInfoPrefix => '名字';
 
   @override
@@ -1689,4 +1711,56 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ai_ageLessThanMonth => '不到1个月';
+
+  @override
+  String get hc_history => '记录';
+
+  @override
+  String get hc_historyTitle => '健康检查记录';
+
+  @override
+  String get hc_historyEmpty => '还没有健康检查记录';
+
+  @override
+  String get hc_historyEmptyDesc => '通过AI健康检查确认鹦鹉的健康状态';
+
+  @override
+  String get hc_savedSuccessfully => '结果已保存';
+
+  @override
+  String get hc_deleteConfirm => '要删除此记录吗？';
+
+  @override
+  String get hc_deleteSuccess => '记录已删除';
+
+  @override
+  String get hc_dateToday => '今天';
+
+  @override
+  String get hc_dateYesterday => '昨天';
+
+  @override
+  String get hc_dateLast7Days => '最近7天';
+
+  @override
+  String get hc_dateEarlier => '更早';
+
+  @override
+  String get premium_featureLockedTitle => '高级版专属功能';
+
+  @override
+  String get premium_featureLockedMessage =>
+      'AI视觉健康检查是高级版专属功能。\n\n视觉AI模型运行成本较高，感谢您的理解。\n激活高级版代码后可无限使用。';
+
+  @override
+  String get premium_activateNow => '激活高级版';
+
+  @override
+  String get premium_maybeLater => '稍后';
+
+  @override
+  String get chatbot_premiumBanner => '通过高级版获得更详细、更准确的回答';
+
+  @override
+  String get chatbot_premiumUpgrade => '升级';
 }

@@ -37,4 +37,5 @@ class RouteNames {
   static const String healthCheckCapture = 'health-check-capture';
   static const String healthCheckAnalyzing = 'health-check-analyzing';
   static const String healthCheckResult = 'health-check-result';
+  static const String healthCheckHistory = 'health-check-history';
 }

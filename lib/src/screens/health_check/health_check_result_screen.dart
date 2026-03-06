@@ -1,23 +1,88 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
+import '../../services/storage/health_check_storage_service.dart';
+import '../../services/storage/local_image_storage_service.dart';
+import '../../services/pet/active_pet_notifier.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 건강체크 분석 결과 화면
-class HealthCheckResultScreen extends StatelessWidget {
+class HealthCheckResultScreen extends StatefulWidget {
   const HealthCheckResultScreen({
     super.key,
     required this.mode,
     required this.result,
     this.imageBytes,
+    this.isFromHistory = false,
   });
 
   final VisionMode mode;
   final Map<String, dynamic> result;
   final Uint8List? imageBytes;
+  final bool isFromHistory;
+
+  @override
+  State<HealthCheckResultScreen> createState() =>
+      _HealthCheckResultScreenState();
+}
+
+class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
+  VisionMode get mode => widget.mode;
+  Map<String, dynamic> get result => widget.result;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isFromHistory) {
+      _saveResult();
+    }
+  }
+
+  Future<void> _saveResult() async {
+    try {
+      final petId = ActivePetNotifier.instance.activePetId;
+      final id = const Uuid().v4();
+      final overallStatus = (result['overall_status'] ??
+              result['overall_diet_assessment'] ??
+              'normal')
+          .toString();
+      final confidence =
+          (result['confidence_score'] as num?)?.toDouble();
+
+      final record = HealthCheckRecord(
+        id: id,
+        petId: petId,
+        mode: mode.value,
+        result: result,
+        confidenceScore: confidence,
+        status: overallStatus,
+        checkedAt: DateTime.now(),
+      );
+
+      await HealthCheckStorageService.instance.saveRecord(record);
+
+      // 이미지도 로컬에 저장
+      if (widget.imageBytes != null) {
+        await LocalImageStorageService.instance.saveImage(
+          ownerType: ImageOwnerType.healthCheck,
+          ownerId: id,
+          imageBytes: widget.imageBytes!,
+        );
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).hc_savedSuccessfully)),
+        );
+      }
+    } catch (_) {
+      // 저장 실패해도 결과 화면 표시에는 영향 없음
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +97,13 @@ class HealthCheckResultScreen extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => context.goNamed(RouteNames.home),
+          onPressed: () {
+            if (widget.isFromHistory) {
+              context.pop();
+            } else {
+              context.goNamed(RouteNames.home);
+            }
+          },
         ),
         title: Text(
           l10n.hc_resultTitle,

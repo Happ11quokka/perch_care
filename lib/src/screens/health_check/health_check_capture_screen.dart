@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
+import '../../services/premium/premium_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/dashed_border.dart';
 
@@ -27,6 +28,21 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
   BodyPart _selectedPart = BodyPart.eye;
   bool _isPickingImage = false;
   final _notesController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPremium();
+  }
+
+  Future<void> _checkPremium() async {
+    try {
+      final status = await PremiumService.instance.getTier();
+      if (mounted && status.isFree) {
+        context.goNamed(RouteNames.healthCheck);
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -144,10 +160,13 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(17),
-          child: Column(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(17),
+            child: Column(
             children: [
               // 이미지 프리뷰 영역
               Expanded(child: _buildImagePreview(l10n)),
@@ -186,6 +205,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -305,6 +325,19 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
     );
   }
 
+  String _getNotesHint(AppLocalizations l10n) {
+    switch (widget.mode) {
+      case VisionMode.fullBody:
+        return l10n.hc_notesHintFullBody;
+      case VisionMode.partSpecific:
+        return l10n.hc_notesHint;
+      case VisionMode.droppings:
+        return l10n.hc_notesHintDroppings;
+      case VisionMode.food:
+        return l10n.hc_notesHintFood;
+    }
+  }
+
   Widget _buildNotesField(AppLocalizations l10n) {
     return TextField(
       controller: _notesController,
@@ -318,7 +351,7 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
         letterSpacing: -0.3,
       ),
       decoration: InputDecoration(
-        hintText: l10n.hc_notesHint,
+        hintText: _getNotesHint(l10n),
         hintStyle: const TextStyle(
           fontFamily: 'Pretendard',
           fontSize: 13,

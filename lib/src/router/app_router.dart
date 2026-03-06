@@ -20,6 +20,7 @@ import '../screens/health_check/health_check_main_screen.dart';
 import '../screens/health_check/health_check_capture_screen.dart';
 import '../screens/health_check/health_check_analyzing_screen.dart';
 import '../screens/health_check/health_check_result_screen.dart';
+import '../screens/health_check/health_check_history_screen.dart';
 import '../models/ai_health_check.dart';
 import 'dart:typed_data';
 import '../screens/wci/wci_index_screen.dart';
@@ -296,8 +297,16 @@ class AppRouter {
                                 map['result'] as Map<String, dynamic>,
                             imageBytes:
                                 map['imageBytes'] as Uint8List?,
+                            isFromHistory:
+                                map['isFromHistory'] as bool? ?? false,
                           );
                         },
+                      ),
+                      GoRoute(
+                        path: 'history',
+                        name: RouteNames.healthCheckHistory,
+                        builder: (context, state) =>
+                            const HealthCheckHistoryScreen(),
                       ),
                     ],
                   ),

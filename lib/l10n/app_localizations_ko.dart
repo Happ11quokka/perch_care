@@ -237,6 +237,19 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String home_updatedHoursAgo(int hours) {
+    return '$hours시간 전에 업데이트됨';
+  }
+
+  @override
+  String home_updatedOnDate(int month, int day) {
+    return '$month월 $day일에 업데이트됨';
+  }
+
+  @override
+  String get home_noUpdateData => '데이터 없음';
+
+  @override
   String home_enterDataPrompt(String petName) {
     return '데이터를 입력해 $petName의';
   }
@@ -1673,6 +1686,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get hc_notesHint => '부상이나 사고 상황을 설명해 주세요 (선택사항)';
 
   @override
+  String get hc_notesHintFullBody => '전반적인 건강 상태나 특이사항을 설명해 주세요 (선택사항)';
+
+  @override
+  String get hc_notesHintDroppings => '배변의 색상, 형태, 빈도 등 특이사항을 설명해 주세요 (선택사항)';
+
+  @override
+  String get hc_notesHintFood => '먹이 종류, 섭취량, 식욕 변화 등을 설명해 주세요 (선택사항)';
+
+  @override
   String get ai_petInfoPrefix => '이름';
 
   @override
@@ -1711,4 +1733,56 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ai_ageLessThanMonth => '1개월 미만';
+
+  @override
+  String get hc_history => '기록';
+
+  @override
+  String get hc_historyTitle => '건강체크 기록';
+
+  @override
+  String get hc_historyEmpty => '아직 건강체크 기록이 없어요';
+
+  @override
+  String get hc_historyEmptyDesc => 'AI 건강체크를 통해 앵무새의 건강을 확인해보세요';
+
+  @override
+  String get hc_savedSuccessfully => '결과가 저장되었습니다';
+
+  @override
+  String get hc_deleteConfirm => '이 기록을 삭제하시겠습니까?';
+
+  @override
+  String get hc_deleteSuccess => '기록이 삭제되었습니다';
+
+  @override
+  String get hc_dateToday => '오늘';
+
+  @override
+  String get hc_dateYesterday => '어제';
+
+  @override
+  String get hc_dateLast7Days => '최근 7일';
+
+  @override
+  String get hc_dateEarlier => '이전';
+
+  @override
+  String get premium_featureLockedTitle => '프리미엄 전용 기능';
+
+  @override
+  String get premium_featureLockedMessage =>
+      'AI 비전 건강체크는 프리미엄 전용 기능입니다.\n\n비전 AI 모델 비용이 높아 무료로 제공하기 어려운 점 양해 부탁드립니다.\n프리미엄 코드를 활성화하면 무제한으로 이용하실 수 있습니다.';
+
+  @override
+  String get premium_activateNow => '프리미엄 활성화';
+
+  @override
+  String get premium_maybeLater => '나중에';
+
+  @override
+  String get chatbot_premiumBanner => '프리미엄 버전으로 더 상세하고 정확한 답변을 받을 수 있어요';
+
+  @override
+  String get chatbot_premiumUpgrade => '업그레이드';
 }

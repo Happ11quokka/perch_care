@@ -664,10 +664,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                           spots: spots,
                           isCurved: true,
                           curveSmoothness: 0.4,
-                          color: const Color(0xFFBBBBBB),
-                          barWidth: 2,
+                          color: const Color(0xFFFF9A42),
+                          barWidth: 2.5,
                           isStrokeCapRound: true,
-                          dashArray: [6, 4],
                           dotData: FlDotData(
                             show: true,
                             getDotPainter: (spot, percent, barData, index) {
@@ -681,12 +680,23 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                               }
                               return FlDotCirclePainter(
                                 radius: 4,
-                                color: const Color(0xFFBBBBBB),
-                                strokeWidth: 0,
+                                color: const Color(0xFFFF9A42),
+                                strokeWidth: 2,
+                                strokeColor: Colors.white,
                               );
                             },
                           ),
-                          belowBarData: BarAreaData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0x40FF9A42),
+                                Color(0x05FF9A42),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                       titlesData: const FlTitlesData(show: false),
@@ -878,7 +888,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
     final Map<int, List<double>> weeklyData = {};
     final now = DateTime.now();
-    final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
+    final today = DateTime(now.year, now.month, now.day);
+    final startOfWeek = today.subtract(Duration(days: today.weekday % 7));
 
     for (final record in _weightRecords) {
       final daysDiff = record.date.difference(startOfWeek).inDays;

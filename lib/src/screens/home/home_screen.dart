@@ -33,7 +33,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   bool _isMonthlyView = true; // true: 매월 단위, false: 매주 단위
   int _selectedMonth = DateTime.now().month;
+  int _selectedYear = DateTime.now().year;
   int _selectedWeek = 1; // 선택된 주차 (1~5)
+  int _bhiRequestId = 0; // race condition 방지용 요청 카운터
 
   // 데이터 유무 상태 (실제로는 서버에서 가져옴)
   bool _hasWeightData = false;
@@ -42,6 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // WCI 레벨 (0: 데이터 없음, 1~5: 각 단계)
   int _wciLevel = 0;
+  bool _isBhiLoading = false; // 기간 변경 시 BHI 로딩 상태
+  String? _lastUpdateText; // WCI 카드 타임스탬프 표시 텍스트
 
   // 코치마크 타겟 키
   final _wciCardKey = GlobalKey();
@@ -138,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // setState 단일 호출로 배치 처리 (불필요한 리빌드 방지)
     if (pet != null || bhi != null) {
+      final l10n = AppLocalizations.of(context);
       setState(() {
         if (pet != null) {
           _activePet = pet;
@@ -149,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _hasFoodData = bhi.hasFoodData;
           _hasWaterData = bhi.hasWaterData;
         }
+        _lastUpdateText = _formatLastUpdateTime(l10n);
       });
     }
   }
@@ -254,16 +260,74 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// 선택된 기간(월/주)에 해당하는 대표 날짜를 반환
+  DateTime _getTargetDateForPeriod() {
+    final now = DateTime.now();
+    if (_isMonthlyView) {
+      final lastDay = DateTime(_selectedYear, _selectedMonth + 1, 0);
+      return lastDay.isAfter(now) ? now : lastDay;
+    } else {
+      final firstOfMonth = DateTime(now.year, now.month, 1);
+      final weekEnd = firstOfMonth.add(Duration(days: _selectedWeek * 7 - 1));
+      return weekEnd.isAfter(now) ? now : weekEnd;
+    }
+  }
+
+  /// 선택된 기간의 BHI 데이터를 서버에서 로드
+  Future<void> _loadBhiForSelectedPeriod() async {
+    if (_activePet == null) return;
+    final requestId = ++_bhiRequestId;
+    setState(() => _isBhiLoading = true);
+    try {
+      final targetDate = _getTargetDateForPeriod();
+      final bhi = await _bhiService.getBhi(_activePet!.id, targetDate: targetDate);
+      if (!mounted || requestId != _bhiRequestId) return;
+      final l10n = AppLocalizations.of(context);
+      setState(() {
+        _bhiResult = bhi;
+        _wciLevel = bhi.wciLevel;
+        _hasWeightData = bhi.hasWeightData;
+        _hasFoodData = bhi.hasFoodData;
+        _hasWaterData = bhi.hasWaterData;
+        _isBhiLoading = false;
+        _lastUpdateText = _formatLastUpdateTime(l10n);
+      });
+    } catch (e) {
+      debugPrint('[HomeScreen] 기간별 BHI 로드 실패: $e');
+      if (mounted && requestId == _bhiRequestId) {
+        setState(() => _isBhiLoading = false);
+      }
+    }
+  }
+
+  /// BHI 서버 조회 시점 기반 타임스탬프 문자열 생성
+  String _formatLastUpdateTime(AppLocalizations l10n) {
+    final fetchTime = _bhiService.lastServerFetchTime;
+    if (fetchTime == null) {
+      return l10n.home_noUpdateData;
+    }
+    final difference = DateTime.now().difference(fetchTime);
+    if (difference.inHours < 1) {
+      return l10n.home_updatedAgo(difference.inMinutes);
+    } else if (difference.inHours < 24) {
+      return l10n.home_updatedHoursAgo(difference.inHours);
+    } else {
+      return l10n.home_updatedOnDate(fetchTime.month, fetchTime.day);
+    }
+  }
+
   Future<void> _loadBhi(String petId) async {
     try {
       final bhi = await _bhiService.getBhi(petId, targetDate: DateTime.now());
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() {
           _bhiResult = bhi;
           _wciLevel = bhi.wciLevel;
           _hasWeightData = bhi.hasWeightData;
           _hasFoodData = bhi.hasFoodData;
           _hasWaterData = bhi.hasWaterData;
+          _lastUpdateText = _formatLastUpdateTime(l10n);
         });
       }
     } catch (e) {
@@ -483,9 +547,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
+                      if (_isMonthlyView) return;
                       setState(() {
                         _isMonthlyView = true;
                       });
+                      _loadBhiForSelectedPeriod();
                     },
                     child: Container(
                       color: Colors.transparent,
@@ -508,9 +574,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
+                      if (!_isMonthlyView) return;
                       setState(() {
                         _isMonthlyView = false;
                       });
+                      _loadBhiForSelectedPeriod();
                     },
                     child: Container(
                       color: Colors.transparent,
@@ -540,15 +608,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMonthSelector() {
     final l10n = AppLocalizations.of(context);
 
-    // Generate 7 months centered around current month
+    // Generate 7 months centered around current month (with year tracking)
     final currentMonth = DateTime.now().month;
-    final months = <int>[];
+    final currentYear = DateTime.now().year;
+    final monthsWithYear = <({int year, int month})>[];
     for (int i = -3; i <= 3; i++) {
-      int month = currentMonth + i;
-      // Handle year wrap-around
-      while (month < 1) { month += 12; }
-      while (month > 12) { month -= 12; }
-      months.add(month);
+      var m = currentMonth + i;
+      var y = currentYear;
+      while (m < 1) { m += 12; y--; }
+      while (m > 12) { m -= 12; y++; }
+      monthsWithYear.add((year: y, month: m));
     }
 
     return SizedBox(
@@ -556,13 +625,16 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 36,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: months.map((month) {
-          final isSelected = month == _selectedMonth;
+        children: monthsWithYear.map((entry) {
+          final isSelected = entry.month == _selectedMonth && entry.year == _selectedYear;
           return GestureDetector(
             onTap: () {
+              if (_selectedMonth == entry.month && _selectedYear == entry.year) return;
               setState(() {
-                _selectedMonth = month;
+                _selectedMonth = entry.month;
+                _selectedYear = entry.year;
               });
+              _loadBhiForSelectedPeriod();
             },
             child: Container(
               width: 36,
@@ -573,7 +645,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               alignment: Alignment.center,
               child: Text(
-                l10n.home_monthFormat(month),
+                l10n.home_monthFormat(entry.month),
                 style: TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 12,
@@ -602,9 +674,11 @@ class _HomeScreenState extends State<HomeScreen> {
           final isSelected = week == _selectedWeek;
           return GestureDetector(
             onTap: () {
+              if (_selectedWeek == week) return;
               setState(() {
                 _selectedWeek = week;
               });
+              _loadBhiForSelectedPeriod();
             },
             child: Container(
               width: 36,
@@ -690,7 +764,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      l10n.home_updatedAgo(0),
+                      _lastUpdateText ?? l10n.home_noUpdateData,
                       style: const TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 12,
@@ -713,72 +787,81 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          // 일러스트레이션
-          if (_wciLevel == 0)
-            SvgPicture.asset(
-              'assets/images/home_vector/wci_bird_empty.svg',
-              width: 119,
-              height: 171,
-            )
-          else
-            Image.asset(
-              'assets/images/home_vector/lv$_wciLevel.png',
-              width: 160,
-              height: 240,
-              cacheWidth: 320,
-              cacheHeight: 480,
-            ),
-          const SizedBox(height: 13),
-          // 설명 텍스트
-          if (_wciLevel == 0) ...[
-            Text(
-              l10n.home_enterDataPrompt(petName),
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
-                letterSpacing: -0.35,
-                height: 24 / 14,
-              ),
-            ),
-            Text(
-              l10n.home_checkStatus,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
-                letterSpacing: -0.35,
-                height: 24 / 14,
-              ),
-            ),
-          ] else
-            Text(
-              wciDescriptions[_wciLevel] ?? '',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
-                letterSpacing: -0.35,
-                height: 24 / 14,
-              ),
-            ),
-          const SizedBox(height: 24),
-          // 진행도 바
-          _buildProgressBars(),
-          const SizedBox(height: 8),
-          // 단계 표시
-          Text(
-            l10n.home_level(_wciLevel),
-            style: const TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1A1A),
-              height: 20 / 16,
+          // 로딩 시 반투명 처리로 자연스러운 전환
+          AnimatedOpacity(
+            opacity: _isBhiLoading ? 0.4 : 1.0,
+            duration: const Duration(milliseconds: 200),
+            child: Column(
+              children: [
+                // 일러스트레이션
+                if (_wciLevel == 0)
+                  SvgPicture.asset(
+                    'assets/images/home_vector/wci_bird_empty.svg',
+                    width: 119,
+                    height: 171,
+                  )
+                else
+                  Image.asset(
+                    'assets/images/home_vector/lv$_wciLevel.png',
+                    width: 160,
+                    height: 240,
+                    cacheWidth: 320,
+                    cacheHeight: 480,
+                  ),
+                const SizedBox(height: 13),
+                // 설명 텍스트
+                if (_wciLevel == 0) ...[
+                  Text(
+                    l10n.home_enterDataPrompt(petName),
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF6B6B6B),
+                      letterSpacing: -0.35,
+                      height: 24 / 14,
+                    ),
+                  ),
+                  Text(
+                    l10n.home_checkStatus,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF6B6B6B),
+                      letterSpacing: -0.35,
+                      height: 24 / 14,
+                    ),
+                  ),
+                ] else
+                  Text(
+                    wciDescriptions[_wciLevel] ?? '',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF6B6B6B),
+                      letterSpacing: -0.35,
+                      height: 24 / 14,
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                // 진행도 바
+                _buildProgressBars(),
+                const SizedBox(height: 8),
+                // 단계 표시
+                Text(
+                  l10n.home_level(_wciLevel),
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A1A),
+                    height: 20 / 16,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),

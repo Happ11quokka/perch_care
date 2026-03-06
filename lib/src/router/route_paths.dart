@@ -46,4 +46,5 @@ class RoutePaths {
   static const String healthCheckCapture = '/home/health-check/capture';
   static const String healthCheckAnalyzing = '/home/health-check/analyzing';
   static const String healthCheckResult = '/home/health-check/result';
+  static const String healthCheckHistory = '/home/health-check/history';
 }

@@ -16,6 +16,12 @@ class BhiService {
   DateTime? _lastBhiFetch;
   static const _cacheDuration = Duration(minutes: 5);
 
+  // UI 표시용 서버 조회 시점 (캐시 제어와 분리)
+  DateTime? _lastServerFetchTime;
+
+  /// 마지막 서버 조회 성공 시점 (UI 타임스탬프용)
+  DateTime? get lastServerFetchTime => _lastServerFetchTime;
+
   bool _isCacheValid(String petId) =>
       _cachedPetId == petId &&
       _lastBhiFetch != null &&
@@ -26,6 +32,7 @@ class BhiService {
     _cachedBhi = null;
     _cachedPetId = null;
     _lastBhiFetch = null;
+    _lastServerFetchTime = null;
   }
 
   /// 특정 날짜의 BHI 점수 조회 (캐시-우선)
@@ -49,6 +56,7 @@ class BhiService {
       // 2순위: 서버 API
       final response = await _api.get('/pets/$petId/bhi/$queryString');
       final result = BhiResult.fromJson(response);
+      _lastServerFetchTime = DateTime.now();
 
       // targetDate 없는 기본 조회만 캐시
       if (targetDate == null) {

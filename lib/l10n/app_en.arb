@@ -85,6 +85,20 @@
   "home_weeklyUnit": "Weekly",
   "home_wciHealthStatus": "WCI* Health Status",
   "home_updatedAgo": "Updated {minutes} min ago",
+  "home_updatedHoursAgo": "Updated {hours}h ago",
+  "@home_updatedHoursAgo": {
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "home_updatedOnDate": "Updated on {month}/{day}",
+  "@home_updatedOnDate": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
+  "home_noUpdateData": "No data",
   "home_enterDataPrompt": "Enter data for {petName}",
   "home_checkStatus": "to check the status.",
   "home_level": "Level {level}",
@@ -623,6 +637,9 @@
   "hc_areaInjuryDetected": "Injury Detected",
   "hc_firstAidTitle": "Emergency First Aid",
   "hc_notesHint": "Describe any injuries or incidents (optional)",
+  "hc_notesHintFullBody": "Describe overall health condition or any concerns (optional)",
+  "hc_notesHintDroppings": "Describe color, shape, frequency of droppings, etc. (optional)",
+  "hc_notesHintFood": "Describe food type, amount eaten, appetite changes, etc. (optional)",
 
   "ai_petInfoPrefix": "Name",
   "ai_breedPrefix": "Breed",
@@ -645,5 +662,25 @@
       "months": {"type": "int"}
     }
   },
-  "ai_ageLessThanMonth": "Less than 1 month"
+  "ai_ageLessThanMonth": "Less than 1 month",
+
+  "hc_history": "History",
+  "hc_historyTitle": "Health Check History",
+  "hc_historyEmpty": "No health check records yet",
+  "hc_historyEmptyDesc": "Check your bird's health with AI Health Check",
+  "hc_savedSuccessfully": "Results saved",
+  "hc_deleteConfirm": "Delete this record?",
+  "hc_deleteSuccess": "Record deleted",
+  "hc_dateToday": "Today",
+  "hc_dateYesterday": "Yesterday",
+  "hc_dateLast7Days": "Last 7 days",
+  "hc_dateEarlier": "Earlier",
+
+  "premium_featureLockedTitle": "Premium Feature",
+  "premium_featureLockedMessage": "AI Vision Health Check is a premium-only feature.\n\nVision AI models are costly to run, and we appreciate your understanding.\nActivate a premium code for unlimited access.",
+  "premium_activateNow": "Activate Premium",
+  "premium_maybeLater": "Maybe Later",
+
+  "chatbot_premiumBanner": "Get more detailed and accurate answers with Premium",
+  "chatbot_premiumUpgrade": "Upgrade"
 }

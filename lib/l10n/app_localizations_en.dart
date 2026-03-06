@@ -239,6 +239,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String home_updatedHoursAgo(int hours) {
+    return 'Updated ${hours}h ago';
+  }
+
+  @override
+  String home_updatedOnDate(int month, int day) {
+    return 'Updated on $month/$day';
+  }
+
+  @override
+  String get home_noUpdateData => 'No data';
+
+  @override
   String home_enterDataPrompt(String petName) {
     return 'Enter data for $petName';
   }
@@ -1722,6 +1735,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hc_notesHint => 'Describe any injuries or incidents (optional)';
 
   @override
+  String get hc_notesHintFullBody =>
+      'Describe overall health condition or any concerns (optional)';
+
+  @override
+  String get hc_notesHintDroppings =>
+      'Describe color, shape, frequency of droppings, etc. (optional)';
+
+  @override
+  String get hc_notesHintFood =>
+      'Describe food type, amount eaten, appetite changes, etc. (optional)';
+
+  @override
   String get ai_petInfoPrefix => 'Name';
 
   @override
@@ -1762,4 +1787,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ai_ageLessThanMonth => 'Less than 1 month';
+
+  @override
+  String get hc_history => 'History';
+
+  @override
+  String get hc_historyTitle => 'Health Check History';
+
+  @override
+  String get hc_historyEmpty => 'No health check records yet';
+
+  @override
+  String get hc_historyEmptyDesc =>
+      'Check your bird\'s health with AI Health Check';
+
+  @override
+  String get hc_savedSuccessfully => 'Results saved';
+
+  @override
+  String get hc_deleteConfirm => 'Delete this record?';
+
+  @override
+  String get hc_deleteSuccess => 'Record deleted';
+
+  @override
+  String get hc_dateToday => 'Today';
+
+  @override
+  String get hc_dateYesterday => 'Yesterday';
+
+  @override
+  String get hc_dateLast7Days => 'Last 7 days';
+
+  @override
+  String get hc_dateEarlier => 'Earlier';
+
+  @override
+  String get premium_featureLockedTitle => 'Premium Feature';
+
+  @override
+  String get premium_featureLockedMessage =>
+      'AI Vision Health Check is a premium-only feature.\n\nVision AI models are costly to run, and we appreciate your understanding.\nActivate a premium code for unlimited access.';
+
+  @override
+  String get premium_activateNow => 'Activate Premium';
+
+  @override
+  String get premium_maybeLater => 'Maybe Later';
+
+  @override
+  String get chatbot_premiumBanner =>
+      'Get more detailed and accurate answers with Premium';
+
+  @override
+  String get chatbot_premiumUpgrade => 'Upgrade';
 }

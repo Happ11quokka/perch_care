@@ -23,6 +23,9 @@ import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../services/premium/premium_service.dart';
+import '../../services/api/token_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AIEncyclopediaScreen extends StatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -52,6 +55,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   bool _isSending = false;
   bool _isTyping = false;
   bool _isLoadingMessages = true;
+  bool _showPremiumBanner = false;
 
   // 둥둥 떠다니는 breathing 애니메이션
   late final AnimationController _floatController;
@@ -97,6 +101,39 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     await _loadActivePet();
     await _loadMessages();
     _maybeShowCoachMarks();
+    _loadPremiumBannerState();
+  }
+
+  String get _bannerDismissKey {
+    final userId = TokenService.instance.userId ?? 'anonymous';
+    return 'encyclopedia_banner_dismissed_$userId';
+  }
+
+  Future<void> _loadPremiumBannerState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dismissed = prefs.getBool(_bannerDismissKey) ?? false;
+      if (dismissed) return;
+
+      final status = await PremiumService.instance.getTier();
+      if (mounted && status.isFree) {
+        setState(() {
+          _showPremiumBanner = true;
+        });
+      }
+    } catch (_) {
+      // 실패 시 배너 미표시
+    }
+  }
+
+  Future<void> _dismissPremiumBanner() async {
+    setState(() {
+      _showPremiumBanner = false;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_bannerDismissKey, true);
+    } catch (_) {}
   }
 
   Future<void> _maybeShowCoachMarks() async {
@@ -517,6 +554,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
                       : _buildWelcomeView(),
             ),
             if (!_hasUserMessages && !_isLoadingMessages) _buildSuggestionChips(),
+            if (_showPremiumBanner) _buildPremiumBanner(),
             _buildInputArea(),
           ],
         ),
@@ -859,6 +897,78 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   }
 
   // ── Input area ────────────────────────────────────────────────────
+
+  Widget _buildPremiumBanner() {
+    final l10n = AppLocalizations.of(context);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        0,
+      ),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF5ED),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.auto_awesome,
+            color: AppColors.brandPrimary,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.chatbot_premiumBanner,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF1A1A1A),
+                    height: 1.4,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: () => context.pushNamed(RouteNames.premium),
+                  child: Text(
+                    l10n.chatbot_premiumUpgrade,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.brandPrimary,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: _dismissPremiumBanner,
+            child: const Padding(
+              padding: EdgeInsets.all(2),
+              child: Icon(
+                Icons.close,
+                size: 18,
+                color: Color(0xFF97928A),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildInputArea() {
     final l10n = AppLocalizations.of(context);

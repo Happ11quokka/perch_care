@@ -1,11 +1,13 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/health_check/health_check_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
+import '../../services/premium/premium_service.dart';
 import '../../services/api/api_client.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -52,8 +54,19 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
     );
     _animController.repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startAnalysis();
+      _checkPremiumThenAnalyze();
     });
+  }
+
+  Future<void> _checkPremiumThenAnalyze() async {
+    try {
+      final status = await PremiumService.instance.getTier();
+      if (mounted && status.isFree) {
+        context.goNamed(RouteNames.healthCheck);
+        return;
+      }
+    } catch (_) {}
+    _startAnalysis();
   }
 
   @override
@@ -208,18 +221,10 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
         children: [
           ScaleTransition(
             scale: _scaleAnimation,
-            child: Container(
+            child: SvgPicture.asset(
+              'assets/images/chatbot.svg',
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: const Icon(
-                Icons.pets,
-                size: 40,
-                color: AppColors.brandPrimary,
-              ),
             ),
           ),
           const SizedBox(height: 32),
