@@ -468,10 +468,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         _buildSocialLoginButton(
           onTap: _handleAppleLogin,
           isLoading: _isAppleLoading,
-          child: const Icon(
-            Icons.apple,
-            size: 24,
-            color: Color(0xFF1A1A1A),
+          child: SvgPicture.asset(
+            'assets/images/btn_apple/btn_apple.svg',
+            width: 24,
+            height: 24,
           ),
         ),
       ],
@@ -489,6 +489,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         width: 60,
         height: 60,
         decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
