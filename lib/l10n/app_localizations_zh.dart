@@ -1893,4 +1893,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String paywall_alreadyPremiumExpires(String date) {
     return '可使用至 $date';
   }
+
+  @override
+  String quotaBadge_normal(int count) {
+    return '今日剩余$count次';
+  }
+
+  @override
+  String get quotaBadge_exhausted => '已达每日限额';
+
+  @override
+  String get quotaBadge_upgrade => '升级';
+
+  @override
+  String get aiEncyclopedia_quotaExhausted => '今日免费使用次数已用完。升级到高级版可无限使用。';
+
+  @override
+  String get aiEncyclopedia_quotaExhaustedHint => '已达每日限额 · 升级到高级版';
+
+  @override
+  String get healthCheck_freeTrialBadge => '免费体验1次';
+
+  @override
+  String get healthCheck_trialExhaustedTitle => '免费体验已完成';
+
+  @override
+  String get healthCheck_trialExhaustedMessage =>
+      '您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。';
+
+  @override
+  String get report_shareFailed => '创建分享链接失败。';
+
+  @override
+  String get report_shareHealth => '分享健康报告';
+
+  @override
+  String get report_vetSummary => '就诊摘要';
+
+  @override
+  String get report_vetSummaryTitle => '就诊摘要';
+
+  @override
+  String get report_vetSummaryDesc => '生成最近30天健康数据摘要的\n分享链接，方便与兽医共享。';
+
+  @override
+  String get report_vetFeatureWeight => '体重变化趋势';
+
+  @override
+  String get report_vetFeatureChecks => 'AI健康检查结果摘要';
+
+  @override
+  String get report_vetFeatureNotes => '行为记录与日常观察';
+
+  @override
+  String get report_vetShareButton => '分享摘要链接';
 }

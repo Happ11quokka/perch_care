@@ -17,6 +17,7 @@ class AiVisionLog(Base):
     image_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     response_time_ms: Mapped[int] = mapped_column(Integer, nullable=False)
     model: Mapped[str] = mapped_column(String(50), nullable=False)
+    tier: Mapped[str] = mapped_column(String(10), nullable=False, server_default="free")
     confidence_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     overall_status: Mapped[str | None] = mapped_column(String(20), nullable=True)  # normal, warning, danger
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)

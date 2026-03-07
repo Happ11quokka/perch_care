@@ -21,6 +21,7 @@ import '../screens/health_check/health_check_capture_screen.dart';
 import '../screens/health_check/health_check_analyzing_screen.dart';
 import '../screens/health_check/health_check_result_screen.dart';
 import '../screens/health_check/health_check_history_screen.dart';
+import '../screens/health_check/vet_summary_screen.dart';
 import '../models/ai_health_check.dart';
 import 'dart:typed_data';
 import '../screens/wci/wci_index_screen.dart';
@@ -310,6 +311,12 @@ class AppRouter {
                         name: RouteNames.healthCheckHistory,
                         builder: (context, state) =>
                             const HealthCheckHistoryScreen(),
+                      ),
+                      GoRoute(
+                        path: 'vet-summary',
+                        name: RouteNames.vetSummary,
+                        builder: (context, state) =>
+                            const VetSummaryScreen(),
                       ),
                     ],
                   ),

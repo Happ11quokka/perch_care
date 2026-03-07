@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Noto Sans KR', 'Noto Sans SC', sans-serif; font-size: 11pt; color: #333; line-height: 1.5; max-width: 800px; margin: 0 auto; padding: 16px; }
+
+  .header { background: linear-gradient(135deg, #FF9A42, #FF7C2A); color: #fff; padding: 20px 24px; border-radius: 8px; margin-bottom: 20px; }
+  .header h1 { font-size: 18pt; margin-bottom: 4px; }
+  .header .subtitle { font-size: 10pt; opacity: 0.9; }
+  .header .period { font-size: 9pt; opacity: 0.7; margin-top: 8px; }
+
+  .pet-info { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; padding: 16px; background: #FFF5ED; border-radius: 8px; }
+  .pet-info .item .label { font-size: 9pt; color: #97928A; }
+  .pet-info .item .value { font-size: 11pt; font-weight: 600; color: #1A1A1A; }
+
+  .section { margin-bottom: 20px; }
+  .section h2 { font-size: 13pt; color: #FF9A42; border-bottom: 2px solid #FFE0C0; padding-bottom: 6px; margin-bottom: 12px; }
+
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  th { background: #F5F5F5; padding: 8px 10px; text-align: left; font-weight: 600; color: #6B6B6B; border-bottom: 1px solid #ddd; }
+  td { padding: 6px 10px; border-bottom: 1px solid #eee; }
+
+  .bhi-card { text-align: center; padding: 16px; background: #FFF5ED; border-radius: 8px; margin-bottom: 16px; }
+  .bhi-score { font-size: 32pt; font-weight: 700; color: #FF9A42; }
+  .bhi-label { font-size: 9pt; color: #97928A; }
+  .bhi-breakdown { margin-top: 8px; font-size: 9pt; color: #6B6B6B; }
+
+  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 8pt; font-weight: 600; }
+  .status-normal { background: #E8F5E9; color: #4CAF50; }
+  .status-caution { background: #FFF3E0; color: #FF9800; }
+  .status-warning { background: #FFF5ED; color: #FF9A42; }
+  .status-critical { background: #FFEBEE; color: #FF572D; }
+  .status-safe { background: #E8F5E9; color: #4CAF50; }
+  .status-toxic { background: #FFEBEE; color: #FF572D; }
+  .status-danger { background: #FFEBEE; color: #FF572D; }
+  .status-dangerous { background: #FFEBEE; color: #FF572D; }
+
+  .footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 8pt; color: #97928A; text-align: center; }
+</style>
+</head>
+<body>
+  {% set t = {
+    "ko": {"title": "건강 리포트", "subtitle": "AI 반려조 건강 관리", "name": "이름", "species": "종", "birth_date": "생년월일", "gender": "성별", "bhi": "건강지수 (BHI)", "weight_label": "체중", "food_label": "식이", "water_label": "음수", "weight_trend": "체중 추이", "date": "날짜", "weight_g": "체중 (g)", "memo": "메모", "food_intake": "식이 기록", "intake_g": "섭취량 (g)", "target_g": "목표 (g)", "rate": "달성률", "water_intake": "음수 기록", "intake_ml": "섭취량 (ml)", "target_ml": "목표 (ml)", "health_checks": "AI 건강 체크 결과", "datetime": "일시", "type": "유형", "status": "상태", "confidence": "신뢰도", "daily_records": "일일 기록", "mood": "기분", "activity": "활동량", "notes": "메모", "disclaimer": "이 리포트는 AI가 생성한 참고 자료이며, 수의사의 진단을 대체하지 않습니다."},
+    "en": {"title": "Health Report", "subtitle": "AI Bird Health Care", "name": "Name", "species": "Species", "birth_date": "Birth Date", "gender": "Gender", "bhi": "Bird Health Index (BHI)", "weight_label": "Weight", "food_label": "Food", "water_label": "Water", "weight_trend": "Weight Trend", "date": "Date", "weight_g": "Weight (g)", "memo": "Memo", "food_intake": "Food Intake", "intake_g": "Intake (g)", "target_g": "Target (g)", "rate": "Rate", "water_intake": "Water Intake", "intake_ml": "Intake (ml)", "target_ml": "Target (ml)", "health_checks": "AI Health Check Results", "datetime": "Date/Time", "type": "Type", "status": "Status", "confidence": "Confidence", "daily_records": "Daily Records", "mood": "Mood", "activity": "Activity", "notes": "Notes", "disclaimer": "This report is AI-generated reference material and does not replace veterinary diagnosis."},
+    "zh": {"title": "健康报告", "subtitle": "AI 宠物鸟健康管理", "name": "名字", "species": "种类", "birth_date": "出生日期", "gender": "性别", "bhi": "鸟类健康指数 (BHI)", "weight_label": "体重", "food_label": "食物", "water_label": "饮水", "weight_trend": "体重趋势", "date": "日期", "weight_g": "体重 (g)", "memo": "备注", "food_intake": "食物摄入", "intake_g": "摄入量 (g)", "target_g": "目标 (g)", "rate": "达成率", "water_intake": "饮水记录", "intake_ml": "摄入量 (ml)", "target_ml": "目标 (ml)", "health_checks": "AI健康检查结果", "datetime": "日期时间", "type": "类型", "status": "状态", "confidence": "置信度", "daily_records": "每日记录", "mood": "心情", "activity": "活动量", "notes": "备注", "disclaimer": "本报告为AI生成的参考资料，不能替代兽医诊断。"}
+  } %}
+  {% set L = t.get(lang, t["en"]) %}
+
+  <div class="header">
+    <h1>{{ L.title }}</h1>
+    <div class="subtitle">Perch Care - {{ L.subtitle }}</div>
+    <div class="period">{{ date_from }} ~ {{ date_to }}</div>
+  </div>
+
+  <div class="pet-info">
+    <div class="item">
+      <div class="label">{{ L.name }}</div>
+      <div class="value">{{ pet.name }}</div>
+    </div>
+    <div class="item">
+      <div class="label">{{ L.species }}</div>
+      <div class="value">{{ pet.species }}{% if pet.breed %} ({{ pet.breed }}){% endif %}</div>
+    </div>
+    {% if pet.birth_date %}
+    <div class="item">
+      <div class="label">{{ L.birth_date }}</div>
+      <div class="value">{{ pet.birth_date }}</div>
+    </div>
+    {% endif %}
+    {% if pet.gender %}
+    <div class="item">
+      <div class="label">{{ L.gender }}</div>
+      <div class="value">{{ pet.gender }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if bhi %}
+  <div class="section">
+    <h2>{{ L.bhi }}</h2>
+    <div class="bhi-card">
+      <div class="bhi-score">{{ "%.0f"|format(bhi.bhi_score) }}</div>
+      <div class="bhi-label">/ 100</div>
+      <div class="bhi-breakdown">
+        {{ L.weight_label }}: {{ "%.0f"|format(bhi.weight_score) }}/60 |
+        {{ L.food_label }}: {{ "%.0f"|format(bhi.food_score) }}/25 |
+        {{ L.water_label }}: {{ "%.0f"|format(bhi.water_score) }}/15
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if weights %}
+  <div class="section">
+    <h2>{{ L.weight_trend }}</h2>
+    <table>
+      <tr><th>{{ L.date }}</th><th>{{ L.weight_g }}</th><th>{{ L.memo }}</th></tr>
+      {% for w in weights %}
+      <tr><td>{{ w.recorded_date }}</td><td>{{ "%.1f"|format(w.weight) }}</td><td>{{ w.memo or '-' }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  {% if foods %}
+  <div class="section">
+    <h2>{{ L.food_intake }}</h2>
+    <table>
+      <tr><th>{{ L.date }}</th><th>{{ L.intake_g }}</th><th>{{ L.target_g }}</th><th>{{ L.rate }}</th></tr>
+      {% for f in foods %}
+      <tr>
+        <td>{{ f.recorded_date }}</td>
+        <td>{{ "%.1f"|format(f.total_grams) }}</td>
+        <td>{{ "%.1f"|format(f.target_grams) }}</td>
+        <td>{% if f.target_grams > 0 %}{{ "%.0f"|format(f.total_grams / f.target_grams * 100) }}%{% else %}-{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  {% if waters %}
+  <div class="section">
+    <h2>{{ L.water_intake }}</h2>
+    <table>
+      <tr><th>{{ L.date }}</th><th>{{ L.intake_ml }}</th><th>{{ L.target_ml }}</th></tr>
+      {% for wd in waters %}
+      <tr><td>{{ wd.recorded_date }}</td><td>{{ "%.1f"|format(wd.total_ml) }}</td><td>{{ "%.1f"|format(wd.target_ml) }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  {% if health_checks %}
+  <div class="section">
+    <h2>{{ L.health_checks }}</h2>
+    <table>
+      <tr><th>{{ L.datetime }}</th><th>{{ L.type }}</th><th>{{ L.status }}</th><th>{{ L.confidence }}</th></tr>
+      {% for hc in health_checks %}
+      <tr>
+        <td>{{ hc.checked_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ hc.check_type }}</td>
+        <td><span class="status status-{{ hc.status }}">{{ hc.status }}</span></td>
+        <td>{% if hc.confidence_score %}{{ "%.0f"|format(hc.confidence_score) }}%{% else %}-{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  {% if dailies %}
+  <div class="section">
+    <h2>{{ L.daily_records }}</h2>
+    <table>
+      <tr><th>{{ L.date }}</th><th>{{ L.mood }}</th><th>{{ L.activity }}</th><th>{{ L.notes }}</th></tr>
+      {% for d in dailies %}
+      <tr><td>{{ d.recorded_date }}</td><td>{{ d.mood or '-' }}</td><td>{{ d.activity_level or '-' }}</td><td>{{ d.notes or '-' }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="footer">
+    Perch Care | Generated {{ generated_at.strftime('%Y-%m-%d %H:%M UTC') }} | {{ L.disclaimer }}
+  </div>
+</body>
+</html>

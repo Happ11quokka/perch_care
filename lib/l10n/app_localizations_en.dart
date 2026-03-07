@@ -1983,4 +1983,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String paywall_alreadyPremiumExpires(String date) {
     return 'Available until $date';
   }
+
+  @override
+  String quotaBadge_normal(int count) {
+    return '$count left today';
+  }
+
+  @override
+  String get quotaBadge_exhausted => 'Daily limit reached';
+
+  @override
+  String get quotaBadge_upgrade => 'Upgrade';
+
+  @override
+  String get aiEncyclopedia_quotaExhausted =>
+      'You\'ve used all free queries for today. Upgrade to Premium for unlimited access.';
+
+  @override
+  String get aiEncyclopedia_quotaExhaustedHint =>
+      'Daily limit reached · Upgrade to Premium';
+
+  @override
+  String get healthCheck_freeTrialBadge => '1 free trial';
+
+  @override
+  String get healthCheck_trialExhaustedTitle => 'Free trial completed';
+
+  @override
+  String get healthCheck_trialExhaustedMessage =>
+      'You\'ve already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.';
+
+  @override
+  String get report_shareFailed => 'Failed to create share link.';
+
+  @override
+  String get report_shareHealth => 'Share Health Report';
+
+  @override
+  String get report_vetSummary => 'Vet Visit Summary';
+
+  @override
+  String get report_vetSummaryTitle => 'Vet Visit Summary';
+
+  @override
+  String get report_vetSummaryDesc =>
+      'Generate a shareable link summarizing\nyour bird\'s health data from the last 30 days.';
+
+  @override
+  String get report_vetFeatureWeight => 'Weight trends';
+
+  @override
+  String get report_vetFeatureChecks => 'AI health check summary';
+
+  @override
+  String get report_vetFeatureNotes => 'Behavior notes & daily records';
+
+  @override
+  String get report_vetShareButton => 'Share Summary Link';
 }

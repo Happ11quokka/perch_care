@@ -62,7 +62,10 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
   Future<void> _checkPremiumThenAnalyze() async {
     try {
       final status = await PremiumService.instance.getTier();
-      if (mounted && status.isFree) {
+      // Phase 2: quota 기반 접근 체크 (trial remaining > 0이면 허용)
+      final hasAccess = status.isPremium ||
+          (status.quota?.visionTrialRemaining ?? 0) > 0;
+      if (mounted && !hasAccess) {
         context.goNamed(RouteNames.healthCheck);
         return;
       }
@@ -123,12 +126,23 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
       if (!mounted || _cancelled) return;
       debugPrint('[HealthCheck] Analysis response received');
 
+      // Phase 2: Vision 체험 사용 analytics (Free 사용자만)
+      try {
+        final postStatus = await PremiumService.instance.getTier(forceRefresh: true);
+        if (!postStatus.isPremium) {
+          AnalyticsService.instance.logVisionTrialUsed(
+            remainingAfter: postStatus.quota?.visionTrialRemaining ?? 0,
+          );
+        }
+      } catch (_) {}
+
       // 백엔드 응답: { id, pet_id, check_type, result: { findings, ... }, ... }
       // result 필드 안에 실제 분석 데이터가 중첩되어 있음
       final analysisResult = response['result'] is Map<String, dynamic>
           ? response['result'] as Map<String, dynamic>
           : response;
 
+      if (!mounted || _cancelled) return;
       context.pushReplacementNamed(
         RouteNames.healthCheckResult,
         extra: {

@@ -16,6 +16,7 @@ from app.dependencies import get_current_user, get_current_tier
 from app.models.ai_vision_log import AiVisionLog
 from app.models.pet import Pet
 from app.models.user import User
+from app.services.quota_service import check_and_reserve_vision
 from app.schemas.health_check import (
     HealthCheckCreate,
     HealthCheckResponse,
@@ -164,14 +165,7 @@ async def analyze_health_check_vision(
     db: AsyncSession = Depends(get_db),
 ):
     """GPT-4o Vision으로 이미지를 분석하여 건강 상태를 반환한다. 프리미엄 전용."""
-    # 1. 티어 검증
-    if tier != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="프리미엄 전용 기능입니다",
-        )
-
-    # 1-1. Pet 소유권 검증 (IDOR 방지)
+    # 1. Pet 소유권 검증 (IDOR 방지) — 쿼터 체크 전에 수행
     pet_result = await db.execute(
         select(Pet).where(Pet.id == pet_id, Pet.user_id == current_user.id)
     )
@@ -219,10 +213,20 @@ async def analyze_health_check_vision(
             detail="빈 이미지 파일입니다",
         )
 
-    # 5. Base64 인코딩 (메모리에서 — 디스크 저장 없음)
+    # 5. 티어 검증 + 슬롯 예약 (advisory lock으로 동시 요청 방지)
+    vis, reservation = await check_and_reserve_vision(
+        db, current_user.id, tier, pet_id, mode, part, len(image_bytes),
+    )
+    if not vis["allowed"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="프리미엄 전용 기능입니다",
+        )
+
+    # 6. Base64 인코딩 (메모리에서 — 디스크 저장 없음)
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
-    # 6. AI Vision 분석
+    # 7. AI Vision 분석 (실패 시 HTTPException → get_db rollback → 예약 자동 삭제)
     start_time = time.monotonic()
     try:
         result = await ai_service.analyze_vision_health_check(
@@ -244,7 +248,7 @@ async def analyze_health_check_vision(
             detail="이미지 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
         )
 
-    # 7. DB 저장
+    # 8. DB 저장
     overall_status = result.get("overall_status", "normal")
     confidence = result.get("confidence_score")
     if isinstance(confidence, (int, float)):
@@ -261,19 +265,26 @@ async def analyze_health_check_vision(
     )
     saved_check = await health_check_service.create_check(db, pet_id, check_data)
 
-    # 8. Vision 사용 로그 기록
+    # 9. Vision 사용 로그 업데이트/생성
     elapsed_ms = int((time.monotonic() - start_time) * 1000)
-    vision_log = AiVisionLog(
-        user_id=current_user.id,
-        pet_id=pet_id,
-        mode=mode,
-        part=part,
-        image_size_bytes=len(image_bytes),
-        response_time_ms=elapsed_ms,
-        model="gpt-4o",
-        confidence_score=confidence,
-        overall_status=overall_status,
-    )
-    db.add(vision_log)
+    if reservation:
+        # Free 사용자: 예약 로그 업데이트
+        reservation.response_time_ms = elapsed_ms
+        reservation.confidence_score = confidence
+        reservation.overall_status = overall_status
+    else:
+        # Premium 사용자: 새 로그 생성
+        db.add(AiVisionLog(
+            user_id=current_user.id,
+            pet_id=pet_id,
+            mode=mode,
+            part=part,
+            image_size_bytes=len(image_bytes),
+            response_time_ms=elapsed_ms,
+            model="gpt-4o",
+            tier=tier,
+            confidence_score=confidence,
+            overall_status=overall_status,
+        ))
 
     return saved_check

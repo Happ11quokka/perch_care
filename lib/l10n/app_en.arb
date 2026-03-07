@@ -735,5 +735,29 @@
     "placeholders": {
       "date": {"type": "String"}
     }
-  }
+  },
+
+  "quotaBadge_normal": "{count} left today",
+  "@quotaBadge_normal": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "quotaBadge_exhausted": "Daily limit reached",
+  "quotaBadge_upgrade": "Upgrade",
+  "aiEncyclopedia_quotaExhausted": "You've used all free queries for today. Upgrade to Premium for unlimited access.",
+  "aiEncyclopedia_quotaExhaustedHint": "Daily limit reached · Upgrade to Premium",
+  "healthCheck_freeTrialBadge": "1 free trial",
+  "healthCheck_trialExhaustedTitle": "Free trial completed",
+  "healthCheck_trialExhaustedMessage": "You've already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.",
+
+  "report_shareFailed": "Failed to create share link.",
+  "report_shareHealth": "Share Health Report",
+  "report_vetSummary": "Vet Visit Summary",
+  "report_vetSummaryTitle": "Vet Visit Summary",
+  "report_vetSummaryDesc": "Generate a shareable link summarizing\nyour bird's health data from the last 30 days.",
+  "report_vetFeatureWeight": "Weight trends",
+  "report_vetFeatureChecks": "AI health check summary",
+  "report_vetFeatureNotes": "Behavior notes & daily records",
+  "report_vetShareButton": "Share Summary Link"
 }

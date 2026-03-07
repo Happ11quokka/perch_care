@@ -18,11 +18,13 @@ from app.models.ai_encyclopedia_log import AiEncyclopediaLog
 from app.models.ai_vision_log import AiVisionLog
 from app.schemas.premium import (
     PremiumCodeRequest, PremiumCodeResponse, TierResponse,
+    AiEncyclopediaQuota, QuotaInfo,
     GenerateCodesRequest, GenerateCodesResponse, GeneratedCodeItem,
     PremiumCodeListItem, AdminUserPremiumInfo, RevokeResponse, DeleteCodeResponse,
     UsageSummaryResponse, DailyUsageItem, UserUsageItem, ModelUsageItem,
     PurchaseVerifyRequest, PurchaseVerifyResponse, PurchaseRestoreRequest,
     SubscriptionTransactionItem, SubscriptionStatsResponse,
+    SubscriptionSummaryResponse, ConversionFunnelResponse, AiCostAnalysisResponse,
 )
 from app.models.subscription_transaction import SubscriptionTransaction
 from app.models.user_tier import UserTier
@@ -55,14 +57,22 @@ async def get_my_tier(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """현재 사용자의 티어 조회."""
+    """현재 사용자의 티어 + 쿼터 조회."""
     info = await get_user_tier_info(db, current_user.id)
+    quota_data = info.get("quota")
+    quota = None
+    if quota_data:
+        quota = QuotaInfo(
+            ai_encyclopedia=AiEncyclopediaQuota(**quota_data["ai_encyclopedia"]),
+            vision_trial_remaining=quota_data["vision_trial_remaining"],
+        )
     return TierResponse(
         tier=info["tier"],
         premium_expires_at=info["premium_expires_at"],
         source=info.get("source"),
         store_product_id=info.get("store_product_id"),
         auto_renew_status=info.get("auto_renew_status"),
+        quota=quota,
     )
 
 
@@ -730,3 +740,300 @@ async def list_subscription_transactions(
         )
         for tx, email in rows
     ]
+
+
+# ── Admin: Phase 2 KPI ──
+
+
+@router.get(
+    "/admin/subscriptions/summary",
+    response_model=SubscriptionSummaryResponse,
+    dependencies=[Depends(verify_admin_api_key)],
+)
+async def get_subscription_summary(
+    days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+):
+    """구독 소스별 프리미엄 사용자 수 + 기간 내 이벤트 통계 (관리자 전용)."""
+    now = datetime.now(timezone.utc)
+    since = now - timedelta(days=days)
+
+    # 1. 활성 프리미엄 사용자 수
+    total_result = await db.execute(
+        select(func.count())
+        .select_from(UserTier)
+        .where(
+            UserTier.tier == "premium",
+            UserTier.premium_expires_at.isnot(None),
+            UserTier.premium_expires_at >= now,
+        )
+    )
+    total_premium = total_result.scalar() or 0
+
+    # 2. 소스별 분류
+    source_result = await db.execute(
+        select(UserTier.source, func.count())
+        .where(
+            UserTier.tier == "premium",
+            UserTier.premium_expires_at.isnot(None),
+            UserTier.premium_expires_at >= now,
+        )
+        .group_by(UserTier.source)
+    )
+    by_source = {row[0] or "unknown": row[1] for row in source_result.all()}
+
+    # 3. 기간 내 신규 구독 (purchase 이벤트)
+    new_result = await db.execute(
+        select(func.count())
+        .select_from(SubscriptionTransaction)
+        .where(
+            SubscriptionTransaction.created_at >= since,
+            SubscriptionTransaction.event_type == "purchase",
+        )
+    )
+    daily_new = new_result.scalar() or 0
+
+    # 4. 기간 내 복원 (restore 이벤트)
+    restore_result = await db.execute(
+        select(func.count())
+        .select_from(SubscriptionTransaction)
+        .where(
+            SubscriptionTransaction.created_at >= since,
+            SubscriptionTransaction.event_type == "restore",
+        )
+    )
+    daily_restores = restore_result.scalar() or 0
+
+    # 5. 기간 내 만료 (downgrade 여부 무관 — premium_expires_at 기준)
+    exp_result = await db.execute(
+        select(func.count())
+        .select_from(UserTier)
+        .where(
+            UserTier.premium_expires_at >= since,
+            UserTier.premium_expires_at < now,
+        )
+    )
+    daily_exp = exp_result.scalar() or 0
+
+    # 6. 기간 내 자동갱신 취소
+    cancel_result = await db.execute(
+        select(func.count())
+        .select_from(UserTier)
+        .where(
+            UserTier.updated_at >= since,
+            UserTier.auto_renew_status == False,  # noqa: E712
+            UserTier.tier == "premium",
+        )
+    )
+    daily_cancel = cancel_result.scalar() or 0
+
+    return SubscriptionSummaryResponse(
+        total_premium_users=total_premium,
+        by_source=by_source,
+        daily_new_subscriptions=daily_new,
+        daily_restores=daily_restores,
+        daily_expirations=daily_exp,
+        daily_cancellations=daily_cancel,
+    )
+
+
+@router.get(
+    "/admin/conversion/funnel",
+    response_model=ConversionFunnelResponse,
+    dependencies=[Depends(verify_admin_api_key)],
+)
+async def get_conversion_funnel(
+    db: AsyncSession = Depends(get_db),
+):
+    """전환율 퍼널 분석 (관리자 전용)."""
+    now = datetime.now(timezone.utc)
+
+    # 전체 사용자
+    total_result = await db.execute(select(func.count()).select_from(User))
+    total_users = total_result.scalar() or 0
+
+    # 활성 프리미엄 사용자
+    premium_result = await db.execute(
+        select(func.count())
+        .select_from(UserTier)
+        .where(
+            UserTier.tier == "premium",
+            UserTier.premium_expires_at.isnot(None),
+            UserTier.premium_expires_at >= now,
+        )
+    )
+    premium_users = premium_result.scalar() or 0
+    free_users = total_users - premium_users
+
+    # 소스별 전환
+    source_result = await db.execute(
+        select(UserTier.source, func.count())
+        .where(
+            UserTier.tier == "premium",
+            UserTier.premium_expires_at.isnot(None),
+            UserTier.premium_expires_at >= now,
+        )
+        .group_by(UserTier.source)
+    )
+    by_source_conversion = {}
+    for source, count in source_result.all():
+        ratio = count / total_users if total_users > 0 else 0
+        by_source_conversion[source or "unknown"] = {
+            "count": count,
+            "ratio": round(ratio, 4),
+        }
+
+    # 평균 전환 소요일 (가입 → 프리미엄 시작)
+    from sqlalchemy import extract
+
+    avg_days_result = await db.execute(
+        select(
+            func.avg(
+                extract(
+                    "epoch",
+                    UserTier.premium_started_at - User.created_at,
+                )
+                / 86400
+            )
+        )
+        .select_from(UserTier)
+        .join(User, UserTier.user_id == User.id)
+        .where(UserTier.premium_started_at.isnot(None))
+    )
+    avg_days = avg_days_result.scalar()
+    avg_days = round(avg_days, 2) if avg_days else None
+
+    return ConversionFunnelResponse(
+        total_users=total_users,
+        free_users=free_users,
+        premium_users=premium_users,
+        by_source_conversion=by_source_conversion,
+        avg_days_to_conversion=avg_days,
+    )
+
+
+@router.get(
+    "/admin/ai-cost",
+    response_model=AiCostAnalysisResponse,
+    dependencies=[Depends(verify_admin_api_key)],
+)
+async def get_ai_cost_analysis(
+    days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+):
+    """AI 비용 vs 수익 분석 (관리자 전용)."""
+    now = datetime.now(timezone.utc)
+    since = now - timedelta(days=days)
+
+    # Free vs Premium 모델별 AI 호출 수
+    enc_result = await db.execute(
+        select(AiEncyclopediaLog.model, func.count())
+        .where(AiEncyclopediaLog.created_at >= since)
+        .group_by(AiEncyclopediaLog.model)
+    )
+    free_calls = 0
+    premium_calls = 0
+    free_cost = 0.0
+    premium_cost = 0.0
+    for model, count in enc_result.all():
+        avg_tokens = _MODEL_AVG_TOKENS.get(model, 1000)
+        cost_per_1k = _MODEL_COST_PER_1K.get(model, 0.0002)
+        model_cost = count * (avg_tokens / 1000) * cost_per_1k
+        if model in _PREMIUM_MODELS:
+            premium_calls += count
+            premium_cost += model_cost
+        else:
+            free_calls += count
+            free_cost += model_cost
+
+    # Vision 호출: 요청 시점의 tier 기록 기준으로 free/premium 분리
+    vision_avg_tokens = _MODEL_AVG_TOKENS.get("gpt-4o", 1500)
+    vision_cost_per_1k = _MODEL_COST_PER_1K.get("gpt-4o", 0.0025)
+    vis_by_tier = await db.execute(
+        select(
+            AiVisionLog.tier.label("tier"),
+            func.count().label("cnt"),
+        )
+        .where(AiVisionLog.created_at >= since)
+        .group_by(AiVisionLog.tier)
+    )
+    for tier_label, cnt in vis_by_tier.all():
+        vis_cost = cnt * (vision_avg_tokens / 1000) * vision_cost_per_1k
+        if tier_label == "premium":
+            premium_calls += cnt
+            premium_cost += vis_cost
+        else:
+            free_calls += cnt
+            free_cost += vis_cost
+
+    total_cost = free_cost + premium_cost
+
+    # 고유 사용자 수 (Encyclopedia + Vision 통합, 티어별)
+    # Free 사용자: free-model encyclopedia + free-tier vision
+    free_enc_users = await db.execute(
+        select(AiEncyclopediaLog.user_id)
+        .where(
+            AiEncyclopediaLog.created_at >= since,
+            AiEncyclopediaLog.model.notin_(_PREMIUM_MODELS),
+        )
+        .distinct()
+    )
+    free_vis_users = await db.execute(
+        select(AiVisionLog.user_id)
+        .where(
+            AiVisionLog.created_at >= since,
+            AiVisionLog.tier != "premium",
+        )
+        .distinct()
+    )
+    free_user_ids = {r[0] for r in free_enc_users.all()} | {r[0] for r in free_vis_users.all()}
+    free_user_count = len(free_user_ids)
+
+    # Premium 사용자: premium-model encyclopedia + premium-tier vision
+    premium_enc_users = await db.execute(
+        select(AiEncyclopediaLog.user_id)
+        .where(
+            AiEncyclopediaLog.created_at >= since,
+            AiEncyclopediaLog.model.in_(_PREMIUM_MODELS),
+        )
+        .distinct()
+    )
+    premium_vis_users = await db.execute(
+        select(AiVisionLog.user_id)
+        .where(
+            AiVisionLog.created_at >= since,
+            AiVisionLog.tier == "premium",
+        )
+        .distinct()
+    )
+    premium_user_ids = {r[0] for r in premium_enc_users.all()} | {r[0] for r in premium_vis_users.all()}
+    premium_user_count = len(premium_user_ids)
+
+    cost_per_free = free_cost / free_user_count if free_user_count > 0 else 0
+    cost_per_premium = premium_cost / premium_user_count if premium_user_count > 0 else 0
+
+    # 매출 추정 (활성 스토어 구독자 * $4.99/월 * days/30)
+    active_subs_result = await db.execute(
+        select(func.count())
+        .select_from(UserTier)
+        .where(
+            UserTier.tier == "premium",
+            UserTier.source.in_(["app_store", "play_store"]),
+            UserTier.premium_expires_at >= now,
+        )
+    )
+    active_subs = active_subs_result.scalar() or 0
+    estimated_revenue = active_subs * 4.99 * (days / 30)
+
+    cost_to_revenue = total_cost / estimated_revenue if estimated_revenue > 0 else None
+
+    return AiCostAnalysisResponse(
+        period_days=days,
+        free_tier_ai_calls=free_calls,
+        premium_tier_ai_calls=premium_calls,
+        estimated_cost_per_free_user_usd=round(cost_per_free, 4),
+        estimated_cost_per_premium_user_usd=round(cost_per_premium, 4),
+        total_estimated_cost_usd=round(total_cost, 2),
+        total_estimated_revenue_usd=round(estimated_revenue, 2),
+        cost_to_revenue_ratio=round(cost_to_revenue, 4) if cost_to_revenue else None,
+    )

@@ -1,6 +1,54 @@
 import 'package:flutter/foundation.dart';
 import '../api/api_client.dart';
 
+/// AI 백과사전 쿼터 정보
+class EncyclopediaQuota {
+  final int dailyLimit; // -1 = 무제한
+  final int dailyUsed;
+  final int remaining; // -1 = 무제한
+
+  EncyclopediaQuota({
+    required this.dailyLimit,
+    required this.dailyUsed,
+    required this.remaining,
+  });
+
+  bool get isUnlimited => dailyLimit == -1;
+  bool get isExhausted => !isUnlimited && remaining <= 0;
+  bool get isWarning => !isUnlimited && remaining <= 1;
+
+  factory EncyclopediaQuota.fromJson(Map<String, dynamic> json) {
+    return EncyclopediaQuota(
+      dailyLimit: json['daily_limit'] as int? ?? 0,
+      dailyUsed: json['daily_used'] as int? ?? 0,
+      remaining: json['remaining'] as int? ?? 0,
+    );
+  }
+}
+
+/// AI 기능 쿼터 통합 정보
+class QuotaInfo {
+  final EncyclopediaQuota aiEncyclopedia;
+  final int visionTrialRemaining; // -1 = N/A (premium), 0-1 = free
+
+  QuotaInfo({
+    required this.aiEncyclopedia,
+    required this.visionTrialRemaining,
+  });
+
+  bool get hasVisionAccess => visionTrialRemaining != 0;
+  bool get isVisionTrial => visionTrialRemaining > 0;
+
+  factory QuotaInfo.fromJson(Map<String, dynamic> json) {
+    return QuotaInfo(
+      aiEncyclopedia: EncyclopediaQuota.fromJson(
+        json['ai_encyclopedia'] as Map<String, dynamic>,
+      ),
+      visionTrialRemaining: json['vision_trial_remaining'] as int? ?? 0,
+    );
+  }
+}
+
 /// 프리미엄 구독 상태 모델
 class PremiumStatus {
   final String tier;
@@ -8,6 +56,7 @@ class PremiumStatus {
   final String? source;
   final String? storeProductId;
   final bool? autoRenewStatus;
+  final QuotaInfo? quota;
 
   PremiumStatus({
     required this.tier,
@@ -15,6 +64,7 @@ class PremiumStatus {
     this.source,
     this.storeProductId,
     this.autoRenewStatus,
+    this.quota,
   });
 
   bool get isPremium => tier == 'premium';
@@ -31,6 +81,9 @@ class PremiumStatus {
       source: json['source'] as String?,
       storeProductId: json['store_product_id'] as String?,
       autoRenewStatus: json['auto_renew_status'] as bool?,
+      quota: json['quota'] != null
+          ? QuotaInfo.fromJson(json['quota'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

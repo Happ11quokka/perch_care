@@ -22,12 +22,24 @@ class PremiumCodeResponse(BaseModel):
     expires_at: datetime | None = None
 
 
+class AiEncyclopediaQuota(BaseModel):
+    daily_limit: int
+    daily_used: int
+    remaining: int
+
+
+class QuotaInfo(BaseModel):
+    ai_encyclopedia: AiEncyclopediaQuota
+    vision_trial_remaining: int
+
+
 class TierResponse(BaseModel):
     tier: Literal["free", "premium"]
     premium_expires_at: datetime | None = None
     source: str | None = None
     store_product_id: str | None = None
     auto_renew_status: bool | None = None
+    quota: QuotaInfo | None = None
 
 
 # ── Admin: 코드 생성 ──
@@ -168,3 +180,33 @@ class SubscriptionStatsResponse(BaseModel):
     apple_subscribers: int
     google_subscribers: int
     by_product: dict[str, int]
+
+
+# ── Admin: Phase 2 KPI ──
+
+class SubscriptionSummaryResponse(BaseModel):
+    total_premium_users: int
+    by_source: dict[str, int]
+    daily_new_subscriptions: int
+    daily_restores: int
+    daily_expirations: int
+    daily_cancellations: int
+
+
+class ConversionFunnelResponse(BaseModel):
+    total_users: int
+    free_users: int
+    premium_users: int
+    by_source_conversion: dict[str, dict]
+    avg_days_to_conversion: float | None = None
+
+
+class AiCostAnalysisResponse(BaseModel):
+    period_days: int
+    free_tier_ai_calls: int
+    premium_tier_ai_calls: int
+    estimated_cost_per_free_user_usd: float
+    estimated_cost_per_premium_user_usd: float
+    total_estimated_cost_usd: float
+    total_estimated_revenue_usd: float
+    cost_to_revenue_ratio: float | None = None

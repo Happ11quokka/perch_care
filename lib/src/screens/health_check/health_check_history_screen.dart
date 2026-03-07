@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
+import '../../services/premium/premium_service.dart';
 import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
@@ -131,6 +133,46 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
     }
   }
 
+  Future<void> _shareHealthReport() async {
+    final l10n = AppLocalizations.of(context);
+    final petId = ActivePetNotifier.instance.activePetId;
+    if (petId == null) return;
+
+    try {
+      final status = await PremiumService.instance.getTier();
+      if (status.isFree) {
+        if (mounted) context.pushNamed(RouteNames.premium);
+        return;
+      }
+
+      final now = DateTime.now();
+      final from = now.subtract(const Duration(days: 30));
+      String fmt(DateTime d) =>
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+      final result = await ApiClient.instance.post(
+        '/reports/share/health/$petId?date_from=${fmt(from)}&date_to=${fmt(now)}',
+      );
+
+      final shareUrl = result['share_url'] as String;
+      await Share.share(shareUrl);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 403) {
+        context.pushNamed(RouteNames.premium);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.report_shareFailed)),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.report_shareFailed)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -156,6 +198,21 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
             letterSpacing: -0.4,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.local_hospital_outlined,
+                color: Color(0xFF6B6B6B)),
+            tooltip: l10n.report_vetSummary,
+            onPressed: () =>
+                context.pushNamed(RouteNames.vetSummary),
+          ),
+          IconButton(
+            icon: const Icon(Icons.share_outlined,
+                color: Color(0xFF6B6B6B)),
+            tooltip: l10n.report_shareHealth,
+            onPressed: _shareHealthReport,
+          ),
+        ],
       ),
       body: SafeArea(
         child: _isLoading

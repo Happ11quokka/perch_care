@@ -1924,4 +1924,60 @@ class AppLocalizationsKo extends AppLocalizations {
   String paywall_alreadyPremiumExpires(String date) {
     return '$date까지 이용 가능';
   }
+
+  @override
+  String quotaBadge_normal(int count) {
+    return '오늘 $count회 남음';
+  }
+
+  @override
+  String get quotaBadge_exhausted => '일일 한도 도달';
+
+  @override
+  String get quotaBadge_upgrade => '업그레이드';
+
+  @override
+  String get aiEncyclopedia_quotaExhausted =>
+      '오늘의 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.';
+
+  @override
+  String get aiEncyclopedia_quotaExhaustedHint => '일일 한도 도달 · 프리미엄으로 업그레이드하세요';
+
+  @override
+  String get healthCheck_freeTrialBadge => '무료 1회 체험';
+
+  @override
+  String get healthCheck_trialExhaustedTitle => '무료 체험 완료';
+
+  @override
+  String get healthCheck_trialExhaustedMessage =>
+      '무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.';
+
+  @override
+  String get report_shareFailed => '공유 링크 생성에 실패했습니다.';
+
+  @override
+  String get report_shareHealth => '건강 리포트 공유';
+
+  @override
+  String get report_vetSummary => '병원 방문 요약';
+
+  @override
+  String get report_vetSummaryTitle => '병원 방문 요약';
+
+  @override
+  String get report_vetSummaryDesc =>
+      '최근 30일간의 건강 데이터를 요약하여\n수의사에게 공유할 수 있는 링크를 생성합니다.';
+
+  @override
+  String get report_vetFeatureWeight => '체중 변화 추이';
+
+  @override
+  String get report_vetFeatureChecks => 'AI 건강 체크 결과 요약';
+
+  @override
+  String get report_vetFeatureNotes => '행동 메모 및 일상 기록';
+
+  @override
+  String get report_vetShareButton => '요약 링크 공유하기';
 }

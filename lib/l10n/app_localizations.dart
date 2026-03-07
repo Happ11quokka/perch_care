@@ -3651,6 +3651,108 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'{date}까지 이용 가능'**
   String paywall_alreadyPremiumExpires(String date);
+
+  /// No description provided for @quotaBadge_normal.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 {count}회 남음'**
+  String quotaBadge_normal(int count);
+
+  /// No description provided for @quotaBadge_exhausted.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 한도 도달'**
+  String get quotaBadge_exhausted;
+
+  /// No description provided for @quotaBadge_upgrade.
+  ///
+  /// In ko, this message translates to:
+  /// **'업그레이드'**
+  String get quotaBadge_upgrade;
+
+  /// No description provided for @aiEncyclopedia_quotaExhausted.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.'**
+  String get aiEncyclopedia_quotaExhausted;
+
+  /// No description provided for @aiEncyclopedia_quotaExhaustedHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 한도 도달 · 프리미엄으로 업그레이드하세요'**
+  String get aiEncyclopedia_quotaExhaustedHint;
+
+  /// No description provided for @healthCheck_freeTrialBadge.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 1회 체험'**
+  String get healthCheck_freeTrialBadge;
+
+  /// No description provided for @healthCheck_trialExhaustedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 체험 완료'**
+  String get healthCheck_trialExhaustedTitle;
+
+  /// No description provided for @healthCheck_trialExhaustedMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.'**
+  String get healthCheck_trialExhaustedMessage;
+
+  /// No description provided for @report_shareFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'공유 링크 생성에 실패했습니다.'**
+  String get report_shareFailed;
+
+  /// No description provided for @report_shareHealth.
+  ///
+  /// In ko, this message translates to:
+  /// **'건강 리포트 공유'**
+  String get report_shareHealth;
+
+  /// No description provided for @report_vetSummary.
+  ///
+  /// In ko, this message translates to:
+  /// **'병원 방문 요약'**
+  String get report_vetSummary;
+
+  /// No description provided for @report_vetSummaryTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'병원 방문 요약'**
+  String get report_vetSummaryTitle;
+
+  /// No description provided for @report_vetSummaryDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'최근 30일간의 건강 데이터를 요약하여\n수의사에게 공유할 수 있는 링크를 생성합니다.'**
+  String get report_vetSummaryDesc;
+
+  /// No description provided for @report_vetFeatureWeight.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중 변화 추이'**
+  String get report_vetFeatureWeight;
+
+  /// No description provided for @report_vetFeatureChecks.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 건강 체크 결과 요약'**
+  String get report_vetFeatureChecks;
+
+  /// No description provided for @report_vetFeatureNotes.
+  ///
+  /// In ko, this message translates to:
+  /// **'행동 메모 및 일상 기록'**
+  String get report_vetFeatureNotes;
+
+  /// No description provided for @report_vetShareButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'요약 링크 공유하기'**
+  String get report_vetShareButton;
 }
 
 class _AppLocalizationsDelegate

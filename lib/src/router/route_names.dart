@@ -38,4 +38,5 @@ class RouteNames {
   static const String healthCheckAnalyzing = 'health-check-analyzing';
   static const String healthCheckResult = 'health-check-result';
   static const String healthCheckHistory = 'health-check-history';
+  static const String vetSummary = 'vet-summary';
 }

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Noto Sans KR', 'Noto Sans SC', sans-serif; font-size: 10pt; color: #333; line-height: 1.4; max-width: 800px; margin: 0 auto; padding: 16px; }
+
+  .header { background: #FF9A42; color: #fff; padding: 16px 20px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 16pt; }
+  .header .brand { font-size: 9pt; opacity: 0.8; }
+  .header .date { font-size: 9pt; opacity: 0.8; text-align: right; }
+
+  .two-col { display: flex; gap: 16px; margin-bottom: 16px; }
+  .two-col > div { flex: 1; }
+
+  .card { background: #F9F9F9; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+  .card h3 { font-size: 11pt; color: #FF9A42; margin-bottom: 8px; border-bottom: 1px solid #FFE0C0; padding-bottom: 4px; }
+
+  .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 9pt; }
+  .info-row .label { color: #97928A; }
+  .info-row .value { font-weight: 600; }
+
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  th { background: #F0F0F0; padding: 5px 8px; text-align: left; font-weight: 600; }
+  td { padding: 4px 8px; border-bottom: 1px solid #eee; }
+
+  .status { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 7.5pt; font-weight: 600; }
+  .status-normal { background: #E8F5E9; color: #4CAF50; }
+  .status-caution { background: #FFF3E0; color: #FF9800; }
+  .status-warning { background: #FFF5ED; color: #FF9A42; }
+  .status-critical { background: #FFEBEE; color: #FF572D; }
+  .status-safe { background: #E8F5E9; color: #4CAF50; }
+  .status-toxic { background: #FFEBEE; color: #FF572D; }
+  .status-danger { background: #FFEBEE; color: #FF572D; }
+  .status-dangerous { background: #FFEBEE; color: #FF572D; }
+
+  .alert-box { background: #FFF3E0; border-left: 3px solid #FF9A42; padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 9pt; }
+
+  .vet-notes { border: 1px dashed #ccc; border-radius: 8px; padding: 14px; margin-top: 12px; min-height: 80px; }
+  .vet-notes h3 { font-size: 10pt; color: #6B6B6B; margin-bottom: 8px; }
+
+  .footer { margin-top: 16px; font-size: 7.5pt; color: #97928A; text-align: center; border-top: 1px solid #ddd; padding-top: 8px; }
+</style>
+</head>
+<body>
+  {% set t = {
+    "ko": {"title": "병원 방문 요약", "patient_info": "환자 정보", "name": "이름", "species_breed": "종/품종", "birth_date": "생년월일", "gender": "성별", "latest_weight": "최근 체중", "bhi": "건강지수", "attention": "주의 필요 항목", "datetime": "일시", "type": "유형", "status": "상태", "weight_trend": "체중 변화", "date": "날짜", "weight_g": "체중 (g)", "behavior_notes": "최근 행동/메모", "vet_notes": "수의사 메모", "all_checks": "전체 건강 체크 이력", "confidence": "신뢰도", "disclaimer": "AI 생성 요약 - 진단 대체 불가"},
+    "en": {"title": "Vet Visit Summary", "patient_info": "Patient Info", "name": "Name", "species_breed": "Species/Breed", "birth_date": "DOB", "gender": "Gender", "latest_weight": "Latest Weight", "bhi": "Health Index", "attention": "Items Requiring Attention", "datetime": "Date", "type": "Type", "status": "Status", "weight_trend": "Weight Trend", "date": "Date", "weight_g": "Weight (g)", "behavior_notes": "Recent Behavior Notes", "vet_notes": "Veterinarian Notes", "all_checks": "All Health Check History", "confidence": "Confidence", "disclaimer": "AI-generated summary - not a diagnosis"},
+    "zh": {"title": "就诊摘要", "patient_info": "患者信息", "name": "名字", "species_breed": "种类/品种", "birth_date": "出生日期", "gender": "性别", "latest_weight": "最近体重", "bhi": "健康指数", "attention": "需要注意的项目", "datetime": "日期", "type": "类型", "status": "状态", "weight_trend": "体重变化", "date": "日期", "weight_g": "体重 (g)", "behavior_notes": "最近行为/备注", "vet_notes": "兽医备注", "all_checks": "全部健康检查记录", "confidence": "置信度", "disclaimer": "AI生成摘要 - 不能替代诊断"}
+  } %}
+  {% set L = t.get(lang, t["en"]) %}
+
+  <div class="header">
+    <div>
+      <h1>{{ L.title }}</h1>
+      <div class="brand">Perch Care</div>
+    </div>
+    <div class="date">{{ date_from }} ~ {{ date_to }}</div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>{{ L.patient_info }}</h3>
+      <div class="info-row"><span class="label">{{ L.name }}</span><span class="value">{{ pet.name }}</span></div>
+      <div class="info-row"><span class="label">{{ L.species_breed }}</span><span class="value">{{ pet.species }}{% if pet.breed %} / {{ pet.breed }}{% endif %}</span></div>
+      {% if pet.birth_date %}<div class="info-row"><span class="label">{{ L.birth_date }}</span><span class="value">{{ pet.birth_date }}</span></div>{% endif %}
+      {% if pet.gender %}<div class="info-row"><span class="label">{{ L.gender }}</span><span class="value">{{ pet.gender }}</span></div>{% endif %}
+      {% if weights %}<div class="info-row"><span class="label">{{ L.latest_weight }}</span><span class="value">{{ "%.1f"|format(weights[-1].weight) }}g ({{ weights[-1].recorded_date }})</span></div>{% endif %}
+    </div>
+    {% if bhi %}
+    <div class="card" style="text-align: center;">
+      <h3>{{ L.bhi }}</h3>
+      <div style="font-size: 28pt; font-weight: 700; color: #FF9A42;">{{ "%.0f"|format(bhi.bhi_score) }}</div>
+      <div style="font-size: 8pt; color: #97928A;">/100 ({{ bhi.target_date }})</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if abnormal_checks %}
+  <div class="alert-box">
+    <strong>{{ L.attention }} ({{ abnormal_checks|length }})</strong>
+  </div>
+  <table style="margin-bottom: 12px;">
+    <tr><th>{{ L.datetime }}</th><th>{{ L.type }}</th><th>{{ L.status }}</th><th>{{ L.confidence }}</th></tr>
+    {% for hc in abnormal_checks %}
+    <tr>
+      <td>{{ hc.checked_at.strftime('%Y-%m-%d') }}</td>
+      <td>{{ hc.check_type }}</td>
+      <td><span class="status status-{{ hc.status }}">{{ hc.status }}</span></td>
+      <td>{% if hc.confidence_score %}{{ "%.0f"|format(hc.confidence_score) }}%{% else %}-{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+
+  {% if weights and weights|length > 1 %}
+  <div class="card">
+    <h3>{{ L.weight_trend }}</h3>
+    <table>
+      <tr><th>{{ L.date }}</th><th>{{ L.weight_g }}</th></tr>
+      {% for w in weights[-7:] %}
+      <tr><td>{{ w.recorded_date }}</td><td>{{ "%.1f"|format(w.weight) }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  {% if dailies %}
+  {% set notes_records = [] %}
+  {% for d in dailies[-7:] %}{% if d.notes %}{% if notes_records.append(d) %}{% endif %}{% endif %}{% endfor %}
+  {% if notes_records %}
+  <div class="card">
+    <h3>{{ L.behavior_notes }}</h3>
+    {% for d in notes_records %}
+    <div style="font-size: 8.5pt; margin-bottom: 4px;">
+      <strong>{{ d.recorded_date }}</strong>: {{ d.notes }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {% if health_checks %}
+  <div class="card">
+    <h3>{{ L.all_checks }}</h3>
+    <table>
+      <tr><th>{{ L.datetime }}</th><th>{{ L.type }}</th><th>{{ L.status }}</th><th>{{ L.confidence }}</th></tr>
+      {% for hc in health_checks[-10:] %}
+      <tr>
+        <td>{{ hc.checked_at.strftime('%Y-%m-%d') }}</td>
+        <td>{{ hc.check_type }}</td>
+        <td><span class="status status-{{ hc.status }}">{{ hc.status }}</span></td>
+        <td>{% if hc.confidence_score %}{{ "%.0f"|format(hc.confidence_score) }}%{% else %}-{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="vet-notes">
+    <h3>{{ L.vet_notes }}</h3>
+  </div>
+
+  <div class="footer">
+    Perch Care | {{ generated_at.strftime('%Y-%m-%d') }} | {{ L.disclaimer }}
+  </div>
+</body>
+</html>

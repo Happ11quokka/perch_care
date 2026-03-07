@@ -902,5 +902,29 @@
     "placeholders": {
       "date": {"type": "String"}
     }
-  }
+  },
+
+  "quotaBadge_normal": "今日剩余{count}次",
+  "@quotaBadge_normal": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "quotaBadge_exhausted": "已达每日限额",
+  "quotaBadge_upgrade": "升级",
+  "aiEncyclopedia_quotaExhausted": "今日免费使用次数已用完。升级到高级版可无限使用。",
+  "aiEncyclopedia_quotaExhaustedHint": "已达每日限额 · 升级到高级版",
+  "healthCheck_freeTrialBadge": "免费体验1次",
+  "healthCheck_trialExhaustedTitle": "免费体验已完成",
+  "healthCheck_trialExhaustedMessage": "您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。",
+
+  "report_shareFailed": "创建分享链接失败。",
+  "report_shareHealth": "分享健康报告",
+  "report_vetSummary": "就诊摘要",
+  "report_vetSummaryTitle": "就诊摘要",
+  "report_vetSummaryDesc": "生成最近30天健康数据摘要的\n分享链接，方便与兽医共享。",
+  "report_vetFeatureWeight": "体重变化趋势",
+  "report_vetFeatureChecks": "AI健康检查结果摘要",
+  "report_vetFeatureNotes": "行为记录与日常观察",
+  "report_vetShareButton": "分享摘要链接"
 }

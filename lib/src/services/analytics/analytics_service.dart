@@ -99,6 +99,25 @@ class AnalyticsService {
   Future<void> logPromoCodeActivated({required String codePrefix}) =>
       _analytics.logEvent(name: 'promo_code_activated', parameters: {'code_prefix': codePrefix});
 
+  // --- Quota Events (Phase 2) ---
+
+  Future<void> logQuotaViewed({required int remaining, required String tier}) =>
+      _analytics.logEvent(name: 'ai_quota_viewed', parameters: {
+        'remaining': remaining,
+        'tier': tier,
+      });
+
+  Future<void> logQuotaReached({required String feature, required int usedCount}) =>
+      _analytics.logEvent(name: 'ai_quota_reached', parameters: {
+        'feature': feature,
+        'used_count': usedCount,
+      });
+
+  Future<void> logVisionTrialUsed({required int remainingAfter}) =>
+      _analytics.logEvent(name: 'vision_trial_used', parameters: {
+        'remaining_after': remainingAfter,
+      });
+
   // --- In-App Review ---
 
   Future<void> openStoreListing() =>

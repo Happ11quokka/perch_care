@@ -17,6 +17,13 @@ from app.models.ai_encyclopedia_log import AiEncyclopediaLog
 from app.models.ai_vision_log import AiVisionLog
 from app.schemas.ai import AiEncyclopediaRequest, AiEncyclopediaResponse
 from app.services import ai_service
+from app.services.quota_service import (
+    check_encyclopedia_quota,
+    check_vision_access,
+    check_and_reserve_encyclopedia,
+    check_and_reserve_vision,
+)
+from sqlalchemy import delete, update
 from app.utils.security import decode_token
 
 logger = logging.getLogger(__name__)
@@ -44,9 +51,24 @@ async def encyclopedia(
     tier: str = Depends(get_current_tier),
     db: AsyncSession = Depends(get_db),
 ):
-    start = time.monotonic()
     model, _ = ai_service._select_model(tier)
+    try:
+        pet_uuid = UUID(body.pet_id) if body.pet_id else None
+    except (ValueError, AttributeError):
+        pet_uuid = None
 
+    # Phase 2: 쿼터 체크 + 슬롯 예약 (advisory lock으로 동시 요청 방지)
+    quota, reservation = await check_and_reserve_encyclopedia(
+        db, current_user.id, tier, pet_uuid, len(body.query), model,
+    )
+    if not quota["allowed"]:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="일일 무료 사용량을 초과했습니다. 내일 다시 시도하거나 프리미엄을 구독하세요.",
+        )
+
+    start = time.monotonic()
+    # AI 실패 시 트랜잭션 rollback → 예약 자동 삭제 (get_db 패턴)
     raw_answer = await ai_service.ask(
         db=db,
         query=body.query,
@@ -59,27 +81,24 @@ async def encyclopedia(
         user_id=current_user.id,
     )
 
-    # 메타데이터 파싱 (category/severity/vet_recommended 추출)
     parsed = ai_service.parse_response_metadata(raw_answer)
-
     elapsed_ms = int((time.monotonic() - start) * 1000)
 
-    # Log metadata to DB
-    try:
-        pet_uuid = UUID(body.pet_id) if body.pet_id else None
-    except (ValueError, AttributeError):
-        pet_uuid = None
-
-    log_entry = AiEncyclopediaLog(
-        user_id=current_user.id,
-        pet_id=pet_uuid,
-        query_length=len(body.query),
-        response_length=len(parsed["answer"]),
-        response_time_ms=elapsed_ms,
-        model=model,
-        tokens_used=None,
-    )
-    db.add(log_entry)
+    if reservation:
+        # Free 사용자: 예약 로그 업데이트
+        reservation.response_length = len(parsed["answer"])
+        reservation.response_time_ms = elapsed_ms
+    else:
+        # Premium 사용자: 새 로그 생성
+        db.add(AiEncyclopediaLog(
+            user_id=current_user.id,
+            pet_id=pet_uuid,
+            query_length=len(body.query),
+            response_length=len(parsed["answer"]),
+            response_time_ms=elapsed_ms,
+            model=model,
+            tokens_used=None,
+        ))
 
     return AiEncyclopediaResponse(
         answer=parsed["answer"],
@@ -98,7 +117,6 @@ async def encyclopedia_stream(
     tier: str = Depends(get_current_tier),
 ):
     """SSE 스트리밍으로 AI 백과사전 응답을 실시간 전송한다."""
-    start_time = time.monotonic()
     model, tier_max_tokens = ai_service._select_model(tier)
     effective_max_tokens = min(body.max_tokens, tier_max_tokens)
 
@@ -108,6 +126,23 @@ async def encyclopedia_stream(
             pet_uuid = UUID(body.pet_id)
         except (ValueError, AttributeError):
             pass
+
+    # Phase 2: 쿼터 체크 + 슬롯 예약 (별도 세션 — commit하여 동시 요청에 노출)
+    reservation_id = None
+    async with async_session_factory() as quota_db:
+        quota, reservation = await check_and_reserve_encyclopedia(
+            quota_db, current_user.id, tier, pet_uuid, len(body.query), model,
+        )
+        if not quota["allowed"]:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="일일 무료 사용량을 초과했습니다. 내일 다시 시도하거나 프리미엄을 구독하세요.",
+            )
+        if reservation:
+            await quota_db.commit()  # 예약 커밋 + advisory lock 해제
+            reservation_id = reservation.id
+
+    start_time = time.monotonic()
 
     # 짧은 세션으로 사전 조회 후 즉시 반환 (스트리밍 중 커넥션 점유 방지)
     async with async_session_factory() as prefetch_db:
@@ -181,16 +216,34 @@ async def encyclopedia_stream(
             full_response = "".join(accumulated)
             try:
                 async with async_session_factory() as log_session:
-                    log_entry = AiEncyclopediaLog(
-                        user_id=user_id,
-                        pet_id=pet_uuid,
-                        query_length=len(query_text),
-                        response_length=len(full_response),
-                        response_time_ms=elapsed_ms,
-                        model=model,
-                        tokens_used=None,
-                    )
-                    log_session.add(log_entry)
+                    if reservation_id:
+                        if len(full_response) == 0:
+                            # AI 실패(토큰 0개): 예약 삭제 → 쿼터 슬롯 반환
+                            await log_session.execute(
+                                delete(AiEncyclopediaLog)
+                                .where(AiEncyclopediaLog.id == reservation_id)
+                            )
+                        else:
+                            # Free 사용자: 예약 로그 업데이트
+                            await log_session.execute(
+                                update(AiEncyclopediaLog)
+                                .where(AiEncyclopediaLog.id == reservation_id)
+                                .values(
+                                    response_length=len(full_response),
+                                    response_time_ms=elapsed_ms,
+                                )
+                            )
+                    else:
+                        # Premium 사용자: 새 로그 생성
+                        log_session.add(AiEncyclopediaLog(
+                            user_id=user_id,
+                            pet_id=pet_uuid,
+                            query_length=len(query_text),
+                            response_length=len(full_response),
+                            response_time_ms=elapsed_ms,
+                            model=model,
+                            tokens_used=None,
+                        ))
                     await log_session.commit()
             except Exception as log_err:
                 logger.error(f"AI stream log save failed: {log_err}", exc_info=True)
@@ -221,6 +274,7 @@ async def analyze_vision_no_pet(
     """펫 없이 Vision 분석 (food 모드 전용). DB 저장 없이 결과만 반환."""
     settings = get_settings()
 
+    # 입력 검증을 쿼터 체크 전에 수행 (불필요한 잠금 방지)
     if mode != "food":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -246,9 +300,17 @@ async def analyze_vision_no_pet(
             detail="빈 이미지 파일입니다",
         )
 
+    # Phase 2: Vision 쿼터 체크 + 슬롯 예약 (advisory lock으로 동시 요청 방지)
+    vis, reservation = await check_and_reserve_vision(
+        db, current_user.id, tier, None, mode, part, len(image_bytes),
+    )
+    if not vis["allowed"]:
+        raise HTTPException(status_code=403, detail="프리미엄 전용 기능입니다")
+
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
     start_time = time.monotonic()
+    # AI 실패 시 HTTPException → get_db rollback → 예약 자동 삭제
     try:
         result = await ai_service.analyze_vision_health_check(
             db=db,
@@ -269,7 +331,7 @@ async def analyze_vision_no_pet(
             detail="이미지 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
         )
 
-    # Vision 사용 로그 기록
+    # Vision 사용 로그 업데이트/생성
     elapsed_ms = int((time.monotonic() - start_time) * 1000)
     confidence = None
     overall_status = None
@@ -277,17 +339,44 @@ async def analyze_vision_no_pet(
         cs = result.get("confidence_score")
         confidence = float(cs) if isinstance(cs, (int, float)) else None
         overall_status = result.get("overall_status")
-    vision_log = AiVisionLog(
-        user_id=current_user.id,
-        pet_id=None,
-        mode=mode,
-        part=part,
-        image_size_bytes=len(image_bytes),
-        response_time_ms=elapsed_ms,
-        model="gpt-4o",
-        confidence_score=confidence,
-        overall_status=overall_status,
-    )
-    db.add(vision_log)
+
+    if reservation:
+        # Free 사용자: 예약 로그 업데이트
+        reservation.response_time_ms = elapsed_ms
+        reservation.confidence_score = confidence
+        reservation.overall_status = overall_status
+    else:
+        # Premium 사용자: 새 로그 생성
+        db.add(AiVisionLog(
+            user_id=current_user.id,
+            pet_id=None,
+            mode=mode,
+            part=part,
+            image_size_bytes=len(image_bytes),
+            response_time_ms=elapsed_ms,
+            model="gpt-4o",
+            tier=tier,
+            confidence_score=confidence,
+            overall_status=overall_status,
+        ))
 
     return {"result": result}
+
+
+@router.get("/quota")
+async def get_ai_quota(
+    current_user: User = Depends(get_current_user),
+    tier: str = Depends(get_current_tier),
+    db: AsyncSession = Depends(get_db),
+):
+    """현재 사용자의 AI 기능 쿼터를 조회한다."""
+    enc = await check_encyclopedia_quota(db, current_user.id, tier)
+    vis = await check_vision_access(db, current_user.id, tier)
+    return {
+        "ai_encyclopedia": {
+            "daily_limit": enc["daily_limit"],
+            "daily_used": enc["daily_used"],
+            "remaining": enc["remaining"],
+        },
+        "vision_trial_remaining": vis["trial_remaining"],
+    }

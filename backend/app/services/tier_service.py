@@ -53,16 +53,35 @@ async def get_user_tier(db: AsyncSession, user_id: UUID) -> Literal["free", "pre
 
 
 async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
-    """사용자 티어 + 만료일을 한번에 반환. 이중 조회 방지용.
+    """사용자 티어 + 만료일 + 쿼터를 한번에 반환. 이중 조회 방지용.
 
     P1-1 Fix: 조건부 원자적 UPDATE로 lost update 방지.
+    P2: quota 정보 포함.
     """
+    from app.services.quota_service import check_encyclopedia_quota, check_vision_access
+
     result = await db.execute(
         select(UserTier).where(UserTier.user_id == user_id)
     )
     tier_row = result.scalar_one_or_none()
     if not tier_row:
-        return {"tier": "free", "premium_expires_at": None}
+        enc = await check_encyclopedia_quota(db, user_id, "free")
+        vis = await check_vision_access(db, user_id, "free")
+        return {
+            "tier": "free",
+            "premium_expires_at": None,
+            "source": None,
+            "store_product_id": None,
+            "auto_renew_status": None,
+            "quota": {
+                "ai_encyclopedia": {
+                    "daily_limit": enc["daily_limit"],
+                    "daily_used": enc["daily_used"],
+                    "remaining": enc["remaining"],
+                },
+                "vision_trial_remaining": vis["trial_remaining"],
+            },
+        }
     # 만료 체크
     if tier_row.tier == "premium" and tier_row.premium_expires_at:
         if tier_row.premium_expires_at < datetime.now(timezone.utc):
@@ -77,13 +96,41 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
                 .values(tier="free", updated_at=now)
             )
             await db.flush()
-            return {"tier": "free", "premium_expires_at": None}
+            enc = await check_encyclopedia_quota(db, user_id, "free")
+            vis = await check_vision_access(db, user_id, "free")
+            return {
+                "tier": "free",
+                "premium_expires_at": None,
+                "source": None,
+                "store_product_id": None,
+                "auto_renew_status": None,
+                "quota": {
+                    "ai_encyclopedia": {
+                        "daily_limit": enc["daily_limit"],
+                        "daily_used": enc["daily_used"],
+                        "remaining": enc["remaining"],
+                    },
+                    "vision_trial_remaining": vis["trial_remaining"],
+                },
+            }
+
+    tier = tier_row.tier
+    enc = await check_encyclopedia_quota(db, user_id, tier)
+    vis = await check_vision_access(db, user_id, tier)
     return {
-        "tier": tier_row.tier,
+        "tier": tier,
         "premium_expires_at": tier_row.premium_expires_at,
         "source": tier_row.source,
         "store_product_id": tier_row.store_product_id,
         "auto_renew_status": tier_row.auto_renew_status,
+        "quota": {
+            "ai_encyclopedia": {
+                "daily_limit": enc["daily_limit"],
+                "daily_used": enc["daily_used"],
+                "remaining": enc["remaining"],
+            },
+            "vision_trial_remaining": vis["trial_remaining"],
+        },
     }
 
 
@@ -141,6 +188,7 @@ async def activate_premium_code(db: AsyncSession, user_id: UUID, code: str) -> U
         premium_started_at=now,
         premium_expires_at=expires_at,
         activated_code=code,
+        source="promo_code",
         created_at=now,
         updated_at=now,
     )
@@ -151,6 +199,7 @@ async def activate_premium_code(db: AsyncSession, user_id: UUID, code: str) -> U
             "premium_started_at": now,
             "premium_expires_at": expires_at,
             "activated_code": code,
+            "source": "promo_code",
             "updated_at": now,
         },
     )

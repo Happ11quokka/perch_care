@@ -38,7 +38,10 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
   Future<void> _checkPremium() async {
     try {
       final status = await PremiumService.instance.getTier();
-      if (mounted && status.isFree) {
+      // Phase 2: quota 기반 접근 체크 (trial remaining > 0이면 허용)
+      final hasAccess = status.isPremium ||
+          (status.quota?.visionTrialRemaining ?? 0) > 0;
+      if (mounted && !hasAccess) {
         context.goNamed(RouteNames.healthCheck);
       }
     } catch (_) {}

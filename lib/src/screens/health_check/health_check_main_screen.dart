@@ -19,6 +19,7 @@ class HealthCheckMainScreen extends StatefulWidget {
 class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
     with WidgetsBindingObserver {
   bool _isLocked = true; // 기본값: 잠금 (로딩 중 오탭 방지)
+  bool _hasVisionTrial = false; // Phase 2: 무료 체험 가능 여부
   bool _isLoading = true;
 
   @override
@@ -48,7 +49,16 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
       );
       if (mounted) {
         setState(() {
-          _isLocked = status.isFree;
+          if (status.isPremium) {
+            // 프리미엄: 무제한 사용
+            _isLocked = false;
+            _hasVisionTrial = false;
+          } else {
+            // Phase 2: Free 사용자 3단 상태
+            final remaining = status.quota?.visionTrialRemaining ?? 0;
+            _isLocked = remaining <= 0; // 체험 소진 → 잠금
+            _hasVisionTrial = remaining > 0; // 체험 가능 → 열림 + 배지
+          }
           _isLoading = false;
         });
       }
@@ -56,6 +66,7 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
       if (mounted) {
         setState(() {
           _isLocked = true;
+          _hasVisionTrial = false;
           _isLoading = false;
         });
       }
@@ -71,23 +82,29 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
     await _loadPremiumStatus(forceRefresh: true);
   }
 
-  void _showPremiumDialog() {
+  void _showPremiumDialog({bool isTrialExhausted = false}) {
     final l10n = AppLocalizations.of(context);
+    final title = isTrialExhausted
+        ? l10n.healthCheck_trialExhaustedTitle
+        : l10n.premium_featureLockedTitle;
+    final message = isTrialExhausted
+        ? l10n.healthCheck_trialExhaustedMessage
+        : l10n.premium_featureLockedMessage;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(
-              Icons.workspace_premium,
+            Icon(
+              isTrialExhausted ? Icons.check_circle_outline : Icons.workspace_premium,
               color: AppColors.brandPrimary,
               size: 24,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                l10n.premium_featureLockedTitle,
+                title,
                 style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 18,
@@ -99,7 +116,7 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
           ],
         ),
         content: Text(
-          l10n.premium_featureLockedMessage,
+          message,
           style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 14,
@@ -269,7 +286,7 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
     return GestureDetector(
       onTap: () {
         if (locked) {
-          _showPremiumDialog();
+          _showPremiumDialog(isTrialExhausted: true);
         } else if (!_isLoading) {
           context.pushNamed(
             RouteNames.healthCheckCapture,
@@ -321,15 +338,42 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _getModeLabel(l10n, mode),
-                      style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
-                        letterSpacing: -0.4,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          _getModeLabel(l10n, mode),
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                        // Phase 2: 무료 체험 가능 배지
+                        if (_hasVisionTrial) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF3E0),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              l10n.healthCheck_freeTrialBadge,
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFF57C00),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
