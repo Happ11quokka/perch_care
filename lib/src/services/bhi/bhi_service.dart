@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import '../../models/bhi_result.dart';
 import '../api/api_client.dart';
 
@@ -39,7 +37,6 @@ class BhiService {
   Future<BhiResult> getBhi(String petId, {DateTime? targetDate, bool forceRefresh = false}) async {
     // 1순위: 인메모리 캐시 (targetDate 없는 경우만)
     if (!forceRefresh && targetDate == null && _isCacheValid(petId) && _cachedBhi != null) {
-      debugPrint('[BhiService] getBhi() → cache hit');
       return _cachedBhi!;
     }
 
@@ -64,12 +61,10 @@ class BhiService {
         _cachedPetId = petId;
         _lastBhiFetch = DateTime.now();
       }
-      debugPrint('[BhiService] getBhi() → server');
       return result;
     } catch (e) {
       // 3순위: 만료된 인메모리 캐시
       if (_cachedBhi != null && _cachedPetId == petId) {
-        debugPrint('[BhiService] getBhi() → stale cache fallback');
         return _cachedBhi!;
       }
       rethrow;

@@ -68,8 +68,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   late final AnimationController _peekController;
   late final Animation<double> _peekScale;
 
-  bool get _hasUserMessages =>
-      _messages.any((m) => m.role == MessageRole.user);
+  bool get _hasUserMessages => _messages.any((m) => m.role == MessageRole.user);
 
   @override
   void initState() {
@@ -278,7 +277,9 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
         );
       } else {
         // 일부 토큰 수신 후 실패 → 연결 끊김 처리
-        debugPrint('[AIEncyclopedia] SSE interrupted after $_receivedTokenCount tokens: $e');
+        debugPrint(
+          '[AIEncyclopedia] SSE interrupted after $_receivedTokenCount tokens: $e',
+        );
         _finishStreaming();
       }
     }
@@ -348,64 +349,64 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
           petProfileContext: petProfileContext,
         )
         .listen(
-      (token) {
-        if (!mounted) return;
-        _receivedTokenCount++;
-        tokenBuffer.write(token);
+          (token) {
+            if (!mounted) return;
+            _receivedTokenCount++;
+            tokenBuffer.write(token);
 
-        // P2: 50ms 쓰로틀링 — 버퍼에 모아서 일괄 반영
-        _throttleTimer ??= Timer(const Duration(milliseconds: 50), () {
-          _throttleTimer = null;
-          if (!mounted) return;
-          final buffered = tokenBuffer.toString();
-          tokenBuffer.clear();
-          if (buffered.isEmpty) return;
+            // P2: 50ms 쓰로틀링 — 버퍼에 모아서 일괄 반영
+            _throttleTimer ??= Timer(const Duration(milliseconds: 50), () {
+              _throttleTimer = null;
+              if (!mounted) return;
+              final buffered = tokenBuffer.toString();
+              tokenBuffer.clear();
+              if (buffered.isEmpty) return;
 
-          setState(() {
-            final idx = _assistantPlaceholderIndex;
-            if (idx != null && idx < _messages.length) {
-              final msg = _messages[idx];
-              _messages[idx] = msg.copyWith(text: msg.text + buffered);
+              setState(() {
+                final idx = _assistantPlaceholderIndex;
+                if (idx != null && idx < _messages.length) {
+                  final msg = _messages[idx];
+                  _messages[idx] = msg.copyWith(text: msg.text + buffered);
+                }
+              });
+              _scrollToBottom();
+            });
+          },
+          onDone: () {
+            // 남은 버퍼 플러시
+            final remaining = tokenBuffer.toString();
+            tokenBuffer.clear();
+            if (remaining.isNotEmpty && mounted) {
+              setState(() {
+                final idx = _assistantPlaceholderIndex;
+                if (idx != null && idx < _messages.length) {
+                  final msg = _messages[idx];
+                  _messages[idx] = msg.copyWith(text: msg.text + remaining);
+                }
+              });
             }
-          });
-          _scrollToBottom();
-        });
-      },
-      onDone: () {
-        // 남은 버퍼 플러시
-        final remaining = tokenBuffer.toString();
-        tokenBuffer.clear();
-        if (remaining.isNotEmpty && mounted) {
-          setState(() {
-            final idx = _assistantPlaceholderIndex;
-            if (idx != null && idx < _messages.length) {
-              final msg = _messages[idx];
-              _messages[idx] = msg.copyWith(text: msg.text + remaining);
+            _finishStreaming();
+            _streamSubscription = null;
+            if (!completer.isCompleted) completer.complete();
+          },
+          onError: (error) {
+            // 남은 버퍼 플러시
+            final remaining = tokenBuffer.toString();
+            tokenBuffer.clear();
+            if (remaining.isNotEmpty && mounted) {
+              setState(() {
+                final idx = _assistantPlaceholderIndex;
+                if (idx != null && idx < _messages.length) {
+                  final msg = _messages[idx];
+                  _messages[idx] = msg.copyWith(text: msg.text + remaining);
+                }
+              });
             }
-          });
-        }
-        _finishStreaming();
-        _streamSubscription = null;
-        if (!completer.isCompleted) completer.complete();
-      },
-      onError: (error) {
-        // 남은 버퍼 플러시
-        final remaining = tokenBuffer.toString();
-        tokenBuffer.clear();
-        if (remaining.isNotEmpty && mounted) {
-          setState(() {
-            final idx = _assistantPlaceholderIndex;
-            if (idx != null && idx < _messages.length) {
-              final msg = _messages[idx];
-              _messages[idx] = msg.copyWith(text: msg.text + remaining);
-            }
-          });
-        }
-        _streamSubscription = null;
-        if (!completer.isCompleted) completer.completeError(error);
-      },
-      cancelOnError: true,
-    );
+            _streamSubscription = null;
+            if (!completer.isCompleted) completer.completeError(error);
+          },
+          cancelOnError: true,
+        );
 
     return completer.future;
   }
@@ -443,11 +444,17 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
       if (!mounted) return;
       final l10nErr = AppLocalizations.of(context);
       setState(() {
-        _updateAssistantMessage(text: l10nErr.chatbot_aiError, timestamp: DateTime.now());
+        _updateAssistantMessage(
+          text: l10nErr.chatbot_aiError,
+          timestamp: DateTime.now(),
+        );
       });
       // P2: 에러 상세는 디버그 로그로만, 사용자에겐 일반화된 메시지
       debugPrint('[AIEncyclopedia] Fallback API error: $e');
-      AppSnackBar.error(context, message: l10nErr.chatbot_aiCallFailed(e.toString()));
+      AppSnackBar.error(
+        context,
+        message: l10nErr.chatbot_aiCallFailed(e.toString()),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -541,9 +548,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(l10n.common_delete),
           ),
         ],
@@ -599,10 +604,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
         ),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(
-              Icons.more_vert,
-              color: AppColors.nearBlack,
-            ),
+            icon: const Icon(Icons.more_vert, color: AppColors.nearBlack),
             onSelected: (value) {
               if (value == 'clear') {
                 _clearMessages();
@@ -630,10 +632,11 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
               child: _isLoadingMessages
                   ? const Center(child: CircularProgressIndicator())
                   : _hasUserMessages
-                      ? _buildMessages()
-                      : _buildWelcomeView(),
+                  ? _buildMessages()
+                  : _buildWelcomeView(),
             ),
-            if (!_hasUserMessages && !_isLoadingMessages) _buildSuggestionChips(),
+            if (!_hasUserMessages && !_isLoadingMessages)
+              _buildSuggestionChips(),
             if (_showPremiumBanner) _buildPremiumBanner(),
             _buildInputArea(),
           ],
@@ -685,10 +688,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(0, _floatAnimation.value),
-          child: Transform.scale(
-            scale: _peekScale.value,
-            child: child,
-          ),
+          child: Transform.scale(scale: _peekScale.value, child: child),
         );
       },
       child: SizedBox(
@@ -955,7 +955,8 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
           children: List.generate(3, (i) {
             // Each dot peaks at a different phase (0.0, 0.33, 0.66)
             final phase = (t + i * 0.33) % 1.0;
-            final opacity = 0.3 + 0.7 * (phase < 0.5 ? phase * 2 : (1.0 - phase) * 2);
+            final opacity =
+                0.3 + 0.7 * (phase < 0.5 ? phase * 2 : (1.0 - phase) * 2);
             return Padding(
               padding: EdgeInsets.only(right: i < 2 ? 4.0 : 0.0),
               child: Opacity(
@@ -1019,12 +1020,24 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
                 ),
                 const SizedBox(height: 4),
                 GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     AnalyticsService.instance.logPremiumFeatureBlocked(
                       feature: 'ai',
                       sourceScreen: 'ai_encyclopedia',
                     );
-                    context.push('/home/premium?source=ai_banner&feature=ai');
+                    await context.push(
+                      '/home/premium?source=ai_banner&feature=ai',
+                    );
+                    if (!mounted) return;
+                    try {
+                      final status = await PremiumService.instance.getTier(
+                        forceRefresh: true,
+                      );
+                      if (!mounted || status.isFree) return;
+                      setState(() {
+                        _showPremiumBanner = false;
+                      });
+                    } catch (_) {}
                   },
                   child: Text(
                     l10n.chatbot_premiumUpgrade,
@@ -1044,11 +1057,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
             onTap: _dismissPremiumBanner,
             child: const Padding(
               padding: EdgeInsets.all(2),
-              child: Icon(
-                Icons.close,
-                size: 18,
-                color: Color(0xFF97928A),
-              ),
+              child: Icon(Icons.close, size: 18, color: Color(0xFF97928A)),
             ),
           ),
         ],
@@ -1067,9 +1076,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
         AppSpacing.lg,
         AppSpacing.lg,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Row(
         children: [
           Expanded(
@@ -1108,8 +1115,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
                       padding: EdgeInsets.all(12),
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : const Icon(
@@ -1132,9 +1138,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
 
     final l10n = AppLocalizations.of(context);
 
-    final details = <String>[
-      '- ${l10n.ai_petInfoPrefix}: ${pet.name}',
-    ];
+    final details = <String>['- ${l10n.ai_petInfoPrefix}: ${pet.name}'];
 
     final breed = pet.breed?.trim();
     if (breed != null && breed.isNotEmpty) {
@@ -1142,7 +1146,9 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     }
 
     if (pet.birthDate != null) {
-      details.add('- ${l10n.ai_agePrefix}: ${_formatAge(pet.birthDate!)} (${l10n.ai_birthdayPrefix} ${pet.birthDate!.toIso8601String().split('T').first})');
+      details.add(
+        '- ${l10n.ai_agePrefix}: ${_formatAge(pet.birthDate!)} (${l10n.ai_birthdayPrefix} ${pet.birthDate!.toIso8601String().split('T').first})',
+      );
     }
 
     final gender = _mapGender(pet.gender);

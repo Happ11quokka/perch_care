@@ -640,10 +640,13 @@ async def get_subscription_stats(
     db: AsyncSession = Depends(get_db),
 ):
     """활성 구독자 통계 (관리자 전용)."""
+    now = datetime.now(timezone.utc)
     base = (
         select(UserTier)
         .where(UserTier.tier == "premium")
         .where(UserTier.source.in_(["app_store", "play_store"]))
+        .where(UserTier.premium_expires_at.isnot(None))
+        .where(UserTier.premium_expires_at >= now)
     )
 
     total_result = await db.execute(select(func.count()).select_from(base.subquery()))
@@ -667,6 +670,8 @@ async def get_subscription_stats(
         select(UserTier.store_product_id, func.count())
         .where(UserTier.tier == "premium")
         .where(UserTier.source.in_(["app_store", "play_store"]))
+        .where(UserTier.premium_expires_at.isnot(None))
+        .where(UserTier.premium_expires_at >= now)
         .where(UserTier.store_product_id.isnot(None))
         .group_by(UserTier.store_product_id)
     )

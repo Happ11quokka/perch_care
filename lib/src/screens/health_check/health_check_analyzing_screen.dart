@@ -88,9 +88,11 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
     try {
       final activePetId = ActivePetNotifier.instance.activePetId;
       final language = Localizations.localeOf(context).languageCode;
-      debugPrint('[HealthCheck] activePetId=$activePetId, mode=${widget.mode.value}, '
-          'part=${widget.part?.value}, fileName=${widget.fileName}, '
-          'imageSize=${widget.imageBytes.length} bytes, language=$language');
+      debugPrint(
+        '[HealthCheck] activePetId=$activePetId, mode=${widget.mode.value}, '
+        'part=${widget.part?.value}, fileName=${widget.fileName}, '
+        'imageSize=${widget.imageBytes.length} bytes, language=$language',
+      );
 
       // food 모드는 펫 없이도 가능, 다른 모드는 펫 필수
       final isFoodMode = widget.mode == VisionMode.food;
@@ -158,6 +160,17 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
     }
   }
 
+  Future<void> _openPremiumPaywallAndRetry() async {
+    await context.push('/home/premium?source=vision_403&feature=vision');
+    if (!mounted) return;
+
+    try {
+      final status = await PremiumService.instance.getTier(forceRefresh: true);
+      if (!mounted || status.isFree) return;
+      await _startAnalysis();
+    } catch (_) {}
+  }
+
   Future<bool> _onWillPop() async {
     if (!_isAnalyzing) return true;
     final l10n = AppLocalizations.of(context);
@@ -178,14 +191,20 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.hc_continueAnalysis,
-                style: const TextStyle(fontFamily: 'Pretendard')),
+            child: Text(
+              l10n.hc_continueAnalysis,
+              style: const TextStyle(fontFamily: 'Pretendard'),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.common_cancel,
-                style: const TextStyle(
-                    fontFamily: 'Pretendard', color: AppColors.brandPrimary)),
+            child: Text(
+              l10n.common_cancel,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                color: AppColors.brandPrimary,
+              ),
+            ),
           ),
         ],
       ),
@@ -310,13 +329,13 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
             if (_isPremiumError) ...[
               // 프리미엄 업그레이드 버튼 (primary)
               GestureDetector(
-                onTap: () {
-                AnalyticsService.instance.logPremiumFeatureBlocked(
-                  feature: 'vision',
-                  sourceScreen: 'health_check_analyzing',
-                );
-                context.push('/home/premium?source=vision_403&feature=vision');
-              },
+                onTap: () async {
+                  AnalyticsService.instance.logPremiumFeatureBlocked(
+                    feature: 'vision',
+                    sourceScreen: 'health_check_analyzing',
+                  );
+                  await _openPremiumPaywallAndRetry();
+                },
                 child: Container(
                   width: 200,
                   height: 48,

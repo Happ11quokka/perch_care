@@ -11,6 +11,7 @@ import '../storage/health_check_storage_service.dart';
 import '../storage/chat_storage_service.dart';
 import '../coach_mark/coach_mark_service.dart';
 import '../analytics/analytics_service.dart';
+import '../iap/iap_service.dart';
 import '../push/push_notification_service.dart';
 import '../storage/local_image_storage_service.dart';
 
@@ -37,14 +38,13 @@ class SocialLoginResult {
     required String provider,
     String? providerId,
     String? providerEmail,
-  }) =>
-      SocialLoginResult._(
-        success: false,
-        signupRequired: true,
-        provider: provider,
-        providerId: providerId,
-        providerEmail: providerEmail,
-      );
+  }) => SocialLoginResult._(
+    success: false,
+    signupRequired: true,
+    provider: provider,
+    providerId: providerId,
+    providerEmail: providerEmail,
+  );
 }
 
 /// 연동된 소셜 계정 정보
@@ -99,7 +99,7 @@ class AuthService {
       accessToken: response['access_token'],
       refreshToken: response['refresh_token'],
     );
-    PushNotificationService.instance.initialize();
+    await _initializeAuthenticatedServices();
     AnalyticsService.instance.logSignUp('email');
   }
 
@@ -108,24 +108,27 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final response = await _api.post('/auth/login', body: {
-      'email': email,
-      'password': password,
-    }, auth: false);
+    final response = await _api.post(
+      '/auth/login',
+      body: {'email': email, 'password': password},
+      auth: false,
+    );
 
     await _tokenService.saveTokens(
       accessToken: response['access_token'],
       refreshToken: response['refresh_token'],
     );
-    PushNotificationService.instance.initialize();
+    await _initializeAuthenticatedServices();
     AnalyticsService.instance.logLogin('email');
   }
 
   /// Google 로그인 (회원가입 필요 여부 확인)
   Future<SocialLoginResult> signInWithGoogle({required String idToken}) async {
-    final response = await _api.post('/auth/oauth/google', body: {
-      'id_token': idToken,
-    }, auth: false);
+    final response = await _api.post(
+      '/auth/oauth/google',
+      body: {'id_token': idToken},
+      auth: false,
+    );
 
     final result = await _handleOAuthResponse(response);
     if (result.success) AnalyticsService.instance.logLogin('google');
@@ -139,12 +142,16 @@ class AuthService {
     String? fullName,
     String? email,
   }) async {
-    final response = await _api.post('/auth/oauth/apple', body: {
-      'id_token': idToken,
-      if (userIdentifier != null) 'user_identifier': userIdentifier,
-      if (fullName != null) 'full_name': fullName,
-      if (email != null) 'email': email,
-    }, auth: false);
+    final response = await _api.post(
+      '/auth/oauth/apple',
+      body: {
+        'id_token': idToken,
+        if (userIdentifier != null) 'user_identifier': userIdentifier,
+        if (fullName != null) 'full_name': fullName,
+        if (email != null) 'email': email,
+      },
+      auth: false,
+    );
 
     final result = await _handleOAuthResponse(response);
     if (result.success) AnalyticsService.instance.logLogin('apple');
@@ -152,10 +159,14 @@ class AuthService {
   }
 
   /// Kakao 로그인 (회원가입 필요 여부 확인)
-  Future<SocialLoginResult> signInWithKakao({required String accessToken}) async {
-    final response = await _api.post('/auth/oauth/kakao', body: {
-      'access_token': accessToken,
-    }, auth: false);
+  Future<SocialLoginResult> signInWithKakao({
+    required String accessToken,
+  }) async {
+    final response = await _api.post(
+      '/auth/oauth/kakao',
+      body: {'access_token': accessToken},
+      auth: false,
+    );
 
     final result = await _handleOAuthResponse(response);
     if (result.success) AnalyticsService.instance.logLogin('kakao');
@@ -180,8 +191,13 @@ class AuthService {
       accessToken: map['access_token'] as String,
       refreshToken: map['refresh_token'] as String,
     );
-    PushNotificationService.instance.initialize();
+    await _initializeAuthenticatedServices();
     return SocialLoginResult.authenticated();
+  }
+
+  Future<void> _initializeAuthenticatedServices() async {
+    unawaited(PushNotificationService.instance.initialize());
+    await IapService.instance.initialize();
   }
 
   /// 로그아웃
@@ -207,24 +223,36 @@ class AuthService {
     await HealthCheckStorageService.instance.clearAll();
     await ChatStorageService.instance.clearAllMessages();
     await CoachMarkService.instance.clearAll();
+    await PushNotificationService.instance.dispose();
+    IapService.instance.dispose();
     await _tokenService.clearTokens();
   }
 
   /// 비밀번호 재설정 코드 전송 (이메일)
   Future<void> resetPassword(String email) async {
-    await _api.post('/auth/reset-password', body: {'email': email}, auth: false);
+    await _api.post(
+      '/auth/reset-password',
+      body: {'email': email},
+      auth: false,
+    );
   }
 
   /// 비밀번호 재설정 코드 전송 (휴대폰)
   Future<void> resetPasswordByPhone(String phone) async {
-    await _api.post('/auth/reset-password', body: {'phone': phone}, auth: false);
+    await _api.post(
+      '/auth/reset-password',
+      body: {'phone': phone},
+      auth: false,
+    );
   }
 
   /// 비밀번호 재설정 코드 검증
-  Future<void> verifyResetCode(String identifier, String code, {String method = 'email'}) async {
-    final body = <String, dynamic>{
-      'code': code,
-    };
+  Future<void> verifyResetCode(
+    String identifier,
+    String code, {
+    String method = 'email',
+  }) async {
+    final body = <String, dynamic>{'code': code};
     if (method == 'phone') {
       body['phone'] = identifier;
     } else {
@@ -240,10 +268,7 @@ class AuthService {
     required String newPassword,
     String method = 'email',
   }) async {
-    final body = <String, dynamic>{
-      'code': code,
-      'new_password': newPassword,
-    };
+    final body = <String, dynamic>{'code': code, 'new_password': newPassword};
     if (method == 'phone') {
       body['phone'] = identifier;
     } else {
@@ -260,10 +285,7 @@ class AuthService {
   }
 
   /// 프로필 업데이트
-  Future<void> updateProfile({
-    String? nickname,
-    String? avatarUrl,
-  }) async {
+  Future<void> updateProfile({String? nickname, String? avatarUrl}) async {
     final updates = <String, dynamic>{};
     if (nickname != null) updates['nickname'] = nickname;
     if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
@@ -314,13 +336,16 @@ class AuthService {
     String? providerId,
     String? providerEmail,
   }) async {
-    await _api.post('/users/me/social-accounts', body: {
-      'provider': provider,
-      if (idToken != null) 'id_token': idToken,
-      if (accessToken != null) 'access_token': accessToken,
-      if (providerId != null) 'provider_id': providerId,
-      if (providerEmail != null) 'provider_email': providerEmail,
-    });
+    await _api.post(
+      '/users/me/social-accounts',
+      body: {
+        'provider': provider,
+        if (idToken != null) 'id_token': idToken,
+        if (accessToken != null) 'access_token': accessToken,
+        if (providerId != null) 'provider_id': providerId,
+        if (providerEmail != null) 'provider_email': providerEmail,
+      },
+    );
   }
 
   /// 연동된 소셜 계정 목록 조회

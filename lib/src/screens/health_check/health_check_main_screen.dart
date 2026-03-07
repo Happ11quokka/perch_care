@@ -43,7 +43,9 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
 
   Future<void> _loadPremiumStatus({bool forceRefresh = false}) async {
     try {
-      final status = await PremiumService.instance.getTier(forceRefresh: forceRefresh);
+      final status = await PremiumService.instance.getTier(
+        forceRefresh: forceRefresh,
+      );
       if (mounted) {
         setState(() {
           _isLocked = status.isFree;
@@ -60,18 +62,28 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
     }
   }
 
+  Future<void> _openPremiumPaywall({
+    required String source,
+    required String feature,
+  }) async {
+    await context.push('/home/premium?source=$source&feature=$feature');
+    if (!mounted) return;
+    await _loadPremiumStatus(forceRefresh: true);
+  }
+
   void _showPremiumDialog() {
     final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.workspace_premium,
-                color: AppColors.brandPrimary, size: 24),
+            const Icon(
+              Icons.workspace_premium,
+              color: AppColors.brandPrimary,
+              size: 24,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -111,13 +123,16 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(dialogContext);
               AnalyticsService.instance.logPremiumFeatureBlocked(
                 feature: 'vision',
                 sourceScreen: 'health_check_main',
               );
-              context.push('/home/premium?source=vision_lock&feature=vision');
+              await _openPremiumPaywall(
+                source: 'vision_lock',
+                feature: 'vision',
+              );
             },
             child: Text(
               l10n.premium_activateNow,

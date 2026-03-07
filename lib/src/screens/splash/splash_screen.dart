@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -31,6 +33,7 @@ class _SplashScreenState extends State<SplashScreen>
   bool _animationCompleted = false;
   bool _servicesInitialized = false;
   bool _disposed = false;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -133,8 +136,10 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _initGoogleSignIn() async {
     try {
       await GoogleSignIn.instance.initialize(
-        clientId: '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
-        serverClientId: '351000470573-ivirja6bvfpqk0rsg1shd048erdk1tv4.apps.googleusercontent.com',
+        clientId:
+            '351000470573-9cu20o306ho5jepgee2b474jnd0ah08b.apps.googleusercontent.com',
+        serverClientId:
+            '351000470573-ivirja6bvfpqk0rsg1shd048erdk1tv4.apps.googleusercontent.com',
       );
       debugPrint('[Splash] GoogleSignIn initialized');
     } catch (e) {
@@ -153,7 +158,12 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _tryNavigate() {
     // 애니메이션과 서비스 초기화가 모두 완료되면 네비게이션
-    if (_animationCompleted && _servicesInitialized && mounted && !_disposed) {
+    if (_animationCompleted &&
+        _servicesInitialized &&
+        mounted &&
+        !_disposed &&
+        !_isNavigating) {
+      _isNavigating = true;
       _navigateToInitialRoute();
     }
   }
@@ -168,13 +178,14 @@ class _SplashScreenState extends State<SplashScreen>
 
   /// 화면 크기 기반 원의 크기 계산
   ({double inner, double middle, double outer}) _calculateCircleSizes(
-      Size screenSize) {
+    Size screenSize,
+  ) {
     final width = screenSize.width;
 
     return (
-      inner: width * 0.52,        // 기준 원
-      middle: width * 0.89,       // 내부 원보다 약 1.7배
-      outer: width * 1.35,        // 중간 원보다 약 1.5배 (화면 밖으로 약간 넘침)
+      inner: width * 0.52, // 기준 원
+      middle: width * 0.89, // 내부 원보다 약 1.7배
+      outer: width * 1.35, // 중간 원보다 약 1.5배 (화면 밖으로 약간 넘침)
     );
   }
 
@@ -287,19 +298,20 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  void _navigateToInitialRoute() {
+  Future<void> _navigateToInitialRoute() async {
     final isLoggedIn = TokenService.instance.isLoggedIn;
-    final targetRoute =
-        !isLoggedIn ? RoutePaths.onboarding : RoutePaths.home;
-    debugPrint('[Splash] Navigating to: $targetRoute (isLoggedIn: $isLoggedIn)');
+    final targetRoute = !isLoggedIn ? RoutePaths.onboarding : RoutePaths.home;
+    debugPrint(
+      '[Splash] Navigating to: $targetRoute (isLoggedIn: $isLoggedIn)',
+    );
 
     // 로그인 상태면 FCM 푸시 토큰 등록 + IAP 초기화
     if (isLoggedIn) {
-      PushNotificationService.instance.initialize();
-      IapService.instance.initialize();
+      unawaited(PushNotificationService.instance.initialize());
+      await IapService.instance.initialize();
     }
 
-    if (!mounted) return;
+    if (!mounted || _disposed) return;
     context.go(targetRoute);
     debugPrint('[Splash] Navigation called');
   }

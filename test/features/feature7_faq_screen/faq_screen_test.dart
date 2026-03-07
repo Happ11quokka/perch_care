@@ -35,23 +35,29 @@ void main() {
 
       // ListView.builder는 화면에 보이는 항목만 렌더링하므로
       // 처음 보이는 카테고리들만 확인
+      // 순서: 일반 → 프리미엄 → 기능 사용법 → 계정 관리 → 반려동물 관리
       expect(find.text('일반'), findsOneWidget);
-      expect(find.text('기능 사용법'), findsOneWidget);
+      expect(find.text('프리미엄'), findsOneWidget);
     });
 
     testWidgets('7.2b 스크롤 후 나머지 카테고리 헤더 렌더링', (tester) async {
       await tester.pumpWidget(buildTestFaqScreen());
       await tester.pumpAndSettle();
 
-      // 아래로 스크롤하여 나머지 카테고리 확인
-      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      // 아래로 여러 번 스크롤하여 마지막 카테고리까지 도달
+      final listFinder = find.byType(ListView);
+      await tester.drag(listFinder, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      await tester.drag(listFinder, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      await tester.drag(listFinder, const Offset(0, -500));
       await tester.pumpAndSettle();
 
       // 스크롤 후 보이는 카테고리 확인
       expect(
-        find.text('계정 관리'),
+        find.text('반려동물 관리'),
         findsOneWidget,
-        reason: '스크롤 후 계정 관리 카테고리가 보여야 함',
+        reason: '스크롤 후 반려동물 관리 카테고리가 보여야 함',
       );
     });
 

@@ -76,7 +76,9 @@ class IapService {
     await _loadProducts();
 
     _initialized = true;
-    debugPrint('[IapService] Initialized (${_products.length} products loaded)');
+    debugPrint(
+      '[IapService] Initialized (${_products.length} products loaded)',
+    );
   }
 
   Future<void> _loadProducts() async {
@@ -91,7 +93,9 @@ class IapService {
       }
 
       _products = response.productDetails;
-      debugPrint('[IapService] Loaded products: ${_products.map((p) => '${p.id}=${p.price}').join(', ')}');
+      debugPrint(
+        '[IapService] Loaded products: ${_products.map((p) => '${p.id}=${p.price}').join(', ')}',
+      );
     } catch (e) {
       debugPrint('[IapService] Failed to load products: $e');
     }
@@ -136,15 +140,24 @@ class IapService {
     final store = Platform.isIOS ? 'apple' : 'google';
 
     for (final purchase in purchases) {
-      debugPrint('[IapService] Purchase update: ${purchase.productID} status=${purchase.status}');
+      debugPrint(
+        '[IapService] Purchase update: ${purchase.productID} status=${purchase.status}',
+      );
 
       switch (purchase.status) {
         case PurchaseStatus.purchased:
           final success = await _verifyAndDeliver(purchase, isRestore: false);
           if (success) {
-            analytics.logPurchaseSuccess(store: store, productId: purchase.productID);
+            analytics.logPurchaseSuccess(
+              store: store,
+              productId: purchase.productID,
+            );
           } else {
-            analytics.logPurchaseFailed(store: store, productId: purchase.productID, reason: lastError ?? 'verification_failed');
+            analytics.logPurchaseFailed(
+              store: store,
+              productId: purchase.productID,
+              reason: lastError ?? 'verification_failed',
+            );
           }
           // completePurchase는 검증 성공/실패 무관하게 호출해야 거래가 정리됨
           if (purchase.pendingCompletePurchase) {
@@ -153,7 +166,11 @@ class IapService {
         case PurchaseStatus.restored:
           final success = await _verifyAndDeliver(purchase, isRestore: true);
           if (success) {
-            analytics.logPurchaseSuccess(store: store, productId: purchase.productID, isRestore: true);
+            analytics.logPurchaseSuccess(
+              store: store,
+              productId: purchase.productID,
+              isRestore: true,
+            );
             analytics.logRestoreSuccess(store: store);
           }
           if (purchase.pendingCompletePurchase) {
@@ -162,7 +179,11 @@ class IapService {
         case PurchaseStatus.error:
           lastError = purchase.error?.message ?? '구매 처리 중 오류가 발생했습니다';
           debugPrint('[IapService] Purchase error: ${purchase.error}');
-          analytics.logPurchaseFailed(store: store, productId: purchase.productID, reason: purchase.error?.message ?? 'store_error');
+          analytics.logPurchaseFailed(
+            store: store,
+            productId: purchase.productID,
+            reason: purchase.error?.message ?? 'store_error',
+          );
           onEvent?.call(IapEvent.purchaseFailed);
         case PurchaseStatus.pending:
           debugPrint('[IapService] Purchase pending');
@@ -175,22 +196,31 @@ class IapService {
   }
 
   /// 서버 검증 → PremiumService 캐시 갱신. 성공 시 true 반환.
-  Future<bool> _verifyAndDeliver(PurchaseDetails purchase, {required bool isRestore}) async {
+  Future<bool> _verifyAndDeliver(
+    PurchaseDetails purchase, {
+    required bool isRestore,
+  }) async {
     final store = Platform.isIOS ? 'apple' : 'google';
-    final endpoint = isRestore ? '/premium/purchases/restore' : '/premium/purchases/verify';
+    final endpoint = isRestore
+        ? '/premium/purchases/restore'
+        : '/premium/purchases/verify';
+    final transactionId = _resolveTransactionId(purchase);
+
+    if (transactionId == null) {
+      lastError = '거래 식별자를 찾을 수 없습니다';
+      onEvent?.call(IapEvent.purchaseFailed);
+      return false;
+    }
 
     // 최대 3회 지수 백오프 재시도
     for (int attempt = 0; attempt < 3; attempt++) {
       try {
         final body = isRestore
-            ? {
-                'store': store,
-                'transaction_id': purchase.verificationData.serverVerificationData,
-              }
+            ? {'store': store, 'transaction_id': transactionId}
             : {
                 'store': store,
                 'product_id': purchase.productID,
-                'transaction_id': purchase.verificationData.serverVerificationData,
+                'transaction_id': transactionId,
               };
 
         final response = await _api.post(endpoint, body: body);
@@ -199,8 +229,12 @@ class IapService {
         if (result['success'] == true) {
           // 캐시 갱신
           PremiumService.instance.invalidateCache();
-          onEvent?.call(isRestore ? IapEvent.purchaseRestored : IapEvent.purchaseSuccess);
-          debugPrint('[IapService] Server verification success: tier=${result['tier']}');
+          onEvent?.call(
+            isRestore ? IapEvent.purchaseRestored : IapEvent.purchaseSuccess,
+          );
+          debugPrint(
+            '[IapService] Server verification success: tier=${result['tier']}',
+          );
           return true;
         } else {
           lastError = '서버 검증에 실패했습니다';
@@ -208,7 +242,9 @@ class IapService {
           return false;
         }
       } catch (e) {
-        debugPrint('[IapService] Server verification attempt ${attempt + 1} failed: $e');
+        debugPrint(
+          '[IapService] Server verification attempt ${attempt + 1} failed: $e',
+        );
         if (attempt < 2) {
           // 지수 백오프: 1초, 2초, 4초
           await Future.delayed(Duration(seconds: 1 << attempt));
@@ -219,6 +255,22 @@ class IapService {
       }
     }
     return false;
+  }
+
+  String? _resolveTransactionId(PurchaseDetails purchase) {
+    if (Platform.isIOS) {
+      final purchaseId = purchase.purchaseID?.trim();
+      if (purchaseId != null && purchaseId.isNotEmpty) {
+        return purchaseId;
+      }
+    }
+
+    final verificationId = purchase.verificationData.serverVerificationData
+        .trim();
+    if (verificationId.isEmpty) {
+      return null;
+    }
+    return verificationId;
   }
 
   void dispose() {
