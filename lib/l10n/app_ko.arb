@@ -899,5 +899,39 @@
   "premium_maybeLater": "나중에",
 
   "chatbot_premiumBanner": "프리미엄 버전으로 더 상세하고 정확한 답변을 받을 수 있어요",
-  "chatbot_premiumUpgrade": "업그레이드"
+  "chatbot_premiumUpgrade": "업그레이드",
+
+  "paywall_title": "Premium",
+  "paywall_headline": "사진과 기록으로 더 정확하게\n건강 상태를 파악하세요",
+  "paywall_benefit1": "무제한 AI Vision 건강체크",
+  "paywall_benefit2": "기록 기반 맞춤형 AI 해석",
+  "paywall_benefit3": "이상 징후 조기 발견 분석",
+  "paywall_planMonthly": "월간",
+  "paywall_planYearly": "연간",
+  "paywall_yearlyDiscount": "연간 플랜 추천",
+  "paywall_yearlyPerMonth": "월 {price}",
+  "@paywall_yearlyPerMonth": {
+    "placeholders": {
+      "price": {"type": "String"}
+    }
+  },
+  "paywall_ctaButton": "Premium 시작하기",
+  "paywall_restore": "구매 복원",
+  "paywall_promoCode": "프로모션 코드 입력",
+  "paywall_purchaseSuccessTitle": "Premium 활성화 완료!",
+  "paywall_purchaseSuccessContent": "이제 모든 프리미엄 기능을 이용할 수 있습니다.",
+  "paywall_purchaseFailed": "구매 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+  "paywall_restoreSuccess": "구매가 복원되었습니다.",
+  "paywall_restoreNoSubscription": "복원할 구독이 없습니다.",
+  "paywall_restoreFailed": "구매 복원에 실패했습니다.",
+  "paywall_loading": "처리 중...",
+  "paywall_storeUnavailable": "스토어를 사용할 수 없습니다.",
+  "paywall_productsNotFound": "상품 정보를 불러올 수 없습니다.",
+  "paywall_alreadyPremium": "이미 Premium 사용자입니다.",
+  "paywall_alreadyPremiumExpires": "{date}까지 이용 가능",
+  "@paywall_alreadyPremiumExpires": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
 }

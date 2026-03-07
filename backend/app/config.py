@@ -50,6 +50,16 @@ class Settings(BaseSettings):
     # Firebase (FCM push notifications)
     firebase_credentials_json: str = ""
 
+    # Apple IAP (App Store Server API v2)
+    apple_key_id: str = ""
+    apple_issuer_id: str = ""
+    apple_private_key: str = ""  # Base64-encoded .p8 key
+    apple_bundle_id: str = "com.perch.perchCare2"
+
+    # Google IAP
+    google_package_name: str = "com.perchcare.app"
+    google_service_account_json: str = ""  # Base64-encoded service account JSON
+
     # Admin
     admin_api_key: str = ""  # 관리자 API 키 (코드 생성 등)
 

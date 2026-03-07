@@ -7,6 +7,7 @@ import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/health_check/health_check_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/premium/premium_service.dart';
 import '../../services/api/api_client.dart';
 import '../../../l10n/app_localizations.dart';
@@ -309,7 +310,13 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
             if (_isPremiumError) ...[
               // 프리미엄 업그레이드 버튼 (primary)
               GestureDetector(
-                onTap: () => context.pushNamed(RouteNames.premium),
+                onTap: () {
+                AnalyticsService.instance.logPremiumFeatureBlocked(
+                  feature: 'vision',
+                  sourceScreen: 'health_check_analyzing',
+                );
+                context.push('/home/premium?source=vision_403&feature=vision');
+              },
                 child: Container(
                   width: 200,
                   height: 48,

@@ -3513,6 +3513,144 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'업그레이드'**
   String get chatbot_premiumUpgrade;
+
+  /// No description provided for @paywall_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'Premium'**
+  String get paywall_title;
+
+  /// No description provided for @paywall_headline.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진과 기록으로 더 정확하게\n건강 상태를 파악하세요'**
+  String get paywall_headline;
+
+  /// No description provided for @paywall_benefit1.
+  ///
+  /// In ko, this message translates to:
+  /// **'무제한 AI Vision 건강체크'**
+  String get paywall_benefit1;
+
+  /// No description provided for @paywall_benefit2.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록 기반 맞춤형 AI 해석'**
+  String get paywall_benefit2;
+
+  /// No description provided for @paywall_benefit3.
+  ///
+  /// In ko, this message translates to:
+  /// **'이상 징후 조기 발견 분석'**
+  String get paywall_benefit3;
+
+  /// No description provided for @paywall_planMonthly.
+  ///
+  /// In ko, this message translates to:
+  /// **'월간'**
+  String get paywall_planMonthly;
+
+  /// No description provided for @paywall_planYearly.
+  ///
+  /// In ko, this message translates to:
+  /// **'연간'**
+  String get paywall_planYearly;
+
+  /// No description provided for @paywall_yearlyDiscount.
+  ///
+  /// In ko, this message translates to:
+  /// **'연간 플랜 추천'**
+  String get paywall_yearlyDiscount;
+
+  /// No description provided for @paywall_yearlyPerMonth.
+  ///
+  /// In ko, this message translates to:
+  /// **'월 {price}'**
+  String paywall_yearlyPerMonth(String price);
+
+  /// No description provided for @paywall_ctaButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'Premium 시작하기'**
+  String get paywall_ctaButton;
+
+  /// No description provided for @paywall_restore.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매 복원'**
+  String get paywall_restore;
+
+  /// No description provided for @paywall_promoCode.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로모션 코드 입력'**
+  String get paywall_promoCode;
+
+  /// No description provided for @paywall_purchaseSuccessTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'Premium 활성화 완료!'**
+  String get paywall_purchaseSuccessTitle;
+
+  /// No description provided for @paywall_purchaseSuccessContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'이제 모든 프리미엄 기능을 이용할 수 있습니다.'**
+  String get paywall_purchaseSuccessContent;
+
+  /// No description provided for @paywall_purchaseFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매 처리 중 오류가 발생했습니다. 다시 시도해주세요.'**
+  String get paywall_purchaseFailed;
+
+  /// No description provided for @paywall_restoreSuccess.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매가 복원되었습니다.'**
+  String get paywall_restoreSuccess;
+
+  /// No description provided for @paywall_restoreNoSubscription.
+  ///
+  /// In ko, this message translates to:
+  /// **'복원할 구독이 없습니다.'**
+  String get paywall_restoreNoSubscription;
+
+  /// No description provided for @paywall_restoreFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매 복원에 실패했습니다.'**
+  String get paywall_restoreFailed;
+
+  /// No description provided for @paywall_loading.
+  ///
+  /// In ko, this message translates to:
+  /// **'처리 중...'**
+  String get paywall_loading;
+
+  /// No description provided for @paywall_storeUnavailable.
+  ///
+  /// In ko, this message translates to:
+  /// **'스토어를 사용할 수 없습니다.'**
+  String get paywall_storeUnavailable;
+
+  /// No description provided for @paywall_productsNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'상품 정보를 불러올 수 없습니다.'**
+  String get paywall_productsNotFound;
+
+  /// No description provided for @paywall_alreadyPremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 Premium 사용자입니다.'**
+  String get paywall_alreadyPremium;
+
+  /// No description provided for @paywall_alreadyPremiumExpires.
+  ///
+  /// In ko, this message translates to:
+  /// **'{date}까지 이용 가능'**
+  String paywall_alreadyPremiumExpires(String date);
 }
 
 class _AppLocalizationsDelegate

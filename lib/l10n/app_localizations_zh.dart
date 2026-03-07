@@ -1820,4 +1820,77 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatbot_premiumUpgrade => '升级';
+
+  @override
+  String get paywall_title => 'Premium';
+
+  @override
+  String get paywall_headline => '通过照片和记录\n更准确地了解健康状况';
+
+  @override
+  String get paywall_benefit1 => '无限次AI视觉健康检查';
+
+  @override
+  String get paywall_benefit2 => '基于记录的个性化AI分析';
+
+  @override
+  String get paywall_benefit3 => '异常征兆早期发现分析';
+
+  @override
+  String get paywall_planMonthly => '月度';
+
+  @override
+  String get paywall_planYearly => '年度';
+
+  @override
+  String get paywall_yearlyDiscount => '推荐年度计划';
+
+  @override
+  String paywall_yearlyPerMonth(String price) {
+    return '每月 $price';
+  }
+
+  @override
+  String get paywall_ctaButton => '开始Premium';
+
+  @override
+  String get paywall_restore => '恢复购买';
+
+  @override
+  String get paywall_promoCode => '输入促销代码';
+
+  @override
+  String get paywall_purchaseSuccessTitle => 'Premium已激活！';
+
+  @override
+  String get paywall_purchaseSuccessContent => '现在您可以使用所有高级功能。';
+
+  @override
+  String get paywall_purchaseFailed => '购买处理出错，请重试。';
+
+  @override
+  String get paywall_restoreSuccess => '购买已恢复。';
+
+  @override
+  String get paywall_restoreNoSubscription => '没有可恢复的订阅。';
+
+  @override
+  String get paywall_restoreFailed => '恢复购买失败。';
+
+  @override
+  String get paywall_loading => '处理中...';
+
+  @override
+  String get paywall_storeUnavailable => '商店不可用。';
+
+  @override
+  String get paywall_productsNotFound => '无法加载产品信息。';
+
+  @override
+  String get paywall_alreadyPremium => '您已经是Premium用户。';
+
+  @override
+  String paywall_alreadyPremiumExpires(String date) {
+    return '可使用至 $date';
+  }
 }

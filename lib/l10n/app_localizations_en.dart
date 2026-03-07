@@ -1908,4 +1908,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatbot_premiumUpgrade => 'Upgrade';
+
+  @override
+  String get paywall_title => 'Premium';
+
+  @override
+  String get paywall_headline =>
+      'Get a more accurate picture of\nyour bird\'s health';
+
+  @override
+  String get paywall_benefit1 => 'Unlimited AI Vision health checks';
+
+  @override
+  String get paywall_benefit2 => 'Record-based personalized AI insights';
+
+  @override
+  String get paywall_benefit3 => 'Early detection of health anomalies';
+
+  @override
+  String get paywall_planMonthly => 'Monthly';
+
+  @override
+  String get paywall_planYearly => 'Yearly';
+
+  @override
+  String get paywall_yearlyDiscount => 'Best value';
+
+  @override
+  String paywall_yearlyPerMonth(String price) {
+    return '$price/mo';
+  }
+
+  @override
+  String get paywall_ctaButton => 'Start Premium';
+
+  @override
+  String get paywall_restore => 'Restore Purchases';
+
+  @override
+  String get paywall_promoCode => 'Enter promo code';
+
+  @override
+  String get paywall_purchaseSuccessTitle => 'Premium Activated!';
+
+  @override
+  String get paywall_purchaseSuccessContent =>
+      'You now have access to all premium features.';
+
+  @override
+  String get paywall_purchaseFailed => 'Purchase failed. Please try again.';
+
+  @override
+  String get paywall_restoreSuccess => 'Purchases restored successfully.';
+
+  @override
+  String get paywall_restoreNoSubscription => 'No subscription to restore.';
+
+  @override
+  String get paywall_restoreFailed => 'Failed to restore purchases.';
+
+  @override
+  String get paywall_loading => 'Processing...';
+
+  @override
+  String get paywall_storeUnavailable => 'Store is not available.';
+
+  @override
+  String get paywall_productsNotFound => 'Unable to load product information.';
+
+  @override
+  String get paywall_alreadyPremium => 'You are already a Premium user.';
+
+  @override
+  String paywall_alreadyPremiumExpires(String date) {
+    return 'Available until $date';
+  }
 }

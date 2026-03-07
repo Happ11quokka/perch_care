@@ -868,5 +868,39 @@
   "premium_maybeLater": "稍后",
 
   "chatbot_premiumBanner": "通过高级版获得更详细、更准确的回答",
-  "chatbot_premiumUpgrade": "升级"
+  "chatbot_premiumUpgrade": "升级",
+
+  "paywall_title": "Premium",
+  "paywall_headline": "通过照片和记录\n更准确地了解健康状况",
+  "paywall_benefit1": "无限次AI视觉健康检查",
+  "paywall_benefit2": "基于记录的个性化AI分析",
+  "paywall_benefit3": "异常征兆早期发现分析",
+  "paywall_planMonthly": "月度",
+  "paywall_planYearly": "年度",
+  "paywall_yearlyDiscount": "推荐年度计划",
+  "paywall_yearlyPerMonth": "每月 {price}",
+  "@paywall_yearlyPerMonth": {
+    "placeholders": {
+      "price": {"type": "String"}
+    }
+  },
+  "paywall_ctaButton": "开始Premium",
+  "paywall_restore": "恢复购买",
+  "paywall_promoCode": "输入促销代码",
+  "paywall_purchaseSuccessTitle": "Premium已激活！",
+  "paywall_purchaseSuccessContent": "现在您可以使用所有高级功能。",
+  "paywall_purchaseFailed": "购买处理出错，请重试。",
+  "paywall_restoreSuccess": "购买已恢复。",
+  "paywall_restoreNoSubscription": "没有可恢复的订阅。",
+  "paywall_restoreFailed": "恢复购买失败。",
+  "paywall_loading": "处理中...",
+  "paywall_storeUnavailable": "商店不可用。",
+  "paywall_productsNotFound": "无法加载产品信息。",
+  "paywall_alreadyPremium": "您已经是Premium用户。",
+  "paywall_alreadyPremiumExpires": "可使用至 {date}",
+  "@paywall_alreadyPremiumExpires": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
 }

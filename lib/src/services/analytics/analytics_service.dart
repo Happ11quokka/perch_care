@@ -49,6 +49,56 @@ class AnalyticsService {
   Future<void> logAccountDeleted() =>
       _analytics.logEvent(name: 'account_deleted');
 
+  // --- IAP / Paywall Events ---
+
+  Future<void> logPaywallView({required String source, String? feature}) =>
+      _analytics.logEvent(name: 'paywall_view', parameters: {
+        'source': source,
+        if (feature != null) 'feature': feature,
+      });
+
+  Future<void> logPlanSelected({required String plan, required String source}) =>
+      _analytics.logEvent(name: 'plan_selected', parameters: {
+        'plan': plan,
+        'source': source,
+      });
+
+  Future<void> logCheckoutStarted({required String store, required String productId, required String source}) =>
+      _analytics.logEvent(name: 'checkout_started', parameters: {
+        'store': store,
+        'product_id': productId,
+        'source': source,
+      });
+
+  Future<void> logPurchaseSuccess({required String store, required String productId, bool isRestore = false}) =>
+      _analytics.logEvent(name: 'purchase_success', parameters: {
+        'store': store,
+        'product_id': productId,
+        'is_restore': isRestore,
+      });
+
+  Future<void> logPurchaseFailed({required String store, required String productId, required String reason}) =>
+      _analytics.logEvent(name: 'purchase_failed', parameters: {
+        'store': store,
+        'product_id': productId,
+        'reason': reason,
+      });
+
+  Future<void> logRestoreSuccess({required String store}) =>
+      _analytics.logEvent(name: 'restore_success', parameters: {'store': store});
+
+  Future<void> logPremiumFeatureBlocked({required String feature, required String sourceScreen}) =>
+      _analytics.logEvent(name: 'premium_feature_blocked', parameters: {
+        'feature': feature,
+        'source_screen': sourceScreen,
+      });
+
+  Future<void> logPromoCodeEntryOpened({required String source}) =>
+      _analytics.logEvent(name: 'promo_code_entry_opened', parameters: {'source': source});
+
+  Future<void> logPromoCodeActivated({required String codePrefix}) =>
+      _analytics.logEvent(name: 'promo_code_activated', parameters: {'code_prefix': codePrefix});
+
   // --- In-App Review ---
 
   Future<void> openStoreListing() =>

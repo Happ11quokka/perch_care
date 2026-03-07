@@ -5,11 +5,22 @@ import '../api/api_client.dart';
 class PremiumStatus {
   final String tier;
   final DateTime? premiumExpiresAt;
+  final String? source;
+  final String? storeProductId;
+  final bool? autoRenewStatus;
 
-  PremiumStatus({required this.tier, this.premiumExpiresAt});
+  PremiumStatus({
+    required this.tier,
+    this.premiumExpiresAt,
+    this.source,
+    this.storeProductId,
+    this.autoRenewStatus,
+  });
 
   bool get isPremium => tier == 'premium';
   bool get isFree => tier != 'premium';
+  bool get isStoreSubscription =>
+      source == 'app_store' || source == 'play_store';
 
   factory PremiumStatus.fromJson(Map<String, dynamic> json) {
     return PremiumStatus(
@@ -17,6 +28,9 @@ class PremiumStatus {
       premiumExpiresAt: json['premium_expires_at'] != null
           ? DateTime.parse(json['premium_expires_at'] as String)
           : null,
+      source: json['source'] as String?,
+      storeProductId: json['store_product_id'] as String?,
+      autoRenewStatus: json['auto_renew_status'] as bool?,
     );
   }
 }

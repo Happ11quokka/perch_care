@@ -1019,7 +1019,13 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
                 ),
                 const SizedBox(height: 4),
                 GestureDetector(
-                  onTap: () => context.pushNamed(RouteNames.premium),
+                  onTap: () {
+                    AnalyticsService.instance.logPremiumFeatureBlocked(
+                      feature: 'ai',
+                      sourceScreen: 'ai_encyclopedia',
+                    );
+                    context.push('/home/premium?source=ai_banner&feature=ai');
+                  },
                   child: Text(
                     l10n.chatbot_premiumUpgrade,
                     style: const TextStyle(

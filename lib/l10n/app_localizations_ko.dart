@@ -1851,4 +1851,77 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chatbot_premiumUpgrade => '업그레이드';
+
+  @override
+  String get paywall_title => 'Premium';
+
+  @override
+  String get paywall_headline => '사진과 기록으로 더 정확하게\n건강 상태를 파악하세요';
+
+  @override
+  String get paywall_benefit1 => '무제한 AI Vision 건강체크';
+
+  @override
+  String get paywall_benefit2 => '기록 기반 맞춤형 AI 해석';
+
+  @override
+  String get paywall_benefit3 => '이상 징후 조기 발견 분석';
+
+  @override
+  String get paywall_planMonthly => '월간';
+
+  @override
+  String get paywall_planYearly => '연간';
+
+  @override
+  String get paywall_yearlyDiscount => '연간 플랜 추천';
+
+  @override
+  String paywall_yearlyPerMonth(String price) {
+    return '월 $price';
+  }
+
+  @override
+  String get paywall_ctaButton => 'Premium 시작하기';
+
+  @override
+  String get paywall_restore => '구매 복원';
+
+  @override
+  String get paywall_promoCode => '프로모션 코드 입력';
+
+  @override
+  String get paywall_purchaseSuccessTitle => 'Premium 활성화 완료!';
+
+  @override
+  String get paywall_purchaseSuccessContent => '이제 모든 프리미엄 기능을 이용할 수 있습니다.';
+
+  @override
+  String get paywall_purchaseFailed => '구매 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+
+  @override
+  String get paywall_restoreSuccess => '구매가 복원되었습니다.';
+
+  @override
+  String get paywall_restoreNoSubscription => '복원할 구독이 없습니다.';
+
+  @override
+  String get paywall_restoreFailed => '구매 복원에 실패했습니다.';
+
+  @override
+  String get paywall_loading => '처리 중...';
+
+  @override
+  String get paywall_storeUnavailable => '스토어를 사용할 수 없습니다.';
+
+  @override
+  String get paywall_productsNotFound => '상품 정보를 불러올 수 없습니다.';
+
+  @override
+  String get paywall_alreadyPremium => '이미 Premium 사용자입니다.';
+
+  @override
+  String paywall_alreadyPremiumExpires(String date) {
+    return '$date까지 이용 가능';
+  }
 }

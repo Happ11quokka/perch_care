@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
+import '../../services/iap/iap_service.dart';
 import '../../services/push/push_notification_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../router/route_paths.dart';
@@ -292,9 +293,10 @@ class _SplashScreenState extends State<SplashScreen>
         !isLoggedIn ? RoutePaths.onboarding : RoutePaths.home;
     debugPrint('[Splash] Navigating to: $targetRoute (isLoggedIn: $isLoggedIn)');
 
-    // 로그인 상태면 FCM 푸시 토큰 등록
+    // 로그인 상태면 FCM 푸시 토큰 등록 + IAP 초기화
     if (isLoggedIn) {
       PushNotificationService.instance.initialize();
+      IapService.instance.initialize();
     }
 
     if (!mounted) return;

@@ -701,5 +701,39 @@
   "premium_maybeLater": "Maybe Later",
 
   "chatbot_premiumBanner": "Get more detailed and accurate answers with Premium",
-  "chatbot_premiumUpgrade": "Upgrade"
+  "chatbot_premiumUpgrade": "Upgrade",
+
+  "paywall_title": "Premium",
+  "paywall_headline": "Get a more accurate picture of\nyour bird's health",
+  "paywall_benefit1": "Unlimited AI Vision health checks",
+  "paywall_benefit2": "Record-based personalized AI insights",
+  "paywall_benefit3": "Early detection of health anomalies",
+  "paywall_planMonthly": "Monthly",
+  "paywall_planYearly": "Yearly",
+  "paywall_yearlyDiscount": "Best value",
+  "paywall_yearlyPerMonth": "{price}/mo",
+  "@paywall_yearlyPerMonth": {
+    "placeholders": {
+      "price": {"type": "String"}
+    }
+  },
+  "paywall_ctaButton": "Start Premium",
+  "paywall_restore": "Restore Purchases",
+  "paywall_promoCode": "Enter promo code",
+  "paywall_purchaseSuccessTitle": "Premium Activated!",
+  "paywall_purchaseSuccessContent": "You now have access to all premium features.",
+  "paywall_purchaseFailed": "Purchase failed. Please try again.",
+  "paywall_restoreSuccess": "Purchases restored successfully.",
+  "paywall_restoreNoSubscription": "No subscription to restore.",
+  "paywall_restoreFailed": "Failed to restore purchases.",
+  "paywall_loading": "Processing...",
+  "paywall_storeUnavailable": "Store is not available.",
+  "paywall_productsNotFound": "Unable to load product information.",
+  "paywall_alreadyPremium": "You are already a Premium user.",
+  "paywall_alreadyPremiumExpires": "Available until {date}",
+  "@paywall_alreadyPremiumExpires": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
 }

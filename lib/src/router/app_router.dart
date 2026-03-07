@@ -215,7 +215,10 @@ class AppRouter {
                   GoRoute(
                     path: 'premium',
                     name: RouteNames.premium,
-                    builder: (context, state) => const PremiumScreen(),
+                    builder: (context, state) => PremiumScreen(
+                      source: state.uri.queryParameters['source'],
+                      feature: state.uri.queryParameters['feature'],
+                    ),
                   ),
                   GoRoute(
                     path: 'profile/setup',

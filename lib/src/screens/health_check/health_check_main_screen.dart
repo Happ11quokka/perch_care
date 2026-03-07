@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/premium/premium_service.dart';
 
 /// AI 건강체크 모드 선택 화면
@@ -112,7 +113,11 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              context.pushNamed(RouteNames.premium);
+              AnalyticsService.instance.logPremiumFeatureBlocked(
+                feature: 'vision',
+                sourceScreen: 'health_check_main',
+              );
+              context.push('/home/premium?source=vision_lock&feature=vision');
             },
             child: Text(
               l10n.premium_activateNow,

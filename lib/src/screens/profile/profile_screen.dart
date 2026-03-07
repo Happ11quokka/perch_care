@@ -491,7 +491,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTap: isPremium
           ? null
           : () async {
-              await context.pushNamed(RouteNames.premium);
+              AnalyticsService.instance.logPremiumFeatureBlocked(
+                feature: 'premium',
+                sourceScreen: 'profile',
+              );
+              await context.push('/home/premium?source=profile_card');
               _loadPremiumStatus();
             },
       child: Container(

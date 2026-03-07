@@ -25,6 +25,9 @@ class PremiumCodeResponse(BaseModel):
 class TierResponse(BaseModel):
     tier: Literal["free", "premium"]
     premium_expires_at: datetime | None = None
+    source: str | None = None
+    store_product_id: str | None = None
+    auto_renew_status: bool | None = None
 
 
 # ── Admin: 코드 생성 ──
@@ -122,3 +125,23 @@ class ModelUsageItem(BaseModel):
     call_count: int
     avg_response_ms: int
     estimated_cost_usd: float
+
+
+# ── Store IAP: 구매 검증/복원 ──
+
+class PurchaseVerifyRequest(BaseModel):
+    store: Literal["apple", "google"]
+    product_id: str
+    transaction_id: str  # Apple: transactionId, Google: purchaseToken
+
+
+class PurchaseVerifyResponse(BaseModel):
+    success: bool
+    tier: str
+    premium_expires_at: datetime | None = None
+    source: str
+
+
+class PurchaseRestoreRequest(BaseModel):
+    store: Literal["apple", "google"]
+    transaction_id: str

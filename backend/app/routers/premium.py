@@ -21,9 +21,14 @@ from app.schemas.premium import (
     GenerateCodesRequest, GenerateCodesResponse, GeneratedCodeItem,
     PremiumCodeListItem, AdminUserPremiumInfo, RevokeResponse, DeleteCodeResponse,
     UsageSummaryResponse, DailyUsageItem, UserUsageItem, ModelUsageItem,
+    PurchaseVerifyRequest, PurchaseVerifyResponse, PurchaseRestoreRequest,
 )
 from app.models.user_tier import UserTier
-from app.services.tier_service import activate_premium_code, get_user_tier_info, PremiumActivationError
+from app.services.tier_service import (
+    activate_premium_code, get_user_tier_info, PremiumActivationError,
+    activate_store_subscription, restore_store_subscription,
+)
+from app.services.store_verification_service import verify_store_transaction, StoreVerificationError
 from app.utils.security import decode_token
 
 logger = logging.getLogger(__name__)
@@ -50,7 +55,13 @@ async def get_my_tier(
 ):
     """현재 사용자의 티어 조회."""
     info = await get_user_tier_info(db, current_user.id)
-    return TierResponse(tier=info["tier"], premium_expires_at=info["premium_expires_at"])
+    return TierResponse(
+        tier=info["tier"],
+        premium_expires_at=info["premium_expires_at"],
+        source=info.get("source"),
+        store_product_id=info.get("store_product_id"),
+        auto_renew_status=info.get("auto_renew_status"),
+    )
 
 
 @router.post("/activate", response_model=PremiumCodeResponse)
@@ -66,6 +77,102 @@ async def activate_premium(
         user_tier = await activate_premium_code(db, current_user.id, request_obj.code)
         return PremiumCodeResponse(success=True, expires_at=user_tier.premium_expires_at)
     except PremiumActivationError as e:
+        raise HTTPException(status_code=400, detail=e.detail)
+
+
+@router.post("/purchases/verify", response_model=PurchaseVerifyResponse)
+async def verify_purchase(
+    request_obj: PurchaseVerifyRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """스토어 구매 검증 → entitlement 반영."""
+    try:
+        # 1. 스토어 API로 거래 검증
+        verified = await verify_store_transaction(
+            store=request_obj.store,
+            product_id=request_obj.product_id,
+            transaction_id=request_obj.transaction_id,
+        )
+
+        # 2. tier_service로 프리미엄 활성화
+        import json
+        user_tier = await activate_store_subscription(
+            db=db,
+            user_id=current_user.id,
+            store=request_obj.store,
+            product_id=verified["product_id"],
+            transaction_id=request_obj.transaction_id,
+            original_transaction_id=verified["original_transaction_id"],
+            expires_at=verified["expires_date"],
+            auto_renew=verified["auto_renew_status"],
+            raw_payload=json.dumps(verified, default=str),
+            purchased_at=verified.get("purchased_at"),
+        )
+        await db.commit()
+
+        source = "app_store" if request_obj.store == "apple" else "play_store"
+        return PurchaseVerifyResponse(
+            success=True,
+            tier=user_tier.tier,
+            premium_expires_at=user_tier.premium_expires_at,
+            source=source,
+        )
+
+    except StoreVerificationError as e:
+        logger.warning("Purchase verification failed: user=%s, store=%s, error=%s", current_user.id, e.store, e.detail)
+        raise HTTPException(status_code=400, detail=e.detail)
+
+
+@router.post("/purchases/restore", response_model=PurchaseVerifyResponse)
+async def restore_purchase(
+    request_obj: PurchaseRestoreRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """구매 복원 (재설치 후 등)."""
+    try:
+        # 스토어에서 product_id를 모를 수 있으므로 검증 결과에서 가져옴
+        verified = await verify_store_transaction(
+            store=request_obj.store,
+            product_id="",  # Apple은 transactionId로 조회 가능
+            transaction_id=request_obj.transaction_id,
+        )
+
+        # 만료된 구독인지 확인
+        if verified["expires_date"] and verified["expires_date"] < datetime.now(timezone.utc):
+            return PurchaseVerifyResponse(
+                success=False,
+                tier="free",
+                premium_expires_at=verified["expires_date"],
+                source="expired",
+            )
+
+        import json
+        user_tier = await restore_store_subscription(
+            db=db,
+            user_id=current_user.id,
+            store=request_obj.store,
+            product_id=verified["product_id"],
+            transaction_id=request_obj.transaction_id,
+            original_transaction_id=verified["original_transaction_id"],
+            expires_at=verified["expires_date"],
+            auto_renew=verified["auto_renew_status"],
+            raw_payload=json.dumps(verified, default=str),
+            purchased_at=verified.get("purchased_at"),
+        )
+        await db.commit()
+
+        source = "app_store" if request_obj.store == "apple" else "play_store"
+        return PurchaseVerifyResponse(
+            success=True,
+            tier=user_tier.tier,
+            premium_expires_at=user_tier.premium_expires_at,
+            source=source,
+        )
+
+    except StoreVerificationError as e:
+        logger.warning("Purchase restore failed: user=%s, store=%s, error=%s", current_user.id, e.store, e.detail)
         raise HTTPException(status_code=400, detail=e.detail)
 
 

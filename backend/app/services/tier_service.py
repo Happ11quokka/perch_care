@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Literal
@@ -9,6 +10,7 @@ from sqlalchemy.dialects.postgresql import insert
 
 from app.models.user_tier import UserTier
 from app.models.premium_code import PremiumCode
+from app.models.subscription_transaction import SubscriptionTransaction
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +81,9 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
     return {
         "tier": tier_row.tier,
         "premium_expires_at": tier_row.premium_expires_at,
+        "source": tier_row.source,
+        "store_product_id": tier_row.store_product_id,
+        "auto_renew_status": tier_row.auto_renew_status,
     }
 
 
@@ -159,4 +164,178 @@ async def activate_premium_code(db: AsyncSession, user_id: UUID, code: str) -> U
     user_tier = result.scalar_one()
 
     logger.info("Premium activated: user=%s, code_prefix=%s***, expires=%s", user_id, code[:5], expires_at)
+    return user_tier
+
+
+async def activate_store_subscription(
+    db: AsyncSession,
+    user_id: UUID,
+    store: str,
+    product_id: str,
+    transaction_id: str,
+    original_transaction_id: str,
+    expires_at: datetime,
+    auto_renew: bool,
+    raw_payload: str | None = None,
+    purchased_at: datetime | None = None,
+) -> UserTier:
+    """스토어 구독 구매 검증 후 프리미엄 활성화.
+
+    기존 activate_premium_code() 패턴(INSERT ON CONFLICT) 재사용.
+    프로모 코드와 동시 활성화 시 만료일이 더 긴 쪽 유지.
+    """
+    now = datetime.now(timezone.utc)
+    source = "app_store" if store == "apple" else "play_store"
+
+    # 1. subscription_transactions에 거래 로그 기록
+    tx = SubscriptionTransaction(
+        user_id=user_id,
+        store=store,
+        product_id=product_id,
+        transaction_id=transaction_id,
+        original_transaction_id=original_transaction_id,
+        event_type="purchase",
+        purchased_at=purchased_at or now,
+        expires_at=expires_at,
+        payload_json=raw_payload,
+    )
+    db.add(tx)
+
+    # 2. 기존 tier 조회하여 만료일 비교
+    result = await db.execute(
+        select(UserTier).where(UserTier.user_id == user_id).with_for_update()
+    )
+    existing_tier = result.scalar_one_or_none()
+
+    # 기존 만료일이 더 긴 경우(예: 프로모 코드) 더 긴 쪽 유지
+    final_expires_at = expires_at
+    if existing_tier and existing_tier.premium_expires_at:
+        if existing_tier.premium_expires_at > expires_at:
+            final_expires_at = existing_tier.premium_expires_at
+
+    # 3. user_tiers UPSERT
+    stmt = insert(UserTier).values(
+        user_id=user_id,
+        tier="premium",
+        premium_started_at=now,
+        premium_expires_at=final_expires_at,
+        source=source,
+        store_product_id=product_id,
+        store_original_transaction_id=original_transaction_id,
+        auto_renew_status=auto_renew,
+        last_verified_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    stmt = stmt.on_conflict_do_update(
+        constraint="user_tiers_user_id_key",
+        set_={
+            "tier": "premium",
+            "premium_started_at": now,
+            "premium_expires_at": final_expires_at,
+            "source": source,
+            "store_product_id": product_id,
+            "store_original_transaction_id": original_transaction_id,
+            "auto_renew_status": auto_renew,
+            "last_verified_at": now,
+            "updated_at": now,
+        },
+    )
+    await db.execute(stmt)
+    await db.flush()
+
+    # 반환용 재조회
+    result = await db.execute(
+        select(UserTier).where(UserTier.user_id == user_id)
+    )
+    user_tier = result.scalar_one()
+
+    logger.info(
+        "Store subscription activated: user=%s, store=%s, product=%s, expires=%s",
+        user_id, store, product_id, final_expires_at,
+    )
+    return user_tier
+
+
+async def restore_store_subscription(
+    db: AsyncSession,
+    user_id: UUID,
+    store: str,
+    product_id: str,
+    transaction_id: str,
+    original_transaction_id: str,
+    expires_at: datetime,
+    auto_renew: bool,
+    raw_payload: str | None = None,
+    purchased_at: datetime | None = None,
+) -> UserTier:
+    """구매 복원 처리. activate_store_subscription과 동일 로직, event_type='restore'."""
+    now = datetime.now(timezone.utc)
+    source = "app_store" if store == "apple" else "play_store"
+
+    # 1. 거래 로그 (event_type='restore')
+    tx = SubscriptionTransaction(
+        user_id=user_id,
+        store=store,
+        product_id=product_id,
+        transaction_id=transaction_id,
+        original_transaction_id=original_transaction_id,
+        event_type="restore",
+        purchased_at=purchased_at or now,
+        expires_at=expires_at,
+        payload_json=raw_payload,
+    )
+    db.add(tx)
+
+    # 2. 만료일 비교
+    result = await db.execute(
+        select(UserTier).where(UserTier.user_id == user_id).with_for_update()
+    )
+    existing_tier = result.scalar_one_or_none()
+
+    final_expires_at = expires_at
+    if existing_tier and existing_tier.premium_expires_at:
+        if existing_tier.premium_expires_at > expires_at:
+            final_expires_at = existing_tier.premium_expires_at
+
+    # 3. UPSERT
+    stmt = insert(UserTier).values(
+        user_id=user_id,
+        tier="premium",
+        premium_started_at=now,
+        premium_expires_at=final_expires_at,
+        source=source,
+        store_product_id=product_id,
+        store_original_transaction_id=original_transaction_id,
+        auto_renew_status=auto_renew,
+        last_verified_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    stmt = stmt.on_conflict_do_update(
+        constraint="user_tiers_user_id_key",
+        set_={
+            "tier": "premium",
+            "premium_started_at": now,
+            "premium_expires_at": final_expires_at,
+            "source": source,
+            "store_product_id": product_id,
+            "store_original_transaction_id": original_transaction_id,
+            "auto_renew_status": auto_renew,
+            "last_verified_at": now,
+            "updated_at": now,
+        },
+    )
+    await db.execute(stmt)
+    await db.flush()
+
+    result = await db.execute(
+        select(UserTier).where(UserTier.user_id == user_id)
+    )
+    user_tier = result.scalar_one()
+
+    logger.info(
+        "Store subscription restored: user=%s, store=%s, product=%s, expires=%s",
+        user_id, store, product_id, final_expires_at,
+    )
     return user_tier
