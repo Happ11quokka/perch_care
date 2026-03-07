@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
+import '../analytics/analytics_service.dart';
 import '../api/api_client.dart';
 import '../premium/premium_service.dart';
 
@@ -131,17 +132,37 @@ class IapService {
 
   /// 스트림 이벤트 처리
   void _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
+    final analytics = AnalyticsService.instance;
+    final store = Platform.isIOS ? 'apple' : 'google';
+
     for (final purchase in purchases) {
       debugPrint('[IapService] Purchase update: ${purchase.productID} status=${purchase.status}');
 
       switch (purchase.status) {
         case PurchaseStatus.purchased:
-          await _verifyAndDeliver(purchase, isRestore: false);
+          final success = await _verifyAndDeliver(purchase, isRestore: false);
+          if (success) {
+            analytics.logPurchaseSuccess(store: store, productId: purchase.productID);
+          } else {
+            analytics.logPurchaseFailed(store: store, productId: purchase.productID, reason: lastError ?? 'verification_failed');
+          }
+          // completePurchase는 검증 성공/실패 무관하게 호출해야 거래가 정리됨
+          if (purchase.pendingCompletePurchase) {
+            await _iap.completePurchase(purchase);
+          }
         case PurchaseStatus.restored:
-          await _verifyAndDeliver(purchase, isRestore: true);
+          final success = await _verifyAndDeliver(purchase, isRestore: true);
+          if (success) {
+            analytics.logPurchaseSuccess(store: store, productId: purchase.productID, isRestore: true);
+            analytics.logRestoreSuccess(store: store);
+          }
+          if (purchase.pendingCompletePurchase) {
+            await _iap.completePurchase(purchase);
+          }
         case PurchaseStatus.error:
           lastError = purchase.error?.message ?? '구매 처리 중 오류가 발생했습니다';
           debugPrint('[IapService] Purchase error: ${purchase.error}');
+          analytics.logPurchaseFailed(store: store, productId: purchase.productID, reason: purchase.error?.message ?? 'store_error');
           onEvent?.call(IapEvent.purchaseFailed);
         case PurchaseStatus.pending:
           debugPrint('[IapService] Purchase pending');
@@ -150,16 +171,11 @@ class IapService {
           debugPrint('[IapService] Purchase canceled');
           onEvent?.call(IapEvent.purchaseCanceled);
       }
-
-      // pending complete 처리
-      if (purchase.pendingCompletePurchase) {
-        await _iap.completePurchase(purchase);
-      }
     }
   }
 
-  /// 서버 검증 → PremiumService 캐시 갱신
-  Future<void> _verifyAndDeliver(PurchaseDetails purchase, {required bool isRestore}) async {
+  /// 서버 검증 → PremiumService 캐시 갱신. 성공 시 true 반환.
+  Future<bool> _verifyAndDeliver(PurchaseDetails purchase, {required bool isRestore}) async {
     final store = Platform.isIOS ? 'apple' : 'google';
     final endpoint = isRestore ? '/premium/purchases/restore' : '/premium/purchases/verify';
 
@@ -185,11 +201,11 @@ class IapService {
           PremiumService.instance.invalidateCache();
           onEvent?.call(isRestore ? IapEvent.purchaseRestored : IapEvent.purchaseSuccess);
           debugPrint('[IapService] Server verification success: tier=${result['tier']}');
-          return;
+          return true;
         } else {
           lastError = '서버 검증에 실패했습니다';
           onEvent?.call(IapEvent.purchaseFailed);
-          return;
+          return false;
         }
       } catch (e) {
         debugPrint('[IapService] Server verification attempt ${attempt + 1} failed: $e');
@@ -202,6 +218,7 @@ class IapService {
         }
       }
     }
+    return false;
   }
 
   void dispose() {

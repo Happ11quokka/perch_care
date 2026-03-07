@@ -22,7 +22,9 @@ from app.schemas.premium import (
     PremiumCodeListItem, AdminUserPremiumInfo, RevokeResponse, DeleteCodeResponse,
     UsageSummaryResponse, DailyUsageItem, UserUsageItem, ModelUsageItem,
     PurchaseVerifyRequest, PurchaseVerifyResponse, PurchaseRestoreRequest,
+    SubscriptionTransactionItem, SubscriptionStatsResponse,
 )
+from app.models.subscription_transaction import SubscriptionTransaction
 from app.models.user_tier import UserTier
 from app.services.tier_service import (
     activate_premium_code, get_user_tier_info, PremiumActivationError,
@@ -624,3 +626,102 @@ async def get_model_usage(
             estimated_cost_usd=estimated_cost,
         ))
     return result
+
+
+# ── Admin: 구독 거래 조회 ──
+
+
+@router.get(
+    "/admin/subscriptions/stats",
+    response_model=SubscriptionStatsResponse,
+    dependencies=[Depends(verify_admin_api_key)],
+)
+async def get_subscription_stats(
+    db: AsyncSession = Depends(get_db),
+):
+    """활성 구독자 통계 (관리자 전용)."""
+    base = (
+        select(UserTier)
+        .where(UserTier.tier == "premium")
+        .where(UserTier.source.in_(["app_store", "play_store"]))
+    )
+
+    total_result = await db.execute(select(func.count()).select_from(base.subquery()))
+    total = total_result.scalar() or 0
+
+    apple_result = await db.execute(
+        select(func.count()).select_from(
+            base.where(UserTier.source == "app_store").subquery()
+        )
+    )
+    apple = apple_result.scalar() or 0
+
+    google_result = await db.execute(
+        select(func.count()).select_from(
+            base.where(UserTier.source == "play_store").subquery()
+        )
+    )
+    google = google_result.scalar() or 0
+
+    product_result = await db.execute(
+        select(UserTier.store_product_id, func.count())
+        .where(UserTier.tier == "premium")
+        .where(UserTier.source.in_(["app_store", "play_store"]))
+        .where(UserTier.store_product_id.isnot(None))
+        .group_by(UserTier.store_product_id)
+    )
+    by_product = {row[0]: row[1] for row in product_result.all()}
+
+    return SubscriptionStatsResponse(
+        total_subscribers=total,
+        apple_subscribers=apple,
+        google_subscribers=google,
+        by_product=by_product,
+    )
+
+
+@router.get(
+    "/admin/subscriptions/transactions",
+    response_model=list[SubscriptionTransactionItem],
+    dependencies=[Depends(verify_admin_api_key)],
+)
+async def list_subscription_transactions(
+    store: str | None = None,
+    event_type: str | None = None,
+    days: int = Query(30, ge=1, le=365),
+    limit: int = Query(50, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+):
+    """구독 거래 로그 조회 (관리자 전용)."""
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+
+    query = (
+        select(SubscriptionTransaction, User.email)
+        .outerjoin(User, SubscriptionTransaction.user_id == User.id)
+        .where(SubscriptionTransaction.created_at >= since)
+    )
+    if store:
+        query = query.where(SubscriptionTransaction.store == store)
+    if event_type:
+        query = query.where(SubscriptionTransaction.event_type == event_type)
+
+    query = query.order_by(SubscriptionTransaction.created_at.desc()).limit(limit)
+
+    result = await db.execute(query)
+    rows = result.all()
+    return [
+        SubscriptionTransactionItem(
+            id=str(tx.id),
+            user_id=str(tx.user_id),
+            user_email=email,
+            store=tx.store,
+            product_id=tx.product_id,
+            transaction_id=tx.transaction_id,
+            original_transaction_id=tx.original_transaction_id,
+            event_type=tx.event_type,
+            purchased_at=tx.purchased_at,
+            expires_at=tx.expires_at,
+            created_at=tx.created_at,
+        )
+        for tx, email in rows
+    ]

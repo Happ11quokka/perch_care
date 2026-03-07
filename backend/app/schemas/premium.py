@@ -145,3 +145,26 @@ class PurchaseVerifyResponse(BaseModel):
 class PurchaseRestoreRequest(BaseModel):
     store: Literal["apple", "google"]
     transaction_id: str
+
+
+# ── Admin: 구독 거래 조회 ──
+
+class SubscriptionTransactionItem(BaseModel):
+    id: str
+    user_id: str
+    user_email: str | None = None
+    store: str
+    product_id: str
+    transaction_id: str
+    original_transaction_id: str
+    event_type: str
+    purchased_at: datetime | None = None
+    expires_at: datetime | None = None
+    created_at: datetime
+
+
+class SubscriptionStatsResponse(BaseModel):
+    total_subscribers: int
+    apple_subscribers: int
+    google_subscribers: int
+    by_product: dict[str, int]

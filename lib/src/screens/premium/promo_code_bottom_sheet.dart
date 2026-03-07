@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/colors.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/premium/premium_service.dart';
 import '../../services/api/api_client.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -65,6 +66,9 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
       if (!mounted) return;
 
       if (result.success) {
+        // 코드 접두어 추출 (예: PERCH-ABCD-EF12 → PERCH)
+        final codePrefix = code.split('-').firstOrNull ?? code;
+        AnalyticsService.instance.logPromoCodeActivated(codePrefix: codePrefix);
         Navigator.pop(context, true); // true = 활성화 성공
       }
     } on ApiException catch (e) {
