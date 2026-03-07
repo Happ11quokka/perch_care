@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
+import '../../services/api/api_client.dart';
 import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
@@ -40,7 +42,32 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
   }
 
   Future<void> _loadRecords() async {
+    if (!_isLoading) {
+      setState(() { _isLoading = true; });
+    }
     final petId = ActivePetNotifier.instance.activePetId;
+
+    // Try server first
+    if (petId != null) {
+      try {
+        final serverRecords =
+            await HealthCheckStorageService.instance.fetchFromServer(petId);
+        // Update local cache
+        await HealthCheckStorageService.instance.syncWithServer(petId);
+        if (mounted) {
+          setState(() {
+            _records = serverRecords;
+            _groupedRecords = null;
+            _isLoading = false;
+          });
+        }
+        return;
+      } catch (e) {
+        debugPrint('[HealthCheckHistory] Server load failed, using local: $e');
+      }
+    }
+
+    // Fallback to local
     final records =
         await HealthCheckStorageService.instance.getRecords(petId);
     if (mounted) {
@@ -75,7 +102,7 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
     return confirmed == true;
   }
 
-  /// Dismissible onDismissed에서 호출: 스토리지 + 이미지 삭제
+  /// Dismissible onDismissed에서 호출: 스토리지 + 이미지 + 서버 삭제
   Future<void> _performDelete(HealthCheckRecord record) async {
     await HealthCheckStorageService.instance
         .deleteRecord(record.petId, record.id);
@@ -83,6 +110,15 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
       ownerType: ImageOwnerType.healthCheck,
       ownerId: record.id,
     );
+    // Also delete from server
+    if (record.petId != null) {
+      try {
+        await ApiClient.instance
+            .delete('/pets/${record.petId}/health-checks/${record.id}');
+      } catch (e) {
+        debugPrint('[HealthCheckHistory] Server delete failed: $e');
+      }
+    }
     if (mounted) {
       final l10n = AppLocalizations.of(context);
       setState(() {
@@ -124,9 +160,20 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : _records.isEmpty
-                ? _buildEmptyState(l10n)
-                : _buildRecordList(l10n),
+            : RefreshIndicator(
+                onRefresh: _loadRecords,
+                color: AppColors.brandPrimary,
+                child: _records.isEmpty
+                    ? ListView(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: _buildEmptyState(l10n),
+                          ),
+                        ],
+                      )
+                    : _buildRecordList(l10n),
+              ),
       ),
     );
   }
@@ -251,7 +298,17 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
                   color: iconColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(22),
                 ),
-                child: Icon(icon, color: iconColor, size: 22),
+                child: mode == VisionMode.fullBody
+                    ? SvgPicture.asset(
+                        'assets/images/brand.svg',
+                        width: 22,
+                        height: 22,
+                        colorFilter: ColorFilter.mode(
+                          iconColor,
+                          BlendMode.srcIn,
+                        ),
+                      )
+                    : Icon(icon, color: iconColor, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(

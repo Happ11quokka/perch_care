@@ -16,4 +16,9 @@ class ActivePetNotifier extends ChangeNotifier {
     _activePetId = petId;
     notifyListeners();
   }
+
+  /// 활성 펫 상태 초기화 (로그아웃 시 호출)
+  void clear() {
+    _activePetId = null;
+  }
 }

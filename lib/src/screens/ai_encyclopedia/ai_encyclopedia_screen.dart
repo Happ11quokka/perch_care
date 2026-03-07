@@ -10,6 +10,7 @@ import '../../models/chat_message.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/analytics/analytics_service.dart';
+import '../../services/chat/chat_api_service.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
 import '../../services/ai/ai_stream_service.dart';
 import '../../services/pet/pet_service.dart';
@@ -42,8 +43,10 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
   final AiStreamService _streamService = AiStreamService();
   final PetService _petService = PetService.instance;
   final ChatStorageService _chatStorage = ChatStorageService.instance;
+  final ChatApiService _chatApi = ChatApiService.instance;
   final List<ChatMessage> _messages = [];
   Pet? _activePet;
+  String? _currentSessionId;
   StreamSubscription<String>? _streamSubscription;
   int? _assistantPlaceholderIndex; // 스트리밍 중 assistant 메시지 인덱스 고정
   int _receivedTokenCount = 0; // P1: fallback 판단용 수신 토큰 수
@@ -231,6 +234,29 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
 
     _scrollToBottom();
 
+    // 서버 세션 생성 또는 메시지 저장
+    if (_currentSessionId == null) {
+      try {
+        final session = await _chatApi.createSession(
+          petId: petId,
+          firstMessage: text,
+        );
+        _currentSessionId = session.id;
+      } catch (e) {
+        debugPrint('[AIEncyclopedia] Session creation failed: $e');
+      }
+    } else {
+      try {
+        await _chatApi.addMessage(
+          sessionId: _currentSessionId!,
+          role: 'user',
+          content: text,
+        );
+      } catch (e) {
+        debugPrint('[AIEncyclopedia] User message save failed: $e');
+      }
+    }
+
     try {
       // SSE 스트리밍 시도
       await _handleStreamResponse(
@@ -279,9 +305,28 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
         _isSending = false;
       });
       _saveMessages();
+      _saveAssistantMessageToServer(); // placeholder 인덱스 초기화 전에 호출
       _scrollToBottom();
     }
     _assistantPlaceholderIndex = null;
+  }
+
+  /// assistant 메시지를 서버에 저장 (fire-and-forget)
+  Future<void> _saveAssistantMessageToServer() async {
+    if (_currentSessionId == null) return;
+    final idx = _assistantPlaceholderIndex;
+    if (idx == null || idx >= _messages.length) return;
+    final msg = _messages[idx];
+    if (msg.role != MessageRole.assistant || msg.text.isEmpty) return;
+    try {
+      await _chatApi.addMessage(
+        sessionId: _currentSessionId!,
+        role: 'assistant',
+        content: msg.text,
+      );
+    } catch (e) {
+      debugPrint('[AIEncyclopedia] Assistant message save failed: $e');
+    }
   }
 
   /// SSE 스트리밍으로 토큰별 실시간 응답을 처리한다.
@@ -393,6 +438,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
         _updateAssistantMessage(text: answer, timestamp: DateTime.now());
       });
       await _saveMessages();
+      await _saveAssistantMessageToServer();
     } catch (e) {
       if (!mounted) return;
       final l10nErr = AppLocalizations.of(context);
@@ -425,12 +471,37 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     }
   }
 
-  /// 저장된 대화 내역 로드
+  /// 저장된 대화 내역 로드 (서버 우선, 로컬 폴백)
   Future<void> _loadMessages() async {
     setState(() {
       _isLoadingMessages = true;
     });
 
+    try {
+      // 서버에서 세션 목록 로드 시도
+      final sessions = await _chatApi.getUserSessions();
+      final petId = _activePet?.id;
+      final matching = sessions.where((s) => s.petId == petId).toList();
+      if (matching.isNotEmpty) {
+        final session = matching.first;
+        _currentSessionId = session.id;
+        final serverMessages = await _chatApi.getSessionMessages(session.id);
+        if (!mounted) return;
+        setState(() {
+          _messages.clear();
+          _messages.addAll(serverMessages);
+          _isLoadingMessages = false;
+        });
+        // 로컬 캐시 업데이트
+        await _chatStorage.saveMessages(petId, _messages);
+        _scrollToBottom();
+        return;
+      }
+    } catch (e) {
+      debugPrint('[AIEncyclopedia] Server load failed, using local: $e');
+    }
+
+    // 로컬 폴백
     try {
       final messages = await _chatStorage.loadMessages(_activePet?.id);
       if (!mounted) return;
@@ -481,6 +552,15 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
 
     if (confirmed == true) {
       await _chatStorage.clearMessages(_activePet?.id);
+      // 서버 세션 삭제
+      if (_currentSessionId != null) {
+        try {
+          await _chatApi.deleteSession(_currentSessionId!);
+        } catch (e) {
+          debugPrint('[AIEncyclopedia] Session delete failed: $e');
+        }
+        _currentSessionId = null;
+      }
       if (mounted) {
         setState(() {
           _messages.clear();

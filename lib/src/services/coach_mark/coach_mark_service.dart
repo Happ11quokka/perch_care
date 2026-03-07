@@ -37,4 +37,12 @@ class CoachMarkService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyChatbotCoachSeen, true);
   }
+
+  /// 모든 코치마크 상태 초기화 (로그아웃 시 호출)
+  Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyHomeCoachSeen);
+    await prefs.remove(_keyRecordsCoachSeen);
+    await prefs.remove(_keyChatbotCoachSeen);
+  }
 }

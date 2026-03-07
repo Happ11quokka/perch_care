@@ -10,7 +10,7 @@ import os
 
 from sqlalchemy import text
 from app.config import get_settings
-from app.routers import auth, users, pets, weights, daily_records, food_records, water_records, health_checks, schedules, notifications, bhi, ai, premium, breed_standards
+from app.routers import auth, users, pets, weights, daily_records, food_records, water_records, health_checks, schedules, notifications, bhi, ai, premium, breed_standards, chat
 
 settings = get_settings()
 
@@ -47,7 +47,15 @@ async def lifespan(app: FastAPI):
     else:
         _logger.info("Vector DB not configured — vector search disabled")
 
+    # Start scheduler
+    from app.scheduler import start_scheduler
+    start_scheduler()
+
     yield
+
+    # Cleanup
+    from app.scheduler import stop_scheduler
+    stop_scheduler()
 
 
 app = FastAPI(
@@ -84,6 +92,7 @@ app.include_router(notifications.router, prefix=settings.api_v1_prefix)
 app.include_router(ai.router, prefix=settings.api_v1_prefix)
 app.include_router(premium.router, prefix=settings.api_v1_prefix)
 app.include_router(breed_standards.router, prefix=settings.api_v1_prefix)
+app.include_router(chat.router, prefix=settings.api_v1_prefix)
 
 # Rate limiting error handler (slowapi)
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

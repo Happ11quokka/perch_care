@@ -1381,7 +1381,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get faq_q1 => 'Is this app free?';
 
   @override
-  String get faq_a1 => 'Yes, all basic features of Perch Care are free to use.';
+  String get faq_a1 =>
+      'Basic features of Perch Care are free. Subscribe to Premium for additional features like AI Vision Health Check.';
 
   @override
   String get faq_q2 => 'How accurate is the AI health analysis?';
@@ -1466,6 +1467,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get faq_a13 =>
       'Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future.';
+
+  @override
+  String get faq_categoryPremium => 'Premium';
+
+  @override
+  String get faq_q14 => 'What is Premium?';
+
+  @override
+  String get faq_a14 =>
+      'Premium provides advanced features including unlimited AI Vision Health Check and image-based detailed analysis.';
+
+  @override
+  String get faq_q15 => 'How do I use a Premium code?';
+
+  @override
+  String get faq_a15 =>
+      'Go to Profile > Premium and enter your code in the format PERCH-XXXX-XXXX to activate immediately.';
+
+  @override
+  String get faq_q16 => 'What happens to my data when Premium expires?';
+
+  @override
+  String get faq_a16 =>
+      'Your health check text results are retained after expiration. However, health check images are automatically deleted from the server 90 days after expiration.';
+
+  @override
+  String get faq_q17 => 'How do I use AI Vision Health Check?';
+
+  @override
+  String get faq_a17 =>
+      'Tap the \'AI Health Check\' button on the Home screen, select an analysis type (full body/body part/droppings/food), then take a photo or choose from your album.';
+
+  @override
+  String get faq_q18 => 'Which body parts can be analyzed?';
+
+  @override
+  String get faq_a18 =>
+      'You can analyze full body, eyes, beak, feathers, and feet individually. Droppings analysis and food safety checks are also available.';
+
+  @override
+  String get faq_q19 => 'Where can I view health check records?';
+
+  @override
+  String get faq_a19 =>
+      'Tap the \'History\' button at the top of the AI Health Check screen to view your health check results.';
+
+  @override
+  String get faq_q20 => 'How do I use the AI Encyclopedia (chatbot)?';
+
+  @override
+  String get faq_a20 =>
+      'Tap the AI Encyclopedia banner on the Home screen to open the chat screen where you can ask questions about your bird.';
+
+  @override
+  String get faq_q21 => 'Are chat records saved?';
+
+  @override
+  String get faq_a21 =>
+      'Yes, chat records are securely stored on the server. You can view previous conversations even after logging out and back in.';
+
+  @override
+  String get faq_q22 => 'Where can I check breed-specific standard weight?';
+
+  @override
+  String get faq_a22 =>
+      'Standard weight ranges for your breed are displayed on the weight chart. Set your pet\'s breed in the pet profile.';
 
   @override
   String get premium_sectionTitle => 'Premium';

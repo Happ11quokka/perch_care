@@ -2563,7 +2563,7 @@ abstract class AppLocalizations {
   /// No description provided for @faq_a1.
   ///
   /// In ko, this message translates to:
-  /// **'네, Perch Care의 기본 기능은 모두 무료로 이용할 수 있습니다.'**
+  /// **'Perch Care의 기본 기능은 무료입니다. 프리미엄 서비스 가입 시 AI 비전 건강체크 등 추가 기능을 이용할 수 있습니다.'**
   String get faq_a1;
 
   /// No description provided for @faq_q2.
@@ -2709,6 +2709,120 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'현재는 iOS만 지원하고 있습니다. Android 및 HarmonyOS 버전은 개발 중이며, 추후 출시 예정입니다.'**
   String get faq_a13;
+
+  /// No description provided for @faq_categoryPremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄'**
+  String get faq_categoryPremium;
+
+  /// No description provided for @faq_q14.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 서비스는 무엇인가요?'**
+  String get faq_q14;
+
+  /// No description provided for @faq_a14.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 서비스는 AI 비전 건강체크 무제한 이용, 이미지 기반 정밀 분석 등의 고급 기능을 제공합니다.'**
+  String get faq_a14;
+
+  /// No description provided for @faq_q15.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 코드는 어떻게 사용하나요?'**
+  String get faq_q15;
+
+  /// No description provided for @faq_a15.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 화면의 \'프리미엄\' 메뉴에서 PERCH-XXXX-XXXX 형식의 코드를 입력하면 즉시 활성화됩니다.'**
+  String get faq_a15;
+
+  /// No description provided for @faq_q16.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 만료 시 데이터는 어떻게 되나요?'**
+  String get faq_q16;
+
+  /// No description provided for @faq_a16.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 만료 후에도 기존 건강체크 텍스트 결과는 유지됩니다. 단, 건강체크 이미지는 만료 후 90일 경과 시 서버에서 자동 삭제됩니다.'**
+  String get faq_a16;
+
+  /// No description provided for @faq_q17.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 비전 건강체크는 어떻게 사용하나요?'**
+  String get faq_q17;
+
+  /// No description provided for @faq_a17.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈 화면의 \'AI 건강체크\' 버튼을 탭한 후, 분석 유형(전체 외형/부위별/배변/먹이)을 선택하고 사진을 촬영하거나 앨범에서 선택하세요.'**
+  String get faq_a17;
+
+  /// No description provided for @faq_q18.
+  ///
+  /// In ko, this message translates to:
+  /// **'어떤 부위를 분석할 수 있나요?'**
+  String get faq_q18;
+
+  /// No description provided for @faq_a18.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 외형, 눈, 부리, 깃털, 발을 개별적으로 분석할 수 있으며, 배변 상태 및 먹이 안전성도 확인할 수 있습니다.'**
+  String get faq_a18;
+
+  /// No description provided for @faq_q19.
+  ///
+  /// In ko, this message translates to:
+  /// **'건강체크 기록은 어디서 볼 수 있나요?'**
+  String get faq_q19;
+
+  /// No description provided for @faq_a19.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 건강체크 화면 상단의 \'기록\' 버튼을 탭하면 건강체크 결과를 확인할 수 있습니다.'**
+  String get faq_a19;
+
+  /// No description provided for @faq_q20.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 백과사전(챗봇)은 어떻게 사용하나요?'**
+  String get faq_q20;
+
+  /// No description provided for @faq_a20.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈 화면에서 AI 백과사전 배너를 탭하면 반려조 관련 질문을 할 수 있는 채팅 화면으로 이동합니다.'**
+  String get faq_a20;
+
+  /// No description provided for @faq_q21.
+  ///
+  /// In ko, this message translates to:
+  /// **'채팅 기록은 저장되나요?'**
+  String get faq_q21;
+
+  /// No description provided for @faq_a21.
+  ///
+  /// In ko, this message translates to:
+  /// **'네, 채팅 기록은 서버에 안전하게 저장됩니다. 로그아웃 후 다시 로그인해도 이전 대화를 확인할 수 있습니다.'**
+  String get faq_a21;
+
+  /// No description provided for @faq_q22.
+  ///
+  /// In ko, this message translates to:
+  /// **'품종별 표준 체중 정보는 어디서 확인하나요?'**
+  String get faq_q22;
+
+  /// No description provided for @faq_a22.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중 기록 화면에서 품종별 표준 체중 범위가 차트에 표시됩니다. 반려동물 프로필에서 품종을 설정하세요.'**
+  String get faq_a22;
 
   /// No description provided for @premium_sectionTitle.
   ///

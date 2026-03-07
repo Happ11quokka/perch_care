@@ -1332,7 +1332,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get faq_q1 => '这个应用是免费的吗？';
 
   @override
-  String get faq_a1 => '是的，Perch Care 的所有基本功能均可免费使用。';
+  String get faq_a1 => 'Perch Care 的基本功能免费使用。订阅高级版可使用 AI 视觉健康检查等高级功能。';
 
   @override
   String get faq_q2 => 'AI 健康分析有多准确？';
@@ -1405,6 +1405,63 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get faq_a13 => '目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。';
+
+  @override
+  String get faq_categoryPremium => '高级版';
+
+  @override
+  String get faq_q14 => '什么是高级版服务？';
+
+  @override
+  String get faq_a14 => '高级版提供 AI 视觉健康检查无限使用、基于图像的精密分析等高级功能。';
+
+  @override
+  String get faq_q15 => '如何使用高级版代码？';
+
+  @override
+  String get faq_a15 => '在个人资料页面的“高级版”菜单中输入 PERCH-XXXX-XXXX 格式的代码即可立即激活。';
+
+  @override
+  String get faq_q16 => '高级版到期后数据会怎样？';
+
+  @override
+  String get faq_a16 => '高级版到期后，健康检查的文字结果会保留。但健康检查图片将在到期 90 天后从服务器自动删除。';
+
+  @override
+  String get faq_q17 => '如何使用 AI 视觉健康检查？';
+
+  @override
+  String get faq_a17 => '点击主页的“AI 健康检查”按钮，选择分析类型（全身外观/部位/粪便/食物），然后拍照或从相册选择。';
+
+  @override
+  String get faq_q18 => '可以分析哪些部位？';
+
+  @override
+  String get faq_a18 => '可以分别分析全身外观、眼睛、喙、羽毛和脚。也可以检查粪便状况和食物安全性。';
+
+  @override
+  String get faq_q19 => '在哪里可以查看健康检查记录？';
+
+  @override
+  String get faq_a19 => '点击 AI 健康检查页面顶部的“记录”按钮即可查看健康检查结果。';
+
+  @override
+  String get faq_q20 => '如何使用 AI 百科（聊天机器人）？';
+
+  @override
+  String get faq_a20 => '点击主页的 AI 百科横幅，进入聊天页面，可以询问有关鸟类的问题。';
+
+  @override
+  String get faq_q21 => '聊天记录会保存吗？';
+
+  @override
+  String get faq_a21 => '是的，聊天记录安全地存储在服务器上。注销后重新登录也可以查看之前的对话。';
+
+  @override
+  String get faq_q22 => '在哪里可以查看品种标准体重？';
+
+  @override
+  String get faq_a22 => '体重记录页面的图表中会显示品种标准体重范围。请在宠物档案中设置品种。';
 
   @override
   String get premium_sectionTitle => '高级版';

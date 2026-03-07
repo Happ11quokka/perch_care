@@ -31,12 +31,25 @@ class FaqScreen extends StatelessWidget {
         ],
       ),
       _FaqCategory(
+        title: l10n.faq_categoryPremium,
+        items: [
+          _FaqItem(question: l10n.faq_q14, answer: l10n.faq_a14),
+          _FaqItem(question: l10n.faq_q15, answer: l10n.faq_a15),
+          _FaqItem(question: l10n.faq_q16, answer: l10n.faq_a16),
+        ],
+      ),
+      _FaqCategory(
         title: l10n.faq_categoryUsage,
         items: [
           _FaqItem(question: l10n.faq_q4, answer: l10n.faq_a4),
           _FaqItem(question: l10n.faq_q5, answer: l10n.faq_a5),
           _FaqItem(question: l10n.faq_q6, answer: l10n.faq_a6),
           _FaqItem(question: l10n.faq_q7, answer: l10n.faq_a7),
+          _FaqItem(question: l10n.faq_q17, answer: l10n.faq_a17),
+          _FaqItem(question: l10n.faq_q18, answer: l10n.faq_a18),
+          _FaqItem(question: l10n.faq_q19, answer: l10n.faq_a19),
+          _FaqItem(question: l10n.faq_q20, answer: l10n.faq_a20),
+          _FaqItem(question: l10n.faq_q21, answer: l10n.faq_a21),
         ],
       ),
       _FaqCategory(
@@ -53,6 +66,7 @@ class FaqScreen extends StatelessWidget {
           _FaqItem(question: l10n.faq_q11, answer: l10n.faq_a11),
           _FaqItem(question: l10n.faq_q12, answer: l10n.faq_a12),
           _FaqItem(question: l10n.faq_q13, answer: l10n.faq_a13),
+          _FaqItem(question: l10n.faq_q22, answer: l10n.faq_a22),
         ],
       ),
     ];

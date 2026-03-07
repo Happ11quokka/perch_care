@@ -3,6 +3,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../api/api_client.dart';
 import '../api/token_service.dart';
 import '../pet/pet_local_cache_service.dart';
+import '../pet/pet_service.dart';
+import '../pet/active_pet_notifier.dart';
+import '../premium/premium_service.dart';
+import '../weight/weight_service.dart';
+import '../storage/health_check_storage_service.dart';
+import '../storage/chat_storage_service.dart';
+import '../coach_mark/coach_mark_service.dart';
 import '../analytics/analytics_service.dart';
 import '../push/push_notification_service.dart';
 import '../storage/local_image_storage_service.dart';
@@ -188,8 +195,18 @@ class AuthService {
     } catch (_) {
       // 토큰 삭제 실패해도 로그아웃은 진행
     }
+    // 인메모리 캐시 무효화
+    PetService.instance.invalidateCache();
+    PremiumService.instance.invalidateCache();
+    ActivePetNotifier.instance.clear();
+    WeightService.instance.clearAllRecords();
+
+    // 로컬 스토리지 정리
     await _petCache.clearAll();
     await LocalImageStorageService.instance.clearAll();
+    await HealthCheckStorageService.instance.clearAll();
+    await ChatStorageService.instance.clearAllMessages();
+    await CoachMarkService.instance.clearAll();
     await _tokenService.clearTokens();
   }
 
@@ -273,8 +290,19 @@ class AuthService {
   Future<void> deleteAccount() async {
     AnalyticsService.instance.logAccountDeleted();
     await _api.delete('/users/me');
+
+    // 인메모리 캐시 무효화
+    PetService.instance.invalidateCache();
+    PremiumService.instance.invalidateCache();
+    ActivePetNotifier.instance.clear();
+    WeightService.instance.clearAllRecords();
+
+    // 로컬 스토리지 정리
     await _petCache.clearAll();
     await LocalImageStorageService.instance.clearAll();
+    await HealthCheckStorageService.instance.clearAll();
+    await ChatStorageService.instance.clearAllMessages();
+    await CoachMarkService.instance.clearAll();
     await _tokenService.clearTokens();
   }
 

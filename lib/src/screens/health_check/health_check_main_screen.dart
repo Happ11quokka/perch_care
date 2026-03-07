@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
@@ -275,13 +276,25 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
                       : const Color(0xFFFFF5ED),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: Icon(
-                  icon,
-                  color: locked
-                      ? const Color(0xFF9E9E9E)
-                      : AppColors.brandPrimary,
-                  size: 24,
-                ),
+                child: mode == VisionMode.fullBody
+                    ? SvgPicture.asset(
+                        'assets/images/brand.svg',
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                          locked
+                              ? const Color(0xFF9E9E9E)
+                              : AppColors.brandPrimary,
+                          BlendMode.srcIn,
+                        ),
+                      )
+                    : Icon(
+                        icon,
+                        color: locked
+                            ? const Color(0xFF9E9E9E)
+                            : AppColors.brandPrimary,
+                        size: 24,
+                      ),
               ),
               const SizedBox(width: 16),
               Expanded(

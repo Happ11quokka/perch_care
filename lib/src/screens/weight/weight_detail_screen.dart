@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
@@ -38,9 +40,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final _addBtnKey = GlobalKey();
 
   bool _isWeeklyView = true; // true: 주, false: 월
-  int _selectedYear = DateTime.now().year;
-  int _selectedMonth = DateTime.now().month;
-  final int _selectedDay = DateTime.now().day;
+  DateTime _focusedDate = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
   List<WeightRecord> _weightRecords = [];
   List<ScheduleRecord> _scheduleRecords = [];
   String _petName = '';
@@ -52,6 +56,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   // Cached calculation results
   Map<DateTime, double>? _cachedMonthlyAverages;
   Map<int, double>? _cachedWeeklyData;
+  DateTime? _cachedWeeklyStart;
+
+  int get _selectedYear => _focusedDate.year;
+  int get _selectedMonth => _focusedDate.month;
+  int get _selectedDay => _focusedDate.day;
 
   @override
   void initState() {
@@ -65,6 +74,46 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     ActivePetNotifier.instance.removeListener(_onActivePetChanged);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  DateTime _normalizeDate(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  DateTime _startOfWeek(DateTime date) {
+    final normalizedDate = _normalizeDate(date);
+    return normalizedDate.subtract(Duration(days: normalizedDate.weekday % 7));
+  }
+
+  void _setFocusedDate(DateTime date) {
+    final normalizedDate = _normalizeDate(date);
+    if (_focusedDate == normalizedDate) return;
+
+    final isMonthChanged =
+        normalizedDate.year != _selectedYear ||
+        normalizedDate.month != _selectedMonth;
+
+    setState(() {
+      _focusedDate = normalizedDate;
+      if (isMonthChanged) {
+        _isRecordsExpanded = false;
+      }
+    });
+
+    if (isMonthChanged) {
+      _loadScheduleData();
+    }
+  }
+
+  void _changeFocusedMonth(int monthDelta) {
+    final targetMonth = DateTime(_selectedYear, _selectedMonth + monthDelta, 1);
+    final lastDayOfTargetMonth = DateTime(
+      targetMonth.year,
+      targetMonth.month + 1,
+      0,
+    ).day;
+    final clampedDay = math.min(_selectedDay, lastDayOfTargetMonth);
+    _setFocusedDate(DateTime(targetMonth.year, targetMonth.month, clampedDay));
   }
 
   void _onActivePetChanged() {
@@ -124,10 +173,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       }
 
       if (_activePetId != null) {
-        await Future.wait([
-          _loadWeightData(),
-          _loadScheduleData(),
-        ]);
+        await Future.wait([_loadWeightData(), _loadScheduleData()]);
         _maybeShowCoachMarks();
       }
     } catch (_) {
@@ -140,10 +186,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           _petName = cachedPet?.name ?? _petName;
         });
         if (_activePetId != null) {
-          await Future.wait([
-            _loadWeightData(),
-            _loadScheduleData(),
-          ]);
+          await Future.wait([_loadWeightData(), _loadScheduleData()]);
         }
       } catch (_) {
         // Handle error
@@ -166,16 +209,14 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       _scheduleRecords = [];
       _cachedMonthlyAverages = null;
       _cachedWeeklyData = null;
+      _cachedWeeklyStart = null;
     });
     _petCache.setActivePetId(pet.id);
     try {
       await _petService.setActivePet(pet.id);
     } catch (_) {}
     try {
-      await Future.wait([
-        _loadWeightData(),
-        _loadScheduleData(),
-      ]);
+      await Future.wait([_loadWeightData(), _loadScheduleData()]);
     } catch (_) {
       // 개별 로드 함수 내부에서 에러 처리
     }
@@ -209,17 +250,21 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           _weightRecords = records;
           _cachedMonthlyAverages = null;
           _cachedWeeklyData = null;
+          _cachedWeeklyStart = null;
         });
       }
     } catch (_) {
       // 서버 실패 시 로컬 캐시 폴백
       try {
-        final records = await _weightService.fetchLocalRecords(petId: _activePetId);
+        final records = await _weightService.fetchLocalRecords(
+          petId: _activePetId,
+        );
         if (mounted) {
           setState(() {
             _weightRecords = records;
             _cachedMonthlyAverages = null;
             _cachedWeeklyData = null;
+            _cachedWeeklyStart = null;
           });
         }
       } catch (_) {}
@@ -279,7 +324,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   int get _totalRecordDays {
     final uniqueDays = <String>{};
     for (final record in _weightRecords) {
-      uniqueDays.add('${record.date.year}-${record.date.month}-${record.date.day}');
+      uniqueDays.add(
+        '${record.date.year}-${record.date.month}-${record.date.day}',
+      );
     }
     return uniqueDays.length;
   }
@@ -299,9 +346,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: _buildAppBar(),
-        body: Center(
-          child: Text(l10n.weightDetail_noPet),
-        ),
+        body: Center(child: Text(l10n.weightDetail_noPet)),
       );
     }
 
@@ -351,7 +396,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppColors.nearBlack),
+        icon: const Icon(
+          Icons.arrow_back_ios,
+          size: 20,
+          color: AppColors.nearBlack,
+        ),
         onPressed: _handleBack,
       ),
       centerTitle: true,
@@ -387,7 +436,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
           ),
           Text(
-            l10n.weightDetail_headerLine2(_petName.isNotEmpty ? _petName : l10n.pet_defaultName),
+            l10n.weightDetail_headerLine2(
+              _petName.isNotEmpty ? _petName : l10n.pet_defaultName,
+            ),
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontFamily: 'Pretendard',
@@ -428,84 +479,150 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildPeriodToggle() {
     final l10n = AppLocalizations.of(context);
+    const toggleHeight = 33.0;
+    const segmentWidth = 30.0;
+    const segmentHeight = 29.0;
+    const segmentGap = 9.0;
+    const innerWidth = segmentWidth * 2 + segmentGap + 2;
+
     return Padding(
       padding: const EdgeInsets.only(right: 32),
       child: Align(
         alignment: Alignment.centerRight,
         child: Container(
           key: _toggleKey,
-          height: 33,
+          height: toggleHeight,
           padding: const EdgeInsets.all(2),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(100),
             border: Border.all(color: AppColors.brandPrimary, width: 1),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: () => setState(() => _isWeeklyView = true),
-                child: Container(
-                  width: 30,
-                  height: 29,
-                  decoration: BoxDecoration(
-                    color: _isWeeklyView ? AppColors.brandPrimary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Center(
-                    child: Text(
-                      l10n.weightDetail_toggleWeek,
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: _isWeeklyView ? Colors.white : AppColors.mediumGray,
-                        letterSpacing: -0.325,
-                      ),
+          child: SizedBox(
+            width: innerWidth,
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeOutCubic,
+                  left: _isWeeklyView ? 0 : segmentWidth + segmentGap,
+                  top: 0,
+                  child: Container(
+                    width: segmentWidth,
+                    height: segmentHeight,
+                    decoration: BoxDecoration(
+                      color: AppColors.brandPrimary,
+                      borderRadius: BorderRadius.circular(100),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 9),
-              GestureDetector(
-                onTap: () => setState(() => _isWeeklyView = false),
-                child: Container(
-                  width: 30,
-                  height: 29,
-                  decoration: BoxDecoration(
-                    color: !_isWeeklyView ? AppColors.brandPrimary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Center(
-                    child: Text(
-                      l10n.weightDetail_toggleMonth,
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: !_isWeeklyView ? Colors.white : AppColors.mediumGray,
-                        letterSpacing: -0.325,
-                      ),
+                Row(
+                  children: [
+                    _buildToggleOption(
+                      label: l10n.weightDetail_toggleWeek,
+                      isSelected: _isWeeklyView,
+                      width: segmentWidth,
+                      onTap: () => _setChartView(true),
                     ),
-                  ),
+                    const SizedBox(width: segmentGap),
+                    _buildToggleOption(
+                      label: l10n.weightDetail_toggleMonth,
+                      isSelected: !_isWeeklyView,
+                      width: segmentWidth,
+                      onTap: () => _setChartView(false),
+                    ),
+                    const SizedBox(width: 2),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 2),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _buildToggleOption({
+    required String label,
+    required bool isSelected,
+    required double width,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: SizedBox(
+        width: width,
+        height: 29,
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : AppColors.mediumGray,
+              letterSpacing: -0.325,
+            ),
+            child: Text(label),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setChartView(bool isWeeklyView) {
+    if (_isWeeklyView == isWeeklyView) return;
+    setState(() {
+      _isWeeklyView = isWeeklyView;
+    });
+  }
+
   Widget _buildChart() {
-    return SizedBox(
-      key: _chartKey,
-      height: 260,
+    final chartStateKey = _isWeeklyView
+        ? 'weekly-${_startOfWeek(_focusedDate).toIso8601String()}'
+        : 'monthly-$_selectedYear-$_selectedMonth';
+    final chartChild = KeyedSubtree(
+      key: ValueKey(chartStateKey),
       child: _isWeeklyView
           ? _buildWeeklyDaysChart()
           : _buildMonthlyOverviewChart(),
+    );
+
+    return SizedBox(
+      key: _chartKey,
+      height: 260,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        layoutBuilder: (currentChild, previousChildren) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          );
+        },
+        transitionBuilder: (child, animation) {
+          final fadeAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          );
+          final slideAnimation = Tween<Offset>(
+            begin: const Offset(0.05, 0),
+            end: Offset.zero,
+          ).animate(fadeAnimation);
+
+          return FadeTransition(
+            opacity: fadeAnimation,
+            child: SlideTransition(position: slideAnimation, child: child),
+          );
+        },
+        child: chartChild,
+      ),
     );
   }
 
@@ -522,8 +639,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   /// 공통 pill + dashed-line 차트 빌더
   Widget _buildPillChart({
     required List<FlSpot> spots,
-    required int selectedSpotIndex,
-    required double selectedValue,
+    required double selectedX,
+    required double? selectedValue,
     required double minX,
     required double maxX,
     required double minY,
@@ -558,26 +675,52 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final chartWidth = constraints.maxWidth;
+          final selectedSpotIndex = spots.indexWhere(
+            (spot) => (spot.x - selectedX).abs() < 0.001,
+          );
+          final hasSelectedSpot =
+              selectedSpotIndex != -1 && selectedValue != null;
+          Rect? selectedPillRect;
+          double? selectedDotPixelX;
+          double? selectedPillTop;
+          double? selectedDotRelativeY;
 
-          // 선택된 데이터 포인트의 픽셀 좌표 계산 (fl_chart와 동일한 공식)
-          final selectedSpot = spots[selectedSpotIndex];
-          final dotPixelX = _dataXToPixel(selectedSpot.x, minX, maxX, chartWidth);
-          final dotPixelY = _dataYToPixel(selectedSpot.y, minY, maxY, chartAreaHeight);
+          if (hasSelectedSpot) {
+            final selectedSpot = spots[selectedSpotIndex];
+            selectedDotPixelX = _dataXToPixel(
+              selectedSpot.x,
+              minX,
+              maxX,
+              chartWidth,
+            );
+            final dotPixelY = _dataYToPixel(
+              selectedSpot.y,
+              minY,
+              maxY,
+              chartAreaHeight,
+            );
 
-          // pill 위치: dot 중심을 기준으로 pill 배치
-          // dot은 pill 내에서 상단 텍스트(~35px) 아래, 세로 중앙~약간 위에 위치
-          // pill top = dotY - (dot이 pill 상단에서 떨어진 거리)
-          const dotOffsetFromPillTop = pillHeight * 0.55;
-          var pillTop = dotPixelY - dotOffsetFromPillTop;
+            // pill 위치: dot 중심을 기준으로 pill 배치
+            // dot은 pill 내에서 상단 텍스트(~35px) 아래, 세로 중앙~약간 위에 위치
+            // pill top = dotY - (dot이 pill 상단에서 떨어진 거리)
+            const dotOffsetFromPillTop = pillHeight * 0.55;
+            var pillTop = dotPixelY - dotOffsetFromPillTop;
 
-          // pill이 차트 영역을 벗어나지 않도록 클램핑
-          if (pillTop < 0) pillTop = 0;
-          if (pillTop + pillHeight > chartAreaHeight) {
-            pillTop = chartAreaHeight - pillHeight;
+            // pill이 차트 영역을 벗어나지 않도록 클램핑
+            if (pillTop < 0) pillTop = 0;
+            if (pillTop + pillHeight > chartAreaHeight) {
+              pillTop = chartAreaHeight - pillHeight;
+            }
+            selectedPillRect = Rect.fromLTWH(
+              selectedDotPixelX - pillWidth / 2,
+              pillTop,
+              pillWidth,
+              pillHeight,
+            );
+
+            selectedPillTop = pillTop;
+            selectedDotRelativeY = dotPixelY - pillTop;
           }
-
-          // dot의 pill 내부 상대 위치 (pill top 기준)
-          final dotRelativeY = dotPixelY - pillTop;
 
           return SizedBox(
             height: totalHeight,
@@ -585,66 +728,70 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               clipBehavior: Clip.none,
               children: [
                 // 1) 오렌지 pill 배경
-                Positioned(
-                  left: dotPixelX - pillWidth / 2,
-                  top: pillTop,
-                  child: SizedBox(
-                    width: pillWidth,
-                    height: pillHeight,
-                    child: Stack(
-                      children: [
-                        // pill 배경
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(22),
-                              gradient: const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                if (hasSelectedSpot)
+                  Positioned(
+                    left: selectedDotPixelX! - pillWidth / 2,
+                    top: selectedPillTop!,
+                    child: SizedBox(
+                      width: pillWidth,
+                      height: pillHeight,
+                      child: Stack(
+                        children: [
+                          // pill 배경
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(22),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0xFFFF9A42),
+                                    Color(0xFFFF7C2A),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        // 값 텍스트 (pill 상단)
-                        Positioned(
-                          top: 14,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Text(
-                              '${selectedValue.toStringAsFixed(1)} g',
-                              style: const TextStyle(
-                                fontFamily: 'Pretendard',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                          // 값 텍스트 (pill 상단)
+                          Positioned(
+                            top: 14,
+                            left: 0,
+                            right: 0,
+                            child: Center(
+                              child: Text(
+                                '${selectedValue.toStringAsFixed(1)} g',
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ),
+                          ),
+                          // 도트 (데이터 포인트와 정확히 일치하는 Y 위치)
+                          Positioned(
+                            top: selectedDotRelativeY! - dotSize / 2,
+                            left: (pillWidth - dotSize) / 2,
+                            child: Container(
+                              width: dotSize,
+                              height: dotSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
                                 color: Colors.white,
-                                letterSpacing: -0.3,
+                                border: Border.all(
+                                  color: AppColors.brandPrimary,
+                                  width: 3,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        // 도트 (데이터 포인트와 정확히 일치하는 Y 위치)
-                        Positioned(
-                          top: dotRelativeY - dotSize / 2,
-                          left: (pillWidth - dotSize) / 2,
-                          child: Container(
-                            width: dotSize,
-                            height: dotSize,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              border: Border.all(
-                                color: AppColors.brandPrimary,
-                                width: 3,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
                 // 2) 라인 차트 (점선 + 도트)
                 Positioned(
                   left: 0,
@@ -653,107 +800,63 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   bottom: labelHeight,
                   child: RepaintBoundary(
                     child: LineChart(
-                    LineChartData(
-                      minX: minX,
-                      maxX: maxX,
-                      minY: minY,
-                      maxY: maxY,
-                      clipData: const FlClipData.none(),
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: spots,
-                          isCurved: true,
-                          curveSmoothness: 0.4,
-                          color: const Color(0xFFFF9A42),
-                          barWidth: 2.5,
-                          isStrokeCapRound: true,
-                          dotData: FlDotData(
-                            show: true,
-                            getDotPainter: (spot, percent, barData, index) {
-                              if (index == selectedSpotIndex) {
+                      LineChartData(
+                        minX: minX,
+                        maxX: maxX,
+                        minY: minY,
+                        maxY: maxY,
+                        clipData: const FlClipData.none(),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: spots,
+                            isCurved: true,
+                            curveSmoothness: 0.4,
+                            color: const Color(0xFFBBBBBB),
+                            barWidth: 2,
+                            isStrokeCapRound: true,
+                            dashArray: [6, 4],
+                            dotData: FlDotData(
+                              show: true,
+                              getDotPainter: (spot, percent, barData, index) {
+                                if (hasSelectedSpot &&
+                                    index == selectedSpotIndex) {
+                                  return FlDotCirclePainter(
+                                    radius: 0,
+                                    color: Colors.transparent,
+                                    strokeWidth: 0,
+                                    strokeColor: Colors.transparent,
+                                  );
+                                }
                                 return FlDotCirclePainter(
-                                  radius: 0,
-                                  color: Colors.transparent,
+                                  radius: 4,
+                                  color: const Color(0xFFBBBBBB),
                                   strokeWidth: 0,
-                                  strokeColor: Colors.transparent,
                                 );
-                              }
-                              return FlDotCirclePainter(
-                                radius: 4,
-                                color: const Color(0xFFFF9A42),
-                                strokeWidth: 2,
-                                strokeColor: Colors.white,
-                              );
-                            },
-                          ),
-                          belowBarData: BarAreaData(
-                            show: true,
-                            gradient: const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color(0x40FF9A42),
-                                Color(0x05FF9A42),
-                              ],
+                              },
                             ),
+                            belowBarData: BarAreaData(show: false),
                           ),
-                        ),
-                      ],
-                      titlesData: const FlTitlesData(show: false),
-                      gridData: const FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      lineTouchData: const LineTouchData(enabled: false),
+                        ],
+                        titlesData: const FlTitlesData(show: false),
+                        gridData: const FlGridData(show: false),
+                        borderData: FlBorderData(show: false),
+                        lineTouchData: const LineTouchData(enabled: false),
+                      ),
                     ),
                   ),
-                  ),
                 ),
-                // 3) 데이터 포인트 수치 라벨 (선택된 포인트 제외 - pill이 이미 표시)
-                ...() {
-                  const double labelW = 60;
-                  const double labelH = 22;
-                  const double minGap = 50;
-                  // 겹침 방지: 표시할 라벨의 X 좌표 추적
-                  final List<double> visibleXs = [];
-                  return List.generate(spots.length, (index) {
-                    if (index == selectedSpotIndex) {
-                      return const SizedBox.shrink();
-                    }
-                    final spot = spots[index];
-                    final labelX =
-                        _dataXToPixel(spot.x, minX, maxX, chartWidth);
-                    final labelY = _dataYToPixel(
-                        spot.y, minY, maxY, chartAreaHeight);
-                    // 인접 라벨과 간격 체크 — 너무 가까우면 숨김
-                    final tooClose = visibleXs.any(
-                        (vx) => (vx - labelX).abs() < minGap);
-                    if (tooClose) return const SizedBox.shrink();
-                    visibleXs.add(labelX);
-                    // 경계 클램프
-                    final clampedLeft = (labelX - labelW / 2)
-                        .clamp(0.0, chartWidth - labelW);
-                    final clampedTop =
-                        (labelY - labelH).clamp(0.0, chartAreaHeight - labelH);
-                    return Positioned(
-                      left: clampedLeft,
-                      top: clampedTop,
-                      child: SizedBox(
-                        width: labelW,
-                        child: Center(
-                          child: Text(
-                            '${spot.y.toStringAsFixed(1)} g',
-                            style: const TextStyle(
-                              fontFamily: 'Pretendard',
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF999999),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  });
-                }(),
-                // 4) 라벨 (하단)
+                ..._buildUnselectedValueLabels(
+                  spots: spots,
+                  selectedSpotIndex: hasSelectedSpot ? selectedSpotIndex : null,
+                  minX: minX,
+                  maxX: maxX,
+                  minY: minY,
+                  maxY: maxY,
+                  chartWidth: chartWidth,
+                  chartHeight: chartAreaHeight,
+                  selectedPillRect: selectedPillRect,
+                ),
+                // 3) 라벨 (하단)
                 Positioned(
                   left: 0,
                   right: 0,
@@ -762,7 +865,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   child: Stack(
                     children: List.generate(totalLabels, (index) {
                       final labelCenterX = _dataXToPixel(
-                        index.toDouble(), minX, maxX, chartWidth,
+                        index.toDouble(),
+                        minX,
+                        maxX,
+                        chartWidth,
                       );
                       final isSelected = index == selectedLabelIdx;
                       return Positioned(
@@ -777,7 +883,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                               style: TextStyle(
                                 fontFamily: 'Pretendard',
                                 fontSize: 13,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
                                 color: isSelected
                                     ? AppColors.brandPrimary
                                     : AppColors.mediumGray,
@@ -798,21 +906,116 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 
+  List<Widget> _buildUnselectedValueLabels({
+    required List<FlSpot> spots,
+    required int? selectedSpotIndex,
+    required double minX,
+    required double maxX,
+    required double minY,
+    required double maxY,
+    required double chartWidth,
+    required double chartHeight,
+    required Rect? selectedPillRect,
+  }) {
+    if (spots.isEmpty) return const [];
+
+    const labelWidth = 44.0;
+    const labelHeight = 18.0;
+    const labelGap = 10.0;
+    final widgets = <Widget>[];
+
+    for (int index = 0; index < spots.length; index++) {
+      if (selectedSpotIndex != null && index == selectedSpotIndex) continue;
+
+      final spot = spots[index];
+      final dotPixelX = _dataXToPixel(spot.x, minX, maxX, chartWidth);
+      final dotPixelY = _dataYToPixel(spot.y, minY, maxY, chartHeight);
+
+      double labelLeft = dotPixelX - (labelWidth / 2);
+      labelLeft = labelLeft.clamp(0.0, chartWidth - labelWidth);
+
+      double labelTop = dotPixelY - labelHeight - labelGap;
+      if (labelTop < 0) {
+        labelTop = dotPixelY + labelGap;
+      }
+      if (labelTop + labelHeight > chartHeight) {
+        labelTop = chartHeight - labelHeight;
+      }
+
+      Rect labelRect = Rect.fromLTWH(
+        labelLeft,
+        labelTop,
+        labelWidth,
+        labelHeight,
+      );
+      if (selectedPillRect != null &&
+          labelRect.overlaps(selectedPillRect.inflate(8))) {
+        final belowDotTop = dotPixelY + labelGap;
+        final abovePillTop = selectedPillRect.top - labelHeight - labelGap;
+
+        if (belowDotTop + labelHeight <= chartHeight) {
+          labelTop = belowDotTop;
+        } else if (abovePillTop >= 0) {
+          labelTop = abovePillTop;
+        } else {
+          continue;
+        }
+
+        labelRect = Rect.fromLTWH(labelLeft, labelTop, labelWidth, labelHeight);
+        if (labelRect.overlaps(selectedPillRect.inflate(8))) {
+          continue;
+        }
+      }
+
+      widgets.add(
+        Positioned(
+          left: labelLeft,
+          top: labelTop,
+          child: IgnorePointer(
+            child: Container(
+              width: labelWidth,
+              height: labelHeight,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Text(
+                '${spot.y.toStringAsFixed(1)}g',
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
   Widget _buildMonthlyOverviewChart() {
     final months = _generateDisplayMonths();
     final monthlyAverages = _calculateMonthlyAverages();
     final spots = _getChartSpots(months, monthlyAverages);
 
-    final selectedSpotIndex = spots.isNotEmpty ? spots.length - 1 : 0;
-    final selectedMonthIdx = spots.isNotEmpty ? spots.last.x.toInt() : (months.length - 1);
-    final selectedValue = spots.isNotEmpty ? spots.last.y : 0.0;
+    final selectedMonth = DateTime(_selectedYear, _selectedMonth);
+    final selectedMonthIdx = months.length - 1;
+    final selectedValue = monthlyAverages[selectedMonth];
 
     final l10n = AppLocalizations.of(context);
-    final labels = months.map((m) => l10n.weightDetail_monthChartLabel(m.month)).toList();
+    final labels = months
+        .map((m) => l10n.weightDetail_monthChartLabel(m.month))
+        .toList();
 
     return _buildPillChart(
       spots: spots,
-      selectedSpotIndex: selectedSpotIndex,
+      selectedX: selectedMonthIdx.toDouble(),
       selectedValue: selectedValue,
       minX: -0.5,
       maxX: 5.5,
@@ -826,20 +1029,28 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildWeeklyDaysChart() {
     final l10n = AppLocalizations.of(context);
-    final weekdays = [l10n.datetime_weekday_sun, l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat];
+    final weekdays = [
+      l10n.datetime_weekday_sun,
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+    ];
     final weeklyData = _calculateWeeklyData();
-    final spots = weeklyData.entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value))
-        .toList()
-      ..sort((a, b) => a.x.compareTo(b.x));
+    final spots =
+        weeklyData.entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value))
+            .toList()
+          ..sort((a, b) => a.x.compareTo(b.x));
 
-    final selectedSpotIndex = spots.isNotEmpty ? spots.length - 1 : 0;
-    final selectedDayIdx = spots.isNotEmpty ? spots.last.x.toInt() : 0;
-    final selectedValue = spots.isNotEmpty ? spots.last.y : 0.0;
+    final selectedDayIdx = _focusedDate.weekday % 7;
+    final selectedValue = weeklyData[selectedDayIdx];
 
     return _buildPillChart(
       spots: spots,
-      selectedSpotIndex: selectedSpotIndex,
+      selectedX: selectedDayIdx.toDouble(),
       selectedValue: selectedValue,
       minX: -0.5,
       maxX: 6.5,
@@ -852,9 +1063,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   List<DateTime> _generateDisplayMonths() {
-    final now = DateTime.now();
+    final selectedMonth = DateTime(_selectedYear, _selectedMonth);
     return List.generate(6, (index) {
-      return DateTime(now.year, now.month - 5 + index);
+      return DateTime(selectedMonth.year, selectedMonth.month - 5 + index);
     });
   }
 
@@ -881,18 +1092,19 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   Map<int, double> _calculateWeeklyData() {
+    final startOfWeek = _startOfWeek(_focusedDate);
+
     // Return cached result if available
-    if (_cachedWeeklyData != null) {
+    if (_cachedWeeklyData != null && _cachedWeeklyStart == startOfWeek) {
       return _cachedWeeklyData!;
     }
 
     final Map<int, List<double>> weeklyData = {};
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final startOfWeek = today.subtract(Duration(days: today.weekday % 7));
 
     for (final record in _weightRecords) {
-      final daysDiff = record.date.difference(startOfWeek).inDays;
+      final daysDiff = _normalizeDate(
+        record.date,
+      ).difference(startOfWeek).inDays;
       if (daysDiff >= 0 && daysDiff < 7) {
         weeklyData.putIfAbsent(daysDiff, () => []);
         weeklyData[daysDiff]!.add(record.weight);
@@ -902,16 +1114,21 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     final Map<int, double> averages = {};
     for (int i = 0; i < 7; i++) {
       if (weeklyData.containsKey(i)) {
-        averages[i] = weeklyData[i]!.reduce((a, b) => a + b) / weeklyData[i]!.length;
+        averages[i] =
+            weeklyData[i]!.reduce((a, b) => a + b) / weeklyData[i]!.length;
       }
     }
 
     // Cache the result
     _cachedWeeklyData = averages;
+    _cachedWeeklyStart = startOfWeek;
     return averages;
   }
 
-  List<FlSpot> _getChartSpots(List<DateTime> months, Map<DateTime, double> averages) {
+  List<FlSpot> _getChartSpots(
+    List<DateTime> months,
+    Map<DateTime, double> averages,
+  ) {
     final spots = <FlSpot>[];
     for (int i = 0; i < months.length; i++) {
       final value = averages[months[i]];
@@ -996,11 +1213,17 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         children: [
           GestureDetector(
             onTap: _previousMonth,
-            child: const Icon(Icons.chevron_left, size: 20, color: AppColors.nearBlack),
+            child: const Icon(
+              Icons.chevron_left,
+              size: 20,
+              color: AppColors.nearBlack,
+            ),
           ),
           const SizedBox(width: 10),
           Text(
-            AppLocalizations.of(context).weightDetail_yearMonth(_selectedYear, _selectedMonth),
+            AppLocalizations.of(
+              context,
+            ).weightDetail_yearMonth(_selectedYear, _selectedMonth),
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -1012,7 +1235,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           const SizedBox(width: 10),
           GestureDetector(
             onTap: _nextMonth,
-            child: const Icon(Icons.chevron_right, size: 20, color: AppColors.nearBlack),
+            child: const Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: AppColors.nearBlack,
+            ),
           ),
         ],
       ),
@@ -1020,32 +1247,24 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   void _previousMonth() {
-    setState(() {
-      if (_selectedMonth == 1) {
-        _selectedMonth = 12;
-        _selectedYear--;
-      } else {
-        _selectedMonth--;
-      }
-    });
-    _loadScheduleData();
+    _changeFocusedMonth(-1);
   }
 
   void _nextMonth() {
-    setState(() {
-      if (_selectedMonth == 12) {
-        _selectedMonth = 1;
-        _selectedYear++;
-      } else {
-        _selectedMonth++;
-      }
-    });
-    _loadScheduleData();
+    _changeFocusedMonth(1);
   }
 
   Widget _buildCalendarWeekdays() {
     final l10n = AppLocalizations.of(context);
-    final weekdays = [l10n.datetime_weekday_sun, l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat];
+    final weekdays = [
+      l10n.datetime_weekday_sun,
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+    ];
     return Row(
       children: weekdays.map((day) {
         return Expanded(
@@ -1091,17 +1310,22 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     // Add days of current month
     for (int day = 1; day <= daysInMonth; day++) {
       final hasRecord = _hasRecordOnDay(day);
-      final isSelected = day == _selectedDay &&
+      final isSelected = day == _selectedDay;
+      final isToday =
+          day == DateTime.now().day &&
           _selectedYear == DateTime.now().year &&
           _selectedMonth == DateTime.now().month;
       final isSunday = (startWeekday + day - 1) % 7 == 0;
 
-      currentRow.add(_buildDayCell(
-        day,
-        hasRecord: hasRecord,
-        isSelected: isSelected,
-        isSunday: isSunday,
-      ));
+      currentRow.add(
+        _buildDayCell(
+          day,
+          hasRecord: hasRecord,
+          isSelected: isSelected,
+          isToday: isToday,
+          isSunday: isSunday,
+        ),
+      );
 
       if (currentRow.length == 7) {
         rows.add(Row(children: List.from(currentRow)));
@@ -1122,24 +1346,27 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   }
 
   bool _hasRecordOnDay(int day) {
-    return _weightRecords.any((record) =>
-        record.date.day == day &&
-        record.date.month == _selectedMonth &&
-        record.date.year == _selectedYear);
+    return _weightRecords.any(
+      (record) =>
+          record.date.day == day &&
+          record.date.month == _selectedMonth &&
+          record.date.year == _selectedYear,
+    );
   }
 
   Widget _buildDayCell(
     int day, {
     bool hasRecord = false,
     bool isSelected = false,
+    bool isToday = false,
     bool isOtherMonth = false,
     bool isSunday = false,
   }) {
+    final selectedDate = DateTime(_selectedYear, _selectedMonth, day);
+
     return Expanded(
       child: GestureDetector(
-        onTap: isOtherMonth
-            ? null
-            : () => _onDayTap(day),
+        onTap: isOtherMonth ? null : () => _setFocusedDate(selectedDate),
         child: SizedBox(
           height: 44,
           child: Stack(
@@ -1151,6 +1378,17 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   height: 30,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF0F0F0),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+              if (isToday && !isSelected)
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.24),
+                    ),
                     borderRadius: BorderRadius.circular(100),
                   ),
                 ),
@@ -1172,10 +1410,12 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   color: isSelected
                       ? Colors.white
                       : isOtherMonth
-                          ? const Color(0xFF97928A)
-                          : isSunday
-                              ? const Color(0xFFEE3300)
-                              : AppColors.nearBlack,
+                      ? const Color(0xFF97928A)
+                      : isToday
+                      ? AppColors.brandPrimary
+                      : isSunday
+                      ? const Color(0xFFEE3300)
+                      : AppColors.nearBlack,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -1186,8 +1426,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 
-  void _onDayTap(int day) async {
-    final selectedDate = DateTime(_selectedYear, _selectedMonth, day);
+  Future<void> _openScheduleBottomSheetFor(DateTime selectedDate) async {
+    _setFocusedDate(selectedDate);
     final result = await showAddScheduleBottomSheet(
       context: context,
       initialDate: selectedDate,
@@ -1293,17 +1533,31 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ...sortedDates.map((date) => _buildScheduleDateGroup(date, groupedSchedules[date]!)),
+          ...sortedDates.map(
+            (date) => _buildScheduleDateGroup(date, groupedSchedules[date]!),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildScheduleDateGroup(DateTime date, List<ScheduleRecord> schedules) {
+  Widget _buildScheduleDateGroup(
+    DateTime date,
+    List<ScheduleRecord> schedules,
+  ) {
     final l10n = AppLocalizations.of(context);
-    final weekdays = [l10n.datetime_weekday_mon, l10n.datetime_weekday_tue, l10n.datetime_weekday_wed, l10n.datetime_weekday_thu, l10n.datetime_weekday_fri, l10n.datetime_weekday_sat, l10n.datetime_weekday_sun];
+    final weekdays = [
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+      l10n.datetime_weekday_sun,
+    ];
     final weekday = weekdays[(date.weekday - 1) % 7];
-    final isToday = date.year == DateTime.now().year &&
+    final isToday =
+        date.year == DateTime.now().year &&
         date.month == DateTime.now().month &&
         date.day == DateTime.now().day;
 
@@ -1327,7 +1581,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               if (isToday) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.brandPrimary,
                     borderRadius: BorderRadius.circular(10),
@@ -1390,88 +1647,88 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       ),
       onDismissed: (_) => _deleteSchedule(schedule),
       child: Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE8E8E8)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 40,
-            decoration: BoxDecoration(
-              color: schedule.color,
-              borderRadius: BorderRadius.circular(2),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE8E8E8)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  schedule.title,
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.nearBlack,
-                    letterSpacing: -0.35,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  schedule.formattedTimeRange,
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 12,
-                    color: AppColors.mediumGray,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (schedule.reminderMinutes != null)
+          ],
+        ),
+        child: Row(
+          children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              width: 4,
+              height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(8),
+                color: schedule.color,
+                borderRadius: BorderRadius.circular(2),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.notifications_outlined,
-                    size: 14,
-                    color: AppColors.mediumGray,
-                  ),
-                  const SizedBox(width: 4),
                   Text(
-                    l10n.schedule_reminderMinutes(schedule.reminderMinutes!),
+                    schedule.title,
                     style: const TextStyle(
                       fontFamily: 'Pretendard',
-                      fontSize: 11,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.nearBlack,
+                      letterSpacing: -0.35,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    schedule.formattedTimeRange,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
                       color: AppColors.mediumGray,
+                      letterSpacing: -0.3,
                     ),
                   ),
                 ],
               ),
             ),
-        ],
+            if (schedule.reminderMinutes != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.notifications_outlined,
+                      size: 14,
+                      color: AppColors.mediumGray,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      l10n.schedule_reminderMinutes(schedule.reminderMinutes!),
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 11,
+                        color: AppColors.mediumGray,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -1494,7 +1751,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 color: isSelected ? AppColors.brandPrimary : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? AppColors.brandPrimary : const Color(0xFFE0E0E0),
+                  color: isSelected
+                      ? AppColors.brandPrimary
+                      : const Color(0xFFE0E0E0),
                 ),
               ),
               child: Center(
@@ -1529,10 +1788,15 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildWeightRecordsList() {
     final l10n = AppLocalizations.of(context);
-    final monthRecords = _weightRecords.where((record) =>
-        record.date.year == _selectedYear &&
-        record.date.month == _selectedMonth).toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+    final monthRecords =
+        _weightRecords
+            .where(
+              (record) =>
+                  record.date.year == _selectedYear &&
+                  record.date.month == _selectedMonth,
+            )
+            .toList()
+          ..sort((a, b) => b.date.compareTo(a.date));
 
     if (monthRecords.isEmpty) {
       return Padding(
@@ -1631,7 +1895,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   : l10n.weight_timeNotRecorded;
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -1682,7 +1949,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               );
             } else {
               // 다중 기록: 헤더(평균) + 하위 항목
-              final avgWeight = records.map((r) => r.weight).reduce((a, b) => a + b) / records.length;
+              final avgWeight =
+                  records.map((r) => r.weight).reduce((a, b) => a + b) /
+                  records.length;
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
@@ -1695,7 +1964,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   children: [
                     // 헤더: 날짜 + 평균 + 횟수
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       child: Row(
                         children: [
                           Expanded(
@@ -1768,7 +2040,12 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                           : l10n.weight_timeNotRecorded;
                       final isLast = record == records.last;
                       return Padding(
-                        padding: EdgeInsets.fromLTRB(32, 10, 16, isLast ? 12 : 6),
+                        padding: EdgeInsets.fromLTRB(
+                          32,
+                          10,
+                          16,
+                          isLast ? 12 : 6,
+                        ),
                         child: Row(
                           children: [
                             Text(
@@ -1853,23 +2130,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
         child: GestureDetector(
-          onTap: () async {
-            final result = await showAddScheduleBottomSheet(
-              context: context,
-              initialDate: DateTime.now(),
-              petId: _activePetId,
-            );
-            if (result != null) {
-              try {
-                await _scheduleService.createSchedule(result);
-                await _loadScheduleData();
-              } catch (e) {
-                if (mounted) {
-                  AppSnackBar.error(context, message: l10n.schedule_saveError);
-                }
-              }
-            }
-          },
+          onTap: () => _openScheduleBottomSheetFor(_focusedDate),
           child: Container(
             height: 60,
             decoration: BoxDecoration(
@@ -1913,4 +2174,3 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     );
   }
 }
-

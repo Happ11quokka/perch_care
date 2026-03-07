@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../api/api_client.dart';
+
 /// 건강체크 결과 로컬 저장용 레코드 모델
 class HealthCheckRecord {
   final String id;
@@ -182,6 +184,42 @@ class HealthCheckStorageService {
       }
     } catch (e) {
       debugPrint('[HealthCheckStorage] 전체 삭제 실패: $e');
+    }
+  }
+
+  /// 서버에서 건강체크 기록 가져오기
+  Future<List<HealthCheckRecord>> fetchFromServer(String petId) async {
+    try {
+      final data = await ApiClient.instance.get('/pets/$petId/health-checks/');
+      final list = data as List<dynamic>;
+      return list.map((item) {
+        final json = item as Map<String, dynamic>;
+        return HealthCheckRecord(
+          id: json['id'] as String,
+          petId: json['pet_id'] as String?,
+          mode: json['check_type'] as String,
+          result: json['result'] as Map<String, dynamic>,
+          confidenceScore: (json['confidence_score'] as num?)?.toDouble(),
+          status: json['status'] as String? ?? 'normal',
+          checkedAt: DateTime.parse(json['checked_at'] as String),
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('[HealthCheckStorage] 서버 조회 실패: $e');
+      rethrow;
+    }
+  }
+
+  /// 서버 데이터로 로컬 캐시 갱신
+  Future<void> syncWithServer(String petId) async {
+    final serverRecords = await fetchFromServer(petId);
+    final prefs = await _getPrefs();
+    final key = _getKey(petId);
+    if (serverRecords.isEmpty) {
+      await prefs.remove(key);
+    } else {
+      final jsonList = serverRecords.map((r) => r.toJson()).toList();
+      await prefs.setString(key, json.encode(jsonList));
     }
   }
 }
