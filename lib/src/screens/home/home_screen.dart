@@ -8,10 +8,15 @@ import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
 import '../../services/bhi/bhi_service.dart';
+import '../../services/premium/premium_service.dart';
+import '../../services/api/api_client.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../widgets/local_image_avatar.dart';
+import '../../widgets/health_summary_card.dart';
 import '../../models/pet.dart';
 import '../../models/bhi_result.dart';
+import '../../models/health_summary.dart';
+import '../../models/pet_insight.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
@@ -46,6 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
   int _wciLevel = 0;
   bool _isBhiLoading = false; // 기간 변경 시 BHI 로딩 상태
   String? _lastUpdateText; // WCI 카드 타임스탬프 표시 텍스트
+
+  // 건강 요약 + 인사이트 (Phase 3-3, 3-4)
+  HealthSummary? _healthSummary;
+  PetInsight? _latestInsight;
+  bool _isPremium = false;
 
   // 코치마크 타겟 키
   final _wciCardKey = GlobalKey();
@@ -333,6 +343,49 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       debugPrint('[HomeScreen] BHI 로드 실패: $e');
     }
+
+    // 건강 요약 + 인사이트 병렬 로드
+    _loadHealthSummaryAndInsights(petId);
+  }
+
+  Future<void> _loadHealthSummaryAndInsights(String petId) async {
+    final api = ApiClient.instance;
+
+    // Premium 상태 + 건강 요약 병렬 호출
+    try {
+      final results = await Future.wait([
+        PremiumService.instance.getTier(),
+        api.get('/pets/$petId/health-summary'),
+      ]);
+
+      if (!mounted) return;
+      final status = results[0] as PremiumStatus;
+      final summaryJson = results[1] as Map<String, dynamic>;
+      final summary = HealthSummary.fromJson(summaryJson);
+
+      // Premium이면 인사이트도 로드
+      PetInsight? insight;
+      if (status.isPremium) {
+        try {
+          final insightJson = await api.get('/pets/$petId/insights?type=weekly');
+          if (insightJson != null) {
+            insight = PetInsight.fromJson(insightJson as Map<String, dynamic>);
+          }
+        } catch (e) {
+          debugPrint('[HomeScreen] 인사이트 로드 실패: $e');
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _isPremium = status.isPremium;
+          _healthSummary = summary;
+          _latestInsight = insight;
+        });
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] 건강 요약 로드 실패: $e');
+    }
   }
 
   @override
@@ -362,6 +415,23 @@ class _HomeScreenState extends State<HomeScreen> {
                               // AI 건강체크 배너
                               _buildAiHealthCheckBanner(),
                               const SizedBox(height: 12),
+                              // 건강 변화 요약 카드 (Phase 3-3)
+                              if (_healthSummary != null)
+                                HealthSummaryCard(
+                                  summary: _healthSummary!,
+                                  isPremium: _isPremium,
+                                  onUpgradePressed: () {
+                                    context.pushNamed(RouteNames.premium).then((_) {
+                                      if (_activePet != null) {
+                                        _loadHealthSummaryAndInsights(_activePet!.id);
+                                      }
+                                    });
+                                  },
+                                ),
+                              if (_healthSummary != null)
+                                const SizedBox(height: 12),
+                              // 주간 인사이트 (Phase 3-4)
+                              _buildInsightsSection(),
                               // 하단 4개 카드
                               _buildBottomCards(),
                               const SizedBox(height: 24),
@@ -975,6 +1045,145 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildInsightsSection() {
+    final l10n = AppLocalizations.of(context);
+
+    // Premium 사용자 + 인사이트 있음
+    if (_isPremium && _latestInsight != null) {
+      return Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(17),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.lightbulb_outline, size: 18, color: Color(0xFFFF9A42)),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.home_insightsTitle,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _latestInsight!.summary,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF6B6B6B),
+                    height: 1.5,
+                  ),
+                ),
+                if (_latestInsight!.recommendations.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.home_insightsRecommendations,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  ...(_latestInsight!.recommendations.take(3).map((rec) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('• ', style: TextStyle(fontSize: 14, color: Color(0xFF6B6B6B))),
+                        Expanded(
+                          child: Text(
+                            rec,
+                            style: const TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF6B6B6B),
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ))),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      );
+    }
+
+    // Free 사용자 — 티저 카드
+    if (!_isPremium && _activePet != null) {
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              context.pushNamed(RouteNames.premium).then((_) {
+                if (_activePet != null) {
+                  _loadHealthSummaryAndInsights(_activePet!.id);
+                }
+              });
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(17),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment(-0.7, -0.7),
+                  end: Alignment(0.7, 0.7),
+                  colors: [Colors.white, Color(0xFFFFF5ED)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFFE0C0), width: 1),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.lock_outline, size: 20, color: Color(0xFFFF9A42)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.home_insightsUpgrade,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF6B6B6B),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, size: 20, color: Color(0xFF97928A)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildBottomCards() {

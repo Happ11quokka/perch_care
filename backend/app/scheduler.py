@@ -31,7 +31,7 @@ def start_scheduler():
         replace_existing=True,
     )
     scheduler.start()
-    logger.info("Scheduler started with daily image cleanup job at 03:00 UTC")
+    logger.info("Scheduler started with daily image cleanup (03:00 UTC)")
 
 
 def stop_scheduler():

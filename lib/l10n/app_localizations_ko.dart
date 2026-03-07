@@ -1980,4 +1980,34 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get report_vetShareButton => '요약 링크 공유하기';
+
+  @override
+  String get home_healthSummaryTitle => '건강 변화 요약';
+
+  @override
+  String get home_healthSummaryWeightChange => '체중 변화';
+
+  @override
+  String get home_healthSummaryAbnormal => '이상 소견 (30일)';
+
+  @override
+  String get home_healthSummaryFoodConsistency => '급여 일관성';
+
+  @override
+  String get home_healthSummaryWaterConsistency => '음수 일관성';
+
+  @override
+  String get home_healthSummaryUpgrade => 'Premium 업그레이드';
+
+  @override
+  String get home_insightsTitle => '이번 주 인사이트';
+
+  @override
+  String get home_insightsEmpty => '아직 인사이트가 없습니다';
+
+  @override
+  String get home_insightsRecommendations => '추천 사항';
+
+  @override
+  String get home_insightsUpgrade => 'Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요';
 }

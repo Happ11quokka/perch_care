@@ -1947,4 +1947,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get report_vetShareButton => '分享摘要链接';
+
+  @override
+  String get home_healthSummaryTitle => '健康变化摘要';
+
+  @override
+  String get home_healthSummaryWeightChange => '体重变化';
+
+  @override
+  String get home_healthSummaryAbnormal => '异常发现 (30天)';
+
+  @override
+  String get home_healthSummaryFoodConsistency => '喂食一致性';
+
+  @override
+  String get home_healthSummaryWaterConsistency => '饮水一致性';
+
+  @override
+  String get home_healthSummaryUpgrade => '升级至Premium';
+
+  @override
+  String get home_insightsTitle => '本周洞察';
+
+  @override
+  String get home_insightsEmpty => '暂无洞察';
+
+  @override
+  String get home_insightsRecommendations => '建议事项';
+
+  @override
+  String get home_insightsUpgrade => '升级至Premium\n即可获取每周健康洞察';
 }

@@ -2040,4 +2040,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get report_vetShareButton => 'Share Summary Link';
+
+  @override
+  String get home_healthSummaryTitle => 'Health Change Summary';
+
+  @override
+  String get home_healthSummaryWeightChange => 'Weight Change';
+
+  @override
+  String get home_healthSummaryAbnormal => 'Abnormal Findings (30d)';
+
+  @override
+  String get home_healthSummaryFoodConsistency => 'Feeding Consistency';
+
+  @override
+  String get home_healthSummaryWaterConsistency => 'Water Consistency';
+
+  @override
+  String get home_healthSummaryUpgrade => 'Upgrade to Premium';
+
+  @override
+  String get home_insightsTitle => 'Weekly Insights';
+
+  @override
+  String get home_insightsEmpty => 'No insights yet';
+
+  @override
+  String get home_insightsRecommendations => 'Recommendations';
+
+  @override
+  String get home_insightsUpgrade =>
+      'Upgrade to Premium to receive\nweekly health insights';
 }

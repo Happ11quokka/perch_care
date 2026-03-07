@@ -16,8 +16,9 @@ from app.models.premium_code import PremiumCode
 from app.models.ai_vision_log import AiVisionLog
 from app.models.ai_chat_session import AiChatSession
 from app.models.ai_chat_message import AiChatMessage
+from app.models.pet_insight import PetInsight
 
 # KnowledgeChunk uses separate VectorBase — NOT registered in main Base.metadata
 # Import it directly where needed: from app.models.knowledge_chunk import KnowledgeChunk
 
-__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "FoodRecord", "WaterRecord", "AiHealthCheck", "Schedule", "Notification", "SocialAccount", "AiEncyclopediaLog", "DeviceToken", "UserTier", "PremiumCode", "AiVisionLog", "AiChatSession", "AiChatMessage"]
+__all__ = ["Base", "User", "Pet", "WeightRecord", "DailyRecord", "FoodRecord", "WaterRecord", "AiHealthCheck", "Schedule", "Notification", "SocialAccount", "AiEncyclopediaLog", "DeviceToken", "UserTier", "PremiumCode", "AiVisionLog", "AiChatSession", "AiChatMessage", "PetInsight"]

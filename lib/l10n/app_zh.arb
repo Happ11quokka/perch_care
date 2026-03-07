@@ -926,5 +926,16 @@
   "report_vetFeatureWeight": "体重变化趋势",
   "report_vetFeatureChecks": "AI健康检查结果摘要",
   "report_vetFeatureNotes": "行为记录与日常观察",
-  "report_vetShareButton": "分享摘要链接"
+  "report_vetShareButton": "分享摘要链接",
+
+  "home_healthSummaryTitle": "健康变化摘要",
+  "home_healthSummaryWeightChange": "体重变化",
+  "home_healthSummaryAbnormal": "异常发现 (30天)",
+  "home_healthSummaryFoodConsistency": "喂食一致性",
+  "home_healthSummaryWaterConsistency": "饮水一致性",
+  "home_healthSummaryUpgrade": "升级至Premium",
+  "home_insightsTitle": "本周洞察",
+  "home_insightsEmpty": "暂无洞察",
+  "home_insightsRecommendations": "建议事项",
+  "home_insightsUpgrade": "升级至Premium\n即可获取每周健康洞察"
 }

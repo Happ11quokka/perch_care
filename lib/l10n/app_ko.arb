@@ -957,5 +957,16 @@
   "report_vetFeatureWeight": "체중 변화 추이",
   "report_vetFeatureChecks": "AI 건강 체크 결과 요약",
   "report_vetFeatureNotes": "행동 메모 및 일상 기록",
-  "report_vetShareButton": "요약 링크 공유하기"
+  "report_vetShareButton": "요약 링크 공유하기",
+
+  "home_healthSummaryTitle": "건강 변화 요약",
+  "home_healthSummaryWeightChange": "체중 변화",
+  "home_healthSummaryAbnormal": "이상 소견 (30일)",
+  "home_healthSummaryFoodConsistency": "급여 일관성",
+  "home_healthSummaryWaterConsistency": "음수 일관성",
+  "home_healthSummaryUpgrade": "Premium 업그레이드",
+  "home_insightsTitle": "이번 주 인사이트",
+  "home_insightsEmpty": "아직 인사이트가 없습니다",
+  "home_insightsRecommendations": "추천 사항",
+  "home_insightsUpgrade": "Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요"
 }

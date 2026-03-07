@@ -3753,6 +3753,66 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'요약 링크 공유하기'**
   String get report_vetShareButton;
+
+  /// No description provided for @home_healthSummaryTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'건강 변화 요약'**
+  String get home_healthSummaryTitle;
+
+  /// No description provided for @home_healthSummaryWeightChange.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중 변화'**
+  String get home_healthSummaryWeightChange;
+
+  /// No description provided for @home_healthSummaryAbnormal.
+  ///
+  /// In ko, this message translates to:
+  /// **'이상 소견 (30일)'**
+  String get home_healthSummaryAbnormal;
+
+  /// No description provided for @home_healthSummaryFoodConsistency.
+  ///
+  /// In ko, this message translates to:
+  /// **'급여 일관성'**
+  String get home_healthSummaryFoodConsistency;
+
+  /// No description provided for @home_healthSummaryWaterConsistency.
+  ///
+  /// In ko, this message translates to:
+  /// **'음수 일관성'**
+  String get home_healthSummaryWaterConsistency;
+
+  /// No description provided for @home_healthSummaryUpgrade.
+  ///
+  /// In ko, this message translates to:
+  /// **'Premium 업그레이드'**
+  String get home_healthSummaryUpgrade;
+
+  /// No description provided for @home_insightsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'이번 주 인사이트'**
+  String get home_insightsTitle;
+
+  /// No description provided for @home_insightsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 인사이트가 없습니다'**
+  String get home_insightsEmpty;
+
+  /// No description provided for @home_insightsRecommendations.
+  ///
+  /// In ko, this message translates to:
+  /// **'추천 사항'**
+  String get home_insightsRecommendations;
+
+  /// No description provided for @home_insightsUpgrade.
+  ///
+  /// In ko, this message translates to:
+  /// **'Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요'**
+  String get home_insightsUpgrade;
 }
 
 class _AppLocalizationsDelegate

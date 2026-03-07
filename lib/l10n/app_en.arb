@@ -759,5 +759,16 @@
   "report_vetFeatureWeight": "Weight trends",
   "report_vetFeatureChecks": "AI health check summary",
   "report_vetFeatureNotes": "Behavior notes & daily records",
-  "report_vetShareButton": "Share Summary Link"
+  "report_vetShareButton": "Share Summary Link",
+
+  "home_healthSummaryTitle": "Health Change Summary",
+  "home_healthSummaryWeightChange": "Weight Change",
+  "home_healthSummaryAbnormal": "Abnormal Findings (30d)",
+  "home_healthSummaryFoodConsistency": "Feeding Consistency",
+  "home_healthSummaryWaterConsistency": "Water Consistency",
+  "home_healthSummaryUpgrade": "Upgrade to Premium",
+  "home_insightsTitle": "Weekly Insights",
+  "home_insightsEmpty": "No insights yet",
+  "home_insightsRecommendations": "Recommendations",
+  "home_insightsUpgrade": "Upgrade to Premium to receive\nweekly health insights"
 }
