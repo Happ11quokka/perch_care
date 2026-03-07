@@ -138,6 +138,11 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
     final petId = ActivePetNotifier.instance.activePetId;
     if (petId == null) return;
 
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box != null
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
+
     try {
       final status = await PremiumService.instance.getTier();
       if (status.isFree) {
@@ -155,7 +160,7 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
       );
 
       final shareUrl = result['share_url'] as String;
-      await Share.share(shareUrl);
+      await Share.share(shareUrl, sharePositionOrigin: origin);
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.statusCode == 403) {

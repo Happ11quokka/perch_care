@@ -83,6 +83,7 @@
   <div class="alert-box">
     <strong>{{ L.attention }} ({{ abnormal_checks|length }})</strong>
   </div>
+  <div class="table-wrap">
   <table style="margin-bottom: 12px;">
     <tr><th>{{ L.datetime }}</th><th>{{ L.type }}</th><th>{{ L.status }}</th><th>{{ L.confidence }}</th></tr>
     {% for hc in abnormal_checks %}
@@ -94,17 +95,20 @@
     </tr>
     {% endfor %}
   </table>
+  </div>
   {% endif %}
 
   {% if weights and weights|length > 1 %}
   <div class="card">
     <h3>{{ L.weight_trend }}</h3>
+    <div class="table-wrap">
     <table>
       <tr><th>{{ L.date }}</th><th>{{ L.weight_g }}</th></tr>
       {% for w in weights[-7:] %}
       <tr><td>{{ w.recorded_date }}</td><td>{{ "%.1f"|format(w.weight) }}</td></tr>
       {% endfor %}
     </table>
+    </div>
   </div>
   {% endif %}
 
@@ -126,9 +130,10 @@
   {% if health_checks %}
   <div class="card">
     <h3>{{ L.all_checks }}</h3>
+    <div class="table-wrap">
     <table>
       <tr><th>{{ L.datetime }}</th><th>{{ L.type }}</th><th>{{ L.status }}</th><th>{{ L.confidence }}</th></tr>
-      {% for hc in health_checks[-10:] %}
+      {% for hc in health_checks[:10] %}
       <tr>
         <td>{{ hc.checked_at.strftime('%Y-%m-%d') }}</td>
         <td>{{ hc.check_type }}</td>
@@ -137,6 +142,7 @@
       </tr>
       {% endfor %}
     </table>
+    </div>
   </div>
   {% endif %}
 

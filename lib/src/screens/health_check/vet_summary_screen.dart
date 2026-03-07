@@ -24,6 +24,11 @@ class _VetSummaryScreenState extends State<VetSummaryScreen> {
     final petId = ActivePetNotifier.instance.activePetId;
     if (petId == null) return;
 
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box != null
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
+
     setState(() => _isSharing = true);
 
     try {
@@ -38,7 +43,7 @@ class _VetSummaryScreenState extends State<VetSummaryScreen> {
       );
 
       final shareUrl = result['share_url'] as String;
-      await Share.share(shareUrl);
+      await Share.share(shareUrl, sharePositionOrigin: origin);
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.statusCode == 403) {

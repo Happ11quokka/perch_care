@@ -95,10 +95,17 @@ async def generate_vet_summary_html(
     pet_id: UUID,
     user_id: UUID,
     language: str = "ko",
+    date_from: date | None = None,
+    date_to: date | None = None,
 ) -> str:
-    """병원 방문용 요약 리포트 HTML (최근 30일)."""
-    date_to = date.today()
-    date_from = date_to - timedelta(days=30)
+    """병원 방문용 요약 리포트 HTML.
+
+    date_from/date_to가 지정되면 해당 기간 사용, 없으면 최근 30일.
+    """
+    if date_to is None:
+        date_to = date.today()
+    if date_from is None:
+        date_from = date_to - timedelta(days=30)
 
     pet = await _get_pet_with_owner_check(db, pet_id, user_id)
 

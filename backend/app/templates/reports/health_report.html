@@ -97,18 +97,21 @@
   {% if weights %}
   <div class="section">
     <h2>{{ L.weight_trend }}</h2>
+    <div class="table-wrap">
     <table>
       <tr><th>{{ L.date }}</th><th>{{ L.weight_g }}</th><th>{{ L.memo }}</th></tr>
       {% for w in weights %}
       <tr><td>{{ w.recorded_date }}</td><td>{{ "%.1f"|format(w.weight) }}</td><td>{{ w.memo or '-' }}</td></tr>
       {% endfor %}
     </table>
+    </div>
   </div>
   {% endif %}
 
   {% if foods %}
   <div class="section">
     <h2>{{ L.food_intake }}</h2>
+    <div class="table-wrap">
     <table>
       <tr><th>{{ L.date }}</th><th>{{ L.intake_g }}</th><th>{{ L.target_g }}</th><th>{{ L.rate }}</th></tr>
       {% for f in foods %}
@@ -120,24 +123,28 @@
       </tr>
       {% endfor %}
     </table>
+    </div>
   </div>
   {% endif %}
 
   {% if waters %}
   <div class="section">
     <h2>{{ L.water_intake }}</h2>
+    <div class="table-wrap">
     <table>
       <tr><th>{{ L.date }}</th><th>{{ L.intake_ml }}</th><th>{{ L.target_ml }}</th></tr>
       {% for wd in waters %}
       <tr><td>{{ wd.recorded_date }}</td><td>{{ "%.1f"|format(wd.total_ml) }}</td><td>{{ "%.1f"|format(wd.target_ml) }}</td></tr>
       {% endfor %}
     </table>
+    </div>
   </div>
   {% endif %}
 
   {% if health_checks %}
   <div class="section">
     <h2>{{ L.health_checks }}</h2>
+    <div class="table-wrap">
     <table>
       <tr><th>{{ L.datetime }}</th><th>{{ L.type }}</th><th>{{ L.status }}</th><th>{{ L.confidence }}</th></tr>
       {% for hc in health_checks %}
@@ -149,18 +156,21 @@
       </tr>
       {% endfor %}
     </table>
+    </div>
   </div>
   {% endif %}
 
   {% if dailies %}
   <div class="section">
     <h2>{{ L.daily_records }}</h2>
+    <div class="table-wrap">
     <table>
       <tr><th>{{ L.date }}</th><th>{{ L.mood }}</th><th>{{ L.activity }}</th><th>{{ L.notes }}</th></tr>
       {% for d in dailies %}
       <tr><td>{{ d.recorded_date }}</td><td>{{ d.mood or '-' }}</td><td>{{ d.activity_level or '-' }}</td><td>{{ d.notes or '-' }}</td></tr>
       {% endfor %}
     </table>
+    </div>
   </div>
   {% endif %}
 

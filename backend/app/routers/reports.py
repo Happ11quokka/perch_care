@@ -144,11 +144,17 @@ async def share_vet_summary(
 
     language = request.headers.get("Accept-Language", "ko").split(",")[0].split("-")[0]
 
+    # 공유 시점의 날짜 범위를 토큰에 스냅샷으로 저장
+    snapshot_to = date.today()
+    snapshot_from = snapshot_to - timedelta(days=30)
+
     token = _create_share_token(
         pet_id=pet_id,
         user_id=current_user.id,
         report_type="vet_summary",
         lang=language,
+        date_from=snapshot_from,
+        date_to=snapshot_to,
     )
 
     base_url = str(request.base_url).rstrip("/")
@@ -200,11 +206,16 @@ async def view_report(
                 language=lang,
             )
         elif report_type == "vet_summary":
+            # 토큰에 저장된 날짜 스냅샷 사용 (없으면 서비스에서 최근 30일 폴백)
+            vet_from = date.fromisoformat(payload["date_from"]) if "date_from" in payload else None
+            vet_to = date.fromisoformat(payload["date_to"]) if "date_to" in payload else None
             html = await generate_vet_summary_html(
                 db=db,
                 pet_id=pet_id,
                 user_id=user_id,
                 language=lang,
+                date_from=vet_from,
+                date_to=vet_to,
             )
         else:
             return HTMLResponse(
