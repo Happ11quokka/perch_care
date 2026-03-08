@@ -1028,7 +1028,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildSocialAccountRow(
               provider: 'apple',
               label: l10n.social_apple,
-              icon: const Icon(Icons.apple, size: 24, color: Colors.black),
+              icon: SvgPicture.asset(
+                'assets/images/btn_apple/apple_logo_black.svg',
+                width: 24,
+                height: 24,
+              ),
               isLinked: _isProviderLinked('apple'),
               onLink: _handleLinkApple,
               onUnlink: () => _handleUnlinkSocial('apple'),

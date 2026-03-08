@@ -171,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       SignInWithAppleButton(
                         onPressed: _isAppleLoading ? null : _handleAppleLogin,
                         text: l10n.login_apple,
-                        style: SignInWithAppleButtonStyle.whiteOutlined,
+                        style: SignInWithAppleButtonStyle.black,
                         height: 64,
                         borderRadius: const BorderRadius.all(Radius.circular(16)),
                       ),
