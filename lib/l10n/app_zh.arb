@@ -453,6 +453,8 @@
       "count": {"type": "int"}
     }
   },
+  "water_tapToInput": "点击输入",
+  "water_tapToEdit": "点击修改",
 
   "weight_bodyWeight": "体重*",
   "weight_addStickerHint": "点击这里添加贴纸。",
@@ -622,6 +624,13 @@
   "diet_foodName": "食物名称",
   "diet_amount": "量(g)",
   "diet_memo": "备注（选填）",
+  "diet_noServingExists": "没有投喂记录。请先添加投喂记录。",
+  "diet_eatingExceedsServing": "进食量不能超过投喂量。(剩余投喂量：{remaining}g)",
+  "@diet_eatingExceedsServing": {
+    "placeholders": {
+      "remaining": {"type": "String"}
+    }
+  },
 
   "faq_title": "常见问题",
   "faq_categoryGeneral": "通用",
@@ -653,5 +662,21 @@
   "faq_q12": "支持哪些物种？",
   "faq_a12": "目前支持鹦鹉类（虎皮鹦鹉、玄凤鹦鹉等），其他鸟类将在未来支持。",
   "faq_q13": "支持 Android 或 HarmonyOS 吗？",
-  "faq_a13": "目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。"
+  "faq_a13": "目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。",
+
+  "profileSetup_title": "个人资料设置",
+  "profileSetup_phoneHint": "请输入电话号码",
+  "profileSetup_complete": "完成",
+  "profileSetup_saveError": "保存个人资料时发生错误。",
+  "profileSetup_genderSelectTitle": "请选择性别",
+  "profileSetup_genderMale": "男",
+  "profileSetup_genderFemale": "女",
+  "profileSetup_doneTitle": "设置完成",
+  "profileSetup_doneMessage": "设置已完成！",
+  "profileSetup_startRecording": "开始记录！",
+
+  "timePicker_title": "请选择时间",
+  "timePicker_confirm": "确认选择",
+
+  "country_selectTitle": "选择国家"
 }

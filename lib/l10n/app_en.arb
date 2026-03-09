@@ -322,6 +322,8 @@
   "water_dailyCount": "Daily Intake Count",
   "water_perDrink": "Per drink: {amount}ml",
   "water_timesCount": "{count} times",
+  "water_tapToInput": "Tap to enter",
+  "water_tapToEdit": "Tap to edit",
 
   "weight_bodyWeight": "Body Weight*",
   "weight_addStickerHint": "Tap here to add a sticker.",
@@ -455,6 +457,13 @@
   "diet_foodName": "Food Name",
   "diet_amount": "Amount (g)",
   "diet_memo": "Memo (optional)",
+  "diet_noServingExists": "No serving records found. Please add a serving record first.",
+  "diet_eatingExceedsServing": "Eating amount cannot exceed served amount. (Remaining: {remaining}g)",
+  "@diet_eatingExceedsServing": {
+    "placeholders": {
+      "remaining": {"type": "String"}
+    }
+  },
 
   "faq_title": "FAQ",
   "faq_categoryGeneral": "General",
@@ -486,5 +495,21 @@
   "faq_q12": "Which species are supported?",
   "faq_a12": "Currently parrots (budgies, cockatiels, etc.) are supported. Other bird species will be added in the future.",
   "faq_q13": "Is Android or HarmonyOS supported?",
-  "faq_a13": "Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future."
+  "faq_a13": "Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future.",
+
+  "profileSetup_title": "Profile Setup",
+  "profileSetup_phoneHint": "Enter phone number",
+  "profileSetup_complete": "Complete",
+  "profileSetup_saveError": "Error saving profile.",
+  "profileSetup_genderSelectTitle": "Select gender",
+  "profileSetup_genderMale": "Male",
+  "profileSetup_genderFemale": "Female",
+  "profileSetup_doneTitle": "Setup Complete",
+  "profileSetup_doneMessage": "Setup is complete!",
+  "profileSetup_startRecording": "Start Recording!",
+
+  "timePicker_title": "Select Time",
+  "timePicker_confirm": "Confirm",
+
+  "country_selectTitle": "Select Country"
 }

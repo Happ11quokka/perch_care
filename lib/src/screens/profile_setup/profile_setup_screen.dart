@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:country_picker/country_picker.dart';
-import 'package:image_picker/image_picker.dart';
+import '../../utils/image_crop_helper.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -13,6 +13,7 @@ import '../../services/api/token_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import 'widgets/country_selector_bottom_sheet.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 프로필 설정 화면
 class ProfileSetupScreen extends StatefulWidget {
@@ -34,7 +35,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _phoneFocusNode = FocusNode();
 
   final _authService = AuthService();
-  final _imagePicker = ImagePicker();
   File? _selectedImage;
   Uint8List? _savedImageBytes;
   bool _isSaving = false;
@@ -97,8 +97,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     super.dispose();
   }
 
+  String _genderDisplayText(AppLocalizations l10n) {
+    if (_selectedGender == null) return l10n.pet_gender_hint;
+    return _selectedGender == 'male'
+        ? l10n.profileSetup_genderMale
+        : l10n.profileSetup_genderFemale;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -127,7 +135,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   // 제목
                   Center(
                     child: Text(
-                      '프로필 설정',
+                      l10n.profileSetup_title,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 20,
@@ -152,20 +160,20 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     _buildProfileImage(),
                     const SizedBox(height: 32),
                     // 입력 필드들
-                    _buildNameField(),
+                    _buildNameField(l10n),
                     const SizedBox(height: 16),
-                    _buildGenderField(),
+                    _buildGenderField(l10n),
                     const SizedBox(height: 16),
-                    _buildEmailField(),
+                    _buildEmailField(l10n),
                     const SizedBox(height: 16),
-                    _buildPhoneField(),
+                    _buildPhoneField(l10n),
                     const SizedBox(height: 32),
                   ],
                 ),
               ),
             ),
             // 하단 버튼들
-            _buildBottomButtons(),
+            _buildBottomButtons(l10n),
           ],
         ),
       ),
@@ -236,7 +244,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildNameField() {
+  Widget _buildNameField(AppLocalizations l10n) {
     return Container(
       height: 60,
       decoration: BoxDecoration(
@@ -276,7 +284,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             errorBorder: InputBorder.none,
             disabledBorder: InputBorder.none,
             focusedErrorBorder: InputBorder.none,
-            hintText: '이름을 입력해 주세요',
+            hintText: l10n.input_name_hint,
             hintStyle: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 14,
@@ -290,9 +298,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildGenderField() {
+  Widget _buildGenderField(AppLocalizations l10n) {
     return GestureDetector(
-      onTap: _showGenderPicker,
+      onTap: () => _showGenderPicker(l10n),
       child: Container(
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -305,7 +313,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _selectedGender ?? '성별을 선택해 주세요',
+              _genderDisplayText(l10n),
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 14,
@@ -327,7 +335,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildEmailField() {
+  Widget _buildEmailField(AppLocalizations l10n) {
     final hasEmail = _emailController.text.isNotEmpty;
     return Container(
       height: 60,
@@ -371,7 +379,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             errorBorder: InputBorder.none,
             disabledBorder: InputBorder.none,
             focusedErrorBorder: InputBorder.none,
-            hintText: '이메일을 입력해 주세요',
+            hintText: l10n.input_email_hint,
             hintStyle: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 14,
@@ -385,7 +393,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildPhoneField() {
+  Widget _buildPhoneField(AppLocalizations l10n) {
     return Container(
       height: 60,
       decoration: BoxDecoration(
@@ -461,7 +469,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   errorBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
                   focusedErrorBorder: InputBorder.none,
-                  hintText: '전화번호를 입력해 주세요',
+                  hintText: l10n.profileSetup_phoneHint,
                   hintStyle: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
@@ -479,7 +487,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildBottomButtons() {
+  Widget _buildBottomButtons(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
       child: Row(
@@ -497,10 +505,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '다음에',
-                    style: TextStyle(
+                    l10n.common_later,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -527,10 +535,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '입력완료',
-                    style: TextStyle(
+                    l10n.profileSetup_complete,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -548,32 +556,26 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Future<void> _handleEditPhoto() async {
-    final pickedFile = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 80,
-    );
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
-      final bytes = await file.readAsBytes();
-      final userId = TokenService.instance.userId;
-      if (userId != null) {
-        await LocalImageStorageService.instance.saveImage(
-          ownerType: ImageOwnerType.userProfile,
-          ownerId: userId,
-          imageBytes: bytes,
-        );
-      }
-      if (!mounted) return;
-      setState(() {
-        _selectedImage = file;
-        _savedImageBytes = bytes;
-      });
+    final file = await ImageCropHelper.pickAndCropImage(context);
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+    final userId = TokenService.instance.userId;
+    if (userId != null) {
+      await LocalImageStorageService.instance.saveImage(
+        ownerType: ImageOwnerType.userProfile,
+        ownerId: userId,
+        imageBytes: bytes,
+      );
     }
+    if (!mounted) return;
+    setState(() {
+      _selectedImage = file;
+      _savedImageBytes = bytes;
+    });
   }
 
-  void _showGenderPicker() {
+  void _showGenderPicker(AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -587,11 +589,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 16),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
                   child: Text(
-                    '성별을 선택하세요',
-                    style: TextStyle(
+                    l10n.profileSetup_genderSelectTitle,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -601,9 +603,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   ),
                 ),
                 ListTile(
-                  title: const Text(
-                    '남',
-                    style: TextStyle(
+                  title: Text(
+                    l10n.profileSetup_genderMale,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -611,14 +613,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     ),
                   ),
                   onTap: () {
-                    setState(() => _selectedGender = '남');
+                    setState(() => _selectedGender = 'male');
                     Navigator.pop(context);
                   },
                 ),
                 ListTile(
-                  title: const Text(
-                    '여',
-                    style: TextStyle(
+                  title: Text(
+                    l10n.profileSetup_genderFemale,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -626,7 +628,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     ),
                   ),
                   onTap: () {
-                    setState(() => _selectedGender = '여');
+                    setState(() => _selectedGender = 'female');
                     Navigator.pop(context);
                   },
                 ),
@@ -662,6 +664,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   Future<void> _handleComplete() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await _authService.updateProfile(
@@ -674,7 +677,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: '프로필 저장 중 오류가 발생했습니다.');
+      AppSnackBar.error(context, message: l10n.profileSetup_saveError);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

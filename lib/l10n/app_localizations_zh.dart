@@ -942,6 +942,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get water_tapToInput => '点击输入';
+
+  @override
+  String get water_tapToEdit => '点击修改';
+
+  @override
   String get weight_bodyWeight => '体重*';
 
   @override
@@ -1267,6 +1273,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diet_memo => '备注（选填）';
 
   @override
+  String get diet_noServingExists => '没有投喂记录。请先添加投喂记录。';
+
+  @override
+  String diet_eatingExceedsServing(String remaining) {
+    return '进食量不能超过投喂量。(剩余投喂量：${remaining}g)';
+  }
+
+  @override
   String get faq_title => '常见问题';
 
   @override
@@ -1358,4 +1372,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get faq_a13 => '目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。';
+
+  @override
+  String get profileSetup_title => '个人资料设置';
+
+  @override
+  String get profileSetup_phoneHint => '请输入电话号码';
+
+  @override
+  String get profileSetup_complete => '完成';
+
+  @override
+  String get profileSetup_saveError => '保存个人资料时发生错误。';
+
+  @override
+  String get profileSetup_genderSelectTitle => '请选择性别';
+
+  @override
+  String get profileSetup_genderMale => '男';
+
+  @override
+  String get profileSetup_genderFemale => '女';
+
+  @override
+  String get profileSetup_doneTitle => '设置完成';
+
+  @override
+  String get profileSetup_doneMessage => '设置已完成！';
+
+  @override
+  String get profileSetup_startRecording => '开始记录！';
+
+  @override
+  String get timePicker_title => '请选择时间';
+
+  @override
+  String get timePicker_confirm => '确认选择';
+
+  @override
+  String get country_selectTitle => '选择国家';
 }

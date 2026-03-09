@@ -1,5 +1,7 @@
 # Environment variables
 .env
+.env.production
+.env.staging
 backend/.env
 
 # Miscellaneous

@@ -8,6 +8,7 @@ import '../../models/diet_entry.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/food/food_record_service.dart';
+import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/analog_time_picker.dart';
@@ -66,27 +67,34 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   Future<void> _loadEntries() async {
     // Try to load from backend first
     if (_activePetId != null) {
-      try {
-        final record = await _foodService.getByDate(_activePetId!, _selectedDate);
-        if (record != null && record.entriesJson != null) {
-          final list = jsonDecode(record.entriesJson!) as List<dynamic>;
-          final entries = list.map((item) {
-            final map = item as Map<String, dynamic>;
-            if (map.containsKey('type')) {
-              return DietEntry.fromJson(map);
-            } else {
-              return DietEntry.fromLegacyJson(map);
-            }
-          }).toList();
-          if (!mounted) return;
-          setState(() {
-            _entries = entries;
-          });
-          await _updateFoodNameSuggestions();
-          return;
+      // pending sync 항목이 있으면 서버 데이터 대신 로컬 데이터 사용
+      final dateStr = _selectedDate.toIso8601String().split('T').first;
+      if (SyncService.instance.hasPending('food', _activePetId!, dateStr)) {
+        debugPrint('[Food] Pending sync exists for $dateStr, using local data');
+        // fall through to SharedPreferences below
+      } else {
+        try {
+          final record = await _foodService.getByDate(_activePetId!, _selectedDate);
+          if (record != null && record.entriesJson != null) {
+            final list = jsonDecode(record.entriesJson!) as List<dynamic>;
+            final entries = list.map((item) {
+              final map = item as Map<String, dynamic>;
+              if (map.containsKey('type')) {
+                return DietEntry.fromJson(map);
+              } else {
+                return DietEntry.fromLegacyJson(map);
+              }
+            }).toList();
+            if (!mounted) return;
+            setState(() {
+              _entries = entries;
+            });
+            await _updateFoodNameSuggestions();
+            return;
+          }
+        } catch (e) {
+          debugPrint('Failed to load from backend, falling back to local storage: $e');
         }
-      } catch (e) {
-        debugPrint('Failed to load from backend, falling back to local storage: $e');
       }
     }
 
@@ -132,8 +140,21 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           count: _entries.length,
           entriesJson: jsonEncode(data),
         );
+        // 서버 저장 성공 → 밀린 큐 드레인
+        SyncService.instance.drainAfterSuccess();
       } catch (e) {
         debugPrint('Failed to save to backend, data saved locally: $e');
+        await SyncService.instance.enqueue(SyncItem(
+          type: 'food',
+          petId: _activePetId!,
+          date: _selectedDate.toIso8601String().split('T').first,
+          payload: {
+            'totalGrams': _totalEaten,
+            'targetGrams': _totalServed,
+            'count': _entries.length,
+            'entriesJson': jsonEncode(data),
+          },
+        ));
       }
     }
     AnalyticsService.instance.logFoodRecorded(_activePetId ?? '', _entries.length);
@@ -226,9 +247,47 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
       ? ((_totalEaten / _totalServed) * 100).round().clamp(0, 999)
       : 0;
 
+  // ── 취식 검증 헬퍼 ─────────────────────────────────────────────────────────
+
+  /// 배식 기록 존재 여부 확인. 없으면 warning 스낵바 표시 후 false 반환
+  bool _canAddEating() {
+    if (_servingEntries.isEmpty) {
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.warning(context, message: l10n.diet_noServingExists);
+      return false;
+    }
+    return true;
+  }
+
+  /// 취식량이 배식량을 초과하는지 검증. 초과 시 warning 스낵바 + false 반환
+  bool _validateEatingAmount(double newGrams, {double excludeGrams = 0.0}) {
+    final currentEating = _totalEaten - excludeGrams;
+    final remaining = _totalServed - currentEating;
+    if (newGrams > remaining + 0.01) {
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.warning(
+        context,
+        message: l10n.diet_eatingExceedsServing(remaining.toStringAsFixed(1)),
+      );
+      return false;
+    }
+    return true;
+  }
+
   // ── 기록 삭제 ──────────────────────────────────────────────────────────────
 
   void _deleteEntry(DietEntry entry) {
+    if (entry.type == DietType.serving) {
+      final newTotalServed = _totalServed - entry.grams;
+      if (_totalEaten > newTotalServed + 0.01) {
+        final l10n = AppLocalizations.of(context);
+        AppSnackBar.warning(
+          context,
+          message: l10n.diet_eatingExceedsServing(newTotalServed.toStringAsFixed(1)),
+        );
+        return; // 취식>배식 불변식 깨짐 방지 — 취식 기록 먼저 삭제 필요
+      }
+    }
     setState(() {
       _entries = _entries.where((e) => !identical(e, entry)).toList();
     });
@@ -311,7 +370,13 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           label: l10n.diet_eating,
                           value: DietType.eating,
                           groupValue: selectedType,
-                          onChanged: (v) => setModalState(() => selectedType = v!),
+                          onChanged: (v) {
+                            if (v == DietType.eating && _servingEntries.isEmpty) {
+                              AppSnackBar.warning(context, message: l10n.diet_noServingExists);
+                              return;
+                            }
+                            setModalState(() => selectedType = v!);
+                          },
                         ),
                       ],
                     ),
@@ -496,6 +561,12 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                               final name = nameController.text.trim();
                               final grams = double.tryParse(gramsController.text.trim());
                               if (name.isEmpty || grams == null || grams <= 0) return;
+                              if (selectedType == DietType.eating) {
+                                final excludeGrams = (isEditing && existing.type == DietType.eating)
+                                    ? existing.grams
+                                    : 0.0;
+                                if (!_validateEatingAmount(grams, excludeGrams: excludeGrams)) return;
+                              }
                               Navigator.pop(
                                 context,
                                 DietEntry(
@@ -713,7 +784,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       dashWidth: 6,
                       dashGap: 4,
                       child: InkWell(
-                        onTap: _openEntryModal,
+                        onTap: () {
+                          if (!_showServing && !_canAddEating()) return;
+                          _openEntryModal();
+                        },
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 18),

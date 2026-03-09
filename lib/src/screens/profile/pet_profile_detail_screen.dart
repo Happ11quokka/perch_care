@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import '../../utils/image_crop_helper.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
@@ -29,7 +29,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
-  final _imagePicker = ImagePicker();
+
   File? _selectedImage;
   Uint8List? _savedImageBytes;
 
@@ -129,15 +129,10 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   }
 
   Future<void> _handlePickImage() async {
-    final pickedFile = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 80,
-    );
-    if (pickedFile != null) {
+    final file = await ImageCropHelper.pickAndCropImage(context);
+    if (file != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectedImage = file;
       });
     }
   }

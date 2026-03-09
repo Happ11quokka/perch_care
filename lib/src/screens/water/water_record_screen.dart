@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/water/water_record_service.dart';
+import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -63,21 +64,28 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
   Future<void> _loadRecord() async {
     // Try loading from backend first
     if (_activePetId != null) {
-      try {
-        final record = await _waterService.getByDate(
-          _activePetId!,
-          _selectedDate,
-        );
-        if (!mounted) return;
-        if (record != null) {
-          setState(() {
-            _totalMl = record.totalMl;
-            _count = record.count;
-          });
-          return;
+      // pending sync 항목이 있으면 서버 데이터 대신 로컬 데이터 사용
+      final dateStr = _selectedDate.toIso8601String().split('T').first;
+      if (SyncService.instance.hasPending('water', _activePetId!, dateStr)) {
+        debugPrint('[Water] Pending sync exists for $dateStr, using local data');
+        // fall through to SharedPreferences below
+      } else {
+        try {
+          final record = await _waterService.getByDate(
+            _activePetId!,
+            _selectedDate,
+          );
+          if (!mounted) return;
+          if (record != null) {
+            setState(() {
+              _totalMl = record.totalMl;
+              _count = record.count;
+            });
+            return;
+          }
+        } catch (_) {
+          // Fall back to SharedPreferences if backend fails
         }
-      } catch (_) {
-        // Fall back to SharedPreferences if backend fails
       }
     }
 
@@ -121,8 +129,20 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
           targetMl: _goalMl,
           count: _count,
         );
-      } catch (_) {
-        // Fail silently if offline - data is already saved to SharedPreferences
+        // 서버 저장 성공 → 밀린 큐 드레인
+        SyncService.instance.drainAfterSuccess();
+      } catch (e) {
+        debugPrint('Failed to save water to backend: $e');
+        await SyncService.instance.enqueue(SyncItem(
+          type: 'water',
+          petId: _activePetId!,
+          date: _selectedDate.toIso8601String().split('T').first,
+          payload: {
+            'totalMl': _totalMl,
+            'targetMl': _goalMl,
+            'count': _count,
+          },
+        ));
       }
     }
     AnalyticsService.instance.logWaterRecorded(_activePetId ?? '');
@@ -364,6 +384,30 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                   hasData ? AppColors.nearBlack : AppColors.gray400,
                               letterSpacing: -0.5,
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.edit,
+                                size: 14,
+                                color: AppColors.gray400,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                hasData
+                                    ? l10n.water_tapToEdit
+                                    : l10n.water_tapToInput,
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.gray400,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

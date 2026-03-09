@@ -8,6 +8,8 @@ import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
 import '../../services/push/push_notification_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
+import '../../services/sync/sync_service.dart';
+import '../../services/pet/pet_service.dart';
 import '../../router/route_paths.dart';
 import '../../theme/colors.dart';
 
@@ -113,6 +115,28 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('[Splash] 5. ApiClient initialized');
     } catch (e) {
       debugPrint('[Splash] 5. ApiClient init error: $e');
+    }
+
+    // 6. SyncService 초기화 + 오프라인 큐 처리
+    debugPrint('[Splash] 6. SyncService initializing...');
+    try {
+      await SyncService.instance.init();
+      debugPrint('[Splash] 6. SyncService initialized');
+
+      // 오프라인 큐에 쌓인 항목 서버로 재전송
+      await SyncService.instance.processQueue();
+      debugPrint('[Splash] 6. SyncService queue processed');
+
+      // 최초 1회: 로컬 데이터 전체를 서버로 동기화 (staging→production 마이그레이션)
+      if (TokenService.instance.isLoggedIn) {
+        final pets = await PetService.instance.getMyPets();
+        for (final pet in pets) {
+          await SyncService.instance.syncLocalRecordsIfNeeded(pet.id);
+          debugPrint('[Splash] 6. Initial sync completed for pet: ${pet.id}');
+        }
+      }
+    } catch (e) {
+      debugPrint('[Splash] 6. SyncService error: $e');
     }
 
     debugPrint('[Splash] All services initialized, navigating...');
