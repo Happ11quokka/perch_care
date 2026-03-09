@@ -473,8 +473,8 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           loadingColor: Colors.white,
           child: SvgPicture.asset(
             'assets/images/btn_apple/apple_logo_white.svg',
-            width: 44,
-            height: 44,
+            width: 60,
+            height: 60,
           ),
         ),
       ],
