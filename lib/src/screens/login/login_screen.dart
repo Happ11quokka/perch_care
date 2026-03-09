@@ -177,11 +177,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         isLoading: _isGoogleLoading,
                       ),
                       const SizedBox(height: 16),
-                      _buildSocialLoginButton(
-                        icon: _buildAppleIcon(),
-                        label: l10n.login_apple,
-                        onTap: _handleAppleLogin,
-                        isLoading: _isAppleLoading,
+                      SignInWithAppleButton(
+                        onPressed: _isAppleLoading ? null : _handleAppleLogin,
+                        text: l10n.login_apple,
+                        style: SignInWithAppleButtonStyle.black,
+                        height: 64,
+                        borderRadius: const BorderRadius.all(Radius.circular(16)),
                       ),
                       const SizedBox(height: 32),
                       // Primary Login Button
@@ -279,14 +280,6 @@ class _LoginScreenState extends State<LoginScreen> {
       'assets/images/btn_google/btn_google.svg',
       width: 24,
       height: 24,
-    );
-  }
-
-  Widget _buildAppleIcon() {
-    return const Icon(
-      Icons.apple,
-      size: 24,
-      color: Colors.black,
     );
   }
 

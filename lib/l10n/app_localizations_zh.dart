@@ -1977,4 +1977,61 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get home_insightsUpgrade => '升级至Premium\n即可获取每周健康洞察';
+
+  @override
+  String get dailyRecord_title => '每日记录';
+
+  @override
+  String get dailyRecord_mood => '心情';
+
+  @override
+  String get dailyRecord_activity => '活动量';
+
+  @override
+  String get dailyRecord_notes => '备注';
+
+  @override
+  String get dailyRecord_notesHint => '记录今天爱鸟的特殊情况';
+
+  @override
+  String get dailyRecord_moodGreat => '非常好';
+
+  @override
+  String get dailyRecord_moodGood => '好';
+
+  @override
+  String get dailyRecord_moodNormal => '一般';
+
+  @override
+  String get dailyRecord_moodBad => '差';
+
+  @override
+  String get dailyRecord_moodSick => '生病';
+
+  @override
+  String get dailyRecord_saved => '每日记录已保存';
+
+  @override
+  String get dailyRecord_deleted => '每日记录已删除';
+
+  @override
+  String get dailyRecord_saveError => '保存每日记录时出错';
+
+  @override
+  String get dailyRecord_deleteError => '删除每日记录时出错';
+
+  @override
+  String get weightDetail_monthDailyRecord => '本月每日记录';
+
+  @override
+  String get weightDetail_noDailyRecord => '暂无每日记录';
+
+  @override
+  String get weightDetail_addDailyRecordHint => '点击下方按钮添加记录';
+
+  @override
+  String get btn_addSchedule => '添加日程';
+
+  @override
+  String get btn_addDailyRecord => '添加每日记录';
 }

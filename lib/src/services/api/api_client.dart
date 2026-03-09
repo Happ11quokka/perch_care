@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../../config/environment.dart';
+import '../../providers/locale_provider.dart';
 import 'token_service.dart';
 
 /// FastAPI 백엔드와 통신하는 HTTP 클라이언트
@@ -33,6 +34,8 @@ class ApiClient {
   }
 
   String get _acceptLanguage {
+    final appLang = LocaleProvider.instance.currentLanguageCode;
+    if (appLang != null) return appLang;
     final locale = ui.PlatformDispatcher.instance.locale;
     return locale.toLanguageTag();
   }

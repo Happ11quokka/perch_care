@@ -2010,4 +2010,61 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get home_insightsUpgrade => 'Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요';
+
+  @override
+  String get dailyRecord_title => '일일 기록';
+
+  @override
+  String get dailyRecord_mood => '기분';
+
+  @override
+  String get dailyRecord_activity => '활동량';
+
+  @override
+  String get dailyRecord_notes => '메모';
+
+  @override
+  String get dailyRecord_notesHint => '오늘 반려조의 특이사항을 기록하세요';
+
+  @override
+  String get dailyRecord_moodGreat => '최고';
+
+  @override
+  String get dailyRecord_moodGood => '좋음';
+
+  @override
+  String get dailyRecord_moodNormal => '보통';
+
+  @override
+  String get dailyRecord_moodBad => '나쁨';
+
+  @override
+  String get dailyRecord_moodSick => '아픔';
+
+  @override
+  String get dailyRecord_saved => '일일 기록이 저장되었습니다';
+
+  @override
+  String get dailyRecord_deleted => '일일 기록이 삭제되었습니다';
+
+  @override
+  String get dailyRecord_saveError => '일일 기록 저장 중 오류가 발생했습니다';
+
+  @override
+  String get dailyRecord_deleteError => '일일 기록 삭제 중 오류가 발생했습니다';
+
+  @override
+  String get weightDetail_monthDailyRecord => '이번 달 일일 기록';
+
+  @override
+  String get weightDetail_noDailyRecord => '등록된 일일 기록이 없습니다';
+
+  @override
+  String get weightDetail_addDailyRecordHint => '아래 버튼을 눌러 기록을 추가해보세요';
+
+  @override
+  String get btn_addSchedule => '일정 추가';
+
+  @override
+  String get btn_addDailyRecord => '일일 기록 추가';
 }

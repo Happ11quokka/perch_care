@@ -770,5 +770,25 @@
   "home_insightsTitle": "Weekly Insights",
   "home_insightsEmpty": "No insights yet",
   "home_insightsRecommendations": "Recommendations",
-  "home_insightsUpgrade": "Upgrade to Premium to receive\nweekly health insights"
+  "home_insightsUpgrade": "Upgrade to Premium to receive\nweekly health insights",
+
+  "dailyRecord_title": "Daily Record",
+  "dailyRecord_mood": "Mood",
+  "dailyRecord_activity": "Activity",
+  "dailyRecord_notes": "Notes",
+  "dailyRecord_notesHint": "Record anything notable about your bird today",
+  "dailyRecord_moodGreat": "Great",
+  "dailyRecord_moodGood": "Good",
+  "dailyRecord_moodNormal": "Normal",
+  "dailyRecord_moodBad": "Bad",
+  "dailyRecord_moodSick": "Sick",
+  "dailyRecord_saved": "Daily record saved",
+  "dailyRecord_deleted": "Daily record deleted",
+  "dailyRecord_saveError": "Failed to save daily record",
+  "dailyRecord_deleteError": "Failed to delete daily record",
+  "weightDetail_monthDailyRecord": "Daily Records This Month",
+  "weightDetail_noDailyRecord": "No daily records yet",
+  "weightDetail_addDailyRecordHint": "Tap the button below to add a record",
+  "btn_addSchedule": "Add Schedule",
+  "btn_addDailyRecord": "Add Daily Record"
 }

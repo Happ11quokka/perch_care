@@ -7,13 +7,16 @@ import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../models/weight_record.dart';
 import '../../models/schedule_record.dart';
+import '../../models/daily_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/schedule/schedule_service.dart';
+import '../../services/daily_record/daily_record_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
 import '../../router/route_names.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
+import '../../widgets/add_daily_record_bottom_sheet.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
@@ -29,6 +32,7 @@ class WeightDetailScreen extends StatefulWidget {
 class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final _weightService = WeightService.instance;
   final _scheduleService = ScheduleService();
+  final _dailyRecordService = DailyRecordService();
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
   final _scrollController = ScrollController();
@@ -47,6 +51,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   );
   List<WeightRecord> _weightRecords = [];
   List<ScheduleRecord> _scheduleRecords = [];
+  List<DailyRecord> _dailyRecords = [];
   String _petName = '';
   String? _activePetId;
   bool _isLoading = true;
@@ -102,6 +107,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
     if (isMonthChanged) {
       _loadScheduleData();
+      _loadDailyRecordData();
     }
   }
 
@@ -173,7 +179,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       }
 
       if (_activePetId != null) {
-        await Future.wait([_loadWeightData(), _loadScheduleData()]);
+        await Future.wait([_loadWeightData(), _loadScheduleData(), _loadDailyRecordData()]);
         _maybeShowCoachMarks();
       }
     } catch (_) {
@@ -186,7 +192,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           _petName = cachedPet?.name ?? _petName;
         });
         if (_activePetId != null) {
-          await Future.wait([_loadWeightData(), _loadScheduleData()]);
+          await Future.wait([_loadWeightData(), _loadScheduleData(), _loadDailyRecordData()]);
         }
       } catch (_) {
         // Handle error
@@ -216,7 +222,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       await _petService.setActivePet(pet.id);
     } catch (_) {}
     try {
-      await Future.wait([_loadWeightData(), _loadScheduleData()]);
+      await Future.wait([_loadWeightData(), _loadScheduleData(), _loadDailyRecordData()]);
     } catch (_) {
       // 개별 로드 함수 내부에서 에러 처리
     }
@@ -233,6 +239,24 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       if (mounted) {
         setState(() {
           _scheduleRecords = schedules;
+        });
+      }
+    } catch (_) {
+      // Handle error
+    }
+  }
+
+  Future<void> _loadDailyRecordData() async {
+    if (_activePetId == null) return;
+    try {
+      final records = await _dailyRecordService.getRecordsByMonth(
+        _activePetId!,
+        _selectedYear,
+        _selectedMonth,
+      );
+      if (mounted) {
+        setState(() {
+          _dailyRecords = records;
         });
       }
     } catch (_) {
@@ -378,6 +402,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   _buildWeightRecordsList(),
                   const SizedBox(height: 16),
                   _buildScheduleList(),
+                  const SizedBox(height: 16),
+                  _buildDailyRecordList(),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -1448,6 +1474,354 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     }
   }
 
+  Future<void> _openDailyRecordBottomSheetFor(DateTime selectedDate) async {
+    _setFocusedDate(selectedDate);
+    final result = await showAddDailyRecordBottomSheet(
+      context: context,
+      initialDate: selectedDate,
+      petId: _activePetId,
+    );
+    if (result != null) {
+      try {
+        await _dailyRecordService.saveDailyRecord(result);
+        await _loadDailyRecordData();
+        if (mounted) {
+          final l10n = AppLocalizations.of(context);
+          AppSnackBar.success(context, message: l10n.dailyRecord_saved);
+        }
+      } catch (e) {
+        if (mounted) {
+          final l10n = AppLocalizations.of(context);
+          AppSnackBar.error(context, message: l10n.dailyRecord_saveError);
+        }
+      }
+    }
+  }
+
+  void _showAddRecordMenu() {
+    final l10n = AppLocalizations.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0E0E0),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildMenuOption(
+                icon: Icons.event_outlined,
+                label: l10n.btn_addSchedule,
+                onTap: () {
+                  Navigator.pop(context);
+                  _openScheduleBottomSheetFor(_focusedDate);
+                },
+              ),
+              _buildMenuOption(
+                icon: Icons.edit_note_outlined,
+                label: l10n.btn_addDailyRecord,
+                onTap: () {
+                  Navigator.pop(context);
+                  _openDailyRecordBottomSheetFor(_focusedDate);
+                },
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMenuOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppColors.brandPrimary, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: AppColors.nearBlack,
+                letterSpacing: -0.4,
+              ),
+            ),
+            const Spacer(),
+            const Icon(Icons.chevron_right, color: AppColors.mediumGray, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDailyRecordList() {
+    final l10n = AppLocalizations.of(context);
+    final monthRecords = _dailyRecords.where((record) {
+      return record.recordedDate.year == _selectedYear &&
+          record.recordedDate.month == _selectedMonth;
+    }).toList();
+
+    monthRecords.sort((a, b) => a.recordedDate.compareTo(b.recordedDate));
+
+    if (monthRecords.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.edit_note_outlined,
+                size: 48,
+                color: AppColors.mediumGray.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.weightDetail_noDailyRecord,
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.35,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.weightDetail_addDailyRecordHint,
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 12,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Group by date
+    final Map<DateTime, DailyRecord> groupedRecords = {};
+    for (final record in monthRecords) {
+      final dateKey = DateTime(
+        record.recordedDate.year,
+        record.recordedDate.month,
+        record.recordedDate.day,
+      );
+      groupedRecords[dateKey] = record;
+    }
+
+    final sortedDates = groupedRecords.keys.toList()..sort();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.weightDetail_monthDailyRecord,
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.nearBlack,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...sortedDates.map(
+            (date) => _buildDailyRecordCard(date, groupedRecords[date]!),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyRecordCard(DateTime date, DailyRecord record) {
+    final l10n = AppLocalizations.of(context);
+    final today = DateTime.now();
+    final isToday = date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day;
+
+    const moodEmojis = {
+      'great': '😊',
+      'good': '🙂',
+      'normal': '😐',
+      'bad': '😞',
+      'sick': '🤒',
+    };
+
+    return Dismissible(
+      key: Key('daily_${record.id ?? date.toIso8601String()}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF572D),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(Icons.delete_outline, color: Colors.white),
+      ),
+      onDismissed: (_) async {
+        try {
+          await _dailyRecordService.deleteDailyRecordByDate(
+            _activePetId!,
+            record.recordedDate,
+          );
+          await _loadDailyRecordData();
+          if (mounted) {
+            AppSnackBar.success(context, message: l10n.dailyRecord_deleted);
+          }
+        } catch (e) {
+          await _loadDailyRecordData();
+          if (mounted) {
+            AppSnackBar.error(context, message: l10n.dailyRecord_deleteError);
+          }
+        }
+      },
+      child: GestureDetector(
+        onTap: () => _openDailyRecordBottomSheetFor(date),
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE8E8E8)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 날짜 행
+              Row(
+                children: [
+                  Text(
+                    '${date.month}/${date.day}',
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.nearBlack,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  if (isToday) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandPrimary,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        l10n.weightDetail_today,
+                        style: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  // 기분 이모지
+                  if (record.mood != null)
+                    Text(
+                      moodEmojis[record.mood] ?? '',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // 활동량 별
+              if (record.activityLevel != null)
+                Row(
+                  children: List.generate(5, (index) {
+                    return Icon(
+                      index < record.activityLevel!
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      size: 18,
+                      color: index < record.activityLevel!
+                          ? AppColors.brandPrimary
+                          : const Color(0xFFD0D0D0),
+                    );
+                  }),
+                ),
+              // 메모
+              if (record.notes != null && record.notes!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  record.notes!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.mediumGray,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildScheduleList() {
     final l10n = AppLocalizations.of(context);
     // Filter schedules for the selected month
@@ -2130,7 +2504,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
         child: GestureDetector(
-          onTap: () => _openScheduleBottomSheetFor(_focusedDate),
+          onTap: _showAddRecordMenu,
           child: Container(
             height: 60,
             decoration: BoxDecoration(

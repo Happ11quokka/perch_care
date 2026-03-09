@@ -469,10 +469,13 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         _buildSocialLoginButton(
           onTap: _handleAppleLogin,
           isLoading: _isAppleLoading,
-          child: const Icon(
-            Icons.apple,
-            size: 24,
-            color: Color(0xFF1A1A1A),
+          backgroundColor: Colors.black,
+          borderColor: Colors.black,
+          loadingColor: Colors.white,
+          child: SvgPicture.asset(
+            'assets/images/btn_apple/apple_logo_white.svg',
+            width: 60,
+            height: 60,
           ),
         ),
       ],
@@ -483,6 +486,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     required VoidCallback onTap,
     required bool isLoading,
     required Widget child,
+    Color? backgroundColor,
+    Color? borderColor,
+    Color? loadingColor,
   }) {
     return GestureDetector(
       onTap: isLoading ? null : onTap,
@@ -490,14 +496,19 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         width: 60,
         height: 60,
         decoration: BoxDecoration(
+          color: backgroundColor,
+          border: Border.all(color: borderColor ?? const Color(0xFFE0E0E0), width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
           child: isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: loadingColor,
+                  ),
                 )
               : child,
         ),

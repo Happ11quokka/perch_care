@@ -2071,4 +2071,63 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get home_insightsUpgrade =>
       'Upgrade to Premium to receive\nweekly health insights';
+
+  @override
+  String get dailyRecord_title => 'Daily Record';
+
+  @override
+  String get dailyRecord_mood => 'Mood';
+
+  @override
+  String get dailyRecord_activity => 'Activity';
+
+  @override
+  String get dailyRecord_notes => 'Notes';
+
+  @override
+  String get dailyRecord_notesHint =>
+      'Record anything notable about your bird today';
+
+  @override
+  String get dailyRecord_moodGreat => 'Great';
+
+  @override
+  String get dailyRecord_moodGood => 'Good';
+
+  @override
+  String get dailyRecord_moodNormal => 'Normal';
+
+  @override
+  String get dailyRecord_moodBad => 'Bad';
+
+  @override
+  String get dailyRecord_moodSick => 'Sick';
+
+  @override
+  String get dailyRecord_saved => 'Daily record saved';
+
+  @override
+  String get dailyRecord_deleted => 'Daily record deleted';
+
+  @override
+  String get dailyRecord_saveError => 'Failed to save daily record';
+
+  @override
+  String get dailyRecord_deleteError => 'Failed to delete daily record';
+
+  @override
+  String get weightDetail_monthDailyRecord => 'Daily Records This Month';
+
+  @override
+  String get weightDetail_noDailyRecord => 'No daily records yet';
+
+  @override
+  String get weightDetail_addDailyRecordHint =>
+      'Tap the button below to add a record';
+
+  @override
+  String get btn_addSchedule => 'Add Schedule';
+
+  @override
+  String get btn_addDailyRecord => 'Add Daily Record';
 }

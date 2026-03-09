@@ -937,5 +937,25 @@
   "home_insightsTitle": "本周洞察",
   "home_insightsEmpty": "暂无洞察",
   "home_insightsRecommendations": "建议事项",
-  "home_insightsUpgrade": "升级至Premium\n即可获取每周健康洞察"
+  "home_insightsUpgrade": "升级至Premium\n即可获取每周健康洞察",
+
+  "dailyRecord_title": "每日记录",
+  "dailyRecord_mood": "心情",
+  "dailyRecord_activity": "活动量",
+  "dailyRecord_notes": "备注",
+  "dailyRecord_notesHint": "记录今天爱鸟的特殊情况",
+  "dailyRecord_moodGreat": "非常好",
+  "dailyRecord_moodGood": "好",
+  "dailyRecord_moodNormal": "一般",
+  "dailyRecord_moodBad": "差",
+  "dailyRecord_moodSick": "生病",
+  "dailyRecord_saved": "每日记录已保存",
+  "dailyRecord_deleted": "每日记录已删除",
+  "dailyRecord_saveError": "保存每日记录时出错",
+  "dailyRecord_deleteError": "删除每日记录时出错",
+  "weightDetail_monthDailyRecord": "本月每日记录",
+  "weightDetail_noDailyRecord": "暂无每日记录",
+  "weightDetail_addDailyRecordHint": "点击下方按钮添加记录",
+  "btn_addSchedule": "添加日程",
+  "btn_addDailyRecord": "添加每日记录"
 }

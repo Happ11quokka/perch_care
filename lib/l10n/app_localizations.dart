@@ -3813,6 +3813,120 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요'**
   String get home_insightsUpgrade;
+
+  /// No description provided for @dailyRecord_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록'**
+  String get dailyRecord_title;
+
+  /// No description provided for @dailyRecord_mood.
+  ///
+  /// In ko, this message translates to:
+  /// **'기분'**
+  String get dailyRecord_mood;
+
+  /// No description provided for @dailyRecord_activity.
+  ///
+  /// In ko, this message translates to:
+  /// **'활동량'**
+  String get dailyRecord_activity;
+
+  /// No description provided for @dailyRecord_notes.
+  ///
+  /// In ko, this message translates to:
+  /// **'메모'**
+  String get dailyRecord_notes;
+
+  /// No description provided for @dailyRecord_notesHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 반려조의 특이사항을 기록하세요'**
+  String get dailyRecord_notesHint;
+
+  /// No description provided for @dailyRecord_moodGreat.
+  ///
+  /// In ko, this message translates to:
+  /// **'최고'**
+  String get dailyRecord_moodGreat;
+
+  /// No description provided for @dailyRecord_moodGood.
+  ///
+  /// In ko, this message translates to:
+  /// **'좋음'**
+  String get dailyRecord_moodGood;
+
+  /// No description provided for @dailyRecord_moodNormal.
+  ///
+  /// In ko, this message translates to:
+  /// **'보통'**
+  String get dailyRecord_moodNormal;
+
+  /// No description provided for @dailyRecord_moodBad.
+  ///
+  /// In ko, this message translates to:
+  /// **'나쁨'**
+  String get dailyRecord_moodBad;
+
+  /// No description provided for @dailyRecord_moodSick.
+  ///
+  /// In ko, this message translates to:
+  /// **'아픔'**
+  String get dailyRecord_moodSick;
+
+  /// No description provided for @dailyRecord_saved.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록이 저장되었습니다'**
+  String get dailyRecord_saved;
+
+  /// No description provided for @dailyRecord_deleted.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록이 삭제되었습니다'**
+  String get dailyRecord_deleted;
+
+  /// No description provided for @dailyRecord_saveError.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록 저장 중 오류가 발생했습니다'**
+  String get dailyRecord_saveError;
+
+  /// No description provided for @dailyRecord_deleteError.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록 삭제 중 오류가 발생했습니다'**
+  String get dailyRecord_deleteError;
+
+  /// No description provided for @weightDetail_monthDailyRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'이번 달 일일 기록'**
+  String get weightDetail_monthDailyRecord;
+
+  /// No description provided for @weightDetail_noDailyRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록된 일일 기록이 없습니다'**
+  String get weightDetail_noDailyRecord;
+
+  /// No description provided for @weightDetail_addDailyRecordHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'아래 버튼을 눌러 기록을 추가해보세요'**
+  String get weightDetail_addDailyRecordHint;
+
+  /// No description provided for @btn_addSchedule.
+  ///
+  /// In ko, this message translates to:
+  /// **'일정 추가'**
+  String get btn_addSchedule;
+
+  /// No description provided for @btn_addDailyRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록 추가'**
+  String get btn_addDailyRecord;
 }
 
 class _AppLocalizationsDelegate

@@ -968,5 +968,25 @@
   "home_insightsTitle": "이번 주 인사이트",
   "home_insightsEmpty": "아직 인사이트가 없습니다",
   "home_insightsRecommendations": "추천 사항",
-  "home_insightsUpgrade": "Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요"
+  "home_insightsUpgrade": "Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요",
+
+  "dailyRecord_title": "일일 기록",
+  "dailyRecord_mood": "기분",
+  "dailyRecord_activity": "활동량",
+  "dailyRecord_notes": "메모",
+  "dailyRecord_notesHint": "오늘 반려조의 특이사항을 기록하세요",
+  "dailyRecord_moodGreat": "최고",
+  "dailyRecord_moodGood": "좋음",
+  "dailyRecord_moodNormal": "보통",
+  "dailyRecord_moodBad": "나쁨",
+  "dailyRecord_moodSick": "아픔",
+  "dailyRecord_saved": "일일 기록이 저장되었습니다",
+  "dailyRecord_deleted": "일일 기록이 삭제되었습니다",
+  "dailyRecord_saveError": "일일 기록 저장 중 오류가 발생했습니다",
+  "dailyRecord_deleteError": "일일 기록 삭제 중 오류가 발생했습니다",
+  "weightDetail_monthDailyRecord": "이번 달 일일 기록",
+  "weightDetail_noDailyRecord": "등록된 일일 기록이 없습니다",
+  "weightDetail_addDailyRecordHint": "아래 버튼을 눌러 기록을 추가해보세요",
+  "btn_addSchedule": "일정 추가",
+  "btn_addDailyRecord": "일일 기록 추가"
 }
