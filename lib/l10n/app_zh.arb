@@ -240,6 +240,14 @@
   "weightDetail_noSchedule": "暂无日程",
   "weightDetail_addScheduleHint": "点击下方按钮添加日程",
   "weightDetail_monthSchedule": "本月日程",
+  "weightDetail_dateSchedule": "{month}月{day}日日程",
+  "@weightDetail_dateSchedule": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
+  "weightDetail_noScheduleOnDate": "此日暂无日程",
   "weightDetail_noWeightRecord": "本月暂无体重记录",
   "weightDetail_monthWeightRecord": "{month}月体重记录",
   "@weightDetail_monthWeightRecord": {
@@ -954,7 +962,15 @@
   "dailyRecord_saveError": "保存每日记录时出错",
   "dailyRecord_deleteError": "删除每日记录时出错",
   "weightDetail_monthDailyRecord": "本月每日记录",
+  "weightDetail_dateDailyRecord": "{month}月{day}日每日记录",
+  "@weightDetail_dateDailyRecord": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
   "weightDetail_noDailyRecord": "暂无每日记录",
+  "weightDetail_noDailyRecordOnDate": "此日暂无每日记录",
   "weightDetail_addDailyRecordHint": "点击下方按钮添加记录",
   "btn_addSchedule": "添加日程",
   "btn_addDailyRecord": "添加每日记录"

@@ -1,9 +1,10 @@
-# 2026-03-09 Apple 버튼 HIG 준수 + 일일 기록 기능 + API 다국어 수정
+# 2026-03-09 Apple 버튼 HIG 준수 + 일일 기록 기능 + API 다국어 수정 + 기록 화면 UX 개선
 
 ## 개요
 - App Store 리젝 대응으로 Apple 로그인 버튼을 HIG(Human Interface Guidelines)에 맞게 수정 (main → dev cherry-pick)
 - 체중 상세 화면에 일일 기록(Daily Record) 기능 추가
 - API 클라이언트의 Accept-Language 헤더가 앱 내 설정 언어를 우선 반영하도록 수정
+- 체중 기록 섹션 순서 변경 + 일정/메모를 선택 날짜 기준 필터링으로 UX 개선
 
 ---
 
@@ -102,6 +103,50 @@ btn_addSchedule, btn_addDailyRecord
 - 기존: `PlatformDispatcher.instance.locale` (시스템 언어만 사용)
 - 변경: `LocaleProvider.instance.currentLanguageCode`를 먼저 확인 → 앱 내 설정 언어가 있으면 해당 값 반환, 없으면 시스템 언어 폴백
 - 사용자가 앱 내에서 언어를 변경했을 때 API 응답도 해당 언어로 반환되도록 보장
+
+---
+
+## 4. 기록 화면 섹션 순서 변경 + 날짜별 필터링 UX 개선
+
+### 배경
+- 체중 상세 화면에서 캘린더 아래 체중 기록이 먼저 나오고 일정/메모가 뒤에 있어 스크롤이 많이 필요
+- 일정, 메모가 월 단위 전체를 보여줘서 특정 날짜 기록을 확인하기 어려움
+
+### 변경 파일
+| 파일 | 변경 내용 |
+|------|-----------|
+| `lib/src/screens/weight/weight_detail_screen.dart` | 섹션 순서 변경 + 일정/메모 날짜 필터링 |
+| `lib/l10n/app_ko.arb` | 날짜별 타이틀 키 4개 추가 |
+| `lib/l10n/app_en.arb` | 날짜별 타이틀 키 4개 추가 |
+| `lib/l10n/app_zh.arb` | 날짜별 타이틀 키 4개 추가 |
+| `lib/l10n/app_localizations*.dart` | 자동 생성 (3개 언어) |
+
+### 주요 변경 사항
+
+#### 섹션 순서 변경
+- 기존: 캘린더 → **체중 기록** → 일정 → 메모
+- 변경: 캘린더 → **일정** → **메모** → **체중 기록** (맨 밑)
+- 캘린더에서 날짜 선택 후 바로 아래에서 해당 날짜의 일정/메모 확인 가능
+
+#### 일정 리스트 날짜 필터링 (`_buildScheduleList`)
+- 기존: `_selectedYear` + `_selectedMonth` 기준 월 전체 필터
+- 변경: `_selectedYear` + `_selectedMonth` + `_selectedDay` 기준 날짜 필터
+- 타이틀: `weightDetail_monthSchedule`("이번 달 일정") → `weightDetail_dateSchedule`("3월 9일 일정")
+- 빈 상태 메시지: `weightDetail_noScheduleOnDate`("이 날에 등록된 일정이 없습니다")
+
+#### 일일 기록 리스트 날짜 필터링 (`_buildDailyRecordList`)
+- 기존: `_selectedYear` + `_selectedMonth` 기준 월 전체 필터
+- 변경: `_selectedYear` + `_selectedMonth` + `_selectedDay` 기준 날짜 필터
+- 타이틀: `weightDetail_monthDailyRecord`("이번 달 일일 기록") → `weightDetail_dateDailyRecord`("3월 9일 일일 기록")
+- 빈 상태 메시지: `weightDetail_noDailyRecordOnDate`("이 날에 등록된 일일 기록이 없습니다")
+
+### 추가된 l10n 키
+```
+weightDetail_dateSchedule         - "{month}월 {day}일 일정" / "Schedule for {month}/{day}" / "{month}月{day}日日程"
+weightDetail_noScheduleOnDate     - "이 날에 등록된 일정이 없습니다" / "No scheduled events for this date" / "此日暂无日程"
+weightDetail_dateDailyRecord      - "{month}월 {day}일 일일 기록" / "Daily Record for {month}/{day}" / "{month}月{day}日每日记录"
+weightDetail_noDailyRecordOnDate  - "이 날에 등록된 일일 기록이 없습니다" / "No daily records for this date" / "此日暂无每日记录"
+```
 
 ---
 

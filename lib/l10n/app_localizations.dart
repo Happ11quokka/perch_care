@@ -910,6 +910,18 @@ abstract class AppLocalizations {
   /// **'이번 달 일정'**
   String get weightDetail_monthSchedule;
 
+  /// No description provided for @weightDetail_dateSchedule.
+  ///
+  /// In ko, this message translates to:
+  /// **'{month}월 {day}일 일정'**
+  String weightDetail_dateSchedule(int month, int day);
+
+  /// No description provided for @weightDetail_noScheduleOnDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 날에 등록된 일정이 없습니다'**
+  String get weightDetail_noScheduleOnDate;
+
   /// No description provided for @weightDetail_noWeightRecord.
   ///
   /// In ko, this message translates to:
@@ -3904,11 +3916,23 @@ abstract class AppLocalizations {
   /// **'이번 달 일일 기록'**
   String get weightDetail_monthDailyRecord;
 
+  /// No description provided for @weightDetail_dateDailyRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'{month}월 {day}일 일일 기록'**
+  String weightDetail_dateDailyRecord(int month, int day);
+
   /// No description provided for @weightDetail_noDailyRecord.
   ///
   /// In ko, this message translates to:
   /// **'등록된 일일 기록이 없습니다'**
   String get weightDetail_noDailyRecord;
+
+  /// No description provided for @weightDetail_noDailyRecordOnDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 날에 등록된 일일 기록이 없습니다'**
+  String get weightDetail_noDailyRecordOnDate;
 
   /// No description provided for @weightDetail_addDailyRecordHint.
   ///

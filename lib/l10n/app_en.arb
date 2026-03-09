@@ -176,6 +176,14 @@
   "weightDetail_noSchedule": "No scheduled events",
   "weightDetail_addScheduleHint": "Tap the button below to add an event",
   "weightDetail_monthSchedule": "This Month's Schedule",
+  "weightDetail_dateSchedule": "Schedule for {month}/{day}",
+  "@weightDetail_dateSchedule": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
+  "weightDetail_noScheduleOnDate": "No scheduled events for this date",
   "weightDetail_noWeightRecord": "No weight records this month",
   "weightDetail_monthWeightRecord": "{month} Weight Records",
   "btn_addRecord": "Add Record",
@@ -787,7 +795,15 @@
   "dailyRecord_saveError": "Failed to save daily record",
   "dailyRecord_deleteError": "Failed to delete daily record",
   "weightDetail_monthDailyRecord": "Daily Records This Month",
+  "weightDetail_dateDailyRecord": "Daily Record for {month}/{day}",
+  "@weightDetail_dateDailyRecord": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
   "weightDetail_noDailyRecord": "No daily records yet",
+  "weightDetail_noDailyRecordOnDate": "No daily records for this date",
   "weightDetail_addDailyRecordHint": "Tap the button below to add a record",
   "btn_addSchedule": "Add Schedule",
   "btn_addDailyRecord": "Add Daily Record"

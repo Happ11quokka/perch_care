@@ -456,6 +456,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get weightDetail_monthSchedule => '이번 달 일정';
 
   @override
+  String weightDetail_dateSchedule(int month, int day) {
+    return '$month월 $day일 일정';
+  }
+
+  @override
+  String get weightDetail_noScheduleOnDate => '이 날에 등록된 일정이 없습니다';
+
+  @override
   String get weightDetail_noWeightRecord => '이번 달 체중 기록이 없습니다';
 
   @override
@@ -2057,7 +2065,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get weightDetail_monthDailyRecord => '이번 달 일일 기록';
 
   @override
+  String weightDetail_dateDailyRecord(int month, int day) {
+    return '$month월 $day일 일일 기록';
+  }
+
+  @override
   String get weightDetail_noDailyRecord => '등록된 일일 기록이 없습니다';
+
+  @override
+  String get weightDetail_noDailyRecordOnDate => '이 날에 등록된 일일 기록이 없습니다';
 
   @override
   String get weightDetail_addDailyRecordHint => '아래 버튼을 눌러 기록을 추가해보세요';

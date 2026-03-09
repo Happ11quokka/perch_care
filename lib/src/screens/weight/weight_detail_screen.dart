@@ -399,11 +399,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   const SizedBox(height: 16),
                   _buildCalendarCard(),
                   const SizedBox(height: 16),
-                  _buildWeightRecordsList(),
-                  const SizedBox(height: 16),
                   _buildScheduleList(),
                   const SizedBox(height: 16),
                   _buildDailyRecordList(),
+                  const SizedBox(height: 16),
+                  _buildWeightRecordsList(),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -1587,69 +1587,74 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildDailyRecordList() {
     final l10n = AppLocalizations.of(context);
-    final monthRecords = _dailyRecords.where((record) {
+    // Filter daily records for the selected date
+    final dayRecords = _dailyRecords.where((record) {
       return record.recordedDate.year == _selectedYear &&
-          record.recordedDate.month == _selectedMonth;
+          record.recordedDate.month == _selectedMonth &&
+          record.recordedDate.day == _selectedDay;
     }).toList();
 
-    monthRecords.sort((a, b) => a.recordedDate.compareTo(b.recordedDate));
-
-    if (monthRecords.isEmpty) {
+    if (dayRecords.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                Icons.edit_note_outlined,
-                size: 48,
-                color: AppColors.mediumGray.withValues(alpha: 0.5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.weightDetail_dateDailyRecord(_selectedMonth, _selectedDay),
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.nearBlack,
+                letterSpacing: -0.4,
               ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.weightDetail_noDailyRecord,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.mediumGray,
-                  letterSpacing: -0.35,
-                ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.weightDetail_addDailyRecordHint,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 12,
-                  color: AppColors.mediumGray,
-                  letterSpacing: -0.3,
-                ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.edit_note_outlined,
+                    size: 48,
+                    color: AppColors.mediumGray.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.weightDetail_noDailyRecordOnDate,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.mediumGray,
+                      letterSpacing: -0.35,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.weightDetail_addDailyRecordHint,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      color: AppColors.mediumGray,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    // Group by date
-    final Map<DateTime, DailyRecord> groupedRecords = {};
-    for (final record in monthRecords) {
-      final dateKey = DateTime(
-        record.recordedDate.year,
-        record.recordedDate.month,
-        record.recordedDate.day,
-      );
-      groupedRecords[dateKey] = record;
-    }
-
-    final sortedDates = groupedRecords.keys.toList()..sort();
+    final record = dayRecords.first;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -1657,7 +1662,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.weightDetail_monthDailyRecord,
+            l10n.weightDetail_dateDailyRecord(_selectedMonth, _selectedDay),
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -1667,9 +1672,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ...sortedDates.map(
-            (date) => _buildDailyRecordCard(date, groupedRecords[date]!),
-          ),
+          _buildDailyRecordCard(_focusedDate, record),
         ],
       ),
     );
@@ -1824,72 +1827,75 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Widget _buildScheduleList() {
     final l10n = AppLocalizations.of(context);
-    // Filter schedules for the selected month
-    final monthSchedules = _scheduleRecords.where((record) {
+    // Filter schedules for the selected date
+    final daySchedules = _scheduleRecords.where((record) {
       return record.startTime.year == _selectedYear &&
-          record.startTime.month == _selectedMonth;
+          record.startTime.month == _selectedMonth &&
+          record.startTime.day == _selectedDay;
     }).toList();
 
     // Sort by start time
-    monthSchedules.sort((a, b) => a.startTime.compareTo(b.startTime));
+    daySchedules.sort((a, b) => a.startTime.compareTo(b.startTime));
 
-    if (monthSchedules.isEmpty) {
+    if (daySchedules.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                Icons.event_note_outlined,
-                size: 48,
-                color: AppColors.mediumGray.withValues(alpha: 0.5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.weightDetail_dateSchedule(_selectedMonth, _selectedDay),
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.nearBlack,
+                letterSpacing: -0.4,
               ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.weightDetail_noSchedule,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.mediumGray,
-                  letterSpacing: -0.35,
-                ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.weightDetail_addScheduleHint,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 12,
-                  color: AppColors.mediumGray,
-                  letterSpacing: -0.3,
-                ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.event_note_outlined,
+                    size: 48,
+                    color: AppColors.mediumGray.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.weightDetail_noScheduleOnDate,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.mediumGray,
+                      letterSpacing: -0.35,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.weightDetail_addScheduleHint,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      color: AppColors.mediumGray,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
-
-    // Group schedules by date
-    final Map<DateTime, List<ScheduleRecord>> groupedSchedules = {};
-    for (final schedule in monthSchedules) {
-      final dateKey = DateTime(
-        schedule.startTime.year,
-        schedule.startTime.month,
-        schedule.startTime.day,
-      );
-      groupedSchedules.putIfAbsent(dateKey, () => []);
-      groupedSchedules[dateKey]!.add(schedule);
-    }
-
-    final sortedDates = groupedSchedules.keys.toList()..sort();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -1897,7 +1903,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.weightDetail_monthSchedule,
+            l10n.weightDetail_dateSchedule(_selectedMonth, _selectedDay),
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 16,
@@ -1907,9 +1913,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ...sortedDates.map(
-            (date) => _buildScheduleDateGroup(date, groupedSchedules[date]!),
-          ),
+          _buildScheduleDateGroup(_focusedDate, daySchedules),
         ],
       ),
     );

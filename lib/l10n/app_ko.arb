@@ -245,6 +245,14 @@
   "weightDetail_noSchedule": "등록된 일정이 없습니다",
   "weightDetail_addScheduleHint": "아래 버튼을 눌러 일정을 추가해보세요",
   "weightDetail_monthSchedule": "이번 달 일정",
+  "weightDetail_dateSchedule": "{month}월 {day}일 일정",
+  "@weightDetail_dateSchedule": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
+  "weightDetail_noScheduleOnDate": "이 날에 등록된 일정이 없습니다",
   "weightDetail_noWeightRecord": "이번 달 체중 기록이 없습니다",
   "weightDetail_monthWeightRecord": "{month}월 체중 기록",
   "@weightDetail_monthWeightRecord": {
@@ -985,7 +993,15 @@
   "dailyRecord_saveError": "일일 기록 저장 중 오류가 발생했습니다",
   "dailyRecord_deleteError": "일일 기록 삭제 중 오류가 발생했습니다",
   "weightDetail_monthDailyRecord": "이번 달 일일 기록",
+  "weightDetail_dateDailyRecord": "{month}월 {day}일 일일 기록",
+  "@weightDetail_dateDailyRecord": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
   "weightDetail_noDailyRecord": "등록된 일일 기록이 없습니다",
+  "weightDetail_noDailyRecordOnDate": "이 날에 등록된 일일 기록이 없습니다",
   "weightDetail_addDailyRecordHint": "아래 버튼을 눌러 기록을 추가해보세요",
   "btn_addSchedule": "일정 추가",
   "btn_addDailyRecord": "일일 기록 추가"

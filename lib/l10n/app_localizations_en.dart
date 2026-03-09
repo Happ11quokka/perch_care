@@ -467,6 +467,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weightDetail_monthSchedule => 'This Month\'s Schedule';
 
   @override
+  String weightDetail_dateSchedule(int month, int day) {
+    return 'Schedule for $month/$day';
+  }
+
+  @override
+  String get weightDetail_noScheduleOnDate =>
+      'No scheduled events for this date';
+
+  @override
   String get weightDetail_noWeightRecord => 'No weight records this month';
 
   @override
@@ -2119,7 +2128,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weightDetail_monthDailyRecord => 'Daily Records This Month';
 
   @override
+  String weightDetail_dateDailyRecord(int month, int day) {
+    return 'Daily Record for $month/$day';
+  }
+
+  @override
   String get weightDetail_noDailyRecord => 'No daily records yet';
+
+  @override
+  String get weightDetail_noDailyRecordOnDate =>
+      'No daily records for this date';
 
   @override
   String get weightDetail_addDailyRecordHint =>

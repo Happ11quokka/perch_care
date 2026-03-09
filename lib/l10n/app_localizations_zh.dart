@@ -451,6 +451,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get weightDetail_monthSchedule => '本月日程';
 
   @override
+  String weightDetail_dateSchedule(int month, int day) {
+    return '$month月$day日日程';
+  }
+
+  @override
+  String get weightDetail_noScheduleOnDate => '此日暂无日程';
+
+  @override
   String get weightDetail_noWeightRecord => '本月暂无体重记录';
 
   @override
@@ -2024,7 +2032,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get weightDetail_monthDailyRecord => '本月每日记录';
 
   @override
+  String weightDetail_dateDailyRecord(int month, int day) {
+    return '$month月$day日每日记录';
+  }
+
+  @override
   String get weightDetail_noDailyRecord => '暂无每日记录';
+
+  @override
+  String get weightDetail_noDailyRecordOnDate => '此日暂无每日记录';
 
   @override
   String get weightDetail_addDailyRecordHint => '点击下方按钮添加记录';
