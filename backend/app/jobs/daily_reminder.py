@@ -12,6 +12,7 @@ from sqlalchemy import select, exists, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session_factory
+import app.models  # noqa: F401 — register all ORM mappers
 from app.models.pet import Pet
 from app.models.user import User
 from app.models.weight_record import WeightRecord
