@@ -13,6 +13,7 @@ import '../../widgets/local_image_avatar.dart';
 import '../../models/pet.dart';
 import '../../models/bhi_result.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../services/sync/sync_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../../l10n/app_localizations.dart';
@@ -176,6 +177,9 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadBhi(activePet.id);
       }
 
+      // 오프라인 큐 동기화 (로그인 후 splash에서 실패한 항목 재처리)
+      _syncOfflineData();
+
       // 첫 사용자 코치마크 표시
       _maybeShowCoachMarks();
     } catch (e) {
@@ -185,6 +189,19 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  /// 로그인 후 오프라인 큐 동기화 (fire-and-forget, UI 차단 없음)
+  void _syncOfflineData() async {
+    try {
+      await SyncService.instance.processQueue();
+      final pet = _activePet;
+      if (pet != null) {
+        await SyncService.instance.syncLocalRecordsIfNeeded(pet.id);
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Offline sync error: $e');
     }
   }
 
