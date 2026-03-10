@@ -67,7 +67,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
       // pending sync 항목이 있으면 서버 데이터 대신 로컬 데이터 사용
       final dateStr = _selectedDate.toIso8601String().split('T').first;
       if (SyncService.instance.hasPending('water', _activePetId!, dateStr)) {
-        debugPrint('[Water] Pending sync exists for $dateStr, using local data');
+        debugPrint(
+          '[Water] Pending sync exists for $dateStr, using local data',
+        );
         // fall through to SharedPreferences below
       } else {
         try {
@@ -113,11 +115,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
       _storageKey(),
-      jsonEncode({
-        'totalMl': _totalMl,
-        'count': _count,
-      }),
+      jsonEncode({'totalMl': _totalMl, 'count': _count}),
     );
+    final dateKey = SyncService.dateKey(_selectedDate);
 
     // Also save to backend
     if (_activePetId != null) {
@@ -129,20 +129,27 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
           targetMl: _goalMl,
           count: _count,
         );
-        // 서버 저장 성공 → 밀린 큐 드레인
-        SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('Failed to save water to backend: $e');
-        await SyncService.instance.enqueue(SyncItem(
+        await SyncService.instance.markMutationSynced(
           type: 'water',
           petId: _activePetId!,
-          date: _selectedDate.toIso8601String().split('T').first,
-          payload: {
-            'totalMl': _totalMl,
-            'targetMl': _goalMl,
-            'count': _count,
-          },
-        ));
+          date: dateKey,
+        );
+        // 서버 저장 성공 → 밀린 큐 드레인
+        await SyncService.instance.drainAfterSuccess();
+      } catch (e) {
+        debugPrint('Failed to save water to backend: $e');
+        await SyncService.instance.enqueue(
+          SyncItem(
+            type: 'water',
+            petId: _activePetId!,
+            date: dateKey,
+            payload: {
+              'totalMl': _totalMl,
+              'targetMl': _goalMl,
+              'count': _count,
+            },
+          ),
+        );
       }
     }
     AnalyticsService.instance.logWaterRecorded(_activePetId ?? '');
@@ -210,7 +217,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: totalController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 onTapOutside: (event) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   labelText: l10n.water_totalIntake,
@@ -239,7 +248,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        final total = double.tryParse(totalController.text.trim());
+                        final total = double.tryParse(
+                          totalController.text.trim(),
+                        );
                         final count = int.tryParse(countController.text.trim());
                         if (total == null || count == null) return;
                         Navigator.pop(
@@ -380,8 +391,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                               fontFamily: 'Pretendard',
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color:
-                                  hasData ? AppColors.nearBlack : AppColors.gray400,
+                              color: hasData
+                                  ? AppColors.nearBlack
+                                  : AppColors.gray400,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -440,7 +452,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  l10n.water_recommendedRange(_goalMl.toStringAsFixed(0)),
+                                  l10n.water_recommendedRange(
+                                    _goalMl.toStringAsFixed(0),
+                                  ),
                                   style: const TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 12,
@@ -462,7 +476,9 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  l10n.water_perDrink(_perDrink.toStringAsFixed(0)),
+                                  l10n.water_perDrink(
+                                    _perDrink.toStringAsFixed(0),
+                                  ),
                                   style: const TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 12,
@@ -508,7 +524,10 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                       onTap: () async {
                         await _saveRecord();
                         if (!mounted) return;
-                        AppSnackBar.success(context, message: l10n.snackbar_saved);
+                        AppSnackBar.success(
+                          context,
+                          message: l10n.snackbar_saved,
+                        );
                       },
                       child: Container(
                         height: 56,
@@ -565,8 +584,5 @@ class _WaterEditResult {
   final double totalMl;
   final int count;
 
-  const _WaterEditResult({
-    required this.totalMl,
-    required this.count,
-  });
+  const _WaterEditResult({required this.totalMl, required this.count});
 }

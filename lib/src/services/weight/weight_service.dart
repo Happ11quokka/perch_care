@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/weight_record.dart';
@@ -40,8 +41,9 @@ class WeightService {
       return List.unmodifiable(_recordsByPet[petId] ?? const <WeightRecord>[]);
     }
 
-    final allRecords = _recordsByPet.values.expand((records) => records).toList()
-      ..sort(_compareRecords);
+    final allRecords =
+        _recordsByPet.values.expand((records) => records).toList()
+          ..sort(_compareRecords);
     return List.unmodifiable(allRecords);
   }
 
@@ -60,9 +62,11 @@ class WeightService {
     }
 
     for (final records in sources) {
-      result.addAll(records.where(
-        (record) => _normalizeDate(record.date) == normalizedDate,
-      ));
+      result.addAll(
+        records.where(
+          (record) => _normalizeDate(record.date) == normalizedDate,
+        ),
+      );
     }
 
     result.sort(_compareRecords);
@@ -89,33 +93,22 @@ class WeightService {
           .toList();
 
       // pending sync 항목이 있으면 로컬 기록 중 서버에 없는 것을 보존
-      final pendingItems = SyncService.instance.getPendingItems('weight', petId);
+      final pendingItems = SyncService.instance.getPendingItems(
+        'weight',
+        petId,
+      );
       if (pendingItems.isNotEmpty && _recordsByPet.containsKey(petId)) {
         final localRecords = _recordsByPet[petId]!;
-        // 서버 날짜 Set (시간 무시, 날짜 기준)
-        final serverDates = serverRecords
-            .map((r) => _normalizeDate(r.date))
-            .toSet();
+        final serverKeys = serverRecords.map(_recordSyncKey).toSet();
+        final pendingKeys = pendingItems.map(_pendingItemSyncKey).toSet();
 
-        // pending 날짜 Set
-        final pendingDates = <DateTime>{};
-        for (final item in pendingItems) {
-          final parts = item.date.split('-');
-          if (parts.length == 3) {
-            pendingDates.add(DateTime(
-              int.parse(parts[0]),
-              int.parse(parts[1]),
-              int.parse(parts[2]),
-            ));
-          }
-        }
-
-        // 로컬에만 있고 pending 큐에 해당하는 기록을 서버 결과에 병합
+        // 로컬에만 있고 pending 큐에 해당하는 동일 mutation만 서버 결과에 병합
         for (final local in localRecords) {
-          final normalDate = _normalizeDate(local.date);
-          if (pendingDates.contains(normalDate) &&
-              !serverDates.contains(normalDate)) {
+          final localKey = _recordSyncKey(local);
+          if (pendingKeys.contains(localKey) &&
+              !serverKeys.contains(localKey)) {
             serverRecords.add(local);
+            serverKeys.add(localKey);
           }
         }
       }
@@ -140,7 +133,10 @@ class WeightService {
 
   /// 특정 날짜의 체중 기록 조회 (캐시 → 서버 순으로 탐색)
   /// 다중 기록 중 첫 번째 반환 (하위 호환성)
-  Future<WeightRecord?> fetchRecordByDate(DateTime date, {String? petId}) async {
+  Future<WeightRecord?> fetchRecordByDate(
+    DateTime date, {
+    String? petId,
+  }) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(date);
 
@@ -187,11 +183,17 @@ class WeightService {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(record.date);
 
-    await _api.post('/pets/${record.petId}/weights/', body: {
-      'recorded_date': _formatDate(normalizedDate),
-      'weight': record.weight,
-      if (record.memo != null) 'memo': record.memo,
-    });
+    await _api.post(
+      '/pets/${record.petId}/weights/',
+      body: {
+        'recorded_date': _formatDate(normalizedDate),
+        'weight': record.weight,
+        if (record.memo != null) 'memo': record.memo,
+        if (record.recordedHour != null) 'recorded_hour': record.recordedHour,
+        if (record.recordedMinute != null)
+          'recorded_minute': record.recordedMinute,
+      },
+    );
 
     // 로컬 캐시도 업데이트
     final recordWithId = record.copyWith(
@@ -203,7 +205,7 @@ class WeightService {
   }
 
   /// 로컬 캐시에 체중 기록 추가 (다중 기록 지원)
-  Future<void> saveLocalWeightRecord(WeightRecord record) async {
+  Future<WeightRecord> saveLocalWeightRecord(WeightRecord record) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(record.date);
     final recordWithId = record.copyWith(
@@ -211,7 +213,8 @@ class WeightService {
       date: normalizedDate,
     );
     _insertLocal(recordWithId);
-    _schedulePersist();
+    await _persistToStorageImmediate();
+    return recordWithId;
   }
 
   /// 특정 ID의 체중 기록 삭제 (로컬)
@@ -263,10 +266,10 @@ class WeightService {
     DateTime start,
     DateTime end,
   ) async {
-    final response = await _api.get('/pets/$petId/weights/range', queryParams: {
-      'start': _formatDate(start),
-      'end': _formatDate(end),
-    });
+    final response = await _api.get(
+      '/pets/$petId/weights/range',
+      queryParams: {'start': _formatDate(start), 'end': _formatDate(end)},
+    );
 
     return (response as List)
         .map((json) => WeightRecord.fromJson(json))
@@ -329,13 +332,49 @@ class WeightService {
       final index = records.indexWhere((r) => r.id == record.id);
       if (index != -1) {
         records[index] = record;
-      } else {
-        records.add(record);
+        records.sort(_compareRecords);
+        return;
       }
-    } else {
-      records.add(record);
     }
+
+    final semanticIndex = records.indexWhere(
+      (existing) => _isSameRecord(existing, record),
+    );
+    if (semanticIndex != -1) {
+      records[semanticIndex] = record.copyWith(
+        id: record.id ?? records[semanticIndex].id,
+      );
+      records.sort(_compareRecords);
+      return;
+    }
+
+    records.add(record);
     records.sort(_compareRecords);
+  }
+
+  String _recordSyncKey(WeightRecord record) {
+    final dateKey = _formatDate(_normalizeDate(record.date));
+    final entityId = SyncService.weightEntityId(
+      recordedHour: record.recordedHour,
+      recordedMinute: record.recordedMinute,
+    );
+    return '$dateKey|$entityId|${_weightKey(record.weight)}|${record.memo ?? ''}';
+  }
+
+  String _pendingItemSyncKey(SyncItem item) {
+    final weight = (item.payload['weight'] as num?)?.toDouble() ?? 0;
+    final memo = item.payload['memo'] as String? ?? '';
+    return '${item.date}|${item.entityId}|${_weightKey(weight)}|$memo';
+  }
+
+  String _weightKey(double value) => value.toStringAsFixed(3);
+
+  bool _isSameRecord(WeightRecord a, WeightRecord b) {
+    return _normalizeDate(a.date) == _normalizeDate(b.date) &&
+        a.weight == b.weight &&
+        a.memo == b.memo &&
+        a.recordedHour == b.recordedHour &&
+        a.recordedMinute == b.recordedMinute;
   }
 
   Future<void> _ensureInitialized() async {
@@ -350,16 +389,20 @@ class WeightService {
     final Map<String, List<WeightRecord>> loaded = {};
 
     for (final item in raw) {
-      final map = jsonDecode(item) as Map<String, dynamic>;
-      final record = WeightRecord(
-        id: map['id'] as String? ?? _generateLocalId(),
-        petId: map['petId'] as String? ?? 'default',
-        date: DateTime.parse(map['date'] as String),
-        weight: (map['weight'] as num).toDouble(),
-        recordedHour: map['recordedHour'] as int?,
-        recordedMinute: map['recordedMinute'] as int?,
-      );
-      loaded.putIfAbsent(record.petId, () => []).add(record);
+      try {
+        final map = jsonDecode(item) as Map<String, dynamic>;
+        final record = WeightRecord(
+          id: map['id'] as String? ?? _generateLocalId(),
+          petId: map['petId'] as String? ?? 'default',
+          date: DateTime.parse(map['date'] as String),
+          weight: (map['weight'] as num).toDouble(),
+          recordedHour: map['recordedHour'] as int?,
+          recordedMinute: map['recordedMinute'] as int?,
+        );
+        loaded.putIfAbsent(record.petId, () => []).add(record);
+      } catch (e) {
+        debugPrint('[WeightService] Skipping corrupted record: $e');
+      }
     }
 
     for (final entries in loaded.entries) {
@@ -383,14 +426,18 @@ class WeightService {
     final prefs = await SharedPreferences.getInstance();
     final data = _recordsByPet.values
         .expand((records) => records)
-        .map((record) => jsonEncode({
-              'id': record.id,
-              'petId': record.petId,
-              'date': record.date.toIso8601String(),
-              'weight': record.weight,
-              if (record.recordedHour != null) 'recordedHour': record.recordedHour,
-              if (record.recordedMinute != null) 'recordedMinute': record.recordedMinute,
-            }))
+        .map(
+          (record) => jsonEncode({
+            'id': record.id,
+            'petId': record.petId,
+            'date': record.date.toIso8601String(),
+            'weight': record.weight,
+            if (record.recordedHour != null)
+              'recordedHour': record.recordedHour,
+            if (record.recordedMinute != null)
+              'recordedMinute': record.recordedMinute,
+          }),
+        )
         .toList();
     await prefs.setStringList(_storageKey, data);
   }

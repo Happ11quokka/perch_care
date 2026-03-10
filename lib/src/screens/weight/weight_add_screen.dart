@@ -19,10 +19,7 @@ import '../../../l10n/app_localizations.dart';
 class WeightAddScreen extends StatefulWidget {
   final DateTime date;
 
-  const WeightAddScreen({
-    super.key,
-    required this.date,
-  });
+  const WeightAddScreen({super.key, required this.date});
 
   @override
   State<WeightAddScreen> createState() => _WeightAddScreenState();
@@ -106,6 +103,11 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
 
     try {
       final weight = double.parse(_weightController.text);
+      final dateKey = SyncService.dateKey(widget.date);
+      final entityId = SyncService.weightEntityId(
+        recordedHour: _selectedTime.hour,
+        recordedMinute: _selectedTime.minute,
+      );
       final record = WeightRecord(
         petId: _activePetId!,
         date: widget.date,
@@ -115,25 +117,34 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
       );
 
       // 로컬 캐시에 먼저 저장
-      await _weightService.saveLocalWeightRecord(record);
+      final localRecord = await _weightService.saveLocalWeightRecord(record);
       // 백엔드 API에도 저장
       try {
-        await _weightService.saveWeightRecord(record);
-        // 서버 저장 성공 → 밀린 큐 드레인
-        SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('[WeightAdd] 백엔드 저장 실패, 로컬에만 저장됨: $e');
-        await SyncService.instance.enqueue(SyncItem(
+        await _weightService.saveWeightRecord(localRecord);
+        await SyncService.instance.markMutationSynced(
           type: 'weight',
           petId: _activePetId!,
-          date: widget.date.toIso8601String().split('T').first,
-          entityId: '${_selectedTime.hour}:${_selectedTime.minute}',
-          payload: {
-            'weight': weight,
-            'recordedHour': _selectedTime.hour,
-            'recordedMinute': _selectedTime.minute,
-          },
-        ));
+          date: dateKey,
+          entityId: entityId,
+        );
+        // 서버 저장 성공 → 밀린 큐 드레인
+        await SyncService.instance.drainAfterSuccess();
+      } catch (e) {
+        debugPrint('[WeightAdd] 백엔드 저장 실패, 로컬에만 저장됨: $e');
+        await SyncService.instance.enqueue(
+          SyncItem(
+            type: 'weight',
+            petId: _activePetId!,
+            date: dateKey,
+            entityId: entityId,
+            payload: {
+              'localId': localRecord.id,
+              'weight': weight,
+              'recordedHour': _selectedTime.hour,
+              'recordedMinute': _selectedTime.minute,
+            },
+          ),
+        );
       }
 
       debugPrint('[WeightAdd] Save success, mounted=$mounted');
@@ -156,7 +167,11 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         debugPrint('[WeightAdd] Save error: $e');
         AppSnackBar.error(
           context,
-          message: ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.weightSave),
+          message: ErrorHandler.getUserMessage(
+            e,
+            l10n,
+            context: ErrorContext.weightSave,
+          ),
         );
       }
     } finally {
@@ -177,7 +192,11 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppColors.nearBlack),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            size: 20,
+            color: AppColors.nearBlack,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -195,8 +214,13 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
             final padding = MediaQuery.of(context).padding;
             final calculatedExpanded = constraints.maxHeight * 0.6;
             final maxHeightLimit = constraints.maxHeight - AppSpacing.md;
-            final safeUpperBound = maxHeightLimit < _peekHeight ? _peekHeight : maxHeightLimit;
-            _expandedHeight = calculatedExpanded.clamp(_peekHeight, safeUpperBound);
+            final safeUpperBound = maxHeightLimit < _peekHeight
+                ? _peekHeight
+                : maxHeightLimit;
+            _expandedHeight = calculatedExpanded.clamp(
+              _peekHeight,
+              safeUpperBound,
+            );
             if (_sheetHeight == 0) {
               _sheetHeight = _expandedHeight;
             } else {
@@ -222,7 +246,10 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: _buildBottomSheet(MediaQuery.of(context).size, padding),
+                    child: _buildBottomSheet(
+                      MediaQuery.of(context).size,
+                      padding,
+                    ),
                   ),
                 ],
               ),
@@ -318,7 +345,9 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     height: 8,
-                    color: isActive ? AppColors.brandPrimary : AppColors.lightGray,
+                    color: isActive
+                        ? AppColors.brandPrimary
+                        : AppColors.lightGray,
                   ),
                 );
               }),
@@ -327,7 +356,9 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 2,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 11,
+                  ),
                   activeTrackColor: Colors.transparent,
                   inactiveTrackColor: Colors.transparent,
                   overlayShape: SliderComponentShape.noOverlay,
@@ -350,7 +381,9 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                       if (_weightController.text != formatted) {
                         _weightController.value = TextEditingValue(
                           text: formatted,
-                          selection: TextSelection.collapsed(offset: formatted.length),
+                          selection: TextSelection.collapsed(
+                            offset: formatted.length,
+                          ),
                         );
                       }
                       _bcsLevel = _mapWeightToBcsLevel(newWeight);
@@ -394,7 +427,9 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
           }
 
           final midPoint = (_peekHeight + _expandedHeight) / 2;
-          _sheetHeight = _sheetHeight > midPoint ? _expandedHeight : _peekHeight;
+          _sheetHeight = _sheetHeight > midPoint
+              ? _expandedHeight
+              : _peekHeight;
         });
       },
       child: AnimatedContainer(
@@ -420,7 +455,9 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
             GestureDetector(
               onTap: () {
                 setState(() {
-                  _sheetHeight = _sheetHeight == _peekHeight ? _expandedHeight : _peekHeight;
+                  _sheetHeight = _sheetHeight == _peekHeight
+                      ? _expandedHeight
+                      : _peekHeight;
                 });
               },
               child: Container(
@@ -465,9 +502,12 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
     final isAM = _selectedTime.hour < 12;
     final displayHour = _selectedTime.hour == 0
         ? 12
-        : (_selectedTime.hour > 12 ? _selectedTime.hour - 12 : _selectedTime.hour);
+        : (_selectedTime.hour > 12
+              ? _selectedTime.hour - 12
+              : _selectedTime.hour);
     final period = isAM ? l10n.weight_amPeriod : l10n.weight_pmPeriod;
-    final timeText = '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
+    final timeText =
+        '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
 
     return GestureDetector(
       onTap: () async {
@@ -562,10 +602,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
             width: double.infinity,
             height: 140,
             decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.lightGray,
-                width: 1,
-              ),
+              border: Border.all(color: AppColors.lightGray, width: 1),
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: Column(
@@ -576,7 +613,11 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.mediumGray, style: BorderStyle.solid, width: 1.5),
+                    border: Border.all(
+                      color: AppColors.mediumGray,
+                      style: BorderStyle.solid,
+                      width: 1.5,
+                    ),
                   ),
                   child: const Icon(Icons.add, color: AppColors.mediumGray),
                 ),
@@ -624,10 +665,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(
-            color: AppColors.brandPrimary,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -753,6 +791,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
         return l10n.weight_bcs5;
     }
   }
+
   String _formatLunarDisplay(DateTime date) {
     final l10n = AppLocalizations.of(context);
     final lunarMonth = (date.month - 1) % 12 + 1;

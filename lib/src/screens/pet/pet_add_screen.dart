@@ -25,11 +25,7 @@ class PetAddScreen extends StatefulWidget {
   final String? petId; // null이면 등록, 값이 있으면 수정
   final bool isInitialSetup; // 첫 로그인 설정 플로우 여부
 
-  const PetAddScreen({
-    super.key,
-    this.petId,
-    this.isInitialSetup = false,
-  });
+  const PetAddScreen({super.key, this.petId, this.isInitialSetup = false});
 
   @override
   State<PetAddScreen> createState() => _PetAddScreenState();
@@ -70,14 +66,24 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
   // Raw values for gender and growth stage
   static const List<String> _genderValues = ['male', 'female', 'unknown'];
-  static const List<String> _growthStageValues = ['rapid_growth', 'post_growth', 'adult'];
+  static const List<String> _growthStageValues = [
+    'rapid_growth',
+    'post_growth',
+    'adult',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _nameFocusNode.addListener(() => setState(() => _nameHasFocus = _nameFocusNode.hasFocus));
-    _weightFocusNode.addListener(() => setState(() => _weightHasFocus = _weightFocusNode.hasFocus));
-    _speciesFocusNode.addListener(() => setState(() => _speciesHasFocus = _speciesFocusNode.hasFocus));
+    _nameFocusNode.addListener(
+      () => setState(() => _nameHasFocus = _nameFocusNode.hasFocus),
+    );
+    _weightFocusNode.addListener(
+      () => setState(() => _weightHasFocus = _weightFocusNode.hasFocus),
+    );
+    _speciesFocusNode.addListener(
+      () => setState(() => _speciesHasFocus = _speciesFocusNode.hasFocus),
+    );
     if (widget.petId != null) {
       _loadExistingPet();
     }
@@ -212,7 +218,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
       final gender = _selectedGender;
       final growthStage = _selectedGrowthStage;
       final weightText = _weightController.text.trim();
-      final double? weightValue = weightText.isNotEmpty ? double.tryParse(weightText) : null;
+      final double? weightValue = weightText.isNotEmpty
+          ? double.tryParse(weightText)
+          : null;
 
       Pet savedPet;
 
@@ -258,30 +266,46 @@ class _PetAddScreenState extends State<PetAddScreen> {
       if (weightValue != null && _existingPet == null) {
         try {
           final weightService = WeightService.instance;
+          final now = DateTime.now();
+          final dateKey = SyncService.dateKey(now);
+          final entityId = SyncService.weightEntityId(
+            recordedHour: now.hour,
+            recordedMinute: now.minute,
+          );
           final record = WeightRecord(
             petId: savedPet.id,
-            date: DateTime.now(),
+            date: now,
             weight: weightValue,
+            recordedHour: now.hour,
+            recordedMinute: now.minute,
           );
-          await weightService.saveLocalWeightRecord(record);
+          final localRecord = await weightService.saveLocalWeightRecord(record);
           try {
-            await weightService.saveWeightRecord(record);
-            // 서버 저장 성공 → 밀린 큐 드레인
-            SyncService.instance.drainAfterSuccess();
-          } catch (e) {
-            debugPrint('[PetAdd] Backend weight save failed: $e');
-            final now = DateTime.now();
-            await SyncService.instance.enqueue(SyncItem(
+            await weightService.saveWeightRecord(localRecord);
+            await SyncService.instance.markMutationSynced(
               type: 'weight',
               petId: savedPet.id,
-              date: now.toIso8601String().split('T').first,
-              entityId: '${now.hour}:${now.minute}',
-              payload: {
-                'weight': weightValue,
-                'recordedHour': now.hour,
-                'recordedMinute': now.minute,
-              },
-            ));
+              date: dateKey,
+              entityId: entityId,
+            );
+            // 서버 저장 성공 → 밀린 큐 드레인
+            await SyncService.instance.drainAfterSuccess();
+          } catch (e) {
+            debugPrint('[PetAdd] Backend weight save failed: $e');
+            await SyncService.instance.enqueue(
+              SyncItem(
+                type: 'weight',
+                petId: savedPet.id,
+                date: dateKey,
+                entityId: entityId,
+                payload: {
+                  'localId': localRecord.id,
+                  'weight': weightValue,
+                  'recordedHour': now.hour,
+                  'recordedMinute': now.minute,
+                },
+              ),
+            );
           }
         } catch (e) {
           debugPrint('[PetAdd] Initial weight record failed: $e');
@@ -312,9 +336,16 @@ class _PetAddScreenState extends State<PetAddScreen> {
 
       if (!mounted) return;
 
-      AppSnackBar.success(context, message: _existingPet != null ? l10n.common_updated : l10n.common_registered);
+      AppSnackBar.success(
+        context,
+        message: _existingPet != null
+            ? l10n.common_updated
+            : l10n.common_registered,
+      );
       if (_existingPet == null) {
-        AnalyticsService.instance.logPetRegistered(_speciesController.text.trim());
+        AnalyticsService.instance.logPetRegistered(
+          _speciesController.text.trim(),
+        );
       }
 
       if (widget.isInitialSetup) {
@@ -327,7 +358,11 @@ class _PetAddScreenState extends State<PetAddScreen> {
       debugPrint('[PetAdd] Save error: $e');
       AppSnackBar.error(
         context,
-        message: ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.petSave),
+        message: ErrorHandler.getUserMessage(
+          e,
+          l10n,
+          context: ErrorContext.petSave,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -378,194 +413,201 @@ class _PetAddScreenState extends State<PetAddScreen> {
       body: _isLoadingData
           ? const Center(child: CircularProgressIndicator())
           : Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 34),
-                      // 프로필 이미지
-                      Stack(
-                        children: [
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFFD9D9D9),
-                              image: _selectedImage != null
-                                  ? DecorationImage(
-                                      image: FileImage(_selectedImage!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : _savedImageBytes != null
-                                      ? DecorationImage(
-                                          image: MemoryImage(_savedImageBytes!),
-                                          fit: BoxFit.cover,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 34),
+                            // 프로필 이미지
+                            Stack(
+                              children: [
+                                Container(
+                                  width: 120,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFFD9D9D9),
+                                    image: _selectedImage != null
+                                        ? DecorationImage(
+                                            image: FileImage(_selectedImage!),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : _savedImageBytes != null
+                                        ? DecorationImage(
+                                            image: MemoryImage(
+                                              _savedImageBytes!,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
+                                  child:
+                                      _selectedImage == null &&
+                                          _savedImageBytes == null
+                                      ? const Center(
+                                          child: Icon(
+                                            Icons.pets,
+                                            size: 60,
+                                            color: Color(0xFF6B6B6B),
+                                          ),
                                         )
                                       : null,
-                            ),
-                            child: _selectedImage == null && _savedImageBytes == null
-                                ? const Center(
-                                    child: Icon(
-                                      Icons.pets,
-                                      size: 60,
-                                      color: Color(0xFF6B6B6B),
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: GestureDetector(
-                              onTap: _handlePickImage,
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(0xFFFF9A42),
                                 ),
-                                child: const Icon(
-                                  Icons.edit,
-                                  size: 16,
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: GestureDetector(
+                                    onTap: _handlePickImage,
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(0xFFFF9A42),
+                                      ),
+                                      child: const Icon(
+                                        Icons.edit,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
+                            // 이름
+                            _buildTextField(
+                              controller: _nameController,
+                              focusNode: _nameFocusNode,
+                              hasFocus: _nameHasFocus,
+                              hintText: l10n.pet_name_hint,
+                              fieldKey: 'name',
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return l10n.pet_name_hint;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            // 성별
+                            _buildGenderDropdown(l10n),
+                            const SizedBox(height: 16),
+                            // 몸무게
+                            _buildTextField(
+                              controller: _weightController,
+                              focusNode: _weightFocusNode,
+                              hasFocus: _weightHasFocus,
+                              hintText: l10n.pet_weight_hint,
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 16),
+                            // 생일
+                            _buildDateField(
+                              hint: l10n.pet_birthday_hint,
+                              selectedDate: _selectedBirthDate,
+                              onTap: () => _selectDate(context, true),
+                            ),
+                            const SizedBox(height: 16),
+                            // 가족이 된 날
+                            _buildDateField(
+                              hint: l10n.pet_adoptionDate_hint,
+                              selectedDate: _selectedAdoptionDate,
+                              onTap: () => _selectDate(context, false),
+                            ),
+                            const SizedBox(height: 16),
+                            // 품종 선택
+                            BreedSelector(
+                              selectedBreedId: _selectedBreedId,
+                              selectedBreedDisplayName:
+                                  _selectedBreedDisplayName,
+                              onBreedSelected: (breed) {
+                                setState(() {
+                                  if (breed != null) {
+                                    _selectedBreedId = breed.id;
+                                    _selectedBreedDisplayName =
+                                        breed.displayName;
+                                    _showOtherBreedField = false;
+                                    _speciesController.clear();
+                                  } else {
+                                    // "기타" 선택
+                                    _selectedBreedId = null;
+                                    _selectedBreedDisplayName = null;
+                                    _showOtherBreedField = true;
+                                  }
+                                });
+                              },
+                              hintText: l10n.pet_species_hint,
+                              otherOptionText: l10n.pet_species_hint,
+                            ),
+                            if (_showOtherBreedField) ...[
+                              const SizedBox(height: 12),
+                              _buildTextField(
+                                controller: _speciesController,
+                                focusNode: _speciesFocusNode,
+                                hasFocus: _speciesHasFocus,
+                                hintText: l10n.pet_species_hint,
+                              ),
+                            ],
+                            const SizedBox(height: 16),
+                            // 성장 단계 (새 전용)
+                            _buildGrowthStageDropdown(l10n),
+                            const SizedBox(height: 32),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // 저장 버튼
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+                  child: GestureDetector(
+                    onTap: _isLoading ? null : _handleSave,
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                l10n.common_save,
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.white,
+                                  letterSpacing: -0.45,
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
                       ),
-                      const SizedBox(height: 32),
-                      // 이름
-                      _buildTextField(
-                        controller: _nameController,
-                        focusNode: _nameFocusNode,
-                        hasFocus: _nameHasFocus,
-                        hintText: l10n.pet_name_hint,
-                        fieldKey: 'name',
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return l10n.pet_name_hint;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      // 성별
-                      _buildGenderDropdown(l10n),
-                      const SizedBox(height: 16),
-                      // 몸무게
-                      _buildTextField(
-                        controller: _weightController,
-                        focusNode: _weightFocusNode,
-                        hasFocus: _weightHasFocus,
-                        hintText: l10n.pet_weight_hint,
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 16),
-                      // 생일
-                      _buildDateField(
-                        hint: l10n.pet_birthday_hint,
-                        selectedDate: _selectedBirthDate,
-                        onTap: () => _selectDate(context, true),
-                      ),
-                      const SizedBox(height: 16),
-                      // 가족이 된 날
-                      _buildDateField(
-                        hint: l10n.pet_adoptionDate_hint,
-                        selectedDate: _selectedAdoptionDate,
-                        onTap: () => _selectDate(context, false),
-                      ),
-                      const SizedBox(height: 16),
-                      // 품종 선택
-                      BreedSelector(
-                        selectedBreedId: _selectedBreedId,
-                        selectedBreedDisplayName: _selectedBreedDisplayName,
-                        onBreedSelected: (breed) {
-                          setState(() {
-                            if (breed != null) {
-                              _selectedBreedId = breed.id;
-                              _selectedBreedDisplayName = breed.displayName;
-                              _showOtherBreedField = false;
-                              _speciesController.clear();
-                            } else {
-                              // "기타" 선택
-                              _selectedBreedId = null;
-                              _selectedBreedDisplayName = null;
-                              _showOtherBreedField = true;
-                            }
-                          });
-                        },
-                        hintText: l10n.pet_species_hint,
-                        otherOptionText: l10n.pet_species_hint,
-                      ),
-                      if (_showOtherBreedField) ...[
-                        const SizedBox(height: 12),
-                        _buildTextField(
-                          controller: _speciesController,
-                          focusNode: _speciesFocusNode,
-                          hasFocus: _speciesHasFocus,
-                          hintText: l10n.pet_species_hint,
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      // 성장 단계 (새 전용)
-                      _buildGrowthStageDropdown(l10n),
-                      const SizedBox(height: 32),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ),
-          // 저장 버튼
-          Padding(
-            padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-            child: GestureDetector(
-              onTap: _isLoading ? null : _handleSave,
-              child: Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Text(
-                          l10n.common_save,
-                          style: const TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            letterSpacing: -0.45,
-                          ),
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -585,8 +627,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
     final borderColor = hasError
         ? const Color(0xFFFF572D)
         : isActive
-            ? const Color(0xFFFF9A42)
-            : const Color(0xFF97928A);
+        ? const Color(0xFFFF9A42)
+        : const Color(0xFF97928A);
     final bgColor = (hasFocus && hasValue)
         ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
         : Colors.white;
@@ -679,7 +721,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
   Widget _buildGenderDropdown(AppLocalizations l10n) {
     final displayValue = _mapGenderToDisplay(_selectedGender, l10n);
     final hasValue = _selectedGender != null;
-    final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final borderColor = hasValue
+        ? const Color(0xFFFF9A42)
+        : const Color(0xFF97928A);
 
     return GestureDetector(
       onTap: () async {
@@ -688,7 +732,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
           builder: (context) => SimpleDialog(
             title: Text(l10n.dialog_selectGender),
             children: _genderValues.map((rawValue) {
-              final displayText = _mapGenderToDisplay(rawValue, l10n) ?? rawValue;
+              final displayText =
+                  _mapGenderToDisplay(rawValue, l10n) ?? rawValue;
               return SimpleDialogOption(
                 onPressed: () => Navigator.pop(context, rawValue),
                 child: Text(displayText),
@@ -727,7 +772,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
               ),
               Icon(
                 Icons.arrow_drop_down,
-                color: hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A),
+                color: hasValue
+                    ? const Color(0xFFFF9A42)
+                    : const Color(0xFF97928A),
               ),
             ],
           ),
@@ -739,7 +786,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
   Widget _buildGrowthStageDropdown(AppLocalizations l10n) {
     final displayValue = _mapGrowthStageToDisplay(_selectedGrowthStage, l10n);
     final hasValue = _selectedGrowthStage != null;
-    final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final borderColor = hasValue
+        ? const Color(0xFFFF9A42)
+        : const Color(0xFF97928A);
 
     return GestureDetector(
       onTap: () async {
@@ -748,7 +797,8 @@ class _PetAddScreenState extends State<PetAddScreen> {
           builder: (context) => SimpleDialog(
             title: Text(l10n.dialog_selectGrowthStage),
             children: _growthStageValues.map((rawValue) {
-              final displayText = _mapGrowthStageToDisplay(rawValue, l10n) ?? rawValue;
+              final displayText =
+                  _mapGrowthStageToDisplay(rawValue, l10n) ?? rawValue;
               return SimpleDialogOption(
                 onPressed: () => Navigator.pop(context, rawValue),
                 child: Text(displayText),
@@ -787,7 +837,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
               ),
               Icon(
                 Icons.arrow_drop_down,
-                color: hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A),
+                color: hasValue
+                    ? const Color(0xFFFF9A42)
+                    : const Color(0xFF97928A),
               ),
             ],
           ),
@@ -802,7 +854,9 @@ class _PetAddScreenState extends State<PetAddScreen> {
     required VoidCallback onTap,
   }) {
     final hasValue = selectedDate != null;
-    final borderColor = hasValue ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final borderColor = hasValue
+        ? const Color(0xFFFF9A42)
+        : const Color(0xFF97928A);
 
     return GestureDetector(
       onTap: onTap,

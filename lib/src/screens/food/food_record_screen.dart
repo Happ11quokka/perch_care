@@ -74,7 +74,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         // fall through to SharedPreferences below
       } else {
         try {
-          final record = await _foodService.getByDate(_activePetId!, _selectedDate);
+          final record = await _foodService.getByDate(
+            _activePetId!,
+            _selectedDate,
+          );
           if (record != null && record.entriesJson != null) {
             final list = jsonDecode(record.entriesJson!) as List<dynamic>;
             final entries = list.map((item) {
@@ -93,7 +96,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
             return;
           }
         } catch (e) {
-          debugPrint('Failed to load from backend, falling back to local storage: $e');
+          debugPrint(
+            'Failed to load from backend, falling back to local storage: $e',
+          );
         }
       }
     }
@@ -128,6 +133,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     final prefs = await SharedPreferences.getInstance();
     final data = _entries.map((entry) => entry.toJson()).toList();
     await prefs.setString(_storageKey(), jsonEncode(data));
+    final dateKey = SyncService.dateKey(_selectedDate);
 
     // Also save to backend
     if (_activePetId != null) {
@@ -135,34 +141,43 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         await _foodService.upsert(
           petId: _activePetId!,
           recordedDate: _selectedDate,
-          totalGrams: _totalEaten,     // 취식 총량을 기존 totalGrams로 전송 (하위 호환)
-          targetGrams: _totalServed,   // 배식 총량을 기존 targetGrams로 전송
+          totalGrams: _totalEaten, // 취식 총량을 기존 totalGrams로 전송 (하위 호환)
+          targetGrams: _totalServed, // 배식 총량을 기존 targetGrams로 전송
           count: _entries.length,
           entriesJson: jsonEncode(data),
         );
-        // 서버 저장 성공 → 밀린 큐 드레인
-        SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('Failed to save to backend, data saved locally: $e');
-        await SyncService.instance.enqueue(SyncItem(
+        await SyncService.instance.markMutationSynced(
           type: 'food',
           petId: _activePetId!,
-          date: _selectedDate.toIso8601String().split('T').first,
-          payload: {
-            'totalGrams': _totalEaten,
-            'targetGrams': _totalServed,
-            'count': _entries.length,
-            'entriesJson': jsonEncode(data),
-          },
-        ));
+          date: dateKey,
+        );
+        // 서버 저장 성공 → 밀린 큐 드레인
+        await SyncService.instance.drainAfterSuccess();
+      } catch (e) {
+        debugPrint('Failed to save to backend, data saved locally: $e');
+        await SyncService.instance.enqueue(
+          SyncItem(
+            type: 'food',
+            petId: _activePetId!,
+            date: dateKey,
+            payload: {
+              'totalGrams': _totalEaten,
+              'targetGrams': _totalServed,
+              'count': _entries.length,
+              'entriesJson': jsonEncode(data),
+            },
+          ),
+        );
       }
     }
-    AnalyticsService.instance.logFoodRecorded(_activePetId ?? '', _entries.length);
+    AnalyticsService.instance.logFoodRecorded(
+      _activePetId ?? '',
+      _entries.length,
+    );
     await _updateFoodNameSuggestions();
   }
 
-  String _foodNamesSuggestionKey() =>
-      'food_names_${_activePetId ?? 'default'}';
+  String _foodNamesSuggestionKey() => 'food_names_${_activePetId ?? 'default'}';
 
   Future<void> _loadFoodNameSuggestions() async {
     final prefs = await SharedPreferences.getInstance();
@@ -240,8 +255,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   double get _totalServed =>
       _servingEntries.fold(0.0, (sum, e) => sum + e.grams);
 
-  double get _totalEaten =>
-      _eatingEntries.fold(0.0, (sum, e) => sum + e.grams);
+  double get _totalEaten => _eatingEntries.fold(0.0, (sum, e) => sum + e.grams);
 
   int get _eatingRatePercent => _totalServed > 0
       ? ((_totalEaten / _totalServed) * 100).round().clamp(0, 999)
@@ -283,7 +297,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         final l10n = AppLocalizations.of(context);
         AppSnackBar.warning(
           context,
-          message: l10n.diet_eatingExceedsServing(newTotalServed.toStringAsFixed(1)),
+          message: l10n.diet_eatingExceedsServing(
+            newTotalServed.toStringAsFixed(1),
+          ),
         );
         return; // 취식>배식 불변식 깨짐 방지 — 취식 기록 먼저 삭제 필요
       }
@@ -301,14 +317,20 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     final isEditing = existing != null;
 
     // 수정 시 기존 값, 추가 시 현재 탭 기본값
-    DietType selectedType = existing?.type ?? (_showServing ? DietType.serving : DietType.eating);
-    final nameController = TextEditingController(text: existing?.foodName ?? '');
+    DietType selectedType =
+        existing?.type ?? (_showServing ? DietType.serving : DietType.eating);
+    final nameController = TextEditingController(
+      text: existing?.foodName ?? '',
+    );
     final gramsController = TextEditingController(
       text: existing != null ? existing.grams.toStringAsFixed(1) : '',
     );
     final memoController = TextEditingController(text: existing?.memo ?? '');
     TimeOfDay? selectedTime = existing?.hasTime == true
-        ? TimeOfDay(hour: existing!.recordedHour!, minute: existing.recordedMinute!)
+        ? TimeOfDay(
+            hour: existing!.recordedHour!,
+            minute: existing.recordedMinute!,
+          )
         : null;
 
     final result = await showModalBottomSheet<DietEntry>(
@@ -363,7 +385,8 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           label: l10n.diet_serving,
                           value: DietType.serving,
                           groupValue: selectedType,
-                          onChanged: (v) => setModalState(() => selectedType = v!),
+                          onChanged: (v) =>
+                              setModalState(() => selectedType = v!),
                         ),
                         const SizedBox(width: 24),
                         _buildRadioOption(
@@ -371,8 +394,12 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           value: DietType.eating,
                           groupValue: selectedType,
                           onChanged: (v) {
-                            if (v == DietType.eating && _servingEntries.isEmpty) {
-                              AppSnackBar.warning(context, message: l10n.diet_noServingExists);
+                            if (v == DietType.eating &&
+                                _servingEntries.isEmpty) {
+                              AppSnackBar.warning(
+                                context,
+                                message: l10n.diet_noServingExists,
+                              );
                               return;
                             }
                             setModalState(() => selectedType = v!);
@@ -421,9 +448,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           return GestureDetector(
                             onTap: () {
                               nameController.text = name;
-                              nameController.selection = TextSelection.fromPosition(
-                                TextPosition(offset: name.length),
-                              );
+                              nameController.selection =
+                                  TextSelection.fromPosition(
+                                    TextPosition(offset: name.length),
+                                  );
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -433,7 +461,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                               decoration: BoxDecoration(
                                 color: AppColors.gray100,
                                 borderRadius: BorderRadius.circular(9999),
-                                border: Border.all(color: AppColors.gray300, width: 0.5),
+                                border: Border.all(
+                                  color: AppColors.gray300,
+                                  width: 0.5,
+                                ),
                               ),
                               child: Text(
                                 name,
@@ -454,7 +485,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     // 양(g)
                     TextField(
                       controller: gramsController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         labelText: l10n.diet_amount,
@@ -559,13 +592,24 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           child: GestureDetector(
                             onTap: () {
                               final name = nameController.text.trim();
-                              final grams = double.tryParse(gramsController.text.trim());
-                              if (name.isEmpty || grams == null || grams <= 0) return;
+                              final grams = double.tryParse(
+                                gramsController.text.trim(),
+                              );
+                              if (name.isEmpty || grams == null || grams <= 0) {
+                                return;
+                              }
                               if (selectedType == DietType.eating) {
-                                final excludeGrams = (isEditing && existing.type == DietType.eating)
+                                final excludeGrams =
+                                    (isEditing &&
+                                        existing.type == DietType.eating)
                                     ? existing.grams
                                     : 0.0;
-                                if (!_validateEatingAmount(grams, excludeGrams: excludeGrams)) return;
+                                if (!_validateEatingAmount(
+                                  grams,
+                                  excludeGrams: excludeGrams,
+                                )) {
+                                  return;
+                                }
                               }
                               Navigator.pop(
                                 context,
@@ -588,7 +632,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                 gradient: const LinearGradient(
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
-                                  colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                                  colors: [
+                                    Color(0xFFFF9A42),
+                                    Color(0xFFFF7C2A),
+                                  ],
                                 ),
                               ),
                               child: Center(
@@ -770,9 +817,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
                     // ── 기록 리스트 ───────────────────────────────────────
                     if (currentEntries.isNotEmpty) ...[
-                      ...currentEntries.map(
-                        (entry) => _buildEntryCard(entry),
-                      ),
+                      ...currentEntries.map((entry) => _buildEntryCard(entry)),
                       const SizedBox(height: 8),
                     ],
 
@@ -833,7 +878,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       onTap: () async {
                         await _saveEntries();
                         if (!mounted) return;
-                        AppSnackBar.success(context, message: l10n.snackbar_saved);
+                        AppSnackBar.success(
+                          context,
+                          message: l10n.snackbar_saved,
+                        );
                       },
                       child: Container(
                         height: 56,
@@ -997,94 +1045,94 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
     return GestureDetector(
       onTap: () => _openEntryModal(existing: entry),
       child: Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
-      ),
-      child: Row(
-        children: [
-          // 시간 표시
-          if (entry.hasTime) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.gray100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                entry.timeDisplayString,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.mediumGray,
-                  letterSpacing: -0.3,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+        ),
+        child: Row(
+          children: [
+            // 시간 표시
+            if (entry.hasTime) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.gray100,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            ),
-            const SizedBox(width: 10),
-          ],
-          // 음식 이름
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry.foodName,
+                child: Text(
+                  entry.timeDisplayString,
                   style: const TextStyle(
                     fontFamily: 'Pretendard',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.nearBlack,
-                    letterSpacing: -0.35,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.mediumGray,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                if (entry.memo != null && entry.memo!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+              ),
+              const SizedBox(width: 10),
+            ],
+            // 음식 이름
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    entry.memo!,
+                    entry.foodName,
                     style: const TextStyle(
                       fontFamily: 'Pretendard',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.mediumGray,
-                      letterSpacing: -0.3,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.nearBlack,
+                      letterSpacing: -0.35,
                     ),
                   ),
+                  if (entry.memo != null && entry.memo!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      entry.memo!,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.mediumGray,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ),
-          // 양
-          Text(
-            '${entry.grams.toStringAsFixed(1)}g',
-            style: const TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.nearBlack,
-              letterSpacing: -0.35,
-            ),
-          ),
-          // 삭제 버튼
-          GestureDetector(
-            onTap: () => _deleteEntry(entry),
-            child: Container(
-              margin: const EdgeInsets.only(left: 8),
-              padding: const EdgeInsets.all(4),
-              child: const Icon(
-                Icons.close,
-                size: 16,
-                color: AppColors.mediumGray,
               ),
             ),
-          ),
-        ],
+            // 양
+            Text(
+              '${entry.grams.toStringAsFixed(1)}g',
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.nearBlack,
+                letterSpacing: -0.35,
+              ),
+            ),
+            // 삭제 버튼
+            GestureDetector(
+              onTap: () => _deleteEntry(entry),
+              child: Container(
+                margin: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.all(4),
+                child: const Icon(
+                  Icons.close,
+                  size: 16,
+                  color: AppColors.mediumGray,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -1108,7 +1156,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? AppColors.brandPrimary : AppColors.lightGray,
+                color: isSelected
+                    ? AppColors.brandPrimary
+                    : AppColors.lightGray,
                 width: 2,
               ),
             ),

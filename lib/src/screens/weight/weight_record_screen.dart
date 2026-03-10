@@ -64,7 +64,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         // 품종 정보 로드
         if (apiPet.breedId != null) {
           try {
-            final breed = await BreedService.instance.fetchBreedById(apiPet.breedId!);
+            final breed = await BreedService.instance.fetchBreedById(
+              apiPet.breedId!,
+            );
             if (mounted && breed != null) {
               setState(() => _breedStandard = breed);
             }
@@ -135,7 +137,11 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
   List<WeightRecord> _recordsForDate(DateTime date) {
     final normalized = DateTime(date.year, date.month, date.day);
     return _records.where((record) {
-      final recordDate = DateTime(record.date.year, record.date.month, record.date.day);
+      final recordDate = DateTime(
+        record.date.year,
+        record.date.month,
+        record.date.day,
+      );
       return recordDate == normalized;
     }).toList();
   }
@@ -166,8 +172,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         record.date.day,
       );
       return recordDate.isBefore(normalized);
-    }).toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+    }).toList()..sort((a, b) => b.date.compareTo(a.date));
 
     if (previous.isNotEmpty) {
       return previous.first;
@@ -243,9 +248,16 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
       return;
     }
 
-    setState(() { _isSaving = true; });
+    setState(() {
+      _isSaving = true;
+    });
 
     try {
+      final dateKey = SyncService.dateKey(_selectedDate);
+      final entityId = SyncService.weightEntityId(
+        recordedHour: _selectedTime.hour,
+        recordedMinute: _selectedTime.minute,
+      );
       final record = WeightRecord(
         petId: _activePetId!,
         date: _selectedDate,
@@ -253,24 +265,33 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         recordedHour: _selectedTime.hour,
         recordedMinute: _selectedTime.minute,
       );
-      await _weightService.saveLocalWeightRecord(record);
+      final localRecord = await _weightService.saveLocalWeightRecord(record);
       try {
-        await _weightService.saveWeightRecord(record);
-        // 서버 저장 성공 → 밀린 큐 드레인
-        SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('[WeightRecord] 백엔드 저장 실패: $e');
-        await SyncService.instance.enqueue(SyncItem(
+        await _weightService.saveWeightRecord(localRecord);
+        await SyncService.instance.markMutationSynced(
           type: 'weight',
           petId: _activePetId!,
-          date: _selectedDate.toIso8601String().split('T').first,
-          entityId: '${_selectedTime.hour}:${_selectedTime.minute}',
-          payload: {
-            'weight': weight,
-            'recordedHour': _selectedTime.hour,
-            'recordedMinute': _selectedTime.minute,
-          },
-        ));
+          date: dateKey,
+          entityId: entityId,
+        );
+        // 서버 저장 성공 → 밀린 큐 드레인
+        await SyncService.instance.drainAfterSuccess();
+      } catch (e) {
+        debugPrint('[WeightRecord] 백엔드 저장 실패: $e');
+        await SyncService.instance.enqueue(
+          SyncItem(
+            type: 'weight',
+            petId: _activePetId!,
+            date: dateKey,
+            entityId: entityId,
+            payload: {
+              'localId': localRecord.id,
+              'weight': weight,
+              'recordedHour': _selectedTime.hour,
+              'recordedMinute': _selectedTime.minute,
+            },
+          ),
+        );
       }
       await _loadRecords();
       if (mounted) {
@@ -281,7 +302,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() { _isSaving = false; });
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
   }
@@ -405,8 +428,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                             fontFamily: 'Pretendard',
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
-                            color:
-                                hasData ? AppColors.nearBlack : AppColors.gray400,
+                            color: hasData
+                                ? AppColors.nearBlack
+                                : AppColors.gray400,
                           ),
                         ),
                       ],
@@ -419,7 +443,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         fontFamily: 'Pretendard',
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: hasData ? AppColors.nearBlack : AppColors.mediumGray,
+                        color: hasData
+                            ? AppColors.nearBlack
+                            : AppColors.mediumGray,
                         letterSpacing: -0.35,
                       ),
                     ),
@@ -551,10 +577,14 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                     TextField(
                       controller: _weightController,
                       focusNode: _weightFocusNode,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,1}'),
+                        ),
                       ],
                       style: const TextStyle(
                         fontFamily: 'Pretendard',
@@ -581,17 +611,27 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE0E0E0),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.brandPrimary, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.brandPrimary,
+                            width: 2,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE0E0E0),
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -606,7 +646,10 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                             end: Alignment.centerRight,
                             colors: _isSaving
                                 ? [AppColors.lightGray, AppColors.mediumGray]
-                                : [const Color(0xFFFF9A42), const Color(0xFFFF7C2A)],
+                                : [
+                                    const Color(0xFFFF9A42),
+                                    const Color(0xFFFF7C2A),
+                                  ],
                           ),
                         ),
                         child: Center(
@@ -643,7 +686,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
     final isAM = _selectedTime.hour < 12;
     final displayHour = _selectedTime.hour == 0
         ? 12
-        : (_selectedTime.hour > 12 ? _selectedTime.hour - 12 : _selectedTime.hour);
+        : (_selectedTime.hour > 12
+              ? _selectedTime.hour - 12
+              : _selectedTime.hour);
     final period = isAM ? l10n.weight_amPeriod : l10n.weight_pmPeriod;
     final timeText =
         '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
@@ -669,7 +714,11 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.access_time, size: 20, color: AppColors.brandPrimary),
+            const Icon(
+              Icons.access_time,
+              size: 20,
+              color: AppColors.brandPrimary,
+            ),
             const SizedBox(width: 10),
             Text(
               l10n.weight_selectTime,
@@ -693,7 +742,11 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, size: 18, color: AppColors.mediumGray),
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: AppColors.mediumGray,
+            ),
           ],
         ),
       ),

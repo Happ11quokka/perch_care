@@ -14,6 +14,17 @@ class SyncService with WidgetsBindingObserver {
 
   static const _queueKey = 'sync_queue';
   static const _maxRetries = 5;
+  static const defaultEntityId = 'default';
+
+  static String dateKey(DateTime date) =>
+      date.toIso8601String().split('T').first;
+
+  static String weightEntityId({int? recordedHour, int? recordedMinute}) {
+    if (recordedHour == null || recordedMinute == null) {
+      return defaultEntityId;
+    }
+    return '$recordedHour:$recordedMinute';
+  }
 
   /// 펫별 초기 동기화 완료 키
   String _initialSyncKey(String petId) => 'sync_initial_done_$petId';
@@ -51,30 +62,55 @@ class SyncService with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _queue.isNotEmpty) {
-      debugPrint('[SyncService] App resumed, draining queue (${_queue.length} items)');
+      debugPrint(
+        '[SyncService] App resumed, draining queue (${_queue.length} items)',
+      );
       processQueue();
     }
   }
 
   /// 특정 type+petId+date 조합에 대해 pending 항목이 있는지 확인
   bool hasPending(String type, String petId, String date) {
-    return _queue.any((item) =>
-        item.type == type &&
-        item.petId == petId &&
-        item.date == date);
+    return _queue.any(
+      (item) => item.type == type && item.petId == petId && item.date == date,
+    );
   }
 
   /// 특정 type+petId의 모든 pending 항목 반환
   List<SyncItem> getPendingItems(String type, String petId) {
-    return _queue.where((item) =>
-        item.type == type &&
-        item.petId == petId).toList();
+    return _queue
+        .where((item) => item.type == type && item.petId == petId)
+        .toList();
+  }
+
+  /// 직접 서버 저장이 성공한 항목은 큐에서 제거해 stale payload 재전송을 막는다.
+  Future<void> markMutationSynced({
+    required String type,
+    required String petId,
+    required String date,
+    String entityId = defaultEntityId,
+  }) async {
+    final before = _queue.length;
+    _queue.removeWhere(
+      (item) =>
+          item.type == type &&
+          item.petId == petId &&
+          item.date == date &&
+          item.entityId == entityId,
+    );
+    if (_queue.length == before) return;
+    await _persist();
+    debugPrint(
+      '[SyncService] Cleared pending: $type $date (entity: $entityId)',
+    );
   }
 
   /// 서버 저장 성공 후 호출: 큐에 남은 항목이 있으면 백그라운드 드레인
   Future<void> drainAfterSuccess() async {
     if (_queue.isNotEmpty && !_isProcessing) {
-      debugPrint('[SyncService] Drain after successful save (${_queue.length} items)');
+      debugPrint(
+        '[SyncService] Drain after successful save (${_queue.length} items)',
+      );
       await processQueue();
     }
   }
@@ -92,7 +128,9 @@ class SyncService with WidgetsBindingObserver {
     );
     _queue.add(item);
     await _persist();
-    debugPrint('[SyncService] Enqueued: ${item.type} ${item.date} (entity: ${item.entityId})');
+    debugPrint(
+      '[SyncService] Enqueued: ${item.type} ${item.date} (entity: ${item.entityId})',
+    );
   }
 
   /// 큐의 모든 아이템을 서버로 전송 시도
@@ -103,16 +141,34 @@ class SyncService with WidgetsBindingObserver {
     final succeeded = <SyncItem>[];
 
     for (final item in List.of(_queue)) {
+      if (item.retryCount >= _maxRetries) {
+        debugPrint(
+          '[SyncService] Skipping this session after max retries: ${item.type} ${item.date}',
+        );
+        continue;
+      }
       try {
         await _sendToServer(item);
         succeeded.add(item);
         debugPrint('[SyncService] Synced: ${item.type} ${item.date}');
       } catch (e) {
-        item.retryCount++;
-        debugPrint('[SyncService] Failed (${item.retryCount}/$_maxRetries): ${item.type} ${item.date} - $e');
-        if (item.retryCount >= _maxRetries) {
-          // 이번 세션에서는 스킵, 다음 세션에서 재시도 (데이터 삭제 안 함)
-          debugPrint('[SyncService] Max retries this session, will retry next launch: ${item.type} ${item.date}');
+        if (e is FormatException || e is StateError) {
+          // 데이터 자체가 손상 — retry 무의미, 즉시 제거
+          succeeded.add(item);
+          debugPrint(
+            '[SyncService] Removing corrupted item: ${item.type} ${item.date} - $e',
+          );
+        } else {
+          item.retryCount++;
+          debugPrint(
+            '[SyncService] Failed (${item.retryCount}/$_maxRetries): ${item.type} ${item.date} - $e',
+          );
+          if (item.retryCount >= _maxRetries) {
+            // 이번 세션에서는 스킵, 다음 세션에서 재시도 (데이터 삭제 안 함)
+            debugPrint(
+              '[SyncService] Max retries this session, will retry next launch: ${item.type} ${item.date}',
+            );
+          }
         }
       }
     }
@@ -123,7 +179,7 @@ class SyncService with WidgetsBindingObserver {
     debugPrint('[SyncService] Queue remaining: ${_queue.length}');
   }
 
-  /// 최초 1회: 로컬 SharedPreferences의 모든 food/water 데이터를 서버로 업로드
+  /// 최초 1회: 로컬 SharedPreferences의 food/water 데이터를 서버로 업로드
   Future<void> syncLocalRecordsIfNeeded(String petId) async {
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getBool(_initialSyncKey(petId)) == true) return;
@@ -131,14 +187,18 @@ class SyncService with WidgetsBindingObserver {
     // default 키는 1회만 처리 (여러 펫 순회 시 중복 방지)
     final defaultAlreadyMigrated = prefs.getBool(_defaultMigratedKey) == true;
 
-    debugPrint('[SyncService] Starting initial local→server sync for pet: $petId (defaultMigrated: $defaultAlreadyMigrated)');
+    debugPrint(
+      '[SyncService] Starting initial local→server sync for pet: $petId (defaultMigrated: $defaultAlreadyMigrated)',
+    );
     int synced = 0;
     int failed = 0;
 
     final allKeys = prefs.getKeys();
 
     // Food 기록 동기화
-    final foodKeys = allKeys.where((k) => k.startsWith('food_') && !k.startsWith('food_names_'));
+    final foodKeys = allKeys.where(
+      (k) => k.startsWith('food_') && !k.startsWith('food_names_'),
+    );
     for (final key in foodKeys) {
       try {
         final raw = prefs.getString(key);
@@ -235,26 +295,16 @@ class SyncService with WidgetsBindingObserver {
       }
     }
 
-    // Weight 기록은 WeightService 내부 캐시에서 처리
-    try {
-      final weightService = WeightService.instance;
-      final localRecords = await weightService.fetchLocalRecords(petId: petId);
-      for (final record in localRecords) {
-        try {
-          await weightService.saveWeightRecord(record);
-          synced++;
-        } catch (e) {
-          failed++;
-          debugPrint('[SyncService] Weight sync failed: $e');
-        }
-      }
-    } catch (e) {
-      debugPrint('[SyncService] Weight fetch failed: $e');
-    }
+    // Weight 자동 마이그레이션은 의도적으로 제외.
+    // local_weight_records에는 서버에서 내려받은 캐시도 함께 섞여 있어
+    // production 첫 실행 시 전체 재업로드를 수행하면 중복 생성 위험이 있다.
+    // weight는 명시적 offline queue(processQueue) 경로만 서버 재전송 대상으로 취급한다.
 
     // 실패가 있으면 완료 마킹하지 않음 — 다음 앱 시작 시 재시도
     if (failed > 0) {
-      debugPrint('[SyncService] Initial sync partial: $synced synced, $failed failed — will retry next launch');
+      debugPrint(
+        '[SyncService] Initial sync partial: $synced synced, $failed failed — will retry next launch',
+      );
     } else {
       await prefs.setBool(_initialSyncKey(petId), true);
       // default 키도 처리 완료 마킹 (첫 번째 펫 순회 시)
@@ -295,15 +345,20 @@ class SyncService with WidgetsBindingObserver {
         );
         break;
       case 'weight':
-        await WeightService.instance.saveWeightRecord(WeightRecord(
-          petId: item.petId,
-          weight: (item.payload['weight'] as num?)?.toDouble() ?? 0,
-          date: date,
-          memo: item.payload['memo'] as String?,
-          recordedHour: (item.payload['recordedHour'] as num?)?.toInt(),
-          recordedMinute: (item.payload['recordedMinute'] as num?)?.toInt(),
-        ));
+        await WeightService.instance.saveWeightRecord(
+          WeightRecord(
+            id: item.payload['localId'] as String?,
+            petId: item.petId,
+            weight: (item.payload['weight'] as num?)?.toDouble() ?? 0,
+            date: date,
+            memo: item.payload['memo'] as String?,
+            recordedHour: (item.payload['recordedHour'] as num?)?.toInt(),
+            recordedMinute: (item.payload['recordedMinute'] as num?)?.toInt(),
+          ),
+        );
         break;
+      default:
+        throw StateError('Unknown sync type: ${item.type}');
     }
   }
 
@@ -318,8 +373,8 @@ class SyncService with WidgetsBindingObserver {
 class SyncItem {
   final String type; // 'food', 'water', 'weight'
   final String petId;
-  final String date; // YYYY-M-D or YYYY-MM-DD
-  final String entityId; // dedup 키 — food/water는 'default', weight는 시간 등으로 구분
+  final String date; // YYYY-MM-DD
+  final String entityId; // dedup 키 — food/water는 default, weight는 시간 등으로 구분
   final Map<String, dynamic> payload;
   final DateTime createdAt;
   int retryCount;
@@ -332,15 +387,15 @@ class SyncItem {
     String? entityId,
     DateTime? createdAt,
     this.retryCount = 0,
-  })  : entityId = entityId ?? 'default',
-        createdAt = createdAt ?? DateTime.now();
+  }) : entityId = entityId ?? SyncService.defaultEntityId,
+       createdAt = createdAt ?? DateTime.now();
 
   factory SyncItem.fromJson(Map<String, dynamic> json) {
     return SyncItem(
       type: json['type'] as String,
       petId: json['petId'] as String,
       date: json['date'] as String,
-      entityId: json['entityId'] as String? ?? 'default',
+      entityId: json['entityId'] as String? ?? SyncService.defaultEntityId,
       payload: Map<String, dynamic>.from(json['payload'] as Map),
       createdAt: DateTime.parse(json['createdAt'] as String),
       retryCount: (json['retryCount'] as num?)?.toInt() ?? 0,
@@ -348,12 +403,12 @@ class SyncItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'type': type,
-        'petId': petId,
-        'date': date,
-        'entityId': entityId,
-        'payload': payload,
-        'createdAt': createdAt.toIso8601String(),
-        'retryCount': retryCount,
-      };
+    'type': type,
+    'petId': petId,
+    'date': date,
+    'entityId': entityId,
+    'payload': payload,
+    'createdAt': createdAt.toIso8601String(),
+    'retryCount': retryCount,
+  };
 }
