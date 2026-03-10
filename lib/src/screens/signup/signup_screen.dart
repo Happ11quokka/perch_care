@@ -105,8 +105,11 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: Column(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
@@ -268,6 +271,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

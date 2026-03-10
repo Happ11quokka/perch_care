@@ -10,6 +10,7 @@ import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/analytics/analytics_service.dart';
+import '../../services/sync/sync_service.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -118,8 +119,21 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
       // 백엔드 API에도 저장
       try {
         await _weightService.saveWeightRecord(record);
-      } catch (_) {
-        debugPrint('[WeightAdd] 백엔드 저장 실패, 로컬에만 저장됨');
+        // 서버 저장 성공 → 밀린 큐 드레인
+        SyncService.instance.drainAfterSuccess();
+      } catch (e) {
+        debugPrint('[WeightAdd] 백엔드 저장 실패, 로컬에만 저장됨: $e');
+        await SyncService.instance.enqueue(SyncItem(
+          type: 'weight',
+          petId: _activePetId!,
+          date: widget.date.toIso8601String().split('T').first,
+          entityId: '${_selectedTime.hour}:${_selectedTime.minute}',
+          payload: {
+            'weight': weight,
+            'recordedHour': _selectedTime.hour,
+            'recordedMinute': _selectedTime.minute,
+          },
+        ));
       }
 
       debugPrint('[WeightAdd] Save success, mounted=$mounted');

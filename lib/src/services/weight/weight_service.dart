@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/weight_record.dart';
 import '../api/api_client.dart';
+import '../sync/sync_service.dart';
 
 /// 체중 데이터 관리 서비스
 /// FastAPI 백엔드와 연동, 1일 다중 기록 지원
@@ -77,17 +78,49 @@ class WeightService {
   }
 
   /// 서버에서 전체 체중 기록을 불러와 캐시 업데이트
+  /// pending sync 항목이 있으면 로컬 기록을 서버 데이터에 병합하여 보존
   Future<List<WeightRecord>> fetchAllRecords({String? petId}) async {
     await _ensureInitialized();
 
     if (petId != null) {
       final response = await _api.get('/pets/$petId/weights/');
-      final records = (response as List)
+      final serverRecords = (response as List)
           .map((json) => WeightRecord.fromJson(json))
           .toList();
 
-      _recordsByPet[petId] = records
-        ..sort(_compareRecords);
+      // pending sync 항목이 있으면 로컬 기록 중 서버에 없는 것을 보존
+      final pendingItems = SyncService.instance.getPendingItems('weight', petId);
+      if (pendingItems.isNotEmpty && _recordsByPet.containsKey(petId)) {
+        final localRecords = _recordsByPet[petId]!;
+        // 서버 날짜 Set (시간 무시, 날짜 기준)
+        final serverDates = serverRecords
+            .map((r) => _normalizeDate(r.date))
+            .toSet();
+
+        // pending 날짜 Set
+        final pendingDates = <DateTime>{};
+        for (final item in pendingItems) {
+          final parts = item.date.split('-');
+          if (parts.length == 3) {
+            pendingDates.add(DateTime(
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+              int.parse(parts[2]),
+            ));
+          }
+        }
+
+        // 로컬에만 있고 pending 큐에 해당하는 기록을 서버 결과에 병합
+        for (final local in localRecords) {
+          final normalDate = _normalizeDate(local.date);
+          if (pendingDates.contains(normalDate) &&
+              !serverDates.contains(normalDate)) {
+            serverRecords.add(local);
+          }
+        }
+      }
+
+      _recordsByPet[petId] = serverRecords..sort(_compareRecords);
       _schedulePersist();
 
       return List.unmodifiable(_recordsByPet[petId]!);

@@ -529,6 +529,8 @@
       "count": {"type": "int"}
     }
   },
+  "water_tapToInput": "탭하여 입력",
+  "water_tapToEdit": "탭하여 수정",
 
   "weight_bodyWeight": "몸무게*",
   "weight_addStickerHint": "여기를 눌러 스티커를 추가해 보세요.",
@@ -698,6 +700,13 @@
   "diet_foodName": "음식 이름",
   "diet_amount": "양(g)",
   "diet_memo": "메모 (선택)",
+  "diet_noServingExists": "배식 기록이 없습니다. 취식 기록을 추가하려면 먼저 배식을 등록해 주세요.",
+  "diet_eatingExceedsServing": "취식량이 배식량을 초과할 수 없습니다. (남은 배식량: {remaining}g)",
+  "@diet_eatingExceedsServing": {
+    "placeholders": {
+      "remaining": {"type": "String"}
+    }
+  },
 
   "faq_title": "자주 묻는 질문",
   "faq_categoryGeneral": "일반",
@@ -1004,5 +1013,21 @@
   "weightDetail_noDailyRecordOnDate": "이 날에 등록된 일일 기록이 없습니다",
   "weightDetail_addDailyRecordHint": "아래 버튼을 눌러 기록을 추가해보세요",
   "btn_addSchedule": "일정 추가",
-  "btn_addDailyRecord": "일일 기록 추가"
+  "btn_addDailyRecord": "일일 기록 추가",
+
+  "profileSetup_title": "프로필 설정",
+  "profileSetup_phoneHint": "전화번호를 입력해 주세요",
+  "profileSetup_complete": "입력완료",
+  "profileSetup_saveError": "프로필 저장 중 오류가 발생했습니다.",
+  "profileSetup_genderSelectTitle": "성별을 선택하세요",
+  "profileSetup_genderMale": "남",
+  "profileSetup_genderFemale": "여",
+  "profileSetup_doneTitle": "설정 완료",
+  "profileSetup_doneMessage": "설정이 완료되었습니다!",
+  "profileSetup_startRecording": "기록 시작!",
+
+  "timePicker_title": "시간을 선택해주세요",
+  "timePicker_confirm": "선택 완료",
+
+  "country_selectTitle": "국가를 선택하세요"
 }

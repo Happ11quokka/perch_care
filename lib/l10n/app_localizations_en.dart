@@ -1025,6 +1025,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get water_tapToInput => 'Tap to enter';
+
+  @override
+  String get water_tapToEdit => 'Tap to edit';
+
+  @override
   String get weight_bodyWeight => 'Body Weight*';
 
   @override
@@ -1370,6 +1376,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diet_memo => 'Memo (optional)';
+
+  @override
+  String get diet_noServingExists =>
+      'No serving records found. Please add a serving record first.';
+
+  @override
+  String diet_eatingExceedsServing(String remaining) {
+    return 'Eating amount cannot exceed served amount. (Remaining: ${remaining}g)';
+  }
 
   @override
   String get faq_title => 'FAQ';
@@ -2148,4 +2163,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get btn_addDailyRecord => 'Add Daily Record';
+
+  @override
+  String get profileSetup_title => 'Profile Setup';
+
+  @override
+  String get profileSetup_phoneHint => 'Enter phone number';
+
+  @override
+  String get profileSetup_complete => 'Complete';
+
+  @override
+  String get profileSetup_saveError => 'Error saving profile.';
+
+  @override
+  String get profileSetup_genderSelectTitle => 'Select gender';
+
+  @override
+  String get profileSetup_genderMale => 'Male';
+
+  @override
+  String get profileSetup_genderFemale => 'Female';
+
+  @override
+  String get profileSetup_doneTitle => 'Setup Complete';
+
+  @override
+  String get profileSetup_doneMessage => 'Setup is complete!';
+
+  @override
+  String get profileSetup_startRecording => 'Start Recording!';
+
+  @override
+  String get timePicker_title => 'Select Time';
+
+  @override
+  String get timePicker_confirm => 'Confirm';
+
+  @override
+  String get country_selectTitle => 'Select Country';
 }

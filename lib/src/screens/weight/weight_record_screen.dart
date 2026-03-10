@@ -7,6 +7,7 @@ import '../../models/weight_record.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/weight/weight_service.dart';
+import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -255,8 +256,21 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
       await _weightService.saveLocalWeightRecord(record);
       try {
         await _weightService.saveWeightRecord(record);
+        // 서버 저장 성공 → 밀린 큐 드레인
+        SyncService.instance.drainAfterSuccess();
       } catch (e) {
         debugPrint('[WeightRecord] 백엔드 저장 실패: $e');
+        await SyncService.instance.enqueue(SyncItem(
+          type: 'weight',
+          petId: _activePetId!,
+          date: _selectedDate.toIso8601String().split('T').first,
+          entityId: '${_selectedTime.hour}:${_selectedTime.minute}',
+          payload: {
+            'weight': weight,
+            'recordedHour': _selectedTime.hour,
+            'recordedMinute': _selectedTime.minute,
+          },
+        ));
       }
       await _loadRecords();
       if (mounted) {

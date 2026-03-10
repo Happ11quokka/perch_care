@@ -3,18 +3,21 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 프로필 설정 완료 화면
 class ProfileSetupCompleteScreen extends StatelessWidget {
-  final String petName;
+  final String? petName;
 
   const ProfileSetupCompleteScreen({
     super.key,
-    this.petName = '점점이',
+    this.petName,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final displayName = petName ?? l10n.pet_defaultName;
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -43,7 +46,7 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   // 제목
                   Center(
                     child: Text(
-                      '설정 완료',
+                      l10n.profileSetup_doneTitle,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 20,
@@ -81,7 +84,7 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   const SizedBox(height: 32),
                   // 완료 메시지
                   Text(
-                    '설정이 완료되었습니다!',
+                    l10n.profileSetup_doneMessage,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Pretendard',
@@ -95,7 +98,7 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   // 부가 메시지
                   Text(
-                    '$petName를 얄랄루 룰라룰라',
+                    displayName,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Pretendard',
@@ -110,14 +113,14 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
               ),
             ),
             // 하단 버튼들
-            _buildBottomButtons(context),
+            _buildBottomButtons(context, l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBottomButtons(BuildContext context) {
+  Widget _buildBottomButtons(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
       child: Row(
@@ -135,10 +138,10 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '다음에',
-                    style: TextStyle(
+                    l10n.common_later,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -166,10 +169,10 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '기록 시작!',
-                    style: TextStyle(
+                    l10n.profileSetup_startRecording,
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,

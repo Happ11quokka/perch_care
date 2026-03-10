@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import '../../utils/image_crop_helper.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
@@ -13,6 +13,7 @@ import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/weight/weight_service.dart';
+import '../../services/sync/sync_service.dart';
 import '../../models/weight_record.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -48,7 +49,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
   bool _weightHasFocus = false;
   bool _speciesHasFocus = false;
 
-  final _imagePicker = ImagePicker();
   File? _selectedImage;
   Uint8List? _savedImageBytes;
   String? _selectedGender;
@@ -187,15 +187,10 @@ class _PetAddScreenState extends State<PetAddScreen> {
   }
 
   Future<void> _handlePickImage() async {
-    final pickedFile = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 80,
-    );
-    if (pickedFile != null) {
+    final file = await ImageCropHelper.pickAndCropImage(context);
+    if (file != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectedImage = file;
       });
     }
   }
@@ -271,8 +266,22 @@ class _PetAddScreenState extends State<PetAddScreen> {
           await weightService.saveLocalWeightRecord(record);
           try {
             await weightService.saveWeightRecord(record);
-          } catch (_) {
-            debugPrint('[PetAdd] Backend weight save failed, local only');
+            // 서버 저장 성공 → 밀린 큐 드레인
+            SyncService.instance.drainAfterSuccess();
+          } catch (e) {
+            debugPrint('[PetAdd] Backend weight save failed: $e');
+            final now = DateTime.now();
+            await SyncService.instance.enqueue(SyncItem(
+              type: 'weight',
+              petId: savedPet.id,
+              date: now.toIso8601String().split('T').first,
+              entityId: '${now.hour}:${now.minute}',
+              payload: {
+                'weight': weightValue,
+                'recordedHour': now.hour,
+                'recordedMinute': now.minute,
+              },
+            ));
           }
         } catch (e) {
           debugPrint('[PetAdd] Initial weight record failed: $e');

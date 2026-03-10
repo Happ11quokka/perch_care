@@ -24,7 +24,7 @@ class AiEncyclopediaService {
       if (petProfileContext != null) 'pet_profile_context': petProfileContext,
     };
 
-    final response = await _api.post('/ai/encyclopedia', body: body);
+    final response = await _api.postAI('/ai/encyclopedia', body: body);
     return response['answer'] as String;
   }
 }

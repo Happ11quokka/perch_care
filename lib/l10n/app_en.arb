@@ -367,6 +367,8 @@
   "water_dailyCount": "Daily Intake Count",
   "water_perDrink": "Per drink: {amount}ml",
   "water_timesCount": "{count} times",
+  "water_tapToInput": "Tap to enter",
+  "water_tapToEdit": "Tap to edit",
 
   "weight_bodyWeight": "Body Weight*",
   "weight_addStickerHint": "Tap here to add a sticker.",
@@ -500,6 +502,13 @@
   "diet_foodName": "Food Name",
   "diet_amount": "Amount (g)",
   "diet_memo": "Memo (optional)",
+  "diet_noServingExists": "No serving records found. Please add a serving record first.",
+  "diet_eatingExceedsServing": "Eating amount cannot exceed served amount. (Remaining: {remaining}g)",
+  "@diet_eatingExceedsServing": {
+    "placeholders": {
+      "remaining": {"type": "String"}
+    }
+  },
 
   "faq_title": "FAQ",
   "faq_categoryGeneral": "General",
@@ -806,5 +815,21 @@
   "weightDetail_noDailyRecordOnDate": "No daily records for this date",
   "weightDetail_addDailyRecordHint": "Tap the button below to add a record",
   "btn_addSchedule": "Add Schedule",
-  "btn_addDailyRecord": "Add Daily Record"
+  "btn_addDailyRecord": "Add Daily Record",
+
+  "profileSetup_title": "Profile Setup",
+  "profileSetup_phoneHint": "Enter phone number",
+  "profileSetup_complete": "Complete",
+  "profileSetup_saveError": "Error saving profile.",
+  "profileSetup_genderSelectTitle": "Select gender",
+  "profileSetup_genderMale": "Male",
+  "profileSetup_genderFemale": "Female",
+  "profileSetup_doneTitle": "Setup Complete",
+  "profileSetup_doneMessage": "Setup is complete!",
+  "profileSetup_startRecording": "Start Recording!",
+
+  "timePicker_title": "Select Time",
+  "timePicker_confirm": "Confirm",
+
+  "country_selectTitle": "Select Country"
 }

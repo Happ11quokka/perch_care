@@ -1005,6 +1005,12 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get water_tapToInput => '탭하여 입력';
+
+  @override
+  String get water_tapToEdit => '탭하여 수정';
+
+  @override
   String get weight_bodyWeight => '몸무게*';
 
   @override
@@ -1333,6 +1339,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get diet_memo => '메모 (선택)';
+
+  @override
+  String get diet_noServingExists =>
+      '배식 기록이 없습니다. 취식 기록을 추가하려면 먼저 배식을 등록해 주세요.';
+
+  @override
+  String diet_eatingExceedsServing(String remaining) {
+    return '취식량이 배식량을 초과할 수 없습니다. (남은 배식량: ${remaining}g)';
+  }
 
   @override
   String get faq_title => '자주 묻는 질문';
@@ -2083,4 +2098,43 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get btn_addDailyRecord => '일일 기록 추가';
+
+  @override
+  String get profileSetup_title => '프로필 설정';
+
+  @override
+  String get profileSetup_phoneHint => '전화번호를 입력해 주세요';
+
+  @override
+  String get profileSetup_complete => '입력완료';
+
+  @override
+  String get profileSetup_saveError => '프로필 저장 중 오류가 발생했습니다.';
+
+  @override
+  String get profileSetup_genderSelectTitle => '성별을 선택하세요';
+
+  @override
+  String get profileSetup_genderMale => '남';
+
+  @override
+  String get profileSetup_genderFemale => '여';
+
+  @override
+  String get profileSetup_doneTitle => '설정 완료';
+
+  @override
+  String get profileSetup_doneMessage => '설정이 완료되었습니다!';
+
+  @override
+  String get profileSetup_startRecording => '기록 시작!';
+
+  @override
+  String get timePicker_title => '시간을 선택해주세요';
+
+  @override
+  String get timePicker_confirm => '선택 완료';
+
+  @override
+  String get country_selectTitle => '국가를 선택하세요';
 }

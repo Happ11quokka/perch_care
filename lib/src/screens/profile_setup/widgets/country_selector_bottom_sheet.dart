@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 국가 선택 바텀시트
 class CountrySelectorBottomSheet extends StatefulWidget {
@@ -48,7 +49,7 @@ class _CountrySelectorBottomSheetState extends State<CountrySelectorBottomSheet>
               Padding(
                 padding: const EdgeInsets.only(top: 24, bottom: 16),
                 child: Text(
-                  '국가를 선택하세요',
+                  AppLocalizations.of(context).country_selectTitle,
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,

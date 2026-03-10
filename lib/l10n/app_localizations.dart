@@ -1930,6 +1930,18 @@ abstract class AppLocalizations {
   /// **'{count}회'**
   String water_timesCount(int count);
 
+  /// No description provided for @water_tapToInput.
+  ///
+  /// In ko, this message translates to:
+  /// **'탭하여 입력'**
+  String get water_tapToInput;
+
+  /// No description provided for @water_tapToEdit.
+  ///
+  /// In ko, this message translates to:
+  /// **'탭하여 수정'**
+  String get water_tapToEdit;
+
   /// No description provided for @weight_bodyWeight.
   ///
   /// In ko, this message translates to:
@@ -2535,6 +2547,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'메모 (선택)'**
   String get diet_memo;
+
+  /// No description provided for @diet_noServingExists.
+  ///
+  /// In ko, this message translates to:
+  /// **'배식 기록이 없습니다. 취식 기록을 추가하려면 먼저 배식을 등록해 주세요.'**
+  String get diet_noServingExists;
+
+  /// No description provided for @diet_eatingExceedsServing.
+  ///
+  /// In ko, this message translates to:
+  /// **'취식량이 배식량을 초과할 수 없습니다. (남은 배식량: {remaining}g)'**
+  String diet_eatingExceedsServing(String remaining);
 
   /// No description provided for @faq_title.
   ///
@@ -3951,6 +3975,84 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'일일 기록 추가'**
   String get btn_addDailyRecord;
+
+  /// No description provided for @profileSetup_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 설정'**
+  String get profileSetup_title;
+
+  /// No description provided for @profileSetup_phoneHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'전화번호를 입력해 주세요'**
+  String get profileSetup_phoneHint;
+
+  /// No description provided for @profileSetup_complete.
+  ///
+  /// In ko, this message translates to:
+  /// **'입력완료'**
+  String get profileSetup_complete;
+
+  /// No description provided for @profileSetup_saveError.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 저장 중 오류가 발생했습니다.'**
+  String get profileSetup_saveError;
+
+  /// No description provided for @profileSetup_genderSelectTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'성별을 선택하세요'**
+  String get profileSetup_genderSelectTitle;
+
+  /// No description provided for @profileSetup_genderMale.
+  ///
+  /// In ko, this message translates to:
+  /// **'남'**
+  String get profileSetup_genderMale;
+
+  /// No description provided for @profileSetup_genderFemale.
+  ///
+  /// In ko, this message translates to:
+  /// **'여'**
+  String get profileSetup_genderFemale;
+
+  /// No description provided for @profileSetup_doneTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정 완료'**
+  String get profileSetup_doneTitle;
+
+  /// No description provided for @profileSetup_doneMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정이 완료되었습니다!'**
+  String get profileSetup_doneMessage;
+
+  /// No description provided for @profileSetup_startRecording.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록 시작!'**
+  String get profileSetup_startRecording;
+
+  /// No description provided for @timePicker_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'시간을 선택해주세요'**
+  String get timePicker_title;
+
+  /// No description provided for @timePicker_confirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택 완료'**
+  String get timePicker_confirm;
+
+  /// No description provided for @country_selectTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'국가를 선택하세요'**
+  String get country_selectTitle;
 }
 
 class _AppLocalizationsDelegate

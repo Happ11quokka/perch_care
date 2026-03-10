@@ -22,6 +22,7 @@ class ApiClient {
   static const _requestTimeout = Duration(seconds: 10);
   static const _refreshTimeout = Duration(seconds: 5);
   static const _uploadTimeout = Duration(seconds: 30);
+  static const _aiTimeout = Duration(seconds: 60);
 
   String get _baseUrl => Environment.apiBaseUrl;
   final _tokenService = TokenService.instance;
@@ -140,15 +141,26 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  /// AI 전용 POST 요청 (60초 타임아웃)
+  Future<dynamic> postAI(String path, {Map<String, dynamic>? body}) async {
+    final uri = Uri.parse('$_baseUrl$path');
+    final response = await _makeRequest(
+      () => http.post(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
+      timeout: _aiTimeout,
+    );
+    return _handleResponse(response);
+  }
+
   /// 토큰 갱신이 포함된 요청 래퍼
-  Future<http.Response> _makeRequest(Future<http.Response> Function() request) async {
-    var response = await request().timeout(_requestTimeout);
+  Future<http.Response> _makeRequest(Future<http.Response> Function() request, {Duration? timeout}) async {
+    final effectiveTimeout = timeout ?? _requestTimeout;
+    var response = await request().timeout(effectiveTimeout);
 
     // 401이면 토큰 갱신 시도
     if (response.statusCode == 401 && _tokenService.refreshToken != null) {
       final refreshed = await _refreshToken();
       if (refreshed) {
-        response = await request().timeout(_requestTimeout);
+        response = await request().timeout(effectiveTimeout);
       }
     }
 
