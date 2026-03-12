@@ -11,6 +11,8 @@ import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WaterRecordScreen extends StatefulWidget {
@@ -31,10 +33,21 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
   int _count = 0;
   final double _goalMl = 270;
 
+  // 코치마크 GlobalKeys
+  final _waterIconKey = GlobalKey();
+  final _targetCardKey = GlobalKey();
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _loadActivePet();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadActivePet() async {
@@ -52,8 +65,38 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
         setState(() {
           _isLoading = false;
         });
+        _maybeShowCoachMarks();
       }
     }
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    if (await service.hasSeen(CoachMarkService.screenWaterRecord)) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    CoachMarkOverlay.show(
+      context,
+      scrollController: _scrollController,
+      steps: [
+        CoachMarkStep(
+          targetKey: _waterIconKey,
+          title: l10n.coach_waterIcon_title,
+          body: l10n.coach_waterIcon_body,
+        ),
+        CoachMarkStep(
+          targetKey: _targetCardKey,
+          title: l10n.coach_waterTarget_title,
+          body: l10n.coach_waterTarget_body,
+        ),
+      ],
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () => service.markSeen(CoachMarkService.screenWaterRecord),
+    );
   }
 
   String _storageKey() {
@@ -316,6 +359,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
           : SafeArea(
               top: false,
               child: SingleChildScrollView(
+                controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -370,6 +414,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                     ),
                     const SizedBox(height: 8),
                     GestureDetector(
+                      key: _waterIconKey,
                       onTap: _openEditor,
                       child: Column(
                         children: [
@@ -426,6 +471,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                     ),
                     const SizedBox(height: 24),
                     Container(
+                      key: _targetCardKey,
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(

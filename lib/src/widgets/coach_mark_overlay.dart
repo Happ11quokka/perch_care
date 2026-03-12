@@ -28,13 +28,21 @@ class CoachMarkOverlay {
     ScrollController? scrollController,
     VoidCallback? onComplete,
   }) {
+    // 타겟이 위젯 트리에 없는 단계 필터링
+    final validSteps =
+        steps.where((s) => s.targetKey.currentContext != null).toList();
+    if (validSteps.isEmpty) {
+      onComplete?.call();
+      return;
+    }
+
     dismiss();
     final overlay = Overlay.of(context, rootOverlay: true);
 
     late OverlayEntry entry;
     entry = OverlayEntry(
       builder: (context) => _CoachMarkWidget(
-        steps: steps,
+        steps: validSteps,
         nextLabel: nextLabel,
         gotItLabel: gotItLabel,
         skipLabel: skipLabel,

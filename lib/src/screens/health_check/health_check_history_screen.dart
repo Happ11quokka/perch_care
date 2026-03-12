@@ -11,6 +11,8 @@ import '../../services/premium/premium_service.dart';
 import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 건강체크 히스토리 화면
 class HealthCheckHistoryScreen extends StatefulWidget {
@@ -25,6 +27,11 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
   List<HealthCheckRecord> _records = [];
   List<_DateGroup>? _groupedRecords;
   bool _isLoading = true;
+
+  // Coach mark target keys
+  final _vetSummaryButtonKey = GlobalKey();
+  final _shareButtonKey = GlobalKey();
+  final _firstHistoryCardKey = GlobalKey();
 
   @override
   void initState() {
@@ -62,6 +69,9 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
             _groupedRecords = null;
             _isLoading = false;
           });
+          if (_records.isNotEmpty) {
+            _maybeShowCoachMarks();
+          }
         }
         return;
       } catch (e) {
@@ -78,7 +88,51 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
         _groupedRecords = null;
         _isLoading = false;
       });
+      if (_records.isNotEmpty) {
+        _maybeShowCoachMarks();
+      }
     }
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    if (await service.hasSeen(CoachMarkService.screenHealthCheckHistory)) return;
+    if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = [
+      CoachMarkStep(
+        targetKey: _vetSummaryButtonKey,
+        title: l10n.coach_hcHistoryVet_title,
+        body: l10n.coach_hcHistoryVet_body,
+        isScrollable: false,
+      ),
+      CoachMarkStep(
+        targetKey: _shareButtonKey,
+        title: l10n.coach_hcHistoryShare_title,
+        body: l10n.coach_hcHistoryShare_body,
+        isScrollable: false,
+      ),
+      CoachMarkStep(
+        targetKey: _firstHistoryCardKey,
+        title: l10n.coach_hcHistorySwipe_title,
+        body: l10n.coach_hcHistorySwipe_body,
+        isScrollable: true,
+      ),
+    ];
+
+    CoachMarkOverlay.show(
+      context,
+      steps: steps,
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () {
+        service.markSeen(CoachMarkService.screenHealthCheckHistory);
+      },
+    );
   }
 
   /// 삭제 확인 다이얼로그 표시. true 반환 시 Dismissible이 애니메이션 처리.
@@ -205,6 +259,7 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
         ),
         actions: [
           IconButton(
+            key: _vetSummaryButtonKey,
             icon: const Icon(Icons.local_hospital_outlined,
                 color: Color(0xFF6B6B6B)),
             tooltip: l10n.report_vetSummary,
@@ -212,6 +267,7 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
                 context.pushNamed(RouteNames.vetSummary),
           ),
           IconButton(
+            key: _shareButtonKey,
             icon: const Icon(Icons.share_outlined,
                 color: Color(0xFF6B6B6B)),
             tooltip: l10n.report_shareHealth,
@@ -303,17 +359,30 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
                 ),
               ),
             ),
-            ...group.records.map((record) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _buildRecordCard(record, l10n),
-                )),
+            ...group.records.asMap().entries.map((entry) {
+              final recordIndex = entry.key;
+              final record = entry.value;
+              final isFirstCard = index == 0 && recordIndex == 0;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildRecordCard(
+                  record,
+                  l10n,
+                  key: isFirstCard ? _firstHistoryCardKey : null,
+                ),
+              );
+            }),
           ],
         );
       },
     );
   }
 
-  Widget _buildRecordCard(HealthCheckRecord record, AppLocalizations l10n) {
+  Widget _buildRecordCard(
+    HealthCheckRecord record,
+    AppLocalizations l10n, {
+    GlobalKey? key,
+  }) {
     final mode = VisionMode.fromValue(record.mode);
     final (icon, iconColor) = _getModeIcon(mode);
     final (statusColor, statusBg, statusLabel) =
@@ -346,6 +415,7 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
           );
         },
         child: Container(
+          key: key,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,

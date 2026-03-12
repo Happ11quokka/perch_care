@@ -9,6 +9,8 @@ import '../../services/analytics/analytics_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 import 'promo_code_bottom_sheet.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 /// Paywall 화면 — 구독 구매, 복원, 프로모 코드 입력
 class PremiumScreen extends StatefulWidget {
@@ -31,6 +33,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
   bool _isPremium = false;
   String _selectedPlan = IapService.yearlyId; // 연간 기본 추천
 
+  // Coach mark keys
+  final GlobalKey _planSelectorKey = GlobalKey();
+  final GlobalKey _promoCodeButtonKey = GlobalKey();
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +53,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _iapService.onEvent = null;
     super.dispose();
   }
@@ -57,6 +65,45 @@ class _PremiumScreenState extends State<PremiumScreen> {
         setState(() => _isPremium = status.isPremium);
       }
     } catch (_) {}
+
+    _maybeShowCoachMarks();
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    if (_isPremium) return; // 프리미엄이면 플랜/프로모 위젯이 없음
+    final service = CoachMarkService.instance;
+    final hasSeen = await service.hasSeen(CoachMarkService.screenPremium);
+    if (hasSeen || !mounted) return;
+
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = <CoachMarkStep>[
+      CoachMarkStep(
+        targetKey: _planSelectorKey,
+        title: l10n.coach_premiumPlan_title,
+        body: l10n.coach_premiumPlan_body,
+      ),
+      CoachMarkStep(
+        targetKey: _promoCodeButtonKey,
+        title: l10n.coach_premiumPromo_title,
+        body: l10n.coach_premiumPromo_body,
+        isScrollable: false,
+      ),
+    ];
+
+    if (mounted) {
+      CoachMarkOverlay.show(
+        context,
+        scrollController: _scrollController,
+        steps: steps,
+        nextLabel: l10n.coach_next,
+        gotItLabel: l10n.coach_gotIt,
+        skipLabel: l10n.coach_skip,
+        onComplete: () => service.markSeen(CoachMarkService.screenPremium),
+      );
+    }
   }
 
   void _handleIapEvent(IapEvent event) {
@@ -194,6 +241,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 _buildAppBar(l10n),
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _scrollController,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
@@ -360,6 +408,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final monthly = _iapService.monthlyProduct;
 
     return Column(
+      key: _planSelectorKey,
       children: [
         // 연간 플랜 (추천)
         _buildPlanCard(
@@ -549,6 +598,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
           color: const Color(0xFFE7E5E1),
         ),
         TextButton(
+          key: _promoCodeButtonKey,
           onPressed: _openPromoCode,
           child: Text(
             l10n.paywall_promoCode,

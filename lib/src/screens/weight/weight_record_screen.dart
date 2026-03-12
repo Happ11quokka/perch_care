@@ -13,6 +13,8 @@ import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/weight_range_indicator.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 import '../../models/breed_standard.dart';
 import '../../services/breed/breed_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -38,6 +40,12 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
   bool _isSaving = false;
   List<WeightRecord> _records = [];
   BreedStandard? _breedStandard;
+
+  // 코치마크 GlobalKeys
+  final _wciGaugeKey = GlobalKey();
+  final _weightInputKey = GlobalKey();
+  final _timeCardKey = GlobalKey();
+  final _saveButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -100,8 +108,48 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         setState(() {
           _isLoading = false;
         });
+        _maybeShowCoachMarks();
       }
     }
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    if (await service.hasSeen(CoachMarkService.screenWeightRecord)) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    CoachMarkOverlay.show(
+      context,
+      steps: [
+        CoachMarkStep(
+          targetKey: _wciGaugeKey,
+          title: l10n.coach_weightGauge_title,
+          body: l10n.coach_weightGauge_body,
+        ),
+        CoachMarkStep(
+          targetKey: _weightInputKey,
+          title: l10n.coach_weightInput_title,
+          body: l10n.coach_weightInput_body,
+        ),
+        CoachMarkStep(
+          targetKey: _timeCardKey,
+          title: l10n.coach_weightTime_title,
+          body: l10n.coach_weightTime_body,
+        ),
+        CoachMarkStep(
+          targetKey: _saveButtonKey,
+          title: l10n.coach_weightSave_title,
+          body: l10n.coach_weightSave_body,
+          isScrollable: false,
+        ),
+      ],
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () => service.markSeen(CoachMarkService.screenWeightRecord),
+    );
   }
 
   Future<void> _loadRecords() async {
@@ -408,6 +456,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                     ),
                     const SizedBox(height: 24),
                     Column(
+                      key: _wciGaugeKey,
                       children: [
                         SizedBox(
                           width: 240,
@@ -575,6 +624,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                     _buildTimeCard(l10n),
                     const SizedBox(height: 16),
                     TextField(
+                      key: _weightInputKey,
                       controller: _weightController,
                       focusNode: _weightFocusNode,
                       keyboardType: const TextInputType.numberWithOptions(
@@ -636,6 +686,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                     ),
                     const SizedBox(height: 24),
                     GestureDetector(
+                      key: _saveButtonKey,
                       onTap: _isSaving ? null : _saveWeight,
                       child: Container(
                         height: 56,
@@ -694,6 +745,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
 
     return GestureDetector(
+      key: _timeCardKey,
       onTap: () async {
         final picked = await showAnalogTimePicker(
           context: context,

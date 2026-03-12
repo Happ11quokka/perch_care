@@ -7,6 +7,8 @@ import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/premium/premium_service.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 /// AI 건강체크 모드 선택 화면
 class HealthCheckMainScreen extends StatefulWidget {
@@ -21,6 +23,11 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
   bool _isLocked = true; // 기본값: 잠금 (로딩 중 오탭 방지)
   bool _hasVisionTrial = false; // Phase 2: 무료 체험 가능 여부
   bool _isLoading = true;
+
+  // Coach mark target keys
+  final _historyButtonKey = GlobalKey();
+  final _modeCardsKey = GlobalKey();
+  final _trialBadgeKey = GlobalKey();
 
   @override
   void initState() {
@@ -61,6 +68,7 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
           }
           _isLoading = false;
         });
+        _maybeShowCoachMarks();
       }
     } catch (_) {
       if (mounted) {
@@ -71,6 +79,46 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
         });
       }
     }
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    if (await service.hasSeen(CoachMarkService.screenHealthCheckMain)) return;
+    if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = [
+      CoachMarkStep(
+        targetKey: _historyButtonKey,
+        title: l10n.coach_hcHistory_title,
+        body: l10n.coach_hcHistory_body,
+        isScrollable: false,
+      ),
+      CoachMarkStep(
+        targetKey: _modeCardsKey,
+        title: l10n.coach_hcModes_title,
+        body: l10n.coach_hcModes_body,
+      ),
+      if (!_isLocked && _hasVisionTrial)
+        CoachMarkStep(
+          targetKey: _trialBadgeKey,
+          title: l10n.coach_hcTrial_title,
+          body: l10n.coach_hcTrial_body,
+        ),
+    ];
+
+    CoachMarkOverlay.show(
+      context,
+      steps: steps,
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () {
+        service.markSeen(CoachMarkService.screenHealthCheckMain);
+      },
+    );
   }
 
   Future<void> _openPremiumPaywall({
@@ -199,6 +247,7 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
         ),
         actions: [
           IconButton(
+            key: _historyButtonKey,
             icon: const Icon(Icons.history, color: Color(0xFF1A1A1A)),
             onPressed: () {
               context.pushNamed(RouteNames.healthCheckHistory);
@@ -223,12 +272,15 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              _buildModeCard(
-                context,
-                l10n: l10n,
-                mode: VisionMode.fullBody,
-                icon: Icons.pets,
-                description: l10n.hc_modeFullBodyDesc,
+              Container(
+                key: _modeCardsKey,
+                child: _buildModeCard(
+                  context,
+                  l10n: l10n,
+                  mode: VisionMode.fullBody,
+                  icon: Icons.pets,
+                  description: l10n.hc_modeFullBodyDesc,
+                ),
               ),
               const SizedBox(height: 12),
               _buildModeCard(
@@ -354,6 +406,7 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
                         if (_hasVisionTrial) ...[
                           const SizedBox(width: 8),
                           Container(
+                            key: _trialBadgeKey,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
                               vertical: 2,

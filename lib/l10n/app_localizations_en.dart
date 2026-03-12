@@ -1289,6 +1289,202 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coach_skip => 'Skip';
 
   @override
+  String get coach_foodToggle_title => 'Diet Type';
+
+  @override
+  String get coach_foodToggle_body =>
+      'Switch between Serving and Eating to track both provided and consumed food.';
+
+  @override
+  String get coach_foodAdd_title => 'Add Food Entry';
+
+  @override
+  String get coach_foodAdd_body =>
+      'Tap here to add a new food record with name, amount, and time.';
+
+  @override
+  String get coach_foodSave_title => 'Save Changes';
+
+  @override
+  String get coach_foodSave_body =>
+      'Don\'t forget to save! Your records sync automatically when online.';
+
+  @override
+  String get coach_waterIcon_title => 'Track Water Intake';
+
+  @override
+  String get coach_waterIcon_body =>
+      'Tap the water icon to increase intake. Long press to manually enter the amount.';
+
+  @override
+  String get coach_waterTarget_title => 'Daily Goal';
+
+  @override
+  String get coach_waterTarget_body =>
+      'Your recommended daily water intake is shown here. Keep your bird hydrated!';
+
+  @override
+  String get coach_weightGauge_title => 'Weight Condition Index';
+
+  @override
+  String get coach_weightGauge_body =>
+      'This gauge shows if your bird\'s weight is within the healthy range for their breed.';
+
+  @override
+  String get coach_weightInput_title => 'Enter Weight';
+
+  @override
+  String get coach_weightInput_body =>
+      'Enter weight in grams. Tip: Weigh in the morning for consistency!';
+
+  @override
+  String get coach_weightTime_title => 'Record Time';
+
+  @override
+  String get coach_weightTime_body =>
+      'Select when the weight was measured. You can record multiple entries per day.';
+
+  @override
+  String get coach_weightSave_title => 'Save Record';
+
+  @override
+  String get coach_weightSave_body =>
+      'Tap to save. Your data helps track growth and detect health changes early.';
+
+  @override
+  String get coach_hcHistory_title => 'View History';
+
+  @override
+  String get coach_hcHistory_body =>
+      'Access all your past health checks here. Track patterns over time.';
+
+  @override
+  String get coach_hcModes_title => 'Choose Check Type';
+
+  @override
+  String get coach_hcModes_body =>
+      'Select Full Body for overall health, Part-Specific for targeted areas, or Droppings/Food for diet analysis.';
+
+  @override
+  String get coach_hcTrial_title => 'Free Trials Available';
+
+  @override
+  String get coach_hcTrial_body =>
+      'You have free health check trials! Premium unlocks unlimited checks.';
+
+  @override
+  String get coach_hcHistoryVet_title => 'Vet Summary';
+
+  @override
+  String get coach_hcHistoryVet_body =>
+      'Get a comprehensive report formatted for veterinarians. Premium feature.';
+
+  @override
+  String get coach_hcHistoryShare_title => 'Share Report';
+
+  @override
+  String get coach_hcHistoryShare_body =>
+      'Share your bird\'s health report via email or messaging apps.';
+
+  @override
+  String get coach_hcHistorySwipe_title => 'Swipe to Delete';
+
+  @override
+  String get coach_hcHistorySwipe_body =>
+      'Swipe left on any history card to delete it. Be careful, this cannot be undone!';
+
+  @override
+  String get coach_hcResultConfidence_title => 'Confidence Score';
+
+  @override
+  String get coach_hcResultConfidence_body =>
+      'This shows AI confidence in the analysis. Higher is better, but always consult a vet for concerns.';
+
+  @override
+  String get coach_hcResultFindings_title => 'Analysis Findings';
+
+  @override
+  String get coach_hcResultFindings_body =>
+      'Detailed observations from the AI health check. Tap each card for more info.';
+
+  @override
+  String get coach_hcResultRecheck_title => 'Recheck Anytime';
+
+  @override
+  String get coach_hcResultRecheck_body =>
+      'Not satisfied? You can take another photo and recheck immediately.';
+
+  @override
+  String get coach_bhiRing_title => 'Bird Health Index';
+
+  @override
+  String get coach_bhiRing_body =>
+      'Your overall health score out of 100, calculated from weight, food, and water data.';
+
+  @override
+  String get coach_bhiBreakdown_title => 'Score Breakdown';
+
+  @override
+  String get coach_bhiBreakdown_body =>
+      'See how weight (60pts), food (25pts), and water (15pts) contribute to the total score.';
+
+  @override
+  String get coach_profilePremium_title => 'Upgrade to Premium';
+
+  @override
+  String get coach_profilePremium_body =>
+      'Unlock unlimited AI health checks, export reports, and advanced insights!';
+
+  @override
+  String get coach_profileAddPet_title => 'Add Another Pet';
+
+  @override
+  String get coach_profileAddPet_body =>
+      'Managing multiple birds? Add them here and switch between profiles easily.';
+
+  @override
+  String get coach_profilePetCard_title => 'Select Active Pet';
+
+  @override
+  String get coach_profilePetCard_body =>
+      'Tap any pet card to switch. The active pet\'s data will be shown throughout the app.';
+
+  @override
+  String get coach_premiumPlan_title => 'Choose Your Plan';
+
+  @override
+  String get coach_premiumPlan_body =>
+      'Monthly offers flexibility, Yearly gives you 2 months free. Both unlock all features!';
+
+  @override
+  String get coach_premiumPromo_title => 'Have a Promo Code?';
+
+  @override
+  String get coach_premiumPromo_body =>
+      'Got a code from a partner or event? Tap here to redeem special offers.';
+
+  @override
+  String get coach_petDetailImage_title => 'Add Pet Photo';
+
+  @override
+  String get coach_petDetailImage_body =>
+      'Tap to upload a photo of your bird. It helps identify them at a glance!';
+
+  @override
+  String get coach_petDetailInfo_title => 'Basic Info';
+
+  @override
+  String get coach_petDetailInfo_body =>
+      'Fill in gender, birthdate, and breed for more accurate health recommendations.';
+
+  @override
+  String get coach_petDetailSave_title => 'Save Profile';
+
+  @override
+  String get coach_petDetailSave_body =>
+      'Don\'t forget to save your changes! They sync across all your devices.';
+
+  @override
   String get weight_selectTime => 'Measurement Time';
 
   @override

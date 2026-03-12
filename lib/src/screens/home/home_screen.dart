@@ -223,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _maybeShowCoachMarks() async {
     final coachService = CoachMarkService.instance;
-    if (await coachService.hasSeenHomeCoachMarks()) return;
+    if (await coachService.hasSeen(CoachMarkService.screenHome)) return;
 
     // 레이아웃 안정화 대기
     await Future.delayed(const Duration(milliseconds: 800));
@@ -283,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
       nextLabel: l10n.coach_next,
       gotItLabel: l10n.coach_gotIt,
       skipLabel: l10n.coach_skip,
-      onComplete: () => coachService.markHomeCoachMarksSeen(),
+      onComplete: () => coachService.markSeen(CoachMarkService.screenHome),
     );
   }
 
@@ -662,8 +662,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: GestureDetector(
                     onTap: () {
                       if (!_isMonthlyView) return;
+                      final now = DateTime.now();
+                      final weekCount = _getWeekCountForMonth(now.year, now.month);
                       setState(() {
                         _isMonthlyView = false;
+                        if (_selectedWeek > weekCount) {
+                          _selectedWeek = weekCount;
+                        }
                       });
                       _loadBhiForSelectedPeriod();
                     },
@@ -695,11 +700,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMonthSelector() {
     final l10n = AppLocalizations.of(context);
 
-    // Generate 7 months centered around current month (with year tracking)
+    // Generate 12 months: past 11 months + current month
     final currentMonth = DateTime.now().month;
     final currentYear = DateTime.now().year;
     final monthsWithYear = <({int year, int month})>[];
-    for (int i = -3; i <= 3; i++) {
+    for (int i = -11; i <= 0; i++) {
       var m = currentMonth + i;
       var y = currentYear;
       while (m < 1) { m += 12; y--; }
@@ -707,50 +712,83 @@ class _HomeScreenState extends State<HomeScreen> {
       monthsWithYear.add((year: y, month: m));
     }
 
+    // Find index of selected month for initial scroll
+    final selectedIndex = monthsWithYear.indexWhere(
+      (e) => e.month == _selectedMonth && e.year == _selectedYear,
+    );
+
     return SizedBox(
       key: const ValueKey('month'),
       height: 36,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: monthsWithYear.map((entry) {
-          final isSelected = entry.month == _selectedMonth && entry.year == _selectedYear;
-          return GestureDetector(
-            onTap: () {
-              if (_selectedMonth == entry.month && _selectedYear == entry.year) return;
-              setState(() {
-                _selectedMonth = entry.month;
-                _selectedYear = entry.year;
-              });
-              _loadBhiForSelectedPeriod();
-            },
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                borderRadius: BorderRadius.circular(100),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                l10n.home_monthFormat(entry.month),
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? Colors.white : const Color(0xFF6B6B6B),
-                  letterSpacing: -0.3,
-                ),
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const itemWidth = 36.0;
+          const itemSpacing = 4.0;
+          final totalItemWidth = itemWidth + itemSpacing;
+          // Center the selected item
+          final initialOffset = selectedIndex >= 0
+              ? (selectedIndex * totalItemWidth - (constraints.maxWidth - itemWidth) / 2)
+                  .clamp(0.0, double.infinity)
+              : 0.0;
+
+          return ListView.separated(
+            controller: ScrollController(initialScrollOffset: initialOffset),
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(
+              horizontal: (constraints.maxWidth - itemWidth) / 2,
             ),
+            itemCount: monthsWithYear.length,
+            separatorBuilder: (_, __) => const SizedBox(width: itemSpacing),
+            itemBuilder: (context, index) {
+              final entry = monthsWithYear[index];
+              final isSelected = entry.month == _selectedMonth && entry.year == _selectedYear;
+              return GestureDetector(
+                onTap: () {
+                  if (_selectedMonth == entry.month && _selectedYear == entry.year) return;
+                  setState(() {
+                    _selectedMonth = entry.month;
+                    _selectedYear = entry.year;
+                  });
+                  _loadBhiForSelectedPeriod();
+                },
+                child: Container(
+                  width: itemWidth,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.brandPrimary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    l10n.home_monthFormat(entry.month),
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected ? Colors.white : const Color(0xFF6B6B6B),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              );
+            },
           );
-        }).toList(),
+        },
       ),
     );
   }
 
+  /// 해당 월의 주 수를 계산 (1주=1~7일 기준)
+  int _getWeekCountForMonth(int year, int month) {
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+    return (daysInMonth / 7).ceil();
+  }
+
   Widget _buildWeekSelector() {
     final l10n = AppLocalizations.of(context);
-    final weeks = [1, 2, 3, 4, 5];
+    final now = DateTime.now();
+    final weekCount = _getWeekCountForMonth(now.year, now.month);
+    final weeks = List.generate(weekCount, (i) => i + 1);
 
     return SizedBox(
       key: const ValueKey('week'),

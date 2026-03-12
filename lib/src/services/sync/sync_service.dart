@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../api/api_client.dart';
+import '../api/token_service.dart';
 import '../food/food_record_service.dart';
+import '../pet/pet_service.dart';
 import '../water/water_record_service.dart';
 import '../weight/weight_service.dart';
 import '../../models/weight_record.dart';
@@ -14,6 +17,7 @@ class SyncService with WidgetsBindingObserver {
 
   static const _queueKey = 'sync_queue';
   static const _maxRetries = 5;
+  static const _maxTotalRetries = 20; // 전체 세션 합산 최대 재시도
   static const defaultEntityId = 'default';
 
   static String dateKey(DateTime date) =>
@@ -133,14 +137,49 @@ class SyncService with WidgetsBindingObserver {
     );
   }
 
+  /// 재시도해도 성공할 수 없는 에러인지 판별
+  bool _isNonRetryableError(Object error) {
+    if (error is ApiException) {
+      // 4xx 클라이언트 에러는 대부분 재시도 무의미
+      // 단, 408 (Request Timeout), 429 (Too Many Requests)는 일시적이므로 재시도
+      if (error.statusCode >= 400 && error.statusCode < 500) {
+        return !{401, 403, 408, 429}.contains(error.statusCode);
+      }
+      // 500이면서 FK/integrity 관련 메시지 → 비재시도
+      if (error.statusCode == 500) {
+        final msg = error.message.toLowerCase();
+        return msg.contains('foreign key') ||
+            msg.contains('integrity') ||
+            msg.contains('not found') ||
+            msg.contains('does not exist');
+      }
+    }
+    return false;
+  }
+
   /// 큐의 모든 아이템을 서버로 전송 시도
   Future<void> processQueue() async {
     if (_isProcessing || _queue.isEmpty) return;
+
+    // 토큰 없으면 전송 시도 자체를 스킵 — 다음 로그인 후 처리
+    if (TokenService.instance.accessToken == null) {
+      debugPrint('[SyncService] No auth token, skipping queue processing');
+      return;
+    }
+
     _isProcessing = true;
 
     final succeeded = <SyncItem>[];
 
     for (final item in List.of(_queue)) {
+      if (item.totalRetryCount >= _maxTotalRetries) {
+        // 전체 누적 최대치 도달 — 영구 제거
+        succeeded.add(item);
+        debugPrint(
+          '[SyncService] Removing item after ${item.totalRetryCount} total retries: ${item.type} ${item.date}',
+        );
+        continue;
+      }
       if (item.retryCount >= _maxRetries) {
         debugPrint(
           '[SyncService] Skipping this session after max retries: ${item.type} ${item.date}',
@@ -158,10 +197,17 @@ class SyncService with WidgetsBindingObserver {
           debugPrint(
             '[SyncService] Removing corrupted item: ${item.type} ${item.date} - $e',
           );
+        } else if (_isNonRetryableError(e)) {
+          // 서버가 명확히 거부 (404, 422, FK violation 등) — 재시도 무의미
+          succeeded.add(item);
+          debugPrint(
+            '[SyncService] Removing non-retryable item: ${item.type} ${item.date} - $e',
+          );
         } else {
           item.retryCount++;
+          item.totalRetryCount++;
           debugPrint(
-            '[SyncService] Failed (${item.retryCount}/$_maxRetries): ${item.type} ${item.date} - $e',
+            '[SyncService] Failed (${item.retryCount}/$_maxRetries, total: ${item.totalRetryCount}/$_maxTotalRetries): ${item.type} ${item.date} - $e',
           );
           if (item.retryCount >= _maxRetries) {
             // 이번 세션에서는 스킵, 다음 세션에서 재시도 (데이터 삭제 안 함)
@@ -315,8 +361,14 @@ class SyncService with WidgetsBindingObserver {
     }
   }
 
-  /// 서버로 전송
+  /// 서버로 전송 (pet 존재 확인 포함)
   Future<void> _sendToServer(SyncItem item) async {
+    // pet_id가 서버에 존재하는지 확인 — 없으면 StateError로 즉시 큐에서 제거
+    final pet = await PetService.instance.getPetById(item.petId);
+    if (pet == null) {
+      throw StateError('Pet ${item.petId} does not exist on server');
+    }
+
     final dateParts = item.date.split('-');
     final date = DateTime(
       int.parse(dateParts[0]),
@@ -378,6 +430,7 @@ class SyncItem {
   final Map<String, dynamic> payload;
   final DateTime createdAt;
   int retryCount;
+  int totalRetryCount; // 전체 세션 누적 재시도 (init에서 리셋 안 함)
 
   SyncItem({
     required this.type,
@@ -387,6 +440,7 @@ class SyncItem {
     String? entityId,
     DateTime? createdAt,
     this.retryCount = 0,
+    this.totalRetryCount = 0,
   }) : entityId = entityId ?? SyncService.defaultEntityId,
        createdAt = createdAt ?? DateTime.now();
 
@@ -399,6 +453,7 @@ class SyncItem {
       payload: Map<String, dynamic>.from(json['payload'] as Map),
       createdAt: DateTime.parse(json['createdAt'] as String),
       retryCount: (json['retryCount'] as num?)?.toInt() ?? 0,
+      totalRetryCount: (json['totalRetryCount'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -410,5 +465,6 @@ class SyncItem {
     'payload': payload,
     'createdAt': createdAt.toIso8601String(),
     'retryCount': retryCount,
+    'totalRetryCount': totalRetryCount,
   };
 }

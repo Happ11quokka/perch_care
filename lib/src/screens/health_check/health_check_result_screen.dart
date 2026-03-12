@@ -9,6 +9,8 @@ import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/pet/active_pet_notifier.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 건강체크 분석 결과 화면
 class HealthCheckResultScreen extends StatefulWidget {
@@ -34,12 +36,59 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
   VisionMode get mode => widget.mode;
   Map<String, dynamic> get result => widget.result;
 
+  // Coach mark target keys
+  final _confidenceBarKey = GlobalKey();
+  final _findingsKey = GlobalKey();
+  final _recheckButtonKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     if (!widget.isFromHistory) {
       _saveResult();
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowCoachMarks();
+    });
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    if (await service.hasSeen(CoachMarkService.screenHealthCheckResult)) return;
+    if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = [
+      CoachMarkStep(
+        targetKey: _confidenceBarKey,
+        title: l10n.coach_hcResultConfidence_title,
+        body: l10n.coach_hcResultConfidence_body,
+      ),
+      CoachMarkStep(
+        targetKey: _findingsKey,
+        title: l10n.coach_hcResultFindings_title,
+        body: l10n.coach_hcResultFindings_body,
+      ),
+      CoachMarkStep(
+        targetKey: _recheckButtonKey,
+        title: l10n.coach_hcResultRecheck_title,
+        body: l10n.coach_hcResultRecheck_body,
+        isScrollable: false,
+      ),
+    ];
+
+    CoachMarkOverlay.show(
+      context,
+      steps: steps,
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () {
+        service.markSeen(CoachMarkService.screenHealthCheckResult);
+      },
+    );
   }
 
   Future<void> _saveResult() async {
@@ -132,7 +181,10 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
 
               _buildSectionTitle(l10n.hc_analysisItems),
               const SizedBox(height: 12),
-              _buildFindings(l10n),
+              Container(
+                key: _findingsKey,
+                child: _buildFindings(l10n),
+              ),
               const SizedBox(height: 20),
 
               _buildSectionTitle(l10n.hc_recommendations),
@@ -200,6 +252,7 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
           if (confidence != null) ...[
             const SizedBox(height: 16),
             Row(
+              key: _confidenceBarKey,
               children: [
                 Text(
                   l10n.hc_confidence,
@@ -568,6 +621,7 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
           child: GestureDetector(
             onTap: () => context.goNamed(RouteNames.healthCheck),
             child: Container(
+              key: _recheckButtonKey,
               height: 52,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(

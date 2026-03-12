@@ -1239,6 +1239,174 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coach_skip => '跳过';
 
   @override
+  String get coach_foodToggle_title => '饮食类型';
+
+  @override
+  String get coach_foodToggle_body => '切换配餐和进食，同时记录提供量和摄入量。';
+
+  @override
+  String get coach_foodAdd_title => '添加食物';
+
+  @override
+  String get coach_foodAdd_body => '点击这里添加食物名称、数量和时间。';
+
+  @override
+  String get coach_foodSave_title => '保存更改';
+
+  @override
+  String get coach_foodSave_body => '别忘了保存！在线时会自动同步。';
+
+  @override
+  String get coach_waterIcon_title => '记录饮水量';
+
+  @override
+  String get coach_waterIcon_body => '点击水图标增加饮水量。长按可手动输入数量。';
+
+  @override
+  String get coach_waterTarget_title => '每日目标';
+
+  @override
+  String get coach_waterTarget_body => '这里显示建议的每日饮水量。保持充足的水分很重要！';
+
+  @override
+  String get coach_weightGauge_title => '体重状况指数';
+
+  @override
+  String get coach_weightGauge_body => '该仪表显示您的鸟的体重是否在健康范围内。';
+
+  @override
+  String get coach_weightInput_title => '输入体重';
+
+  @override
+  String get coach_weightInput_body => '以克为单位输入。提示：早上称重更一致！';
+
+  @override
+  String get coach_weightTime_title => '记录时间';
+
+  @override
+  String get coach_weightTime_body => '选择称重的时间。每天可以记录多次。';
+
+  @override
+  String get coach_weightSave_title => '保存记录';
+
+  @override
+  String get coach_weightSave_body => '点击保存。数据有助于追踪成长和早期发现健康变化。';
+
+  @override
+  String get coach_hcHistory_title => '查看历史';
+
+  @override
+  String get coach_hcHistory_body => '在这里查看所有过去的健康检查。追踪随时间变化的模式。';
+
+  @override
+  String get coach_hcModes_title => '选择检查类型';
+
+  @override
+  String get coach_hcModes_body => '选择全身检查、部位检查、排泄物分析或食物分析。';
+
+  @override
+  String get coach_hcTrial_title => '免费试用可用';
+
+  @override
+  String get coach_hcTrial_body => '您有免费健康检查次数！高级版可无限使用。';
+
+  @override
+  String get coach_hcHistoryVet_title => '兽医报告';
+
+  @override
+  String get coach_hcHistoryVet_body => '获取为兽医准备的综合报告。高级版功能。';
+
+  @override
+  String get coach_hcHistoryShare_title => '分享报告';
+
+  @override
+  String get coach_hcHistoryShare_body => '通过邮件或消息应用分享您的鸟的健康报告。';
+
+  @override
+  String get coach_hcHistorySwipe_title => '滑动删除';
+
+  @override
+  String get coach_hcHistorySwipe_body => '向左滑动任何历史卡片即可删除。请注意，此操作不可撤销！';
+
+  @override
+  String get coach_hcResultConfidence_title => '置信度分数';
+
+  @override
+  String get coach_hcResultConfidence_body => '显示AI分析的置信度。越高越好，但有疑虑时请咨询兽医。';
+
+  @override
+  String get coach_hcResultFindings_title => '分析结果';
+
+  @override
+  String get coach_hcResultFindings_body => 'AI健康检查的详细观察。点击卡片查看更多信息。';
+
+  @override
+  String get coach_hcResultRecheck_title => '随时复查';
+
+  @override
+  String get coach_hcResultRecheck_body => '不满意？可以拍另一张照片立即重新检查。';
+
+  @override
+  String get coach_bhiRing_title => '鸟类健康指数';
+
+  @override
+  String get coach_bhiRing_body => '基于体重、食物和饮水数据计算的100分满分健康评分。';
+
+  @override
+  String get coach_bhiBreakdown_title => '分数构成';
+
+  @override
+  String get coach_bhiBreakdown_body => '查看体重(60分)、食物(25分)和饮水(15分)如何贡献总分。';
+
+  @override
+  String get coach_profilePremium_title => '升级高级版';
+
+  @override
+  String get coach_profilePremium_body => '解锁无限AI健康检查、导出报告和高级洞察！';
+
+  @override
+  String get coach_profileAddPet_title => '添加宠物';
+
+  @override
+  String get coach_profileAddPet_body => '养多只鸟？在这里添加并轻松切换个人资料。';
+
+  @override
+  String get coach_profilePetCard_title => '选择活跃宠物';
+
+  @override
+  String get coach_profilePetCard_body => '点击任何宠物卡片切换。活跃宠物的数据将在整个应用中显示。';
+
+  @override
+  String get coach_premiumPlan_title => '选择您的方案';
+
+  @override
+  String get coach_premiumPlan_body => '月度灵活，年度赠送2个月。两种方案都解锁所有功能！';
+
+  @override
+  String get coach_premiumPromo_title => '有促销码吗？';
+
+  @override
+  String get coach_premiumPromo_body => '有合作伙伴或活动的优惠码？点击这里兑换特别优惠。';
+
+  @override
+  String get coach_petDetailImage_title => '添加宠物照片';
+
+  @override
+  String get coach_petDetailImage_body => '点击上传您的鸟的照片。有助于一目了然地识别！';
+
+  @override
+  String get coach_petDetailInfo_title => '基本信息';
+
+  @override
+  String get coach_petDetailInfo_body => '填写性别、出生日期和品种，获得更准确的健康建议。';
+
+  @override
+  String get coach_petDetailSave_title => '保存资料';
+
+  @override
+  String get coach_petDetailSave_body => '别忘了保存更改！所有设备都会同步。';
+
+  @override
   String get weight_selectTime => '测量时间';
 
   @override

@@ -6,12 +6,59 @@ import '../../models/bhi_result.dart';
 import '../../router/route_names.dart';
 import '../../widgets/progress_ring.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 /// BHI (Bird Health Index) 건강 점수 상세 화면
-class BhiDetailScreen extends StatelessWidget {
+class BhiDetailScreen extends StatefulWidget {
   final BhiResult? bhiResult;
 
   const BhiDetailScreen({super.key, this.bhiResult});
+
+  @override
+  State<BhiDetailScreen> createState() => _BhiDetailScreenState();
+}
+
+class _BhiDetailScreenState extends State<BhiDetailScreen> {
+  final GlobalKey _scoreRingKey = GlobalKey();
+  final GlobalKey _breakdownCardsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowCoachMarks();
+    });
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    if (widget.bhiResult == null) return; // 데이터 없으면 타겟 위젯 없음
+    final service = CoachMarkService.instance;
+    if (await service.hasSeen(CoachMarkService.screenBhiDetail)) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    CoachMarkOverlay.show(
+      context,
+      steps: [
+        CoachMarkStep(
+          targetKey: _scoreRingKey,
+          title: l10n.coach_bhiRing_title,
+          body: l10n.coach_bhiRing_body,
+        ),
+        CoachMarkStep(
+          targetKey: _breakdownCardsKey,
+          title: l10n.coach_bhiBreakdown_title,
+          body: l10n.coach_bhiBreakdown_body,
+        ),
+      ],
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () => service.markSeen(CoachMarkService.screenBhiDetail),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +93,7 @@ class BhiDetailScreen extends StatelessWidget {
       ),
       body: SafeArea(
         top: false,
-        child: bhiResult == null ? _buildEmptyState(l10n) : _buildContent(l10n),
+        child: widget.bhiResult == null ? _buildEmptyState(l10n) : _buildContent(l10n),
       ),
     );
   }
@@ -91,7 +138,7 @@ class BhiDetailScreen extends StatelessWidget {
 
   /// 메인 컨텐츠
   Widget _buildContent(AppLocalizations l10n) {
-    final bhi = bhiResult!;
+    final bhi = widget.bhiResult!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(32, 24, 32, 40),
@@ -116,31 +163,36 @@ class BhiDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          _buildScoreBreakdownCard(
-            iconPath: 'assets/images/home_vector/weight.svg',
-            title: l10n.home_weight,
-            score: bhi.weightScore,
-            maxScore: 60,
-            hasData: bhi.hasWeightData,
-            noDataText: l10n.bhi_noData,
-          ),
-          const SizedBox(height: 8),
-          _buildScoreBreakdownCard(
-            iconPath: 'assets/images/home_vector/eat.svg',
-            title: l10n.home_food,
-            score: bhi.foodScore,
-            maxScore: 25,
-            hasData: bhi.hasFoodData,
-            noDataText: l10n.bhi_noData,
-          ),
-          const SizedBox(height: 8),
-          _buildScoreBreakdownCard(
-            iconPath: 'assets/images/home_vector/water.svg',
-            title: l10n.home_water,
-            score: bhi.waterScore,
-            maxScore: 15,
-            hasData: bhi.hasWaterData,
-            noDataText: l10n.bhi_noData,
+          Column(
+            key: _breakdownCardsKey,
+            children: [
+              _buildScoreBreakdownCard(
+                iconPath: 'assets/images/home_vector/weight.svg',
+                title: l10n.home_weight,
+                score: bhi.weightScore,
+                maxScore: 60,
+                hasData: bhi.hasWeightData,
+                noDataText: l10n.bhi_noData,
+              ),
+              const SizedBox(height: 8),
+              _buildScoreBreakdownCard(
+                iconPath: 'assets/images/home_vector/eat.svg',
+                title: l10n.home_food,
+                score: bhi.foodScore,
+                maxScore: 25,
+                hasData: bhi.hasFoodData,
+                noDataText: l10n.bhi_noData,
+              ),
+              const SizedBox(height: 8),
+              _buildScoreBreakdownCard(
+                iconPath: 'assets/images/home_vector/water.svg',
+                title: l10n.home_water,
+                score: bhi.waterScore,
+                maxScore: 15,
+                hasData: bhi.hasWaterData,
+                noDataText: l10n.bhi_noData,
+              ),
+            ],
           ),
 
           const SizedBox(height: 28),
@@ -229,36 +281,39 @@ class BhiDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          ProgressRing(
-            value: bhi.bhiScore / 100.0,
-            size: 180,
-            strokeWidth: 14,
-            activeColor: _getScoreColor(bhi.bhiScore),
-            trackColor: const Color(0xFFF0F0F0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  bhi.bhiScore.toStringAsFixed(0),
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 40,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.nearBlack,
-                    height: 1.0,
+          Container(
+            key: _scoreRingKey,
+            child: ProgressRing(
+              value: bhi.bhiScore / 100.0,
+              size: 180,
+              strokeWidth: 14,
+              activeColor: _getScoreColor(bhi.bhiScore),
+              trackColor: const Color(0xFFF0F0F0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    bhi.bhiScore.toStringAsFixed(0),
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 40,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.nearBlack,
+                      height: 1.0,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.bhi_scoreMax,
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF97928A),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.bhi_scoreMax,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF97928A),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 20),

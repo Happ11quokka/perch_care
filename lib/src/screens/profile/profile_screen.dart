@@ -20,6 +20,8 @@ import '../../services/premium/premium_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../providers/locale_provider.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
 class ProfileScreen extends StatefulWidget {
@@ -45,19 +47,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
   DateTime? _premiumExpiresAt;
   bool _isLoadingPremium = true;
 
+  // Coach mark keys
+  final GlobalKey _premiumCardKey = GlobalKey();
+  final GlobalKey _addPetButtonKey = GlobalKey();
+  final GlobalKey _firstPetCardKey = GlobalKey();
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _loadData();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadData() async {
-    await Future.wait([
-      _loadPets(),
-      _loadUserProfile(),
-      _loadSocialAccounts(),
-      _loadPremiumStatus(),
-    ]);
+    try {
+      await Future.wait([
+        _loadPets(),
+        _loadUserProfile(),
+        _loadSocialAccounts(),
+        _loadPremiumStatus(),
+      ]);
+    } finally {
+      _maybeShowCoachMarks();
+    }
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    final hasSeen = await service.hasSeen(CoachMarkService.screenProfile);
+    if (hasSeen || !mounted) return;
+
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = <CoachMarkStep>[
+      CoachMarkStep(
+        targetKey: _premiumCardKey,
+        title: l10n.coach_profilePremium_title,
+        body: l10n.coach_profilePremium_body,
+      ),
+      CoachMarkStep(
+        targetKey: _addPetButtonKey,
+        title: l10n.coach_profileAddPet_title,
+        body: l10n.coach_profileAddPet_body,
+      ),
+      if (_cachedPets.isNotEmpty)
+        CoachMarkStep(
+          targetKey: _firstPetCardKey,
+          title: l10n.coach_profilePetCard_title,
+          body: l10n.coach_profilePetCard_body,
+        ),
+    ];
+
+    if (mounted) {
+      CoachMarkOverlay.show(
+        context,
+        scrollController: _scrollController,
+        steps: steps,
+        nextLabel: l10n.coach_next,
+        gotItLabel: l10n.coach_gotIt,
+        skipLabel: l10n.coach_skip,
+        onComplete: () => service.markSeen(CoachMarkService.screenProfile),
+      );
+    }
   }
 
   Future<void> _loadSocialAccounts() async {
@@ -335,6 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // 스크롤 가능한 컨텐츠
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -387,6 +447,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         return _buildPetProfileCard(
                           index: entry.key,
                           pet: entry.value,
+                          isFirst: entry.key == 0,
                         );
                       }),
 
@@ -488,6 +549,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isPremium = _premiumTier == 'premium';
 
     return GestureDetector(
+      key: _premiumCardKey,
       onTap: isPremium
           ? null
           : () async {
@@ -986,10 +1048,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildPetProfileCard({
     required int index,
     required Map<String, dynamic> pet,
+    bool isFirst = false,
   }) {
     final isSelected = index == _selectedPetIndex;
 
     return GestureDetector(
+      key: isFirst ? _firstPetCardKey : null,
       onTap: () async {
         setState(() {
           _selectedPetIndex = index;
@@ -1475,6 +1539,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// 새로운 아이 등록하기 버튼
   Widget _buildAddPetButton(AppLocalizations l10n) {
     return GestureDetector(
+      key: _addPetButtonKey,
       onTap: () async {
         await context.pushNamed(RouteNames.petAdd);
         await _loadPets();

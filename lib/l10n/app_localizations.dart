@@ -2386,6 +2386,342 @@ abstract class AppLocalizations {
   /// **'건너뛰기'**
   String get coach_skip;
 
+  /// No description provided for @coach_foodToggle_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'식단 유형'**
+  String get coach_foodToggle_title;
+
+  /// No description provided for @coach_foodToggle_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'배식과 취식을 전환해서 제공량과 섭취량을 모두 기록하세요.'**
+  String get coach_foodToggle_body;
+
+  /// No description provided for @coach_foodAdd_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'사료 추가'**
+  String get coach_foodAdd_title;
+
+  /// No description provided for @coach_foodAdd_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'여기를 탭해서 사료 이름, 양, 시간을 기록하세요.'**
+  String get coach_foodAdd_body;
+
+  /// No description provided for @coach_foodSave_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'변경사항 저장'**
+  String get coach_foodSave_title;
+
+  /// No description provided for @coach_foodSave_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장을 잊지 마세요! 온라인 시 자동으로 동기화됩니다.'**
+  String get coach_foodSave_body;
+
+  /// No description provided for @coach_waterIcon_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'음수량 기록'**
+  String get coach_waterIcon_title;
+
+  /// No description provided for @coach_waterIcon_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'물 아이콘을 탭해서 섭취량을 늘리세요. 길게 눌러 직접 입력할 수도 있어요.'**
+  String get coach_waterIcon_body;
+
+  /// No description provided for @coach_waterTarget_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 목표'**
+  String get coach_waterTarget_title;
+
+  /// No description provided for @coach_waterTarget_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'권장 일일 음수량이 표시됩니다. 충분한 수분 섭취가 중요해요!'**
+  String get coach_waterTarget_body;
+
+  /// No description provided for @coach_weightGauge_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중 컨디션 지수'**
+  String get coach_weightGauge_title;
+
+  /// No description provided for @coach_weightGauge_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'품종별 건강 체중 범위를 확인할 수 있어요.'**
+  String get coach_weightGauge_body;
+
+  /// No description provided for @coach_weightInput_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중 입력'**
+  String get coach_weightInput_title;
+
+  /// No description provided for @coach_weightInput_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'그램 단위로 입력하세요. 아침에 측정하면 일관성 있게 기록할 수 있어요!'**
+  String get coach_weightInput_body;
+
+  /// No description provided for @coach_weightTime_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'측정 시간'**
+  String get coach_weightTime_title;
+
+  /// No description provided for @coach_weightTime_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중을 측정한 시간을 선택하세요. 하루에 여러 번 기록할 수 있어요.'**
+  String get coach_weightTime_body;
+
+  /// No description provided for @coach_weightSave_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록 저장'**
+  String get coach_weightSave_title;
+
+  /// No description provided for @coach_weightSave_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'탭해서 저장하세요. 데이터가 성장 추이와 건강 변화를 감지하는 데 도움이 돼요.'**
+  String get coach_weightSave_body;
+
+  /// No description provided for @coach_hcHistory_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록 보기'**
+  String get coach_hcHistory_title;
+
+  /// No description provided for @coach_hcHistory_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'과거 건강 체크 기록을 확인하세요. 시간에 따른 패턴을 추적할 수 있어요.'**
+  String get coach_hcHistory_body;
+
+  /// No description provided for @coach_hcModes_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'체크 유형 선택'**
+  String get coach_hcModes_title;
+
+  /// No description provided for @coach_hcModes_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 건강은 Full Body, 특정 부위는 Part-Specific, 배설물/사료는 해당 모드를 선택하세요.'**
+  String get coach_hcModes_body;
+
+  /// No description provided for @coach_hcTrial_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 체험 가능'**
+  String get coach_hcTrial_title;
+
+  /// No description provided for @coach_hcTrial_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 건강 체크 횟수가 남아있어요! 프리미엄은 무제한으로 사용할 수 있습니다.'**
+  String get coach_hcTrial_body;
+
+  /// No description provided for @coach_hcHistoryVet_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'수의사 리포트'**
+  String get coach_hcHistoryVet_title;
+
+  /// No description provided for @coach_hcHistoryVet_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'수의사용 종합 리포트를 받아보세요. 프리미엄 기능입니다.'**
+  String get coach_hcHistoryVet_body;
+
+  /// No description provided for @coach_hcHistoryShare_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'리포트 공유'**
+  String get coach_hcHistoryShare_title;
+
+  /// No description provided for @coach_hcHistoryShare_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'이메일이나 메시징 앱으로 건강 리포트를 공유하세요.'**
+  String get coach_hcHistoryShare_body;
+
+  /// No description provided for @coach_hcHistorySwipe_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'스와이프 삭제'**
+  String get coach_hcHistorySwipe_title;
+
+  /// No description provided for @coach_hcHistorySwipe_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록 카드를 왼쪽으로 밀어 삭제하세요. 삭제는 되돌릴 수 없으니 주의하세요!'**
+  String get coach_hcHistorySwipe_body;
+
+  /// No description provided for @coach_hcResultConfidence_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'신뢰도 점수'**
+  String get coach_hcResultConfidence_title;
+
+  /// No description provided for @coach_hcResultConfidence_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 분석의 신뢰도를 나타냅니다. 높을수록 좋지만, 우려 사항은 항상 수의사와 상담하세요.'**
+  String get coach_hcResultConfidence_body;
+
+  /// No description provided for @coach_hcResultFindings_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 결과'**
+  String get coach_hcResultFindings_title;
+
+  /// No description provided for @coach_hcResultFindings_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 건강 체크의 세부 관찰 내용입니다. 카드를 탭해 자세히 보세요.'**
+  String get coach_hcResultFindings_body;
+
+  /// No description provided for @coach_hcResultRecheck_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'재검사 가능'**
+  String get coach_hcResultRecheck_title;
+
+  /// No description provided for @coach_hcResultRecheck_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'만족스럽지 않으세요? 다른 사진을 찍어 즉시 재검사할 수 있어요.'**
+  String get coach_hcResultRecheck_body;
+
+  /// No description provided for @coach_bhiRing_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'건강 지수'**
+  String get coach_bhiRing_title;
+
+  /// No description provided for @coach_bhiRing_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중, 사료, 수분 데이터로 계산된 100점 만점 건강 점수입니다.'**
+  String get coach_bhiRing_body;
+
+  /// No description provided for @coach_bhiBreakdown_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'점수 구성'**
+  String get coach_bhiBreakdown_title;
+
+  /// No description provided for @coach_bhiBreakdown_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'체중(60점), 사료(25점), 수분(15점)이 총점에 어떻게 기여하는지 확인하세요.'**
+  String get coach_bhiBreakdown_body;
+
+  /// No description provided for @coach_profilePremium_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 업그레이드'**
+  String get coach_profilePremium_title;
+
+  /// No description provided for @coach_profilePremium_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'무제한 AI 건강 체크, 리포트 내보내기, 고급 인사이트를 잠금 해제하세요!'**
+  String get coach_profilePremium_body;
+
+  /// No description provided for @coach_profileAddPet_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'반려동물 추가'**
+  String get coach_profileAddPet_title;
+
+  /// No description provided for @coach_profileAddPet_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'여러 마리를 키우시나요? 여기서 추가하고 프로필을 쉽게 전환하세요.'**
+  String get coach_profileAddPet_body;
+
+  /// No description provided for @coach_profilePetCard_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'활성 반려동물 선택'**
+  String get coach_profilePetCard_title;
+
+  /// No description provided for @coach_profilePetCard_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 카드를 탭해 전환하세요. 활성 펫의 데이터가 앱 전체에 표시됩니다.'**
+  String get coach_profilePetCard_body;
+
+  /// No description provided for @coach_premiumPlan_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'플랜 선택'**
+  String get coach_premiumPlan_title;
+
+  /// No description provided for @coach_premiumPlan_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'월간은 유연성을, 연간은 2개월 무료 혜택을 드려요. 둘 다 모든 기능을 잠금 해제합니다!'**
+  String get coach_premiumPlan_body;
+
+  /// No description provided for @coach_premiumPromo_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로모 코드가 있으신가요?'**
+  String get coach_premiumPromo_title;
+
+  /// No description provided for @coach_premiumPromo_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'파트너사나 이벤트 코드가 있으세요? 여기를 탭해 특별 혜택을 받으세요.'**
+  String get coach_premiumPromo_body;
+
+  /// No description provided for @coach_petDetailImage_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 사진 추가'**
+  String get coach_petDetailImage_title;
+
+  /// No description provided for @coach_petDetailImage_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'탭해서 반려조의 사진을 업로드하세요. 한눈에 식별하는 데 도움이 돼요!'**
+  String get coach_petDetailImage_body;
+
+  /// No description provided for @coach_petDetailInfo_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 정보'**
+  String get coach_petDetailInfo_title;
+
+  /// No description provided for @coach_petDetailInfo_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'성별, 생년월일, 품종을 입력하면 더 정확한 건강 권장사항을 받을 수 있어요.'**
+  String get coach_petDetailInfo_body;
+
+  /// No description provided for @coach_petDetailSave_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 저장'**
+  String get coach_petDetailSave_title;
+
+  /// No description provided for @coach_petDetailSave_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'변경사항을 저장하세요! 모든 기기에서 동기화됩니다.'**
+  String get coach_petDetailSave_body;
+
   /// No description provided for @weight_selectTime.
   ///
   /// In ko, this message translates to:

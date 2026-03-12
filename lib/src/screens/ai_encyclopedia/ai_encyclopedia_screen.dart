@@ -175,7 +175,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
     // Welcome 상태(대화 없음)에서만 표시
     if (_messages.isNotEmpty) return;
     final service = CoachMarkService.instance;
-    if (await service.hasSeenChatbotCoachMarks()) return;
+    if (await service.hasSeen(CoachMarkService.screenChatbot)) return;
     if (!mounted) return;
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
@@ -201,7 +201,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
       nextLabel: l10n.coach_next,
       gotItLabel: l10n.coach_gotIt,
       skipLabel: l10n.coach_skip,
-      onComplete: () => service.markChatbotCoachMarksSeen(),
+      onComplete: () => service.markSeen(CoachMarkService.screenChatbot),
     );
   }
 

@@ -16,6 +16,8 @@ import '../../services/analytics/analytics_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 반려동물 프로필 상세/편집 화면
 class PetProfileDetailScreen extends StatefulWidget {
@@ -42,6 +44,12 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   String? _existingPetId;
   bool _isLoading = false;
   bool _isLoadingData = true;
+
+  // Coach mark keys
+  final GlobalKey _profileImageKey = GlobalKey();
+  final GlobalKey _genderSelectorKey = GlobalKey();
+  final GlobalKey _saveButtonKey = GlobalKey();
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -126,6 +134,49 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
         if (mounted) setState(() => _isLoadingData = false);
       }
     }
+
+    _maybeShowCoachMarks();
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    final hasSeen = await service.hasSeen(CoachMarkService.screenPetProfileDetail);
+    if (hasSeen || !mounted) return;
+
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    final steps = <CoachMarkStep>[
+      CoachMarkStep(
+        targetKey: _profileImageKey,
+        title: l10n.coach_petDetailImage_title,
+        body: l10n.coach_petDetailImage_body,
+      ),
+      CoachMarkStep(
+        targetKey: _genderSelectorKey,
+        title: l10n.coach_petDetailInfo_title,
+        body: l10n.coach_petDetailInfo_body,
+      ),
+      CoachMarkStep(
+        targetKey: _saveButtonKey,
+        title: l10n.coach_petDetailSave_title,
+        body: l10n.coach_petDetailSave_body,
+        isScrollable: false,
+      ),
+    ];
+
+    if (mounted) {
+      CoachMarkOverlay.show(
+        context,
+        scrollController: _scrollController,
+        steps: steps,
+        nextLabel: l10n.coach_next,
+        gotItLabel: l10n.coach_gotIt,
+        skipLabel: l10n.coach_skip,
+        onComplete: () => service.markSeen(CoachMarkService.screenPetProfileDetail),
+      );
+    }
   }
 
   Future<void> _handlePickImage() async {
@@ -139,6 +190,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _nameController.dispose();
     _weightController.dispose();
     _speciesController.dispose();
@@ -161,6 +213,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
             // 스크롤 가능한 컨텐츠
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -280,6 +333,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
         width: 120,
         height: 120,
         child: Stack(
+          key: _profileImageKey,
           clipBehavior: Clip.none,
           children: [
             // 프로필 이미지
@@ -464,6 +518,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   Widget _buildGenderSelector(AppLocalizations l10n) {
     final displayGender = _mapGenderToDisplay(_selectedGender, l10n);
     return GestureDetector(
+      key: _genderSelectorKey,
       onTap: () => _showGenderPicker(l10n),
       child: Container(
         height: 60,
@@ -550,6 +605,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   /// 저장 버튼
   Widget _buildSaveButton(AppLocalizations l10n) {
     return Container(
+      key: _saveButtonKey,
       width: double.infinity,
       height: 60,
       decoration: BoxDecoration(

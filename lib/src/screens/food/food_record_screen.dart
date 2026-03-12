@@ -13,6 +13,8 @@ import '../../theme/colors.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/coach_mark_overlay.dart';
+import '../../services/coach_mark/coach_mark_service.dart';
 import '../../router/route_names.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -33,10 +35,22 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   List<DietEntry> _entries = [];
   List<String> _pastFoodNames = [];
 
+  // 코치마크 GlobalKeys
+  final _dietToggleKey = GlobalKey();
+  final _addButtonKey = GlobalKey();
+  final _saveButtonKey = GlobalKey();
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _loadActivePet();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadActivePet() async {
@@ -55,8 +69,44 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         setState(() {
           _isLoading = false;
         });
+        _maybeShowCoachMarks();
       }
     }
+  }
+
+  Future<void> _maybeShowCoachMarks() async {
+    final service = CoachMarkService.instance;
+    if (await service.hasSeen(CoachMarkService.screenFoodRecord)) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    CoachMarkOverlay.show(
+      context,
+      scrollController: _scrollController,
+      steps: [
+        CoachMarkStep(
+          targetKey: _dietToggleKey,
+          title: l10n.coach_foodToggle_title,
+          body: l10n.coach_foodToggle_body,
+        ),
+        CoachMarkStep(
+          targetKey: _addButtonKey,
+          title: l10n.coach_foodAdd_title,
+          body: l10n.coach_foodAdd_body,
+        ),
+        CoachMarkStep(
+          targetKey: _saveButtonKey,
+          title: l10n.coach_foodSave_title,
+          body: l10n.coach_foodSave_body,
+          isScrollable: false,
+        ),
+      ],
+      nextLabel: l10n.coach_next,
+      gotItLabel: l10n.coach_gotIt,
+      skipLabel: l10n.coach_skip,
+      onComplete: () => service.markSeen(CoachMarkService.screenFoodRecord),
+    );
   }
 
   String _storageKey() {
@@ -753,6 +803,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           : SafeArea(
               top: false,
               child: SingleChildScrollView(
+                controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -823,6 +874,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
                     // ── 기록 추가 버튼 ────────────────────────────────────
                     DashedBorder(
+                      key: _addButtonKey,
                       radius: 16,
                       color: const Color(0xFFBDBDBD),
                       strokeWidth: 1,
@@ -875,6 +927,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
                     // ── 저장 버튼 ─────────────────────────────────────────
                     GestureDetector(
+                      key: _saveButtonKey,
                       onTap: () async {
                         await _saveEntries();
                         if (!mounted) return;
@@ -991,6 +1044,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
   Widget _buildTypeToggle(AppLocalizations l10n) {
     return Container(
+      key: _dietToggleKey,
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(24),

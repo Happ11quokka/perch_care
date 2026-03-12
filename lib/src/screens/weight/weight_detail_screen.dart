@@ -297,7 +297,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   Future<void> _maybeShowCoachMarks() async {
     final service = CoachMarkService.instance;
-    if (await service.hasSeenRecordsCoachMarks()) return;
+    if (await service.hasSeen(CoachMarkService.screenRecords)) return;
     if (!mounted) return;
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
@@ -333,7 +333,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       gotItLabel: l10n.coach_gotIt,
       skipLabel: l10n.coach_skip,
       scrollController: _scrollController,
-      onComplete: () => service.markRecordsCoachMarksSeen(),
+      onComplete: () => service.markSeen(CoachMarkService.screenRecords),
     );
   }
 

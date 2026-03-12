@@ -1252,6 +1252,192 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coach_skip => '건너뛰기';
 
   @override
+  String get coach_foodToggle_title => '식단 유형';
+
+  @override
+  String get coach_foodToggle_body => '배식과 취식을 전환해서 제공량과 섭취량을 모두 기록하세요.';
+
+  @override
+  String get coach_foodAdd_title => '사료 추가';
+
+  @override
+  String get coach_foodAdd_body => '여기를 탭해서 사료 이름, 양, 시간을 기록하세요.';
+
+  @override
+  String get coach_foodSave_title => '변경사항 저장';
+
+  @override
+  String get coach_foodSave_body => '저장을 잊지 마세요! 온라인 시 자동으로 동기화됩니다.';
+
+  @override
+  String get coach_waterIcon_title => '음수량 기록';
+
+  @override
+  String get coach_waterIcon_body =>
+      '물 아이콘을 탭해서 섭취량을 늘리세요. 길게 눌러 직접 입력할 수도 있어요.';
+
+  @override
+  String get coach_waterTarget_title => '일일 목표';
+
+  @override
+  String get coach_waterTarget_body => '권장 일일 음수량이 표시됩니다. 충분한 수분 섭취가 중요해요!';
+
+  @override
+  String get coach_weightGauge_title => '체중 컨디션 지수';
+
+  @override
+  String get coach_weightGauge_body => '품종별 건강 체중 범위를 확인할 수 있어요.';
+
+  @override
+  String get coach_weightInput_title => '체중 입력';
+
+  @override
+  String get coach_weightInput_body =>
+      '그램 단위로 입력하세요. 아침에 측정하면 일관성 있게 기록할 수 있어요!';
+
+  @override
+  String get coach_weightTime_title => '측정 시간';
+
+  @override
+  String get coach_weightTime_body => '체중을 측정한 시간을 선택하세요. 하루에 여러 번 기록할 수 있어요.';
+
+  @override
+  String get coach_weightSave_title => '기록 저장';
+
+  @override
+  String get coach_weightSave_body =>
+      '탭해서 저장하세요. 데이터가 성장 추이와 건강 변화를 감지하는 데 도움이 돼요.';
+
+  @override
+  String get coach_hcHistory_title => '기록 보기';
+
+  @override
+  String get coach_hcHistory_body =>
+      '과거 건강 체크 기록을 확인하세요. 시간에 따른 패턴을 추적할 수 있어요.';
+
+  @override
+  String get coach_hcModes_title => '체크 유형 선택';
+
+  @override
+  String get coach_hcModes_body =>
+      '전체 건강은 Full Body, 특정 부위는 Part-Specific, 배설물/사료는 해당 모드를 선택하세요.';
+
+  @override
+  String get coach_hcTrial_title => '무료 체험 가능';
+
+  @override
+  String get coach_hcTrial_body =>
+      '무료 건강 체크 횟수가 남아있어요! 프리미엄은 무제한으로 사용할 수 있습니다.';
+
+  @override
+  String get coach_hcHistoryVet_title => '수의사 리포트';
+
+  @override
+  String get coach_hcHistoryVet_body => '수의사용 종합 리포트를 받아보세요. 프리미엄 기능입니다.';
+
+  @override
+  String get coach_hcHistoryShare_title => '리포트 공유';
+
+  @override
+  String get coach_hcHistoryShare_body => '이메일이나 메시징 앱으로 건강 리포트를 공유하세요.';
+
+  @override
+  String get coach_hcHistorySwipe_title => '스와이프 삭제';
+
+  @override
+  String get coach_hcHistorySwipe_body =>
+      '기록 카드를 왼쪽으로 밀어 삭제하세요. 삭제는 되돌릴 수 없으니 주의하세요!';
+
+  @override
+  String get coach_hcResultConfidence_title => '신뢰도 점수';
+
+  @override
+  String get coach_hcResultConfidence_body =>
+      'AI 분석의 신뢰도를 나타냅니다. 높을수록 좋지만, 우려 사항은 항상 수의사와 상담하세요.';
+
+  @override
+  String get coach_hcResultFindings_title => '분석 결과';
+
+  @override
+  String get coach_hcResultFindings_body =>
+      'AI 건강 체크의 세부 관찰 내용입니다. 카드를 탭해 자세히 보세요.';
+
+  @override
+  String get coach_hcResultRecheck_title => '재검사 가능';
+
+  @override
+  String get coach_hcResultRecheck_body =>
+      '만족스럽지 않으세요? 다른 사진을 찍어 즉시 재검사할 수 있어요.';
+
+  @override
+  String get coach_bhiRing_title => '건강 지수';
+
+  @override
+  String get coach_bhiRing_body => '체중, 사료, 수분 데이터로 계산된 100점 만점 건강 점수입니다.';
+
+  @override
+  String get coach_bhiBreakdown_title => '점수 구성';
+
+  @override
+  String get coach_bhiBreakdown_body =>
+      '체중(60점), 사료(25점), 수분(15점)이 총점에 어떻게 기여하는지 확인하세요.';
+
+  @override
+  String get coach_profilePremium_title => '프리미엄 업그레이드';
+
+  @override
+  String get coach_profilePremium_body =>
+      '무제한 AI 건강 체크, 리포트 내보내기, 고급 인사이트를 잠금 해제하세요!';
+
+  @override
+  String get coach_profileAddPet_title => '반려동물 추가';
+
+  @override
+  String get coach_profileAddPet_body =>
+      '여러 마리를 키우시나요? 여기서 추가하고 프로필을 쉽게 전환하세요.';
+
+  @override
+  String get coach_profilePetCard_title => '활성 반려동물 선택';
+
+  @override
+  String get coach_profilePetCard_body =>
+      '펫 카드를 탭해 전환하세요. 활성 펫의 데이터가 앱 전체에 표시됩니다.';
+
+  @override
+  String get coach_premiumPlan_title => '플랜 선택';
+
+  @override
+  String get coach_premiumPlan_body =>
+      '월간은 유연성을, 연간은 2개월 무료 혜택을 드려요. 둘 다 모든 기능을 잠금 해제합니다!';
+
+  @override
+  String get coach_premiumPromo_title => '프로모 코드가 있으신가요?';
+
+  @override
+  String get coach_premiumPromo_body =>
+      '파트너사나 이벤트 코드가 있으세요? 여기를 탭해 특별 혜택을 받으세요.';
+
+  @override
+  String get coach_petDetailImage_title => '펫 사진 추가';
+
+  @override
+  String get coach_petDetailImage_body =>
+      '탭해서 반려조의 사진을 업로드하세요. 한눈에 식별하는 데 도움이 돼요!';
+
+  @override
+  String get coach_petDetailInfo_title => '기본 정보';
+
+  @override
+  String get coach_petDetailInfo_body =>
+      '성별, 생년월일, 품종을 입력하면 더 정확한 건강 권장사항을 받을 수 있어요.';
+
+  @override
+  String get coach_petDetailSave_title => '프로필 저장';
+
+  @override
+  String get coach_petDetailSave_body => '변경사항을 저장하세요! 모든 기기에서 동기화됩니다.';
+
+  @override
   String get weight_selectTime => '측정 시간';
 
   @override
