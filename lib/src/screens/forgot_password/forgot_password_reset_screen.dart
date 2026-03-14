@@ -3,6 +3,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import 'dart:async';
+import 'dart:io';
+
+import '../../services/api/api_client.dart';
 import '../../services/auth/auth_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
@@ -359,7 +363,13 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context);
-      AppSnackBar.error(context, message: l10n.error_passwordChange);
+      if (e is SocketException || e is TimeoutException) {
+        AppSnackBar.error(context, message: l10n.error_network);
+      } else if (e is ApiException && e.statusCode >= 500) {
+        AppSnackBar.error(context, message: l10n.error_server);
+      } else {
+        AppSnackBar.error(context, message: l10n.error_passwordChange);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

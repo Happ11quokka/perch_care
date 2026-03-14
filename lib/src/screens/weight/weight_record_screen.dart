@@ -340,6 +340,9 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
             },
           ),
         );
+        if (mounted) {
+          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
+        }
       }
       await _loadRecords();
       if (mounted) {

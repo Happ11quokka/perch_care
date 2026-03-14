@@ -2212,6 +2212,54 @@ abstract class AppLocalizations {
   /// **'체중 기록 저장에 실패했습니다. 다시 시도해 주세요.'**
   String get error_saveWeightFailed;
 
+  /// No description provided for @error_loginInvalidCredentials.
+  ///
+  /// In ko, this message translates to:
+  /// **'이메일 또는 비밀번호가 올바르지 않습니다.'**
+  String get error_loginInvalidCredentials;
+
+  /// No description provided for @error_loginUserNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록되지 않은 이메일입니다.'**
+  String get error_loginUserNotFound;
+
+  /// No description provided for @error_signupEmailExists.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 가입된 이메일입니다. 로그인해 주세요.'**
+  String get error_signupEmailExists;
+
+  /// No description provided for @error_signupInvalidData.
+  ///
+  /// In ko, this message translates to:
+  /// **'입력 정보를 다시 확인해 주세요. (비밀번호는 8자 이상)'**
+  String get error_signupInvalidData;
+
+  /// No description provided for @error_forgotPasswordUserNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'해당 이메일로 가입된 계정이 없습니다.'**
+  String get error_forgotPasswordUserNotFound;
+
+  /// No description provided for @error_tooManyRequests.
+  ///
+  /// In ko, this message translates to:
+  /// **'요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.'**
+  String get error_tooManyRequests;
+
+  /// No description provided for @error_socialAccountConflict.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 다른 계정에 연동된 소셜 계정입니다.'**
+  String get error_socialAccountConflict;
+
+  /// No description provided for @snackbar_savedOffline.
+  ///
+  /// In ko, this message translates to:
+  /// **'오프라인으로 저장되었습니다. 연결 시 자동 동기화됩니다.'**
+  String get snackbar_savedOffline;
+
   /// No description provided for @coach_wciCard_title.
   ///
   /// In ko, this message translates to:

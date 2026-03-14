@@ -1152,6 +1152,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get error_saveWeightFailed => '保存体重记录失败，请重试。';
 
   @override
+  String get error_loginInvalidCredentials => '邮箱或密码不正确。';
+
+  @override
+  String get error_loginUserNotFound => '未找到该邮箱注册的账号。';
+
+  @override
+  String get error_signupEmailExists => '该邮箱已注册，请登录。';
+
+  @override
+  String get error_signupInvalidData => '请检查输入信息（密码需8位以上）。';
+
+  @override
+  String get error_forgotPasswordUserNotFound => '未找到该邮箱注册的账号。';
+
+  @override
+  String get error_tooManyRequests => '请求过多，请稍后重试。';
+
+  @override
+  String get error_socialAccountConflict => '该社交账号已绑定其他账号。';
+
+  @override
+  String get snackbar_savedOffline => '已离线保存，联网后自动同步。';
+
+  @override
   String get coach_wciCard_title => '健康状态';
 
   @override

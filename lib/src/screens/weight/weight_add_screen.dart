@@ -145,6 +145,10 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
             },
           ),
         );
+        if (mounted) {
+          final l10n = AppLocalizations.of(context);
+          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
+        }
       }
 
       debugPrint('[WeightAdd] Save success, mounted=$mounted');

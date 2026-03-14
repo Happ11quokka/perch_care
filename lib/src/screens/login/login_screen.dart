@@ -9,6 +9,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
 import '../../services/auth/auth_service.dart';
+import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await _navigateAfterLogin();
     } else if (result.signupRequired) {
       final l10n = AppLocalizations.of(context)!;
-      AppSnackBar.error(context, message: l10n.error_loginRetry);
+      AppSnackBar.error(context, message: l10n.error_socialAccountConflict);
     }
   }
 
@@ -77,7 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (kDebugMode) debugPrint('[Google] Error: $e');
       if (kDebugMode) debugPrint('[Google] StackTrace: $stackTrace');
       if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.error_googleLogin);
+      final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.socialLogin);
+      AppSnackBar.error(context, message: msg);
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -122,7 +124,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       if (kDebugMode) debugPrint('[Apple] Error: $e');
-      AppSnackBar.error(context, message: l10n.error_appleLogin);
+      final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.socialLogin);
+      AppSnackBar.error(context, message: msg);
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);
     }

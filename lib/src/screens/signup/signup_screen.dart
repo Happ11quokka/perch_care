@@ -5,6 +5,7 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/api/token_service.dart';
+import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/password_strength_indicator.dart';
 import '../../widgets/terms_agreement_section.dart';
@@ -522,7 +523,8 @@ class _SignupScreenState extends State<SignupScreen> {
       _showSocialLinkDialog();
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.error_unexpected);
+      final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.signup);
+      AppSnackBar.error(context, message: msg);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

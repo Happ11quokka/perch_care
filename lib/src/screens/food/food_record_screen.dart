@@ -218,6 +218,10 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
             },
           ),
         );
+        if (mounted) {
+          final l10n = AppLocalizations.of(context);
+          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
+        }
       }
     }
     AnalyticsService.instance.logFoodRecorded(

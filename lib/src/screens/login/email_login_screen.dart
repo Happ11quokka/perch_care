@@ -8,6 +8,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -541,9 +542,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         password: password,
       );
       _navigateAfterLogin();
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.error_login);
+      final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.login);
+      AppSnackBar.error(context, message: msg);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -574,7 +576,8 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
       if (kDebugMode) debugPrint('[Google] Error: $e');
       if (kDebugMode) debugPrint('[Google] StackTrace: $stackTrace');
       if (!mounted) return;
-      AppSnackBar.error(context, message: l10n.error_googleLogin);
+      final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.socialLogin);
+      AppSnackBar.error(context, message: msg);
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -619,7 +622,8 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     } catch (e) {
       if (!mounted) return;
       if (kDebugMode) debugPrint('[Apple] Error: $e');
-      AppSnackBar.error(context, message: l10n.error_appleLogin);
+      final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.socialLogin);
+      AppSnackBar.error(context, message: msg);
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);
     }

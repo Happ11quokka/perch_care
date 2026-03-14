@@ -1189,6 +1189,36 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to save weight record. Please try again.';
 
   @override
+  String get error_loginInvalidCredentials => 'Incorrect email or password.';
+
+  @override
+  String get error_loginUserNotFound => 'No account found with this email.';
+
+  @override
+  String get error_signupEmailExists =>
+      'This email is already registered. Please log in.';
+
+  @override
+  String get error_signupInvalidData =>
+      'Please check your input. (Password must be 8+ characters)';
+
+  @override
+  String get error_forgotPasswordUserNotFound =>
+      'No account found with this email.';
+
+  @override
+  String get error_tooManyRequests =>
+      'Too many requests. Please try again later.';
+
+  @override
+  String get error_socialAccountConflict =>
+      'This social account is already linked to another account.';
+
+  @override
+  String get snackbar_savedOffline =>
+      'Saved offline. Will sync when connected.';
+
+  @override
   String get coach_wciCard_title => 'Health Status';
 
   @override

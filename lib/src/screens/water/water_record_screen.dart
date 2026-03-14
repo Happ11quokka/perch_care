@@ -193,6 +193,10 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
             },
           ),
         );
+        if (mounted) {
+          final l10n = AppLocalizations.of(context);
+          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
+        }
       }
     }
     AnalyticsService.instance.logWaterRecorded(_activePetId ?? '');

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
+import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -262,7 +263,8 @@ class _ForgotPasswordMethodScreenState
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context);
-      AppSnackBar.error(context, message: l10n.error_sendCode);
+      final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.forgotPassword);
+      AppSnackBar.error(context, message: msg);
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
