@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/terms_content.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 약관 상세 화면
-class TermsDetailScreen extends StatelessWidget {
+class TermsDetailScreen extends ConsumerWidget {
   final TermsType termsType;
 
   const TermsDetailScreen({super.key, required this.termsType});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).languageCode;
     final title = termsType == TermsType.termsOfService

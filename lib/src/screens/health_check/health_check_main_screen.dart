@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
@@ -11,14 +12,15 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 
 /// AI 건강체크 모드 선택 화면
-class HealthCheckMainScreen extends StatefulWidget {
+class HealthCheckMainScreen extends ConsumerStatefulWidget {
   const HealthCheckMainScreen({super.key});
 
   @override
-  State<HealthCheckMainScreen> createState() => _HealthCheckMainScreenState();
+  ConsumerState<HealthCheckMainScreen> createState() =>
+      _HealthCheckMainScreenState();
 }
 
-class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
+class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
     with WidgetsBindingObserver {
   bool _isLocked = true; // 기본값: 잠금 (로딩 중 오탭 방지)
   bool _hasVisionTrial = false; // Phase 2: 무료 체험 가능 여부

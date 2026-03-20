@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../utils/image_crop_helper.dart';
 import '../../../l10n/app_localizations.dart';
@@ -21,17 +22,17 @@ import '../../services/breed/breed_service.dart';
 import '../../widgets/breed_selector.dart';
 
 /// 반려동물 등록/수정 화면 - Figma 디자인 기반
-class PetAddScreen extends StatefulWidget {
+class PetAddScreen extends ConsumerStatefulWidget {
   final String? petId; // null이면 등록, 값이 있으면 수정
   final bool isInitialSetup; // 첫 로그인 설정 플로우 여부
 
   const PetAddScreen({super.key, this.petId, this.isInitialSetup = false});
 
   @override
-  State<PetAddScreen> createState() => _PetAddScreenState();
+  ConsumerState<PetAddScreen> createState() => _PetAddScreenState();
 }
 
-class _PetAddScreenState extends State<PetAddScreen> {
+class _PetAddScreenState extends ConsumerState<PetAddScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _weightController = TextEditingController();

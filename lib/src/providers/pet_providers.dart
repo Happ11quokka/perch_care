@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/pet.dart';
 import '../services/pet/pet_service.dart';
-import '../services/pet/active_pet_notifier.dart' as legacy;
 
 /// 활성 펫 SSOT — 모든 스크린이 이 provider를 watch하여 펫 데이터를 공유
 final activePetProvider = AsyncNotifierProvider<ActivePetNotifier, Pet?>(
@@ -21,8 +20,6 @@ class ActivePetNotifier extends AsyncNotifier<Pet?> {
       await PetService.instance.setActivePet(petId);
       PetService.instance.invalidateCache();
       final pet = await PetService.instance.getActivePet(forceRefresh: true);
-      // 레거시 브릿지: 미전환 스크린용 (Phase 7에서 제거)
-      if (pet != null) legacy.ActivePetNotifier.instance.notify(pet.id);
       return pet;
     });
   }

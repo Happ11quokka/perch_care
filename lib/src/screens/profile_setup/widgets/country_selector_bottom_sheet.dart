@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:country_picker/country_picker.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 국가 선택 바텀시트
-class CountrySelectorBottomSheet extends StatefulWidget {
+class CountrySelectorBottomSheet extends ConsumerStatefulWidget {
   final Country selectedCountry;
   final void Function(Country) onCountrySelected;
 
@@ -14,10 +15,10 @@ class CountrySelectorBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<CountrySelectorBottomSheet> createState() => _CountrySelectorBottomSheetState();
+  ConsumerState<CountrySelectorBottomSheet> createState() => _CountrySelectorBottomSheetState();
 }
 
-class _CountrySelectorBottomSheetState extends State<CountrySelectorBottomSheet> {
+class _CountrySelectorBottomSheetState extends ConsumerState<CountrySelectorBottomSheet> {
   late Country _selectedCountry;
   late final List<Country> _countries;
 

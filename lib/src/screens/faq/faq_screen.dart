@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -17,7 +18,7 @@ class _FaqCategory {
   const _FaqCategory({required this.title, required this.items});
 }
 
-class FaqScreen extends StatelessWidget {
+class FaqScreen extends ConsumerWidget {
   const FaqScreen({super.key});
 
   List<_FaqCategory> _buildCategories(AppLocalizations l10n) {
@@ -73,7 +74,7 @@ class FaqScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final categories = _buildCategories(l10n);
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -9,16 +10,16 @@ import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 비밀번호 찾기 - 이메일 입력 화면
-class ForgotPasswordMethodScreen extends StatefulWidget {
+class ForgotPasswordMethodScreen extends ConsumerStatefulWidget {
   const ForgotPasswordMethodScreen({super.key});
 
   @override
-  State<ForgotPasswordMethodScreen> createState() =>
+  ConsumerState<ForgotPasswordMethodScreen> createState() =>
       _ForgotPasswordMethodScreenState();
 }
 
 class _ForgotPasswordMethodScreenState
-    extends State<ForgotPasswordMethodScreen> {
+    extends ConsumerState<ForgotPasswordMethodScreen> {
   final _authService = AuthService.instance;
   final _emailController = TextEditingController();
   final _emailFocusNode = FocusNode();

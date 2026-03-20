@@ -4,7 +4,6 @@ import '../api/api_client.dart';
 import '../api/token_service.dart';
 import '../pet/pet_local_cache_service.dart';
 import '../pet/pet_service.dart';
-import '../pet/active_pet_notifier.dart';
 import '../premium/premium_service.dart';
 import '../weight/weight_service.dart';
 import '../storage/health_check_storage_service.dart';
@@ -215,7 +214,6 @@ class AuthService {
     // 인메모리 캐시 무효화
     PetService.instance.invalidateCache();
     PremiumService.instance.invalidateCache();
-    ActivePetNotifier.instance.clear();
     WeightService.instance.clearAllRecords();
 
     // 로컬 스토리지 정리
@@ -317,7 +315,6 @@ class AuthService {
     // 인메모리 캐시 무효화
     PetService.instance.invalidateCache();
     PremiumService.instance.invalidateCache();
-    ActivePetNotifier.instance.clear();
     WeightService.instance.clearAllRecords();
 
     // 로컬 스토리지 정리

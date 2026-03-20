@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -6,7 +7,7 @@ import '../../router/route_names.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 프로필 설정 완료 화면
-class ProfileSetupCompleteScreen extends StatelessWidget {
+class ProfileSetupCompleteScreen extends ConsumerWidget {
   final String? petName;
 
   const ProfileSetupCompleteScreen({
@@ -15,7 +16,7 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final displayName = petName ?? l10n.pet_defaultName;
     return Scaffold(

@@ -64,19 +64,18 @@
   - 위반 시 422 Unprocessable Entity 응답
 - **수정일:** 2026-03-21
 
-### H-5. 상태관리 SSOT 부재 — 10+ 스크린이 동일 데이터 독립 fetch `부분 수정`
+### H-5. 상태관리 SSOT 부재 — 10+ 스크린이 동일 데이터 독립 fetch `수정 완료`
 
-- **위치:** HomeScreen, WeightDetailScreen, FoodRecordScreen 등 14개 스크린이 `getActivePet()` 독립 호출
+- **위치:** 전체 스크린이 `getActivePet()` 독립 호출 → Riverpod provider로 통일
 - **영향:** 불필요한 네트워크 요청, 화면간 데이터 불일치 가능
-- **수정 내용 (Phase 0-5 완료):**
+- **수정 내용 (Phase 0-7 전체 완료):**
   - `flutter_riverpod: ^2.6.1` 도입, `ProviderScope` 래핑
   - `activePetProvider` (AsyncNotifierProvider) — 활성 펫 SSOT
   - `petListProvider`, `premiumStatusProvider`, `bhiProvider` — 핵심 상태 중앙 관리
-  - 14개 스크린 `ConsumerStatefulWidget` 전환 완료
-  - 스크린에서 `ActivePetNotifier.instance` 직접 사용 0건
+  - 전체 스크린 `ConsumerStatefulWidget`/`ConsumerWidget` 전환 완료
   - 10개 서비스 DI 래퍼 (`service_providers.dart`)
   - 로그아웃 헬퍼 (`auth_actions.dart`) + SplashScreen provider 시딩
-- **잔여 (Phase 6-7):** 나머지 ~20개 스크린 전환 + 레거시 `ActivePetNotifier` 파일 삭제
+  - 레거시 `ActivePetNotifier` (ChangeNotifier) 파일 삭제 + 브릿지 코드 제거
 - **상세:** `2026-03-21-findings-followup-code-review.md` 참조
 - **수정일:** 2026-03-21
 
@@ -201,7 +200,7 @@
 | 상태 | 항목 수 | 목록 |
 |------|---------|------|
 | 수정 완료 | 12건 | C-1, C-2, H-1, H-2, H-3, H-4, M-1, M-3, M-4, M-6, L-4, M-2(부분) |
-| 부분 수정 | 1건 | H-5 (Riverpod Phase 0-5 완료, Phase 6-7 잔여) |
+| 수정 완료 (Riverpod) | 1건 | H-5 (Phase 0-7 전체 완료) |
 | 미수정 (Flutter 대규모) | 3건 | H-6, M-5, M-2(잔여) |
 | 미수정 (기타) | 3건 | M-7, L-1, L-2, L-5, L-6 |
 | 해당 없음 (오탐) | 1건 | L-3 |
@@ -220,7 +219,7 @@
 
 > 상세 구현 기록: `2026-03-21-findings-followup-code-review.md`
 
-### 완료 (Phase 0-5)
+### 전체 완료 (Phase 0-7)
 
 | Phase | 내용 | 상태 |
 |-------|------|------|
@@ -230,20 +229,16 @@
 | 3 | 10개 서비스 DI 래퍼 (service_providers.dart) | 완료 |
 | 4 | 로그아웃 헬퍼 (auth_actions.dart) | 완료 |
 | 5 | SplashScreen provider 시딩 | 완료 |
-
-### 잔여 (Phase 6-7)
-
-| Phase | 내용 | 상태 |
-|-------|------|------|
-| 6 | 나머지 ~20개 스크린 ConsumerStatefulWidget 전환 | 미착수 |
-| 7 | 레거시 ActivePetNotifier 삭제 + 브릿지 코드 제거 | 미착수 |
+| 6 | 나머지 20개 스크린 ConsumerStatefulWidget 전환 | 완료 |
+| 7 | 레거시 ActivePetNotifier 삭제 + 브릿지 코드 제거 | 완료 |
 
 ### 달성 효과
 
-- SSOT 확보 → 14개 스크린의 독립 `getActivePet()` 제거
+- SSOT 확보 → 전체 스크린에서 독립 `getActivePet()` 제거
 - 펫 전환 시 `ref.watch` 체인으로 전체 화면 자동 갱신
 - `ref.invalidate()`로 캐시 무효화 통일
 - `ProviderScope(overrides: [...])` 테스트 모킹 가능
+- 레거시 ChangeNotifier 완전 삭제 (메모리 누수 위험 제거)
 
 ---
 
@@ -257,11 +252,11 @@
 | i18n           | 9/10    | **9.5/10** | 3언어 117키 동기화, 하드코딩 0건 (수정)        |
 | 테마           | 7/10    | **8.5/10** | fontFamily 전역화, 상위 3파일 색상 정리 (수정) |
 | 네비게이션     | 9/10    | 9/10       | go_router 인증 가드, 구조 우수                 |
-| 상태관리       | 5/10    | **7.5/10** | Riverpod SSOT 구축, 14개 스크린 전환 (수정)    |
+| 상태관리       | 5/10    | **8.5/10** | Riverpod SSOT 완료, 전체 스크린 전환, 레거시 삭제 |
 | 테스트         | 3/10    | 3/10       | 5개 파일 53 케이스, 커버리지 부족              |
 | 접근성         | 2/10    | 2/10       | Semantics 거의 미구현                          |
 | 백엔드 보안    | 5/10    | **8/10**   | IDOR 수정, rate limiting, 비밀번호 정책 추가   |
 | 플랫폼 통합    | 7/10    | **7.5/10** | debugPrint 가드 완료 (수정), FCM 미완          |
 
-**종합: 6.6/10 → 7.5/10** (Flutter 6개 + 백엔드 6개 + Riverpod SSOT 수정 반영)
+**종합: 6.6/10 → 7.6/10** (Flutter 6개 + 백엔드 6개 + Riverpod SSOT 전체 완료 반영)
 

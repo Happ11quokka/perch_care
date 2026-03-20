@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -10,16 +11,16 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 
 /// BHI (Bird Health Index) 건강 점수 상세 화면
-class BhiDetailScreen extends StatefulWidget {
+class BhiDetailScreen extends ConsumerStatefulWidget {
   final BhiResult? bhiResult;
 
   const BhiDetailScreen({super.key, this.bhiResult});
 
   @override
-  State<BhiDetailScreen> createState() => _BhiDetailScreenState();
+  ConsumerState<BhiDetailScreen> createState() => _BhiDetailScreenState();
 }
 
-class _BhiDetailScreenState extends State<BhiDetailScreen> {
+class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
   final GlobalKey _scoreRingKey = GlobalKey();
   final GlobalKey _breakdownCardsKey = GlobalKey();
 

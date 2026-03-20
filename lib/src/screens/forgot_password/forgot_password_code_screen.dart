@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -15,7 +16,7 @@ import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 비밀번호 찾기 - 코드 입력 화면
-class ForgotPasswordCodeScreen extends StatefulWidget {
+class ForgotPasswordCodeScreen extends ConsumerStatefulWidget {
   final String method; // 'phone' 또는 'email'
   final String destination; // 전화번호 또는 이메일
 
@@ -26,11 +27,11 @@ class ForgotPasswordCodeScreen extends StatefulWidget {
   });
 
   @override
-  State<ForgotPasswordCodeScreen> createState() =>
+  ConsumerState<ForgotPasswordCodeScreen> createState() =>
       _ForgotPasswordCodeScreenState();
 }
 
-class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
+class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScreen> {
   final List<TextEditingController> _controllers = List.generate(
     4,
     (_) => TextEditingController(),

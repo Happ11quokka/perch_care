@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/colors.dart';
 import '../../services/analytics/analytics_service.dart';
@@ -8,7 +9,7 @@ import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 프로모션 코드 입력 바텀시트
-class PromoCodeBottomSheet extends StatefulWidget {
+class PromoCodeBottomSheet extends ConsumerStatefulWidget {
   const PromoCodeBottomSheet({super.key});
 
   /// 바텀시트 표시 헬퍼
@@ -25,10 +26,10 @@ class PromoCodeBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<PromoCodeBottomSheet> createState() => _PromoCodeBottomSheetState();
+  ConsumerState<PromoCodeBottomSheet> createState() => _PromoCodeBottomSheetState();
 }
 
-class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
+class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
   final _premiumService = PremiumService.instance;
   final _codeController = TextEditingController();
   bool _isActivating = false;

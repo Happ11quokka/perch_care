@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../l10n/app_localizations.dart';
@@ -10,17 +11,18 @@ import '../../theme/colors.dart';
 import '../../widgets/dashed_border.dart';
 
 /// 건강체크 이미지 촬영/선택 화면
-class HealthCheckCaptureScreen extends StatefulWidget {
+class HealthCheckCaptureScreen extends ConsumerStatefulWidget {
   const HealthCheckCaptureScreen({super.key, required this.mode});
 
   final VisionMode mode;
 
   @override
-  State<HealthCheckCaptureScreen> createState() =>
+  ConsumerState<HealthCheckCaptureScreen> createState() =>
       _HealthCheckCaptureScreenState();
 }
 
-class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
+class _HealthCheckCaptureScreenState
+    extends ConsumerState<HealthCheckCaptureScreen> {
   final _picker = ImagePicker();
 
   Uint8List? _selectedImage;

@@ -15,7 +15,7 @@
 
 ---
 
-## 구현 완료 Phase (0-5)
+## 구현 완료 Phase (0-7)
 
 ### Phase 0: Foundation
 
@@ -172,32 +172,35 @@ if (TokenService.instance.isLoggedIn) {
 
 ---
 
-## 미완료 Phase (6-7, 별도 세션)
+## Phase 6: 나머지 20개 스크린 전환 (완료)
 
-### Phase 6: 나머지 ~20개 스크린 ConsumerStatefulWidget 전환
-- 기계적 작업: `StatefulWidget` → `ConsumerStatefulWidget`, `.instance` → `ref.read(xxxProvider)`
-- LoginScreen, SignupScreen, ForgotPassword 3개, TermsDetailScreen, FaqScreen 등
+**StatefulWidget → ConsumerStatefulWidget (16개):**
+- LoginScreen, EmailLoginScreen, SignupScreen, PetAddScreen
+- HealthCheckMainScreen, HealthCheckCaptureScreen
+- ProfileSetupScreen, NotificationScreen
+- ForgotPasswordMethodScreen, ForgotPasswordCodeScreen, ForgotPasswordResetScreen
+- BhiDetailScreen, PremiumScreen, PromoCodeBottomSheet
+- CountrySelectorBottomSheet, OnboardingScreen
 
-### Phase 7: 레거시 삭제
+**StatelessWidget → ConsumerWidget (4개):**
+- TermsDetailScreen, WciIndexScreen, FaqScreen, ProfileSetupCompleteScreen
+
+## Phase 7: 레거시 삭제 (완료)
+
 - `active_pet_notifier.dart` 삭제
-- `pet_providers.dart` 레거시 브릿지 코드 제거
-- `pet_service.dart:97` `ActivePetNotifier.instance.notify(pet.id)` 제거
-- `locale_provider.dart` ChangeNotifier 클래스 제거
+- `pet_providers.dart` 레거시 브릿지 코드 (`legacy.ActivePetNotifier.instance.notify`) 제거
+- `pet_service.dart` — `ActivePetNotifier.instance.notify(pet.id)` + import 제거
+- `auth_service.dart` — `ActivePetNotifier.instance.clear()` 2건 + import 제거
 
 ---
 
-## 검증 결과
+## 최종 검증 결과
 
 ```
 flutter analyze: 0 errors (37 info/warning — 모두 기존)
 flutter test:    53/53 passed
 
-ActivePetNotifier.instance in screens: 0건
-  (grep -r "ActivePetNotifier.instance" lib/src/screens → No matches)
-
-ActivePetNotifier 잔여 참조 (레거시 브릿지, Phase 7에서 제거):
-  - auth_service.dart: .clear() (2건)
-  - pet_service.dart: .notify() (1건)
-  - pet_providers.dart: 브릿지 코드 (1건)
-  - active_pet_notifier.dart: 원본 파일 (삭제 예정)
+ActivePetNotifier (레거시 ChangeNotifier): 파일 삭제됨, 참조 0건
+StatefulWidget in screens: OnboardingScreen 1건 (정상 - ConsumerStatefulWidget 전환됨)
+StatelessWidget in screens: _NotificationCard 1건 (정상 - private 하위 위젯)
 ```

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -12,7 +13,7 @@ import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 비밀번호 찾기 - 새 비밀번호 입력 화면
-class ForgotPasswordResetScreen extends StatefulWidget {
+class ForgotPasswordResetScreen extends ConsumerStatefulWidget {
   final String identifier; // 이메일 또는 전화번호
   final String code;
   final String method; // 'email' 또는 'phone'
@@ -25,11 +26,11 @@ class ForgotPasswordResetScreen extends StatefulWidget {
   });
 
   @override
-  State<ForgotPasswordResetScreen> createState() =>
+  ConsumerState<ForgotPasswordResetScreen> createState() =>
       _ForgotPasswordResetScreenState();
 }
 
-class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
+class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetScreen> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _newPasswordFocusNode = FocusNode();
