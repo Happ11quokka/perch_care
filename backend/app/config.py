@@ -65,7 +65,7 @@ class Settings(BaseSettings):
 
     # Server
     api_v1_prefix: str = "/api/v1"
-    cors_origins: list[str] = ["*"]
+    cors_origins: list[str] = []
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

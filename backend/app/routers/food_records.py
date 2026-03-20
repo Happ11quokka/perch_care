@@ -3,8 +3,8 @@ from datetime import date
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.dependencies import get_current_user
-from app.models.user import User
+from app.dependencies import verify_pet_ownership
+from app.models.pet import Pet
 from app.schemas.food_record import FoodRecordCreate, FoodRecordResponse
 from app.services import food_record_service
 
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/pets/{pet_id}/food-records", tags=["food-records"])
 @router.get("/", response_model=list[FoodRecordResponse])
 async def list_food_records(
     pet_id: UUID,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await food_record_service.get_all_records(db, pet_id)
@@ -24,7 +24,7 @@ async def list_food_records(
 async def get_food_by_date(
     pet_id: UUID,
     recorded_date: date,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await food_record_service.get_record_by_date(db, pet_id, recorded_date)
@@ -35,7 +35,7 @@ async def get_food_by_range(
     pet_id: UUID,
     start: date = Query(...),
     end: date = Query(...),
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await food_record_service.get_records_by_range(db, pet_id, start, end)
@@ -45,7 +45,7 @@ async def get_food_by_range(
 async def upsert_food(
     pet_id: UUID,
     request: FoodRecordCreate,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await food_record_service.upsert_record(db, pet_id, request)
@@ -55,7 +55,7 @@ async def upsert_food(
 async def delete_food_by_date(
     pet_id: UUID,
     recorded_date: date,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     await food_record_service.delete_record_by_date(db, pet_id, recorded_date)

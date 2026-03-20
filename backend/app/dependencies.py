@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models.user import User
 from app.utils.security import decode_token
 from app.services.tier_service import get_user_tier
+from app.models.pet import Pet
 from app.config import get_settings
 
 security = HTTPBearer()
@@ -33,6 +34,21 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return user
+
+
+async def verify_pet_ownership(
+    pet_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Pet:
+    """pet_id가 현재 사용자 소유인지 검증. IDOR 방지."""
+    result = await db.execute(
+        select(Pet).where(Pet.id == pet_id, Pet.user_id == current_user.id)
+    )
+    pet = result.scalar_one_or_none()
+    if not pet:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pet not found")
+    return pet
 
 
 async def verify_admin_api_key(

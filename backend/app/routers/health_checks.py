@@ -13,7 +13,7 @@ from sqlalchemy import select
 
 from app.config import get_settings
 from app.database import get_db
-from app.dependencies import get_current_user, get_current_tier
+from app.dependencies import get_current_user, get_current_tier, verify_pet_ownership
 from app.models.ai_vision_log import AiVisionLog
 from app.models.pet import Pet
 from app.models.user import User
@@ -54,7 +54,7 @@ router = APIRouter(prefix="/pets/{pet_id}/health-checks", tags=["health-checks"]
 @router.get("/", response_model=list[HealthCheckResponse])
 async def list_health_checks(
     pet_id: UUID,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.get_all_checks(db, pet_id)
@@ -64,7 +64,7 @@ async def list_health_checks(
 async def get_recent_checks(
     pet_id: UUID,
     limit: int = Query(10, ge=1, le=100),
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.get_recent_checks(db, pet_id, limit)
@@ -74,7 +74,7 @@ async def get_recent_checks(
 async def get_checks_by_type(
     pet_id: UUID,
     check_type: str,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.get_checks_by_type(db, pet_id, check_type)
@@ -84,7 +84,7 @@ async def get_checks_by_type(
 async def get_checks_by_status(
     pet_id: UUID,
     check_status: str,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.get_checks_by_status(db, pet_id, check_status)
@@ -94,7 +94,7 @@ async def get_checks_by_status(
 async def get_abnormal_checks(
     pet_id: UUID,
     limit: int = Query(10, ge=1, le=100),
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.get_abnormal_checks(db, pet_id, limit)
@@ -105,7 +105,7 @@ async def get_checks_by_range(
     pet_id: UUID,
     start: datetime = Query(...),
     end: datetime = Query(...),
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.get_checks_by_date_range(db, pet_id, start, end)
@@ -115,7 +115,7 @@ async def get_checks_by_range(
 async def get_health_check(
     pet_id: UUID,
     check_id: UUID,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.get_check_by_id(db, check_id)
@@ -125,7 +125,7 @@ async def get_health_check(
 async def create_health_check(
     pet_id: UUID,
     request: HealthCheckCreate,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     return await health_check_service.create_check(db, pet_id, request)
@@ -135,7 +135,7 @@ async def create_health_check(
 async def delete_health_check(
     pet_id: UUID,
     check_id: UUID,
-    current_user: User = Depends(get_current_user),
+    pet: Pet = Depends(verify_pet_ownership),
     db: AsyncSession = Depends(get_db),
 ):
     await health_check_service.delete_check(db, check_id)
@@ -145,6 +145,7 @@ async def delete_health_check(
 async def upload_image(
     pet_id: UUID,
     file: UploadFile = File(...),
+    pet: Pet = Depends(verify_pet_ownership),
     current_user: User = Depends(get_current_user),
 ):
     url = await save_upload_file(file, str(current_user.id))

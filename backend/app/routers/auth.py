@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from slowapi import Limiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.auth import (
@@ -7,18 +8,29 @@ from app.schemas.auth import (
     ResetPasswordRequest, VerifyResetCodeRequest, UpdatePasswordRequest,
 )
 from app.services import auth_service
-from app.utils.security import verify_google_id_token, verify_kakao_access_token, verify_apple_id_token
+from app.utils.security import verify_google_id_token, verify_kakao_access_token, verify_apple_id_token, decode_token
+
+
+def _get_auth_rate_limit_key(request: Request) -> str:
+    """IP 기반 rate limit 키. 인증 전이므로 JWT 없이 IP만 사용."""
+    from slowapi.util import get_remote_address
+    return f"ip:{get_remote_address(request)}"
+
+
+limiter = Limiter(key_func=_get_auth_rate_limit_key)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup", response_model=TokenResponse)
-async def signup(request: SignUpRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def signup(request: SignUpRequest, req: Request, db: AsyncSession = Depends(get_db)):
     return await auth_service.signup(db, request.email, request.password, request.nickname)
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: LoginRequest, req: Request, db: AsyncSession = Depends(get_db)):
     return await auth_service.login(db, request.email, request.password)
 
 
@@ -28,7 +40,8 @@ async def refresh(request: RefreshRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/oauth/{provider}", response_model=OAuthLoginResponse)
-async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def oauth_login(provider: str, request: OAuthRequest, req: Request, db: AsyncSession = Depends(get_db)):
     provider_id: str | None = None
     email = request.email
     nickname = request.full_name  # Apple provides full_name on first login
@@ -70,19 +83,22 @@ async def oauth_login(provider: str, request: OAuthRequest, db: AsyncSession = D
 
 
 @router.post("/reset-password")
-async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("3/minute")
+async def reset_password(request: ResetPasswordRequest, req: Request, db: AsyncSession = Depends(get_db)):
     return await auth_service.request_password_reset(db, request.email)
 
 
 @router.post("/verify-reset-code")
-async def verify_reset_code(request: VerifyResetCodeRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def verify_reset_code(request: VerifyResetCodeRequest, req: Request, db: AsyncSession = Depends(get_db)):
     if not request.email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
     return await auth_service.verify_reset_code(db, request.email, request.code)
 
 
 @router.post("/update-password")
-async def update_password(request: UpdatePasswordRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def update_password(request: UpdatePasswordRequest, req: Request, db: AsyncSession = Depends(get_db)):
     if not request.email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
     return await auth_service.update_password(db, request.email, request.code, request.new_password)

@@ -20,6 +20,13 @@ async def lifespan(app: FastAPI):
     import logging
     _logger = logging.getLogger(__name__)
 
+    # JWT Secret 기본값 사용 차단
+    if settings.jwt_secret == "change-this-secret-in-production":
+        raise RuntimeError(
+            "CRITICAL: JWT_SECRET is set to the default value. "
+            "Set a secure JWT_SECRET in .env before starting the server."
+        )
+
     # Ensure upload directory exists
     os.makedirs(settings.upload_dir, exist_ok=True)
 
