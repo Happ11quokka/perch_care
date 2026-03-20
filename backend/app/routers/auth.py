@@ -12,9 +12,11 @@ from app.utils.security import verify_google_id_token, verify_kakao_access_token
 
 
 def _get_auth_rate_limit_key(request: Request) -> str:
-    """IP 기반 rate limit 키. 인증 전이므로 JWT 없이 IP만 사용."""
-    from slowapi.util import get_remote_address
-    return f"ip:{get_remote_address(request)}"
+    """IP 기반 rate limit 키. 프록시 뒤에서는 X-Forwarded-For 사용."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return f"ip:{forwarded.split(',')[0].strip()}"
+    return f"ip:{request.client.host}"
 
 
 limiter = Limiter(key_func=_get_auth_rate_limit_key)
