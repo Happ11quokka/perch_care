@@ -24,44 +24,44 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/signup", response_model=TokenResponse)
 @limiter.limit("5/minute")
-async def signup(request: SignUpRequest, req: Request, db: AsyncSession = Depends(get_db)):
-    return await auth_service.signup(db, request.email, request.password, request.nickname)
+async def signup(request: Request, body: SignUpRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.signup(db, body.email, body.password, body.nickname)
 
 
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("10/minute")
-async def login(request: LoginRequest, req: Request, db: AsyncSession = Depends(get_db)):
-    return await auth_service.login(db, request.email, request.password)
+async def login(request: Request, body: LoginRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.login(db, body.email, body.password)
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(request: RefreshRequest, db: AsyncSession = Depends(get_db)):
-    return await auth_service.refresh_tokens(db, request.refresh_token)
+async def refresh(body: RefreshRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.refresh_tokens(db, body.refresh_token)
 
 
 @router.post("/oauth/{provider}", response_model=OAuthLoginResponse)
 @limiter.limit("10/minute")
-async def oauth_login(provider: str, request: OAuthRequest, req: Request, db: AsyncSession = Depends(get_db)):
+async def oauth_login(provider: str, request: Request, body: OAuthRequest, db: AsyncSession = Depends(get_db)):
     provider_id: str | None = None
-    email = request.email
-    nickname = request.full_name  # Apple provides full_name on first login
+    email = body.email
+    nickname = body.full_name  # Apple provides full_name on first login
 
-    if provider == "google" and request.id_token:
-        google_info = verify_google_id_token(request.id_token)
+    if provider == "google" and body.id_token:
+        google_info = verify_google_id_token(body.id_token)
         if not google_info:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google ID token")
         provider_id = google_info["sub"]
         email = email or google_info.get("email")
         nickname = nickname or google_info.get("name")  # Extract name from Google ID token
-    elif provider == "apple" and request.id_token:
-        apple_info = verify_apple_id_token(request.id_token)
+    elif provider == "apple" and body.id_token:
+        apple_info = verify_apple_id_token(body.id_token)
         if not apple_info:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Apple ID token")
         provider_id = apple_info["sub"]
         email = email or apple_info.get("email")
-        # nickname already set from request.full_name for Apple
-    elif provider == "kakao" and request.access_token:
-        kakao_info = verify_kakao_access_token(request.access_token)
+        # nickname already set from body.full_name for Apple
+    elif provider == "kakao" and body.access_token:
+        kakao_info = verify_kakao_access_token(body.access_token)
         if not kakao_info:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Kakao access token")
         provider_id = kakao_info["sub"]
@@ -84,21 +84,21 @@ async def oauth_login(provider: str, request: OAuthRequest, req: Request, db: As
 
 @router.post("/reset-password")
 @limiter.limit("3/minute")
-async def reset_password(request: ResetPasswordRequest, req: Request, db: AsyncSession = Depends(get_db)):
-    return await auth_service.request_password_reset(db, request.email)
+async def reset_password(request: Request, body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    return await auth_service.request_password_reset(db, body.email)
 
 
 @router.post("/verify-reset-code")
 @limiter.limit("5/minute")
-async def verify_reset_code(request: VerifyResetCodeRequest, req: Request, db: AsyncSession = Depends(get_db)):
-    if not request.email:
+async def verify_reset_code(request: Request, body: VerifyResetCodeRequest, db: AsyncSession = Depends(get_db)):
+    if not body.email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
-    return await auth_service.verify_reset_code(db, request.email, request.code)
+    return await auth_service.verify_reset_code(db, body.email, body.code)
 
 
 @router.post("/update-password")
 @limiter.limit("5/minute")
-async def update_password(request: UpdatePasswordRequest, req: Request, db: AsyncSession = Depends(get_db)):
-    if not request.email:
+async def update_password(request: Request, body: UpdatePasswordRequest, db: AsyncSession = Depends(get_db)):
+    if not body.email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
-    return await auth_service.update_password(db, request.email, request.code, request.new_password)
+    return await auth_service.update_password(db, body.email, body.code, body.new_password)
