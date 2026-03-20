@@ -31,7 +31,6 @@ class TermsDetailScreen extends StatelessWidget {
         title: Text(
           title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -44,7 +43,6 @@ class TermsDetailScreen extends StatelessWidget {
           child: Text(
             content,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: Color(0xFF6B6B6B),

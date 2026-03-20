@@ -913,5 +913,22 @@
   "timePicker_title": "Select Time",
   "timePicker_confirm": "Confirm",
 
-  "country_selectTitle": "Select Country"
+  "country_selectTitle": "Select Country",
+
+  "datetime_am": "AM",
+  "datetime_pm": "PM",
+  "datetime_yearMonth": "{month}/{year}",
+  "@datetime_yearMonth": {
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
+  },
+
+  "schedule_noPetInfo": "Pet information is not available.",
+  "schedule_noTitle": "Untitled",
+  "schedule_endTimeAfterStart": "End time must be after start time.",
+  "schedule_titleHint": "Title",
+
+  "common_defaultPetName": "Buddy"
 }

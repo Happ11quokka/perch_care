@@ -119,7 +119,6 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
           Text(
             l10n.premium_codeInputTitle,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Color(0xFF1A1A1A),
@@ -132,7 +131,6 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
             controller: _codeController,
             textCapitalization: TextCapitalization.characters,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
               letterSpacing: 1.5,
@@ -141,7 +139,6 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
             decoration: InputDecoration(
               hintText: l10n.premium_codeInputHint,
               hintStyle: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 1.5,
@@ -162,7 +159,6 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
               ),
               errorText: _validationError,
               errorStyle: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFFE53935),
@@ -204,7 +200,6 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                   : Text(
                       l10n.premium_activateButton,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,

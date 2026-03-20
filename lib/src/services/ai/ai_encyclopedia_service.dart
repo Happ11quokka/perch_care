@@ -2,7 +2,8 @@ import '../api/api_client.dart';
 
 /// 서버 프록시를 통한 AI 백과사전 서비스
 class AiEncyclopediaService {
-  AiEncyclopediaService();
+  AiEncyclopediaService._();
+  static final AiEncyclopediaService instance = AiEncyclopediaService._();
 
   final _api = ApiClient.instance;
 

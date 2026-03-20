@@ -51,7 +51,6 @@ class _CountrySelectorBottomSheetState extends State<CountrySelectorBottomSheet>
                 child: Text(
                   AppLocalizations.of(context).country_selectTitle,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF1A1A1A),
@@ -103,7 +102,6 @@ class _CountrySelectorBottomSheetState extends State<CountrySelectorBottomSheet>
             Text(
               _getLocalizedCountryName(context, country),
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF1A1A1A),

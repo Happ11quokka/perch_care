@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -11,20 +12,21 @@ import '../../services/api/api_client.dart';
 import '../../services/premium/premium_service.dart';
 import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import '../../providers/pet_providers.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 건강체크 히스토리 화면
-class HealthCheckHistoryScreen extends StatefulWidget {
+class HealthCheckHistoryScreen extends ConsumerStatefulWidget {
   const HealthCheckHistoryScreen({super.key});
 
   @override
-  State<HealthCheckHistoryScreen> createState() =>
+  ConsumerState<HealthCheckHistoryScreen> createState() =>
       _HealthCheckHistoryScreenState();
 }
 
-class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
+class _HealthCheckHistoryScreenState
+    extends ConsumerState<HealthCheckHistoryScreen> {
   List<HealthCheckRecord> _records = [];
   List<_DateGroup>? _groupedRecords;
   bool _isLoading = true;
@@ -38,24 +40,13 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
   void initState() {
     super.initState();
     _loadRecords();
-    ActivePetNotifier.instance.addListener(_onPetChanged);
-  }
-
-  @override
-  void dispose() {
-    ActivePetNotifier.instance.removeListener(_onPetChanged);
-    super.dispose();
-  }
-
-  void _onPetChanged() {
-    _loadRecords();
   }
 
   Future<void> _loadRecords() async {
     if (!_isLoading) {
       setState(() { _isLoading = true; });
     }
-    final petId = ActivePetNotifier.instance.activePetId;
+    final petId = ref.read(activePetProvider).valueOrNull?.id;
 
     // Try server first
     if (petId != null) {
@@ -190,7 +181,7 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
 
   Future<void> _shareHealthReport() async {
     final l10n = AppLocalizations.of(context);
-    final petId = ActivePetNotifier.instance.activePetId;
+    final petId = ref.read(activePetProvider).valueOrNull?.id;
     if (petId == null) return;
 
     final box = context.findRenderObject() as RenderBox?;
@@ -237,6 +228,14 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    ref.listen(activePetProvider, (previous, next) {
+      if (previous?.valueOrNull?.id != next.valueOrNull?.id) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _loadRecords();
+        });
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -251,7 +250,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
         title: Text(
           l10n.hc_historyTitle,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -311,7 +309,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
           Text(
             l10n.hc_historyEmpty,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Color(0xFF6B6B6B),
@@ -322,7 +319,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
           Text(
             l10n.hc_historyEmptyDesc,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: Color(0xFF97928A),
@@ -352,7 +348,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
               child: Text(
                 group.label,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF97928A),
@@ -446,7 +441,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
                     Text(
                       _getModeLabel(mode, l10n),
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1A1A1A),
@@ -457,7 +451,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
                     Text(
                       timeStr,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF97928A),
@@ -478,7 +471,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
                 child: Text(
                   statusLabel,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: statusColor,
@@ -490,7 +482,6 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
                 Text(
                   '${record.confidenceScore!.toStringAsFixed(0)}%',
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF97928A),

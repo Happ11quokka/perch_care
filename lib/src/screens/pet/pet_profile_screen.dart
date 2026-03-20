@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -6,21 +7,21 @@ import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 반려동물 프로필 목록 화면
-class PetProfileScreen extends StatefulWidget {
+class PetProfileScreen extends ConsumerStatefulWidget {
   const PetProfileScreen({super.key});
 
   @override
-  State<PetProfileScreen> createState() => _PetProfileScreenState();
+  ConsumerState<PetProfileScreen> createState() => _PetProfileScreenState();
 }
 
-class _PetProfileScreenState extends State<PetProfileScreen> {
+class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   List<PetProfileCache> _cachedPets = [];
   String? _selectedPetId;
   bool _isLoadingPets = true;
@@ -160,7 +161,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
         title: Text(
           l10n.profile_title,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -190,7 +190,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                     child: Text(
                       l10n.profile_myPets,
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF1A1A1A),
@@ -248,7 +247,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           Text(
             _userNickname.isEmpty ? l10n.profile_user : '$_userNickname${l10n.profile_userSuffix}',
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: Color(0xFF1A1A1A),
@@ -282,12 +280,8 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           _selectedPetId = petId;
         });
         _petCache.setActivePetId(petId);
-        // 서버에 활성 펫 변경 저장
-        try {
-          await _petService.setActivePet(petId);
-        } catch (_) {}
-        // 서버 저장 후 다른 화면에 알림
-        ActivePetNotifier.instance.notify(petId);
+        // 서버에 활성 펫 변경 저장 + provider 상태 갱신
+        await ref.read(activePetProvider.notifier).switchPet(petId);
       },
       child: Container(
         margin: const EdgeInsets.only(left: 32, right: 32, bottom: 12),
@@ -330,7 +324,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                       Text(
                         pet['name'] as String,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF1A1A1A),
@@ -355,7 +348,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                   Text(
                     pet['species'] as String,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF6B6B6B),
@@ -365,7 +357,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                   Text(
                     pet['age'] as String,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF6B6B6B),
@@ -443,7 +434,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
             Text(
               l10n.profile_addNewPet,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF97928A),

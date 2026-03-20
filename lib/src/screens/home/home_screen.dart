@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -6,8 +8,8 @@ import '../../router/route_names.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
 import '../../services/bhi/bhi_service.dart';
+import '../../providers/pet_providers.dart';
 import '../../services/premium/premium_service.dart';
 import '../../services/api/api_client.dart';
 import '../../services/storage/local_image_storage_service.dart';
@@ -23,14 +25,14 @@ import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../../l10n/app_localizations.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _petService = PetService.instance;
   final _petCache = PetLocalCacheService.instance;
   final _bhiService = BhiService.instance;
@@ -82,25 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('[HomeScreen] initState called');
+    if (kDebugMode) { debugPrint('[HomeScreen] initState called'); }
     _loadPets();
-    debugPrint('[HomeScreen] _loadPets() called');
-    ActivePetNotifier.instance.addListener(_onActivePetChanged);
-    debugPrint('[HomeScreen] ActivePetNotifier listener added');
+    if (kDebugMode) { debugPrint('[HomeScreen] _loadPets() called'); }
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    ActivePetNotifier.instance.removeListener(_onActivePetChanged);
     super.dispose();
-  }
-
-  void _onActivePetChanged() {
-    final petId = ActivePetNotifier.instance.activePetId;
-    if (petId != null) {
-      _refreshForPet(petId);
-    }
   }
 
   /// 특정 petId로 펫 정보 + BHI를 서버에서 병렬 로드
@@ -118,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
         try {
           return await _bhiService.getBhi(petId, targetDate: DateTime.now());
         } catch (e) {
-          debugPrint('[HomeScreen] BHI 로드 실패: $e');
+          if (kDebugMode) { debugPrint('[HomeScreen] BHI 로드 실패: $e'); }
           return null;
         }
       }();
@@ -129,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
       pet = results[0] as Pet?;
       bhi = results[1] as BhiResult?;
     } catch (e) {
-      debugPrint('[HomeScreen] 펫 정보 로드 실패, 로컬 캐시 복원 시도: $e');
+      if (kDebugMode) { debugPrint('[HomeScreen] 펫 정보 로드 실패, 로컬 캐시 복원 시도: $e'); }
       if (!mounted) return;
       // 서버 실패 시 로컬 캐시에서 펫 이름만이라도 복원
       try {
@@ -148,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         }
       } catch (cacheError) {
-        debugPrint('[HomeScreen] 로컬 캐시 복원도 실패: $cacheError');
+        if (kDebugMode) { debugPrint('[HomeScreen] 로컬 캐시 복원도 실패: $cacheError'); }
       }
       return;
     }
@@ -173,15 +165,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadPets() async {
-    debugPrint('[HomeScreen] _loadPets() started');
+    if (kDebugMode) { debugPrint('[HomeScreen] _loadPets() started'); }
     setState(() {
       _isLoading = true;
     });
 
     try {
-      debugPrint('[HomeScreen] Calling _petService.getActivePet()...');
+      if (kDebugMode) { debugPrint('[HomeScreen] Calling _petService.getActivePet()...'); }
       final activePet = await _petService.getActivePet();
-      debugPrint('[HomeScreen] getActivePet() returned: ${activePet?.name}');
+      if (kDebugMode) { debugPrint('[HomeScreen] getActivePet() returned: ${activePet?.name}'); }
 
       if (mounted) {
         setState(() {
@@ -195,13 +187,16 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadBhi(activePet.id);
       }
 
+      // provider도 최신 상태로 갱신
+      ref.read(activePetProvider.notifier).refresh();
+
       // 오프라인 큐 동기화 (로그인 후 splash에서 실패한 항목 재처리)
       _syncOfflineData();
 
       // 첫 사용자 코치마크 표시
       _maybeShowCoachMarks();
     } catch (e) {
-      debugPrint('[HomeScreen] 펫 목록 로드 실패: $e');
+      if (kDebugMode) { debugPrint('[HomeScreen] 펫 목록 로드 실패: $e'); }
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -219,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await SyncService.instance.syncLocalRecordsIfNeeded(pet.id);
       }
     } catch (e) {
-      debugPrint('[HomeScreen] Offline sync error: $e');
+      if (kDebugMode) { debugPrint('[HomeScreen] Offline sync error: $e'); }
     }
   }
 
@@ -335,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _lastUpdateText = _formatLastUpdateTime(l10n);
       });
     } catch (e) {
-      debugPrint('[HomeScreen] 기간별 BHI 로드 실패: $e');
+      if (kDebugMode) { debugPrint('[HomeScreen] 기간별 BHI 로드 실패: $e'); }
       if (mounted && requestId == _bhiRequestId) {
         setState(() => _isBhiLoading = false);
       }
@@ -373,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      debugPrint('[HomeScreen] BHI 로드 실패: $e');
+      if (kDebugMode) { debugPrint('[HomeScreen] BHI 로드 실패: $e'); }
     }
 
     // 건강 요약 + 인사이트 병렬 로드
@@ -404,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
             insight = PetInsight.fromJson(insightJson as Map<String, dynamic>);
           }
         } catch (e) {
-          debugPrint('[HomeScreen] 인사이트 로드 실패: $e');
+          if (kDebugMode) { debugPrint('[HomeScreen] 인사이트 로드 실패: $e'); }
         }
       }
 
@@ -416,14 +411,24 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      debugPrint('[HomeScreen] 건강 요약 로드 실패: $e');
+      if (kDebugMode) { debugPrint('[HomeScreen] 건강 요약 로드 실패: $e'); }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final activePetAsync = ref.watch(activePetProvider);
+    final activePet = activePetAsync.valueOrNull;
+    if (activePet != null && activePet.id != _activePet?.id) {
+      // provider에서 펫이 바뀌면 데이터 리로드
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _refreshForPet(activePet.id);
+      });
+    }
+    _activePet = activePet;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: AppColors.gray150,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Stack(
@@ -488,17 +493,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHeader() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x40000000),
+            color: AppColors.black.withValues(alpha: 0.25),
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -528,10 +533,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         bottom: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF7F7F7),
+                        color: AppColors.gray50,
                         borderRadius: BorderRadius.circular(100),
                         border: Border.all(
-                          color: const Color(0xFFE8E8E8),
+                          color: AppColors.gray250,
                           width: 1,
                         ),
                       ),
@@ -570,10 +575,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               _activePet?.name ?? '',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF1A1A1A),
+                                color: AppColors.nearBlack,
                                 letterSpacing: -0.35,
                               ),
                             ),
@@ -623,7 +627,7 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 48,
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
+        color: AppColors.gray150,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Stack(
@@ -662,10 +666,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         duration: const Duration(milliseconds: 250),
                         curve: Curves.easeInOut,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: _isMonthlyView ? Colors.white : const Color(0xFF97928A),
+                          color: _isMonthlyView ? AppColors.white : AppColors.warmGray,
                           letterSpacing: -0.35,
                         ),
                         child: Text(l10n.home_monthlyUnit),
@@ -694,10 +697,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         duration: const Duration(milliseconds: 250),
                         curve: Curves.easeInOut,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: !_isMonthlyView ? Colors.white : const Color(0xFF97928A),
+                          color: !_isMonthlyView ? AppColors.white : AppColors.warmGray,
                           letterSpacing: -0.35,
                         ),
                         child: Text(l10n.home_weeklyUnit),
@@ -777,10 +779,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     l10n.home_monthFormat(entry.month),
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? Colors.white : const Color(0xFF6B6B6B),
+                      color: isSelected ? AppColors.white : AppColors.mediumGray,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -832,10 +833,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(
                 l10n.home_weekFormat(week),
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? Colors.white : const Color(0xFF6B6B6B),
+                  color: isSelected ? AppColors.white : AppColors.mediumGray,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -848,14 +848,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildWCICard() {
     final l10n = AppLocalizations.of(context);
-    final petName = _activePet?.name ?? '사랑이';
+    final petName = _activePet?.name ?? l10n.common_defaultPetName;
     final wciDescriptions = _getWciDescriptions(l10n);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -872,10 +872,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: RichText(
                     text: TextSpan(
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: AppColors.black,
                       ),
                       children: [
                         TextSpan(
@@ -900,16 +899,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Icon(
                       Icons.access_time,
                       size: 16,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _lastUpdateText ?? l10n.home_noUpdateData,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF97928A),
+                        color: AppColors.warmGray,
                       ),
                     ),
                   ],
@@ -923,7 +921,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Divider(
               height: 1,
               thickness: 1,
-              color: Color(0xFFF0F0F0),
+              color: AppColors.gray150,
             ),
           ),
           const SizedBox(height: 24),
@@ -954,10 +952,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     l10n.home_enterDataPrompt(petName),
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       letterSpacing: -0.35,
                       height: 24 / 14,
                     ),
@@ -965,10 +962,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     l10n.home_checkStatus,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       letterSpacing: -0.35,
                       height: 24 / 14,
                     ),
@@ -978,10 +974,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     wciDescriptions[_wciLevel] ?? '',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       letterSpacing: -0.35,
                       height: 24 / 14,
                     ),
@@ -994,10 +989,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   l10n.home_level(_wciLevel),
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     height: 20 / 16,
                   ),
                 ),
@@ -1032,10 +1026,10 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: _wciLevel > 0 ? AppColors.brandPrimary : const Color(0xFFF0F0F0),
+              color: _wciLevel > 0 ? AppColors.brandPrimary : AppColors.gray150,
               width: 2,
             ),
-            color: Colors.white,
+            color: AppColors.white,
           ),
         ));
       } else {
@@ -1056,10 +1050,10 @@ class _HomeScreenState extends State<HomeScreen> {
       width: 74,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? AppColors.brandPrimary : const Color(0xFFF0F0F0),
+        color: isActive ? AppColors.brandPrimary : AppColors.gray150,
         borderRadius: BorderRadius.circular(1),
         border: Border.all(
-          color: const Color(0xFFF0F0F0),
+          color: AppColors.gray150,
           width: 1,
         ),
       ),
@@ -1076,7 +1070,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            colors: [AppColors.brandPrimary, AppColors.brandDark],
           ),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -1090,10 +1084,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     AppLocalizations.of(context).hc_title,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: AppColors.white,
                       letterSpacing: -0.4,
                     ),
                   ),
@@ -1101,17 +1094,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     AppLocalizations.of(context).hc_photoSubtitle,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: Colors.white,
+                      color: AppColors.white,
                       letterSpacing: -0.3,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 32),
+            const Icon(Icons.camera_alt_outlined, color: AppColors.white, size: 32),
           ],
         ),
       ),
@@ -1129,7 +1121,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(17),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -1137,15 +1129,14 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.lightbulb_outline, size: 18, color: Color(0xFFFF9A42)),
+                    const Icon(Icons.lightbulb_outline, size: 18, color: AppColors.brandPrimary),
                     const SizedBox(width: 6),
                     Text(
                       l10n.home_insightsTitle,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         letterSpacing: -0.4,
                       ),
                     ),
@@ -1155,10 +1146,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   _latestInsight!.summary,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.mediumGray,
                     height: 1.5,
                   ),
                 ),
@@ -1167,10 +1157,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     l10n.home_insightsRecommendations,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A1A1A),
+                      color: AppColors.nearBlack,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -1179,15 +1168,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('• ', style: TextStyle(fontSize: 14, color: Color(0xFF6B6B6B))),
+                        const Text('• ', style: TextStyle(fontSize: 14, color: AppColors.mediumGray)),
                         Expanded(
                           child: Text(
                             rec,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
-                              color: Color(0xFF6B6B6B),
+                              color: AppColors.mediumGray,
                               height: 1.4,
                             ),
                           ),
@@ -1223,28 +1211,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 gradient: const LinearGradient(
                   begin: Alignment(-0.7, -0.7),
                   end: Alignment(0.7, 0.7),
-                  colors: [Colors.white, Color(0xFFFFF5ED)],
+                  colors: [AppColors.white, AppColors.brandLight],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C0), width: 1),
+                border: Border.all(color: AppColors.brandSoft, width: 1),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.lock_outline, size: 20, color: Color(0xFFFF9A42)),
+                  const Icon(Icons.lock_outline, size: 20, color: AppColors.brandPrimary),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       l10n.home_insightsUpgrade,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF6B6B6B),
+                        color: AppColors.mediumGray,
                         height: 1.4,
                       ),
                     ),
                   ),
-                  const Icon(Icons.chevron_right, size: 20, color: Color(0xFF97928A)),
+                  const Icon(Icons.chevron_right, size: 20, color: AppColors.warmGray),
                 ],
               ),
             ),
@@ -1343,7 +1330,7 @@ class _HomeScreenState extends State<HomeScreen> {
         height: 170,
         padding: const EdgeInsets.all(17),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -1356,27 +1343,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: -0.4,
                   ),
                 ),
                 const Icon(
                   Icons.chevron_right,
                   size: 24,
-                  color: Color(0xFF97928A),
+                  color: AppColors.warmGray,
                 ),
               ],
             ),
             Text(
               subtitle,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
+                color: AppColors.mediumGray,
                 letterSpacing: -0.3,
               ),
               overflow: TextOverflow.ellipsis,
@@ -1422,8 +1407,8 @@ class _HomeScreenState extends State<HomeScreen> {
             begin: Alignment(-0.7, -0.7),
             end: Alignment(0.7, 0.7),
             colors: [
-              Colors.white,
-              Color(0xFFFFF5ED),
+              AppColors.white,
+              AppColors.brandLight,
             ],
           ),
           borderRadius: BorderRadius.circular(16),
@@ -1446,10 +1431,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       l10n.home_todayHealthSignal,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         letterSpacing: -0.4,
                         height: 26 / 16,
                       ),
@@ -1457,10 +1441,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       l10n.home_healthSignal,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         letterSpacing: -0.4,
                         height: 26 / 16,
                       ),
@@ -1470,7 +1453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Icon(
                   Icons.chevron_right,
                   size: 24,
-                  color: Color(0xFF97928A),
+                  color: AppColors.warmGray,
                 ),
               ],
             ),

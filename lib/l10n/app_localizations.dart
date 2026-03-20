@@ -4485,6 +4485,54 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'국가를 선택하세요'**
   String get country_selectTitle;
+
+  /// No description provided for @datetime_am.
+  ///
+  /// In ko, this message translates to:
+  /// **'오전'**
+  String get datetime_am;
+
+  /// No description provided for @datetime_pm.
+  ///
+  /// In ko, this message translates to:
+  /// **'오후'**
+  String get datetime_pm;
+
+  /// No description provided for @datetime_yearMonth.
+  ///
+  /// In ko, this message translates to:
+  /// **'{year}년 {month}월'**
+  String datetime_yearMonth(int year, int month);
+
+  /// No description provided for @schedule_noPetInfo.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 정보가 없습니다.'**
+  String get schedule_noPetInfo;
+
+  /// No description provided for @schedule_noTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'제목 없음'**
+  String get schedule_noTitle;
+
+  /// No description provided for @schedule_endTimeAfterStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'종료 시간은 시작 시간 이후여야 합니다.'**
+  String get schedule_endTimeAfterStart;
+
+  /// No description provided for @schedule_titleHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'제목'**
+  String get schedule_titleHint;
+
+  /// No description provided for @common_defaultPetName.
+  ///
+  /// In ko, this message translates to:
+  /// **'사랑이'**
+  String get common_defaultPetName;
 }
 
 class _AppLocalizationsDelegate

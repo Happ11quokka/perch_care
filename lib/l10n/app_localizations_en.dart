@@ -2456,4 +2456,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get country_selectTitle => 'Select Country';
+
+  @override
+  String get datetime_am => 'AM';
+
+  @override
+  String get datetime_pm => 'PM';
+
+  @override
+  String datetime_yearMonth(int year, int month) {
+    return '$month/$year';
+  }
+
+  @override
+  String get schedule_noPetInfo => 'Pet information is not available.';
+
+  @override
+  String get schedule_noTitle => 'Untitled';
+
+  @override
+  String get schedule_endTimeAfterStart => 'End time must be after start time.';
+
+  @override
+  String get schedule_titleHint => 'Title';
+
+  @override
+  String get common_defaultPetName => 'Buddy';
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/colors.dart';
 import '../models/schedule_record.dart';
 import 'analog_time_picker.dart';
@@ -58,16 +59,31 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
     super.dispose();
   }
 
+  List<String> _weekdayShort(AppLocalizations l10n) => [
+    l10n.datetime_weekday_mon, l10n.datetime_weekday_tue,
+    l10n.datetime_weekday_wed, l10n.datetime_weekday_thu,
+    l10n.datetime_weekday_fri, l10n.datetime_weekday_sat,
+    l10n.datetime_weekday_sun,
+  ];
+
+  List<String> _weekdaySunFirst(AppLocalizations l10n) => [
+    l10n.datetime_weekday_sun, l10n.datetime_weekday_mon,
+    l10n.datetime_weekday_tue, l10n.datetime_weekday_wed,
+    l10n.datetime_weekday_thu, l10n.datetime_weekday_fri,
+    l10n.datetime_weekday_sat,
+  ];
+
   String _formatDate(DateTime date) {
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-    final weekday = weekdays[date.weekday - 1];
-    return '${date.month}월 ${date.day}일 ($weekday)';
+    final l10n = AppLocalizations.of(context);
+    final weekday = _weekdayShort(l10n)[date.weekday - 1];
+    return l10n.schedule_dateDisplay(date.month, date.day, weekday);
   }
 
   String _formatTime(TimeOfDay time) {
     final hour = time.hour;
     final minute = time.minute.toString().padLeft(2, '0');
-    final period = hour < 12 ? '오전' : '오후';
+    final l10n = AppLocalizations.of(context);
+    final period = hour < 12 ? l10n.datetime_am : l10n.datetime_pm;
     final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
     return '$period ${displayHour.toString().padLeft(2, '0')}:$minute';
   }
@@ -95,12 +111,12 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
   void _save() {
     // Validation: Check petId
     if (widget.petId == null || widget.petId!.isEmpty) {
-      AppSnackBar.warning(context, message: '펫 정보가 없습니다.');
+      AppSnackBar.warning(context, message: AppLocalizations.of(context).schedule_noPetInfo);
       return;
     }
 
     if (_title.isEmpty) {
-      _title = '제목 없음';
+      _title = AppLocalizations.of(context).schedule_noTitle;
     }
 
     final startDateTime = DateTime(
@@ -121,7 +137,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
 
     // Validation: Check endDateTime is after startDateTime
     if (endDateTime.isBefore(startDateTime) || endDateTime.isAtSameMomentAs(startDateTime)) {
-      AppSnackBar.warning(context, message: '종료 시간은 시작 시간 이후여야 합니다.');
+      AppSnackBar.warning(context, message: AppLocalizations.of(context).schedule_endTimeAfterStart);
       return;
     }
 
@@ -154,7 +170,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: const Color(0xFFE0E0E0),
+              color: AppColors.gray300,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -207,7 +223,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                     child: Text(
                       _formatDate(_startDate),
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _showStartCalendar ? Colors.white : AppColors.nearBlack,
@@ -222,7 +237,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                   child: Text(
                     _formatTime(_startTime),
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.nearBlack,
@@ -258,7 +272,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                     child: Text(
                       _formatDate(_endDate),
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _showEndCalendar ? Colors.white : AppColors.nearBlack,
@@ -273,7 +286,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                   child: Text(
                     _formatTime(_endTime),
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.nearBlack,
@@ -301,9 +313,8 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               onChanged: (value) => setState(() => _title = value),
               onTap: () => setState(() => _showColorPalette = true),
               decoration: InputDecoration(
-                hintText: '제목',
+                hintText: AppLocalizations.of(context).schedule_titleHint,
                 hintStyle: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   color: AppColors.mediumGray,
@@ -319,7 +330,6 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                 ),
               ),
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: AppColors.nearBlack,
@@ -382,9 +392,8 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           const Icon(Icons.notifications_outlined, size: 18, color: AppColors.mediumGray),
           const SizedBox(width: 4),
           Text(
-            '$_reminderMinutes분 전',
+            AppLocalizations.of(context).schedule_reminderMinutes(_reminderMinutes),
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: AppColors.mediumGray,
@@ -436,9 +445,8 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               ),
               const SizedBox(width: 16),
               Text(
-                '$year년 $month월',
+                AppLocalizations.of(context).datetime_yearMonth(year, month),
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -463,16 +471,15 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           const SizedBox(height: 16),
           // 요일 헤더
           Row(
-            children: ['일', '월', '화', '수', '목', '금', '토'].map((day) {
+            children: _weekdaySunFirst(AppLocalizations.of(context)).map((day) {
               return Expanded(
                 child: Center(
                   child: Text(
                     day,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                     ),
                   ),
                 ),
@@ -533,13 +540,12 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               child: Text(
                 '$day',
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: isSelected
                       ? Colors.white
                       : isSunday
-                          ? const Color(0xFFEE3300)
+                          ? AppColors.sundayRed
                           : AppColors.nearBlack,
                 ),
               ),
@@ -576,14 +582,13 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               child: Container(
                 height: 52,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: AppColors.gray100,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '취소',
-                    style: TextStyle(
-                      fontFamily: 'Pretendard',
+                    AppLocalizations.of(context).common_cancel,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.mediumGray,
@@ -604,11 +609,10 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                   color: AppColors.brandPrimary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '저장',
-                    style: TextStyle(
-                      fontFamily: 'Pretendard',
+                    AppLocalizations.of(context).common_save,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,

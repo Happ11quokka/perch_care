@@ -70,7 +70,8 @@ class LinkedSocialAccount {
 
 /// FastAPI 기반 인증 서비스
 class AuthService {
-  AuthService();
+  AuthService._();
+  static final AuthService instance = AuthService._();
 
   final _api = ApiClient.instance;
   final _tokenService = TokenService.instance;

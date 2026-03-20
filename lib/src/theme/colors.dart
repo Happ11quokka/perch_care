@@ -47,12 +47,29 @@ class AppColors {
   // Additional Grayscale
   static const Color gray50 = Color(0xFFFAFAFA);
   static const Color gray100 = Color(0xFFF5F5F5);
+  static const Color gray150 = Color(0xFFF0F0F0);
   static const Color gray200 = Color(0xFFEEEEEE);
+  static const Color gray250 = Color(0xFFE8E8E8);
   static const Color gray300 = Color(0xFFE0E0E0);
+  static const Color gray350 = Color(0xFFD0D0D0);
   static const Color gray400 = lightGray; // #BDBDBD
+  static const Color gray450 = Color(0xFFBBBBBB);
   static const Color gray500 = Color(0xFF9E9E9E);
   static const Color gray600 = mediumGray; // #6B6B6B
   static const Color gray700 = Color(0xFF616161);
   static const Color gray800 = Color(0xFF424242);
   static const Color gray900 = nearBlack; // #1A1A1A
+
+  // Warm Tones
+  static const Color warmGray = Color(0xFF97928A);
+  static const Color beige = Color(0xFFE7E5E1);
+
+  // Brand Variants
+  static const Color brandLight = Color(0xFFFFF5ED);
+  static const Color brandDark = Color(0xFFFF7C2A);
+  static const Color brandSoft = Color(0xFFFFE0C0);
+
+  // Semantic Colors
+  static const Color danger = Color(0xFFE53935);
+  static const Color sundayRed = Color(0xFFEE3300);
 }

@@ -117,7 +117,6 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
             child: Text(
               l10n.terms_agreeAll,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1A1A1A),
@@ -147,7 +146,6 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
             child: Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF6B6B6B),
@@ -160,7 +158,6 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
               child: Text(
                 l10n.common_view,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF97928A),

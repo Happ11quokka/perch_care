@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
@@ -6,22 +7,22 @@ import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
 import '../../services/premium/premium_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import '../../providers/pet_providers.dart';
 
 /// 병원 방문 요약 공유 화면
-class VetSummaryScreen extends StatefulWidget {
+class VetSummaryScreen extends ConsumerStatefulWidget {
   const VetSummaryScreen({super.key});
 
   @override
-  State<VetSummaryScreen> createState() => _VetSummaryScreenState();
+  ConsumerState<VetSummaryScreen> createState() => _VetSummaryScreenState();
 }
 
-class _VetSummaryScreenState extends State<VetSummaryScreen> {
+class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
   bool _isSharing = false;
 
   Future<void> _shareVetSummary() async {
     final l10n = AppLocalizations.of(context);
-    final petId = ActivePetNotifier.instance.activePetId;
+    final petId = ref.read(activePetProvider).valueOrNull?.id;
     if (petId == null) return;
 
     final box = context.findRenderObject() as RenderBox?;
@@ -81,7 +82,6 @@ class _VetSummaryScreenState extends State<VetSummaryScreen> {
         title: Text(
           l10n.report_vetSummary,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -113,7 +113,6 @@ class _VetSummaryScreenState extends State<VetSummaryScreen> {
               Text(
                 l10n.report_vetSummaryTitle,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF1A1A1A),
@@ -125,7 +124,6 @@ class _VetSummaryScreenState extends State<VetSummaryScreen> {
               Text(
                 l10n.report_vetSummaryDesc,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF6B6B6B),
@@ -182,7 +180,6 @@ class _VetSummaryScreenState extends State<VetSummaryScreen> {
                             Text(
                               l10n.report_vetShareButton,
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -216,7 +213,6 @@ class _VetSummaryScreenState extends State<VetSummaryScreen> {
           child: Text(
             text,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Color(0xFF333333),

@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/weight_record.dart';
 import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/pet/pet_service.dart';
 import '../../services/weight/weight_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
@@ -17,19 +17,19 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../models/breed_standard.dart';
 import '../../services/breed/breed_service.dart';
+import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
-class WeightRecordScreen extends StatefulWidget {
+class WeightRecordScreen extends ConsumerStatefulWidget {
   const WeightRecordScreen({super.key});
 
   @override
-  State<WeightRecordScreen> createState() => _WeightRecordScreenState();
+  ConsumerState<WeightRecordScreen> createState() => _WeightRecordScreenState();
 }
 
-class _WeightRecordScreenState extends State<WeightRecordScreen> {
+class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
   final _weightService = WeightService.instance;
   final _petCache = PetLocalCacheService.instance;
-  final _petService = PetService.instance;
   final _weightController = TextEditingController();
   final _weightFocusNode = FocusNode();
 
@@ -62,8 +62,8 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
 
   Future<void> _loadActivePet() async {
     try {
-      // API 우선 조회
-      final apiPet = await _petService.getActivePet();
+      // provider에서 활성 펫 조회 (캐시 우선, 실패 시 로컬 폴백)
+      final apiPet = ref.read(activePetProvider).valueOrNull;
       if (!mounted) return;
       if (apiPet != null) {
         setState(() {
@@ -92,7 +92,7 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         await _loadRecords();
       }
     } catch (_) {
-      // API 실패 시 로컬 캐시 폴백
+      // 로컬 캐시 폴백
       try {
         final cachedPet = await _petCache.getActivePet();
         if (!mounted) return;
@@ -392,7 +392,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
         title: Text(
           l10n.weight_title,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.nearBlack,
@@ -423,7 +422,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         child: Text(
                           _formatDate(_selectedDate),
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF97928A),
@@ -438,7 +436,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                       child: Text(
                         l10n.weight_wciHealthStatus,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.nearBlack,
@@ -450,7 +447,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                     Text(
                       l10n.weight_title,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: AppColors.gray500,
@@ -477,7 +473,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         Text(
                           '${(current?.weight ?? 0).toStringAsFixed(2)}g',
                           style: TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
                             color: hasData
@@ -492,7 +487,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                       hasData ? level.title : 'Level 0',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: hasData
@@ -506,7 +500,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                       level.description,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: AppColors.mediumGray,
@@ -530,7 +523,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                             Text(
                               l10n.weight_breedRange,
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.nearBlack,
@@ -541,7 +533,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                             Text(
                               '${_breedStandard!.displayName}  •  ${l10n.weight_breedRangeIdeal(_breedStandard!.weightIdealMinG, _breedStandard!.weightIdealMaxG)}',
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.gray600,
@@ -574,7 +565,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                           Text(
                             l10n.weight_formula,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppColors.nearBlack,
@@ -585,7 +575,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                           Text(
                             l10n.weight_formulaText,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
                               color: AppColors.gray600,
@@ -597,7 +586,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                           Text(
                             l10n.weight_calculation,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppColors.nearBlack,
@@ -608,7 +596,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                           Text(
                             _buildCalculationText(current, baseline, wci),
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
                               color: AppColors.gray600,
@@ -640,7 +627,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         ),
                       ],
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: AppColors.nearBlack,
@@ -649,7 +635,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                       decoration: InputDecoration(
                         labelText: l10n.weight_inputWeight,
                         labelStyle: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.mediumGray,
@@ -657,7 +642,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                         hintText: l10n.weight_inputHint,
                         suffixText: 'g',
                         suffixStyle: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: AppColors.mediumGray,
@@ -719,7 +703,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                               : Text(
                                   l10n.btn_save,
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
@@ -778,7 +761,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
             Text(
               l10n.weight_selectTime,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.mediumGray,
@@ -789,7 +771,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
             Text(
               timeText,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppColors.nearBlack,
@@ -822,7 +803,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
             Text(
               l10n.weight_multipleRecords(dayRecords.length),
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppColors.nearBlack,
@@ -832,7 +812,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
             Text(
               '${l10n.weight_dailyAverage} ${_dailyAverageForDate(_selectedDate)?.toStringAsFixed(1) ?? '-'}g',
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: AppColors.brandPrimary,
@@ -860,7 +839,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                 Text(
                   timeStr,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: AppColors.mediumGray,
@@ -871,7 +849,6 @@ class _WeightRecordScreenState extends State<WeightRecordScreen> {
                 Text(
                   '${record.weight.toStringAsFixed(1)}g',
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.nearBlack,

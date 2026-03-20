@@ -3,7 +3,8 @@ import '../api/api_client.dart';
 
 /// 수분 기록 CRUD 서비스
 class WaterRecordService {
-  WaterRecordService();
+  WaterRecordService._();
+  static final WaterRecordService instance = WaterRecordService._();
 
   final _api = ApiClient.instance;
 

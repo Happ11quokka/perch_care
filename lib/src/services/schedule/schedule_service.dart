@@ -4,7 +4,8 @@ import '../api/api_client.dart';
 /// 일정 관리 서비스
 /// FastAPI schedules 엔드포인트와 연동
 class ScheduleService {
-  ScheduleService();
+  ScheduleService._();
+  static final ScheduleService instance = ScheduleService._();
 
   final _api = ApiClient.instance;
 

@@ -71,7 +71,6 @@ class PasswordStrengthIndicator extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: color,

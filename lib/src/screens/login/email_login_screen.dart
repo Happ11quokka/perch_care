@@ -26,7 +26,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   final _passwordController = TextEditingController();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
-  final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService.instance;
 
   bool _isLoading = false;
   bool _isGoogleLoading = false;
@@ -122,7 +122,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         title: Text(
           l10n.login_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -191,7 +190,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                   Text(
                     l10n.login_notMember,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -204,7 +202,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     child: Text(
                       l10n.login_signup,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFFF9A42),
@@ -249,7 +246,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF97928A),
@@ -282,7 +278,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                   obscureText: obscureText,
                   onChanged: (_) => setState(() {}),
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF1A1A1A),
@@ -291,7 +286,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                   decoration: InputDecoration(
                     hintText: hintText,
                     hintStyle: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -382,7 +376,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               Text(
                 l10n.login_saveId,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF97928A),
@@ -400,7 +393,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           child: Text(
             l10n.login_findIdPassword,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: Color(0xFF97928A),
@@ -439,7 +431,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               : Text(
                   l10n.login_button,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,

@@ -83,7 +83,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
         title: Text(
           l10n.bhi_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.nearBlack,
@@ -113,7 +112,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
           Text(
             l10n.bhi_noDataTitle,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: Color(0xFF6B6B6B),
@@ -124,7 +122,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
           Text(
             l10n.bhi_noDataSubtitle,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: Color(0xFF97928A),
@@ -154,7 +151,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
           Text(
             l10n.bhi_scoreComposition,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -226,7 +222,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                   child: Text(
                     l10n.bhi_accuracyHint,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF6B6B6B),
@@ -246,7 +241,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
             child: Text(
               l10n.bhi_baseDate('${bhi.targetDate.year}.${bhi.targetDate.month.toString().padLeft(2, '0')}.${bhi.targetDate.day.toString().padLeft(2, '0')}'),
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF97928A),
@@ -273,7 +267,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
           Text(
             l10n.bhi_healthScore,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Color(0xFF6B6B6B),
@@ -295,7 +288,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                   Text(
                     bhi.bhiScore.toStringAsFixed(0),
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 40,
                       fontWeight: FontWeight.w700,
                       color: AppColors.nearBlack,
@@ -306,7 +298,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                   Text(
                     l10n.bhi_scoreMax,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -320,7 +311,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
           Text(
             _getScoreLabel(bhi.bhiScore, l10n),
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: _getScoreColor(bhi.bhiScore),
@@ -332,7 +322,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
             _getScoreDescription(bhi.bhiScore, l10n),
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 13,
               fontWeight: FontWeight.w400,
               color: Color(0xFF97928A),
@@ -389,7 +378,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
               Text(
                 title,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -401,7 +389,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                   ? Text(
                       '${score.toStringAsFixed(1)} / ${maxScore.toInt()}',
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.nearBlack,
@@ -411,7 +398,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                   : Text(
                       noDataText,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF97928A),
@@ -486,7 +472,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
               Text(
                 l10n.bhi_wciLevel,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -507,7 +492,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                   child: Text(
                     'Level ${bhi.wciLevel}',
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -519,7 +503,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                 const Text(
                   '-',
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF97928A),
@@ -536,7 +519,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
             child: Text(
               bhi.wciLevel > 0 ? l10n.bhi_stageNumber(bhi.wciLevel) : '-',
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: AppColors.nearBlack,
@@ -559,7 +541,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                 Text(
                   l10n.bhi_growthStage,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF6B6B6B),
@@ -579,7 +560,6 @@ class _BhiDetailScreenState extends State<BhiDetailScreen> {
                   child: Text(
                     growthStageLabel,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: AppColors.nearBlack,

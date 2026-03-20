@@ -17,7 +17,7 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final _notificationService = NotificationService();
+  final _notificationService = NotificationService.instance;
   List<AppNotification> _notifications = [];
   StreamSubscription<List<AppNotification>>? _subscription;
   bool _isLoading = true;

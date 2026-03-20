@@ -35,7 +35,7 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
   final _newPasswordFocusNode = FocusNode();
   final _confirmPasswordFocusNode = FocusNode();
 
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   bool _newPasswordHasFocus = false;
@@ -101,7 +101,6 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
         title: Text(
           l10n.forgot_newPasswordTitle,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -124,7 +123,6 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                       Text(
                         l10n.forgot_newPasswordDescription,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF97928A),
@@ -205,7 +203,6 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF97928A),
@@ -237,7 +234,6 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                   obscureText: obscureText,
                   onChanged: (_) => setState(() {}),
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF1A1A1A),
@@ -246,7 +242,6 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
                   decoration: InputDecoration(
                     hintText: hintText,
                     hintStyle: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -310,7 +305,6 @@ class _ForgotPasswordResetScreenState extends State<ForgotPasswordResetScreen> {
               : Text(
                   l10n.btn_resetComplete,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,

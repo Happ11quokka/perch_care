@@ -34,7 +34,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _emailFocusNode = FocusNode();
   final _phoneFocusNode = FocusNode();
 
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   File? _selectedImage;
   Uint8List? _savedImageBytes;
   bool _isSaving = false;
@@ -137,7 +137,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     child: Text(
                       l10n.profileSetup_title,
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF1A1A1A),
@@ -267,7 +266,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           controller: _nameController,
           focusNode: _nameFocusNode,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF1A1A1A),
@@ -286,7 +284,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             focusedErrorBorder: InputBorder.none,
             hintText: l10n.input_name_hint,
             hintStyle: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: const Color(0xFF97928A),
@@ -315,7 +312,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             Text(
               _genderDisplayText(l10n),
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: _selectedGender != null
@@ -362,7 +358,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           readOnly: hasEmail,
           enabled: !hasEmail,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: hasEmail ? const Color(0xFF97928A) : const Color(0xFF1A1A1A),
@@ -381,7 +376,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             focusedErrorBorder: InputBorder.none,
             hintText: l10n.input_email_hint,
             hintStyle: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: const Color(0xFF97928A),
@@ -452,7 +446,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 keyboardType: TextInputType.phone,
                 textAlignVertical: TextAlignVertical.center,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF1A1A1A),
@@ -471,7 +464,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   focusedErrorBorder: InputBorder.none,
                   hintText: l10n.profileSetup_phoneHint,
                   hintStyle: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: const Color(0xFF97928A),
@@ -509,7 +501,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   child: Text(
                     l10n.common_later,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF97928A),
@@ -539,7 +530,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   child: Text(
                     l10n.profileSetup_complete,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -594,7 +584,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   child: Text(
                     l10n.profileSetup_genderSelectTitle,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF1A1A1A),
@@ -606,7 +595,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   title: Text(
                     l10n.profileSetup_genderMale,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF1A1A1A),
@@ -621,7 +609,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   title: Text(
                     l10n.profileSetup_genderFemale,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF1A1A1A),

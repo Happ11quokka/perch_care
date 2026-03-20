@@ -1080,5 +1080,22 @@
   "timePicker_title": "请选择时间",
   "timePicker_confirm": "确认选择",
 
-  "country_selectTitle": "选择国家"
+  "country_selectTitle": "选择国家",
+
+  "datetime_am": "上午",
+  "datetime_pm": "下午",
+  "datetime_yearMonth": "{year}年{month}月",
+  "@datetime_yearMonth": {
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
+  },
+
+  "schedule_noPetInfo": "没有宠物信息。",
+  "schedule_noTitle": "无标题",
+  "schedule_endTimeAfterStart": "结束时间必须在开始时间之后。",
+  "schedule_titleHint": "标题",
+
+  "common_defaultPetName": "宝贝"
 }

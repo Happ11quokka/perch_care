@@ -30,7 +30,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
 
   final _notesController = TextEditingController();
   final _notesFocusNode = FocusNode();
-  final _dailyRecordService = DailyRecordService();
+  final _dailyRecordService = DailyRecordService.instance;
 
   static const _moodOptions = [
     ('great', '😊'),
@@ -170,7 +170,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                       child: Text(
                         l10n.dailyRecord_title,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: AppColors.nearBlack,
@@ -228,7 +227,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
               Text(
                 _formatDate(_selectedDate),
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color:
@@ -252,7 +250,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
           Text(
             l10n.dailyRecord_mood,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -295,7 +292,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                     Text(
                       _moodLabel(option.$1),
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 11,
                         fontWeight:
                             isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -324,7 +320,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
           Text(
             l10n.dailyRecord_activity,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -369,7 +364,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
           Text(
             l10n.dailyRecord_notes,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -384,7 +378,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
             decoration: InputDecoration(
               hintText: l10n.dailyRecord_notesHint,
               hintStyle: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: AppColors.mediumGray,
@@ -398,7 +391,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
               contentPadding: const EdgeInsets.all(16),
             ),
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: AppColors.nearBlack,
@@ -428,7 +420,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                   child: Text(
                     l10n.common_cancel,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.mediumGray,
@@ -453,7 +444,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                   child: Text(
                     l10n.common_save,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -512,7 +502,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
               Text(
                 '$year년 $month월',
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -546,7 +535,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                   child: Text(
                     day,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -603,7 +591,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
               child: Text(
                 '$day',
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: isSelected

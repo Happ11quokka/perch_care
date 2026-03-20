@@ -3,7 +3,8 @@ import '../api/api_client.dart';
 
 /// 일일 건강 기록 서비스 (캘린더용)
 class DailyRecordService {
-  DailyRecordService();
+  DailyRecordService._();
+  static final DailyRecordService instance = DailyRecordService._();
 
   final _api = ApiClient.instance;
 

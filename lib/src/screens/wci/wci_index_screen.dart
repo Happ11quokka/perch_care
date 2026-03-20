@@ -31,7 +31,6 @@ class WciIndexScreen extends StatelessWidget {
         title: Text(
           l10n.wciIndex_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.nearBlack,
@@ -49,7 +48,6 @@ class WciIndexScreen extends StatelessWidget {
               const Text(
                 'WCI (Weight Change Index)',
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -60,7 +58,6 @@ class WciIndexScreen extends StatelessWidget {
               Text(
                 l10n.wciIndex_description,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: AppColors.mediumGray,
@@ -72,7 +69,6 @@ class WciIndexScreen extends StatelessWidget {
               Text(
                 l10n.wciIndex_calculationMethod,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -83,7 +79,6 @@ class WciIndexScreen extends StatelessWidget {
               Text(
                 l10n.weight_formulaText,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: AppColors.nearBlack,
@@ -95,7 +90,6 @@ class WciIndexScreen extends StatelessWidget {
               Text(
                 l10n.wciIndex_levelCriteria,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -162,7 +156,6 @@ class WciIndexScreen extends StatelessWidget {
         Text(
           '• $title',
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.nearBlack,
@@ -173,7 +166,6 @@ class WciIndexScreen extends StatelessWidget {
         Text(
           range,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: AppColors.nearBlack,
@@ -184,7 +176,6 @@ class WciIndexScreen extends StatelessWidget {
         Text(
           description,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: AppColors.mediumGray,

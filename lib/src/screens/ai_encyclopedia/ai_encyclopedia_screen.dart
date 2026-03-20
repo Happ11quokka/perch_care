@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,7 +14,6 @@ import '../../services/analytics/analytics_service.dart';
 import '../../services/chat/chat_api_service.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
 import '../../services/ai/ai_stream_service.dart';
-import '../../services/pet/pet_service.dart';
 import '../../services/storage/chat_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../theme/colors.dart';
@@ -28,22 +28,23 @@ import '../../services/coach_mark/coach_mark_service.dart';
 import '../../services/premium/premium_service.dart';
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
+import '../../providers/pet_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AIEncyclopediaScreen extends StatefulWidget {
+class AIEncyclopediaScreen extends ConsumerStatefulWidget {
   const AIEncyclopediaScreen({super.key});
 
   @override
-  State<AIEncyclopediaScreen> createState() => _AIEncyclopediaScreenState();
+  ConsumerState<AIEncyclopediaScreen> createState() =>
+      _AIEncyclopediaScreenState();
 }
 
-class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
+class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _inputController = TextEditingController();
-  final AiEncyclopediaService _aiService = AiEncyclopediaService();
-  final AiStreamService _streamService = AiStreamService();
-  final PetService _petService = PetService.instance;
+  final AiEncyclopediaService _aiService = AiEncyclopediaService.instance;
+  final AiStreamService _streamService = AiStreamService.instance;
   final ChatStorageService _chatStorage = ChatStorageService.instance;
   final ChatApiService _chatApi = ChatApiService.instance;
   final List<ChatMessage> _messages = [];
@@ -545,7 +546,7 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
 
   Future<void> _loadActivePet() async {
     try {
-      final pet = await _petService.getActivePet();
+      final pet = ref.read(activePetProvider).valueOrNull;
       if (!mounted) return;
       setState(() {
         _activePet = pet;
@@ -1109,7 +1110,6 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
                 Text(
                   l10n.chatbot_premiumBanner,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF1A1A1A),
@@ -1141,7 +1141,6 @@ class _AIEncyclopediaScreenState extends State<AIEncyclopediaScreen>
                   child: Text(
                     l10n.chatbot_premiumUpgrade,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppColors.brandPrimary,

@@ -1,19 +1,20 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/health_check/health_check_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import '../../providers/pet_providers.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/premium/premium_service.dart';
 import '../../services/api/api_client.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 건강체크 분석 중 로딩 화면
-class HealthCheckAnalyzingScreen extends StatefulWidget {
+class HealthCheckAnalyzingScreen extends ConsumerStatefulWidget {
   const HealthCheckAnalyzingScreen({
     super.key,
     required this.mode,
@@ -30,11 +31,12 @@ class HealthCheckAnalyzingScreen extends StatefulWidget {
   final String? notes;
 
   @override
-  State<HealthCheckAnalyzingScreen> createState() =>
+  ConsumerState<HealthCheckAnalyzingScreen> createState() =>
       _HealthCheckAnalyzingScreenState();
 }
 
-class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
+class _HealthCheckAnalyzingScreenState
+    extends ConsumerState<HealthCheckAnalyzingScreen>
     with SingleTickerProviderStateMixin {
   bool _isAnalyzing = true;
   bool _cancelled = false;
@@ -89,7 +91,7 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
     });
 
     try {
-      final activePetId = ActivePetNotifier.instance.activePetId;
+      final activePetId = ref.read(activePetProvider).valueOrNull?.id;
       final language = Localizations.localeOf(context).languageCode;
       debugPrint(
         '[HealthCheck] activePetId=$activePetId, mode=${widget.mode.value}, '
@@ -207,20 +209,19 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
         title: Text(
           l10n.hc_cancelAnalysis,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontWeight: FontWeight.w600,
           ),
         ),
         content: Text(
           l10n.hc_cancelAnalysisConfirm,
-          style: const TextStyle(fontFamily: 'Pretendard'),
+          style: const TextStyle(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               l10n.hc_continueAnalysis,
-              style: const TextStyle(fontFamily: 'Pretendard'),
+              style: const TextStyle(),
             ),
           ),
           TextButton(
@@ -228,7 +229,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
             child: Text(
               l10n.common_cancel,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 color: AppColors.brandPrimary,
               ),
             ),
@@ -278,7 +278,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
           Text(
             l10n.hc_analyzing,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: Color(0xFF1A1A1A),
@@ -289,7 +288,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
           Text(
             l10n.hc_aiAnalyzing,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: Color(0xFF6B6B6B),
@@ -332,7 +330,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
                   ? l10n.premium_healthCheckBlockedTitle
                   : l10n.hc_analysisErrorTitle,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1A1A1A),
@@ -344,7 +341,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
               _errorMessage ?? '',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF6B6B6B),
@@ -376,7 +372,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
                   child: Text(
                     l10n.premium_upgradeToPremium,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -402,7 +397,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
                   child: Text(
                     l10n.hc_retry,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -426,7 +420,6 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
                 child: Text(
                   l10n.hc_goBack,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF6B6B6B),

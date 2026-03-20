@@ -13,7 +13,8 @@ import '../api/token_service.dart';
 /// 백엔드 `POST /ai/encyclopedia/stream` 엔드포인트에 연결하여
 /// 토큰 단위로 응답을 수신한다. 실패 시 호출측에서 동기 API로 fallback.
 class AiStreamService {
-  AiStreamService();
+  AiStreamService._();
+  static final AiStreamService instance = AiStreamService._();
 
   static const _timeout = Duration(seconds: 30);
 

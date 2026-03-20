@@ -11,7 +11,8 @@ import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/pet_providers.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../utils/error_handler.dart';
@@ -20,14 +21,14 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 반려동물 프로필 상세/편집 화면
-class PetProfileDetailScreen extends StatefulWidget {
+class PetProfileDetailScreen extends ConsumerStatefulWidget {
   const PetProfileDetailScreen({super.key});
 
   @override
-  State<PetProfileDetailScreen> createState() => _PetProfileDetailScreenState();
+  ConsumerState<PetProfileDetailScreen> createState() => _PetProfileDetailScreenState();
 }
 
-class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
+class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
@@ -73,7 +74,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
   Future<void> _loadExistingPet() async {
     try {
       // API에서 활성 펫 조회 (UUID 형식 보장)
-      final apiPet = await _petService.getActivePet();
+      final apiPet = ref.read(activePetProvider).valueOrNull;
       if (!mounted) return;
 
       if (apiPet != null) {
@@ -255,7 +256,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
                               child: Text(
                                 l10n.pet_delete,
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFFFF572D),
@@ -312,7 +312,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
             child: Text(
               l10n.pet_profile,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF1A1A1A),
@@ -482,7 +481,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
             controller: controller,
             keyboardType: keyboardType,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: const Color(0xFF1A1A1A),
@@ -492,7 +490,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: const Color(0xFF97928A),
@@ -538,7 +535,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
             Text(
               displayGender ?? l10n.pet_gender_hint,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: displayGender != null
@@ -586,7 +582,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
                   ? '${selectedDate.year}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.day.toString().padLeft(2, '0')}'
                   : hintText,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: selectedDate != null
@@ -632,7 +627,6 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
                 : Text(
                     l10n.common_save,
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -732,7 +726,7 @@ class _PetProfileDetailScreenState extends State<PetProfileDetailScreen> {
       if (!mounted) return;
       final remainingPets = await _petCache.getPets();
       if (remainingPets.isNotEmpty) {
-        ActivePetNotifier.instance.notify(remainingPets.first.id);
+        ref.read(activePetProvider.notifier).switchPet(remainingPets.first.id);
       }
       if (!mounted) return;
       AppSnackBar.success(context, message: l10n.snackbar_deleted);

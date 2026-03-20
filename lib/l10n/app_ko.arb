@@ -1111,5 +1111,22 @@
   "timePicker_title": "시간을 선택해주세요",
   "timePicker_confirm": "선택 완료",
 
-  "country_selectTitle": "국가를 선택하세요"
+  "country_selectTitle": "국가를 선택하세요",
+
+  "datetime_am": "오전",
+  "datetime_pm": "오후",
+  "datetime_yearMonth": "{year}년 {month}월",
+  "@datetime_yearMonth": {
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"}
+    }
+  },
+
+  "schedule_noPetInfo": "펫 정보가 없습니다.",
+  "schedule_noTitle": "제목 없음",
+  "schedule_endTimeAfterStart": "종료 시간은 시작 시간 이후여야 합니다.",
+  "schedule_titleHint": "제목",
+
+  "common_defaultPetName": "사랑이"
 }

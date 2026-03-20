@@ -402,7 +402,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
         title: Text(
           l10n.pet_profile,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -595,7 +594,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
                             : Text(
                                 l10n.common_save,
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
@@ -670,7 +668,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
                 }
               },
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF1A1A1A),
@@ -679,7 +676,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
               decoration: InputDecoration(
                 hintText: hintText,
                 hintStyle: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF97928A),
@@ -705,7 +701,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
             child: Text(
               errorText,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFFFF572D),
@@ -761,7 +756,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
               Text(
                 displayValue ?? l10n.pet_gender_hint,
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasValue
@@ -826,7 +820,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
               Text(
                 displayValue ?? l10n.pet_growthStage_hint,
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasValue
@@ -878,7 +871,6 @@ class _PetAddScreenState extends State<PetAddScreen> {
                     ? hint
                     : '${selectedDate.year}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.day.toString().padLeft(2, '0')}',
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasValue

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
@@ -8,28 +9,27 @@ import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
 import '../../services/weight/weight_service.dart';
-import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
-class WeightAddScreen extends StatefulWidget {
+class WeightAddScreen extends ConsumerStatefulWidget {
   final DateTime date;
 
   const WeightAddScreen({super.key, required this.date});
 
   @override
-  State<WeightAddScreen> createState() => _WeightAddScreenState();
+  ConsumerState<WeightAddScreen> createState() => _WeightAddScreenState();
 }
 
-class _WeightAddScreenState extends State<WeightAddScreen> {
+class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
   final _weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _weightService = WeightService.instance;
-  final _petCache = PetLocalCacheService.instance;
   bool _isLoading = false;
   TimeOfDay _selectedTime = TimeOfDay.now();
   double _sheetHeight = 0;
@@ -73,7 +73,7 @@ class _WeightAddScreenState extends State<WeightAddScreen> {
   /// 활성 펫 ID 로드
   Future<void> _loadActivePet() async {
     try {
-      final activePet = await _petCache.getActivePet();
+      final activePet = ref.read(activePetProvider).valueOrNull;
       if (activePet != null && mounted) {
         setState(() {
           _activePetId = activePet.id;

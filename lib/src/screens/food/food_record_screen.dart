@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/diet_entry.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../services/pet/pet_service.dart';
 import '../../services/food/food_record_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
@@ -16,18 +16,18 @@ import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../router/route_names.dart';
+import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
-class FoodRecordScreen extends StatefulWidget {
+class FoodRecordScreen extends ConsumerStatefulWidget {
   const FoodRecordScreen({super.key});
 
   @override
-  State<FoodRecordScreen> createState() => _FoodRecordScreenState();
+  ConsumerState<FoodRecordScreen> createState() => _FoodRecordScreenState();
 }
 
-class _FoodRecordScreenState extends State<FoodRecordScreen> {
-  final _petService = PetService.instance;
-  final _foodService = FoodRecordService();
+class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
+  final _foodService = FoodRecordService.instance;
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
   bool _isLoading = true;
@@ -55,7 +55,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
   Future<void> _loadActivePet() async {
     try {
-      final pet = await _petService.getActivePet();
+      final pet = ref.read(activePetProvider).valueOrNull;
       if (!mounted) return;
       setState(() {
         _activePetId = pet?.id;
@@ -413,7 +413,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     Text(
                       isEditing ? l10n.diet_editRecord : l10n.diet_addRecord,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: AppColors.nearBlack,
@@ -425,7 +424,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     Text(
                       l10n.diet_selectType,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: AppColors.mediumGray,
@@ -475,7 +473,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         ),
                       ),
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                       ),
                     ),
@@ -486,7 +483,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         child: Text(
                           l10n.diet_recentFoods,
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: AppColors.mediumGray,
@@ -523,7 +519,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                               child: Text(
                                 name,
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.nearBlack,
@@ -552,7 +547,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         ),
                       ),
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                       ),
                     ),
@@ -590,7 +584,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                   ? _formatTimeOfDay(selectedTime!)
                                   : l10n.diet_selectTime,
                               style: TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 14,
                                 color: selectedTime != null
                                     ? AppColors.nearBlack
@@ -616,7 +609,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         ),
                       ),
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                       ),
                     ),
@@ -633,7 +625,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                             child: Text(
                               l10n.common_cancel,
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.mediumGray,
@@ -696,7 +687,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                 child: Text(
                                   l10n.common_save,
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
@@ -794,7 +784,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         title: Text(
           l10n.food_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.nearBlack,
@@ -827,7 +816,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                         child: Text(
                           _formatDate(_selectedDate, l10n),
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF97928A),
@@ -844,7 +832,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       child: Text(
                         l10n.food_routine,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.nearBlack,
@@ -915,7 +902,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                     ? l10n.diet_addServing
                                     : l10n.diet_addEating,
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFF97928A),
@@ -954,7 +940,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           child: Text(
                             l10n.common_save,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -1011,7 +996,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 11,
             fontWeight: FontWeight.w500,
             color: AppColors.mediumGray,
@@ -1022,7 +1006,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         Text(
           value,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: hasData
@@ -1087,7 +1070,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         child: Text(
           text,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: isActive ? Colors.white : AppColors.mediumGray,
@@ -1123,7 +1105,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                 child: Text(
                   entry.timeDisplayString,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: AppColors.mediumGray,
@@ -1141,7 +1122,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                   Text(
                     entry.foodName,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.nearBlack,
@@ -1153,7 +1133,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     Text(
                       entry.memo!,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                         color: AppColors.mediumGray,
@@ -1168,7 +1147,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
             Text(
               '${entry.grams.toStringAsFixed(1)}g',
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: AppColors.nearBlack,
@@ -1237,7 +1215,6 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               color: isSelected ? AppColors.nearBlack : AppColors.mediumGray,

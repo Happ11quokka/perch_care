@@ -2375,4 +2375,30 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get country_selectTitle => '국가를 선택하세요';
+
+  @override
+  String get datetime_am => '오전';
+
+  @override
+  String get datetime_pm => '오후';
+
+  @override
+  String datetime_yearMonth(int year, int month) {
+    return '$year년 $month월';
+  }
+
+  @override
+  String get schedule_noPetInfo => '펫 정보가 없습니다.';
+
+  @override
+  String get schedule_noTitle => '제목 없음';
+
+  @override
+  String get schedule_endTimeAfterStart => '종료 시간은 시작 시간 이후여야 합니다.';
+
+  @override
+  String get schedule_titleHint => '제목';
+
+  @override
+  String get common_defaultPetName => '사랑이';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
@@ -235,7 +236,7 @@ class AppRouter {
                       final map =
                           extra is Map<String, dynamic> ? extra : null;
                       return ProfileSetupCompleteScreen(
-                        petName: map?['petName'] ?? '점점이',
+                        petName: map?['petName'] ?? AppLocalizations.of(context).common_defaultPetName,
                       );
                     },
                   ),

@@ -37,7 +37,7 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
   );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   Timer? _timer;
   int _remainingSeconds = 120; // 2분
   bool _isResending = false;
@@ -118,7 +118,6 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
         title: Text(
           l10n.forgot_codeTitle,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -141,7 +140,6 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                       Text(
                         l10n.forgot_codeDescription,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF97928A),
@@ -154,7 +152,6 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                       Text(
                         l10n.forgot_codeSentTo(widget.destination),
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF97928A),
@@ -170,7 +167,6 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                         child: Text(
                           l10n.forgot_timeRemaining(_formattedTime),
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: Color(0xFF97928A),
@@ -209,7 +205,6 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
               keyboardType: TextInputType.number,
               maxLength: 1,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 24,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF1A1A1A),
@@ -284,7 +279,6 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
               : Text(
                   l10n.btn_resendCode,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,

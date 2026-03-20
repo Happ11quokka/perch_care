@@ -73,7 +73,6 @@ class QuotaBadge extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: textColor,
-              fontFamily: 'Pretendard',
             ),
           ),
           if (quota.isExhausted && onUpgradePressed != null) ...[
@@ -95,7 +94,6 @@ class QuotaBadge extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    fontFamily: 'Pretendard',
                   ),
                 ),
               ),

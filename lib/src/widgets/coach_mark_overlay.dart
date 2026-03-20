@@ -359,7 +359,6 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                   Text(
                     '${_currentStep + 1}/${widget.steps.length}',
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: Color(0xCCFFFFFF),
@@ -371,7 +370,6 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                   Text(
                     step.title,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -383,7 +381,6 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                   Text(
                     step.body,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xE6FFFFFF),
@@ -401,7 +398,6 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                         child: Text(
                           widget.skipLabel,
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: Color(0x99FFFFFF),
@@ -423,7 +419,6 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                           child: Text(
                             isLastStep ? widget.gotItLabel : widget.nextLabel,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFFFF9A42),

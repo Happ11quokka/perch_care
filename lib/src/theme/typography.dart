@@ -7,7 +7,7 @@ class AppTypography {
   // Font Family
   // 제목: 32 혹은 24
   // 설명글, 버튼 속 내용: 16
-  static const String fontFamily = 'Roboto';
+  static const String fontFamily = 'Pretendard';
 
   // Headline Styles (제목)
   static const TextStyle h1 = TextStyle(

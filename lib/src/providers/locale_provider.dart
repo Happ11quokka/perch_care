@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocaleProvider extends ChangeNotifier {
@@ -71,4 +72,23 @@ class LocaleProvider extends ChangeNotifier {
 
   /// 현재 설정된 언어 코드 (null이면 기기 설정)
   String? get currentLanguageCode => _locale?.languageCode;
+}
+
+// ---------------------------------------------------------------------------
+// Riverpod NotifierProvider (Phase 1)
+// 기존 LocaleProvider 싱글톤을 브릿지하여 점진적 마이그레이션 지원
+// ---------------------------------------------------------------------------
+
+final localeNotifierProvider = NotifierProvider<LocaleNotifier, Locale?>(
+  LocaleNotifier.new,
+);
+
+class LocaleNotifier extends Notifier<Locale?> {
+  @override
+  Locale? build() => LocaleProvider.instance.locale;
+
+  Future<void> setLocale(Locale? locale) async {
+    await LocaleProvider.instance.setLocale(locale);
+    state = locale;
+  }
 }

@@ -77,7 +77,6 @@ class _BreedSelectorState extends State<BreedSelector> {
                     ? widget.selectedBreedDisplayName ?? widget.hintText
                     : widget.hintText,
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasSelection

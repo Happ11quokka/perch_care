@@ -38,7 +38,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _emailHasFocus = false;
   bool _passwordHasFocus = false;
   bool _confirmPasswordHasFocus = false;
-  final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService.instance;
 
   // 아이콘 에셋 경로
   static const String _personIconPath = 'assets/images/signup_vector/name.svg';
@@ -98,7 +98,6 @@ class _SignupScreenState extends State<SignupScreen> {
         title: Text(
           l10n.signup_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -244,7 +243,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   Text(
                     l10n.signup_alreadyMember,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -257,7 +255,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: Text(
                       l10n.login_button,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFFF9A42),
@@ -305,7 +302,6 @@ class _SignupScreenState extends State<SignupScreen> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF97928A),
@@ -340,7 +336,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   textInputAction: textInputAction,
                   onChanged: (_) => setState(() {}),
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF1A1A1A),
@@ -349,7 +344,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   decoration: InputDecoration(
                     hintText: hintText,
                     hintStyle: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -411,7 +405,6 @@ class _SignupScreenState extends State<SignupScreen> {
               : Text(
                   l10n.signup_button,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -434,7 +427,6 @@ class _SignupScreenState extends State<SignupScreen> {
         title: Text(
           l10n.signup_completeTitle,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -443,7 +435,6 @@ class _SignupScreenState extends State<SignupScreen> {
         content: Text(
           l10n.signup_completeMessage,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF6B6B6B),
@@ -464,7 +455,6 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Text(
               l10n.common_later,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 color: Color(0xFF97928A),
               ),
             ),
@@ -483,7 +473,6 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Text(
               l10n.common_confirm,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 color: Color(0xFFFF9A42),
                 fontWeight: FontWeight.w600,
               ),

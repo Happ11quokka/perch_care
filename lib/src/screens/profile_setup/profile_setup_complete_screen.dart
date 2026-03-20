@@ -48,7 +48,6 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                     child: Text(
                       l10n.profileSetup_doneTitle,
                       style: TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF1A1A1A),
@@ -87,7 +86,6 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                     l10n.profileSetup_doneMessage,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1A1A1A),
@@ -101,7 +99,6 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                     displayName,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: const Color(0xFF97928A),
@@ -142,7 +139,6 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   child: Text(
                     l10n.common_later,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF97928A),
@@ -173,7 +169,6 @@ class ProfileSetupCompleteScreen extends StatelessWidget {
                   child: Text(
                     l10n.profileSetup_startRecording,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,

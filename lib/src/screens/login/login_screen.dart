@@ -22,7 +22,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService.instance;
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
 
@@ -154,7 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
         title: Text(
           l10n.login_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -204,7 +203,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     l10n.login_notMember,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF97928A),
@@ -217,7 +215,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       l10n.login_signup,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFFF9A42),
@@ -265,7 +262,6 @@ class _LoginScreenState extends State<LoginScreen> {
             Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.black,
@@ -306,7 +302,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Text(
             l10n.login_button,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.white,

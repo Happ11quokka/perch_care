@@ -86,7 +86,6 @@ class WeightRangeIndicator extends StatelessWidget {
         child: Text(
           text,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 11,
             color: Color(0xFF757575),
             fontWeight: FontWeight.w500,

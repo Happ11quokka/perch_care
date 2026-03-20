@@ -1,36 +1,267 @@
-# Findings: 체중 시간대 기록 + 식이 누적 기록
+# perch_care 프로젝트 코드 리뷰 Findings
 
-## 핵심 발견사항
+> 리뷰 일자: 2026-03-20 | Flutter 19개 스킬 기준 + 백엔드 보안 리뷰
+> 수정 일자: 2026-03-21 | Flutter 6개 + 백엔드 보안 6개 + Riverpod 마이그레이션 (Phase 0-5)
 
-### 1. 체중 기록 - 현재 상태
-- **모델**: `WeightRecord` - `date` 필드는 DateTime이지만 시간부분 강제 제거 (날짜만 사용)
-- **서비스**: `WeightService._normalizeDate()` → `DateTime(year, month, day)` 시간 제거
-- **API**: `recorded_date` 필드, YYYY-MM-DD 포맷 (시간 없음)
-- **제약**: 하루 1개 기록만 가능 (Upsert 로직 - 같은 날짜 덮어쓰기)
-- **차트**: fl_chart 사용, 주간/월간 뷰, 날짜 기준 그룹화
+---
 
-### 2. 식이 기록 - 현재 상태
-- **모델**: `FoodRecord` - `recordedDate`, `totalGrams`, `targetGrams`, `count`, `entriesJson`
-- **구분 없음**: 배식(serving) vs 취식(eating) 명시적 구분 없음
-- **시간 없음**: entriesJson에 시간 정보 미포함
-- **일 단위**: 하루 전체 집계만 가능
-- **다중 음식**: entriesJson으로 여러 음식 타입 지원 (_FoodEntry)
+## CRITICAL (즉시 수정 필요)
 
-### 3. 공통 패턴
-- **시간 선택 위젯 존재**: `AnalogTimePicker` (lib/src/widgets/analog_time_picker.dart)
-- **서비스 패턴**: Singleton, 하이브리드(API+SharedPreferences), Upsert
-- **모델 패턴**: const constructor, fromJson/toJson/toInsertJson, copyWith
-- **로컬화**: app_ko.arb/app_en.arb/app_zh.arb, `feature_keyName` 컨벤션
+### C-1. IDOR 취약점 — 레코드 엔드포인트 소유권 미검증 `수정 완료`
 
-### 4. 주요 변경 필요 파일
-**체중 시간대 기록:**
-- `lib/src/models/weight_record.dart` - recordedTime 필드 추가
-- `lib/src/services/weight/weight_service.dart` - 다중 기록 지원, 일평균 계산
-- `lib/src/screens/weight/weight_add_screen.dart` - 시간 선택 UI 추가
-- `lib/src/screens/weight/weight_detail_screen.dart` - 차트에 일평균 적용
-- `lib/src/screens/weight/weight_record_screen.dart` - 다중 기록 표시
+- **위치:** `backend/app/routers/food_records.py`, `water_records.py`, `weights.py`, `health_checks.py`
+- **문제:** pet_id 기반 레코드 CRUD에서 `current_user.id`와 pet 소유권 비교 없음
+- **수정 내용:**
+  - `dependencies.py`에 `verify_pet_ownership` 공통 의존성 추가
+  - 4개 record 라우터 전체 엔드포인트에 `Depends(verify_pet_ownership)` 적용
+- **수정일:** 2026-03-21
 
-**식이 누적 기록:**
-- `lib/src/models/food_record.dart` - FeedingEntry 모델 (배식/취식 구분, 시간)
-- `lib/src/services/food/food_record_service.dart` - 누적 기록 API
-- `lib/src/screens/food/food_record_screen.dart` - 배식/취식 UI 개편
+### C-2. 비밀번호 초기화 코드 브루트포스 취약 `수정 완료`
+
+- **위치:** `backend/app/services/auth_service.py`
+- **문제:** 4자리 코드 + 검증 시도 제한 없음 → 브루트포스 가능
+- **수정 내용:**
+  - 6자리 코드로 변경 (`secrets.randbelow(1000000):06d`)
+  - 검증 시도 5회 제한 (`_MAX_RESET_ATTEMPTS = 5`), 초과 시 코드 무효화
+  - `verify-reset-code`, `update-password` 엔드포인트에 rate limiting 추가 (`5/minute`)
+- **잔여:** 인메모리 저장은 유지 (수평 스케일링 시 Redis 전환 필요)
+- **수정일:** 2026-03-21
+
+---
+
+## HIGH (v2.0 릴리즈 전 수정 권장)
+
+### H-1. JWT Secret 기본값이 약함 `수정 완료`
+
+- **위치:** `backend/app/config.py`, `backend/app/main.py`
+- **수정 내용:** lifespan에서 기본값 `"change-this-secret-in-production"` 감지 시 `RuntimeError`로 서버 시작 차단
+- **수정일:** 2026-03-21
+
+### H-2. CORS 와일드카드 기본값 `수정 완료`
+
+- **위치:** `backend/app/config.py`, `backend/app/main.py`
+- **수정 내용:**
+  - `cors_origins` 기본값을 `["*"]` → `[]`(빈 리스트)로 변경
+  - `.env`에서 `CORS_ORIGINS` 환경변수로 허용 오리진 설정
+  - `main.py`에서 `settings.cors_origins` 참조
+- **수정일:** 2026-03-21
+
+### H-3. 로그인/회원가입 Rate Limiting 없음 `수정 완료`
+
+- **위치:** `backend/app/routers/auth.py`
+- **수정 내용:**
+  - signup: `5/minute`, login: `10/minute`, oauth: `10/minute`
+  - reset-password: `3/minute`, verify-reset-code: `5/minute`, update-password: `5/minute`
+  - IP 기반 rate limit 키 함수 (`_get_auth_rate_limit_key`)
+- **수정일:** 2026-03-21
+
+### H-4. 비밀번호 강도 검증 없음 `수정 완료`
+
+- **위치:** `backend/app/schemas/auth.py`
+- **수정 내용:**
+  - `SignUpRequest.password`, `UpdatePasswordRequest.new_password`에 `field_validator` 추가
+  - 규칙: 최소 8자, 영문자 1개 이상, 숫자 1개 이상
+  - 위반 시 422 Unprocessable Entity 응답
+- **수정일:** 2026-03-21
+
+### H-5. 상태관리 SSOT 부재 — 10+ 스크린이 동일 데이터 독립 fetch `부분 수정`
+
+- **위치:** HomeScreen, WeightDetailScreen, FoodRecordScreen 등 14개 스크린이 `getActivePet()` 독립 호출
+- **영향:** 불필요한 네트워크 요청, 화면간 데이터 불일치 가능
+- **수정 내용 (Phase 0-5 완료):**
+  - `flutter_riverpod: ^2.6.1` 도입, `ProviderScope` 래핑
+  - `activePetProvider` (AsyncNotifierProvider) — 활성 펫 SSOT
+  - `petListProvider`, `premiumStatusProvider`, `bhiProvider` — 핵심 상태 중앙 관리
+  - 14개 스크린 `ConsumerStatefulWidget` 전환 완료
+  - 스크린에서 `ActivePetNotifier.instance` 직접 사용 0건
+  - 10개 서비스 DI 래퍼 (`service_providers.dart`)
+  - 로그아웃 헬퍼 (`auth_actions.dart`) + SplashScreen provider 시딩
+- **잔여 (Phase 6-7):** 나머지 ~20개 스크린 전환 + 레거시 `ActivePetNotifier` 파일 삭제
+- **상세:** `2026-03-21-findings-followup-code-review.md` 참조
+- **수정일:** 2026-03-21
+
+### H-6. 테스트 커버리지 부족 `미수정`
+
+- **현황:** 35 스크린 중 5개 테스트 파일 (~14%), 총 53 테스트 케이스
+- **부재:** 위젯/통합 테스트, E2E 테스트, 접근성 테스트
+- **수정:** 핵심 비즈니스 로직 (SyncService, WeightService, AuthService) 단위 테스트 우선
+- **미수정 사유:** 점진적 확대 필요
+
+---
+
+## MEDIUM (점진적 개선)
+
+### M-1. debugPrint 50+ 건 kDebugMode 미가드 `수정 완료`
+
+- **주요 파일:** `iap_service.dart` (기존 래핑 완료), `sync_service.dart` (24건), `home_screen.dart` (13건)
+- **영향:** release 빌드에서 로그 노출
+- **수정 내용:**
+  - `sync_service.dart`: 24건 `if (kDebugMode) { debugPrint(...) }` 래핑 + `foundation.dart` import 추가
+  - `home_screen.dart`: 13건 동일 처리 + `foundation.dart` import 추가
+  - `iap_service.dart`: 기존에 이미 kDebugMode 래핑 완료 확인
+- **수정일:** 2026-03-20
+
+### M-2. 하드코딩된 색상 600+ 건 `부분 수정`
+
+- **수정 완료 파일 (상위 3개 + 1개, 244건 → 0건):**
+  - `weight_detail_screen.dart`: 115건 → 0건
+  - `profile_screen.dart`: 82건 → 0건
+  - `home_screen.dart`: 47건 → 0건
+  - `add_schedule_bottom_sheet.dart`: 4건 → 0건
+- **신규 AppColors 상수 11개 추가** (`colors.dart`):
+  - `gray150`, `gray250`, `gray350`, `gray450` (회색 보간)
+  - `warmGray`, `beige` (따뜻한 톤)
+  - `brandLight`, `brandDark`, `brandSoft` (브랜드 변형)
+  - `danger`, `sundayRed` (시맨틱 색상)
+- **미수정:** 나머지 38개 파일 약 400건 잔여
+- **수정일:** 2026-03-20
+
+### M-3. fontFamily: 'Pretendard' 419건 하드코딩 `수정 완료`
+
+- **수정 내용:**
+  - `typography.dart`: `fontFamily = 'Roboto'` → `'Pretendard'`로 수정
+  - `app_theme.dart`: light/dark 테마에 `fontFamily: AppTypography.fontFamily` 전역 설정 추가
+  - 41개 파일에서 419건 `fontFamily: 'Pretendard'` 일괄 제거
+  - 잔여: 0건
+- **수정일:** 2026-03-20
+
+### M-4. 하드코딩된 한국어 문자열 10+ 건 `수정 완료`
+
+- **수정 내용:**
+  - `add_schedule_bottom_sheet.dart`: 요일 배열, 오전/오후, 에러 메시지, 날짜 포맷, 제목 힌트, 취소/저장 버튼 → ARB 키 사용
+  - `home_screen.dart`: `'사랑이'` → `l10n.common_defaultPetName`
+  - `app_router.dart`: `'점점이'` → `l10n.common_defaultPetName`
+- **ARB 신규 키 8개 추가** (ko/en/zh 3개 파일):
+  - `datetime_am`, `datetime_pm`, `datetime_yearMonth`
+  - `schedule_noPetInfo`, `schedule_noTitle`, `schedule_endTimeAfterStart`, `schedule_titleHint`
+  - `common_defaultPetName`
+- **수정일:** 2026-03-20
+
+### M-5. 접근성 (Semantics) 거의 미구현 `미수정`
+
+- **현황:** Semantics 위젯 0건, Tooltip 1건 (coach_mark_overlay)
+- **영향:** 스크린리더 사용자 접근 불가
+- **수정:** GestureDetector에 semantic label, 아이콘 버튼에 tooltip 추가
+- **미수정 사유:** 144개 GestureDetector + 전체 화면 대상, 별도 세션 필요
+
+### M-6. 서비스 싱글턴 패턴 비일관 `수정 완료`
+
+- **수정 내용:**
+  - 8개 비싱글턴 서비스를 `static final instance` 싱글턴 패턴으로 전환:
+    - `FoodRecordService`, `WaterRecordService`, `DailyRecordService`
+    - `AiEncyclopediaService`, `AiStreamService`, `AuthService`
+    - `ScheduleService`, `NotificationService`
+  - 15개 호출부 `Service()` → `Service.instance`로 수정
+  - 현재: 전체 27개 서비스 모두 싱글턴 패턴 통일
+- **수정일:** 2026-03-20
+
+### M-7. FCM 포그라운드 핸들러 미구현 `미수정`
+
+- **위치:** `push_notification_service.dart:90-94` — 빈 핸들러
+- **영향:** 앱 포그라운드에서 푸시 알림 수신 불가
+- **수정:** `flutter_local_notifications`로 포그라운드 알림 표시
+- **미수정 사유:** 코드 주석상 의도적 미구현 (NotificationService polling으로 처리)
+
+---
+
+## LOW (향후 개선)
+
+### L-1. PetLocalCacheService O(n) 업데이트 `미수정`
+
+- 전체 리스트 읽기 → 수정 → 전체 쓰기 패턴 → 대규모 데이터 시 비효율
+
+### L-2. Token 만료 사전 체크 없음 `미수정`
+
+- 현재 401 응답 후 갱신 (reactive), 만료 전 갱신 (proactive) 미구현
+
+### L-3. sqflite 의존성 미사용 `해당 없음 (오탐)`
+
+- ~~pubspec.yaml에 포함되어 있으나 실제 사용 없음~~
+- **확인 결과:** `local_image_storage_service.dart`에서 실제 사용 중 → 수정 불필요
+
+### L-4. cupertino_icons 미사용 의존성 `수정 완료`
+
+- **수정 내용:** `pubspec.yaml`에서 `cupertino_icons: ^1.0.8` 제거
+- **수정일:** 2026-03-20
+
+### L-5. home_vector PNG (70-82KB each) SVG 변환 가능 `미수정`
+
+- lv1~lv5.png → SVG로 변환 시 번들 크기 ~300KB 절약 가능
+
+### L-6. 이메일 존재 여부 노출 `미수정`
+
+- `backend/app/services/auth_service.py:19` → "Email already registered" 응답
+
+---
+
+## 수정 현황 요약
+
+> 최종 업데이트: 2026-03-21 (Riverpod Phase 0-5 반영)
+
+| 상태 | 항목 수 | 목록 |
+|------|---------|------|
+| 수정 완료 | 12건 | C-1, C-2, H-1, H-2, H-3, H-4, M-1, M-3, M-4, M-6, L-4, M-2(부분) |
+| 부분 수정 | 1건 | H-5 (Riverpod Phase 0-5 완료, Phase 6-7 잔여) |
+| 미수정 (Flutter 대규모) | 3건 | H-6, M-5, M-2(잔여) |
+| 미수정 (기타) | 3건 | M-7, L-1, L-2, L-5, L-6 |
+| 해당 없음 (오탐) | 1건 | L-3 |
+
+### 검증 결과
+
+- `flutter analyze`: 0 errors (37 warnings/info — 모두 기존)
+- `flutter test`: 53/53 passed
+- `ActivePetNotifier.instance` in screens: 0건
+- `fontFamily: 'Pretendard'` 잔여: 0건
+- 상위 3파일 `Color(0x...)` 잔여: 0건
+
+---
+
+## Riverpod 마이그레이션 현황
+
+> 상세 구현 기록: `2026-03-21-findings-followup-code-review.md`
+
+### 완료 (Phase 0-5)
+
+| Phase | 내용 | 상태 |
+|-------|------|------|
+| 0 | flutter_riverpod 추가 + ProviderScope | 완료 |
+| 1 | activePetProvider SSOT + 14개 스크린 전환 | 완료 |
+| 2 | premiumStatusProvider + bhiProvider | 완료 |
+| 3 | 10개 서비스 DI 래퍼 (service_providers.dart) | 완료 |
+| 4 | 로그아웃 헬퍼 (auth_actions.dart) | 완료 |
+| 5 | SplashScreen provider 시딩 | 완료 |
+
+### 잔여 (Phase 6-7)
+
+| Phase | 내용 | 상태 |
+|-------|------|------|
+| 6 | 나머지 ~20개 스크린 ConsumerStatefulWidget 전환 | 미착수 |
+| 7 | 레거시 ActivePetNotifier 삭제 + 브릿지 코드 제거 | 미착수 |
+
+### 달성 효과
+
+- SSOT 확보 → 14개 스크린의 독립 `getActivePet()` 제거
+- 펫 전환 시 `ref.watch` 체인으로 전체 화면 자동 갱신
+- `ref.invalidate()`로 캐시 무효화 통일
+- `ProviderScope(overrides: [...])` 테스트 모킹 가능
+
+---
+
+## 프로젝트 건강 점수 요약
+
+| 영역           | 수정 전 | 수정 후    | 핵심 이슈                                      |
+| -------------- | ------- | ---------- | ---------------------------------------------- |
+| 에러 핸들링    | 9/10    | 9/10       | 컨텍스트별 로컬라이즈, 우수                    |
+| API 클라이언트 | 9/10    | 9/10       | 토큰 갱신, 타임아웃, 보안 저장소               |
+| 오프라인 싱크  | 8/10    | 8/10       | 스마트한 설계, 일부 엣지케이스                 |
+| i18n           | 9/10    | **9.5/10** | 3언어 117키 동기화, 하드코딩 0건 (수정)        |
+| 테마           | 7/10    | **8.5/10** | fontFamily 전역화, 상위 3파일 색상 정리 (수정) |
+| 네비게이션     | 9/10    | 9/10       | go_router 인증 가드, 구조 우수                 |
+| 상태관리       | 5/10    | **7.5/10** | Riverpod SSOT 구축, 14개 스크린 전환 (수정)    |
+| 테스트         | 3/10    | 3/10       | 5개 파일 53 케이스, 커버리지 부족              |
+| 접근성         | 2/10    | 2/10       | Semantics 거의 미구현                          |
+| 백엔드 보안    | 5/10    | **8/10**   | IDOR 수정, rate limiting, 비밀번호 정책 추가   |
+| 플랫폼 통합    | 7/10    | **7.5/10** | debugPrint 가드 완료 (수정), FCM 미완          |
+
+**종합: 6.6/10 → 7.5/10** (Flutter 6개 + 백엔드 6개 + Riverpod SSOT 수정 반영)
+

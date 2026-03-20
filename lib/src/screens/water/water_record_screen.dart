@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../services/pet/pet_service.dart';
 import '../../services/water/water_record_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
@@ -13,18 +13,18 @@ import '../../router/route_names.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
-class WaterRecordScreen extends StatefulWidget {
+class WaterRecordScreen extends ConsumerStatefulWidget {
   const WaterRecordScreen({super.key});
 
   @override
-  State<WaterRecordScreen> createState() => _WaterRecordScreenState();
+  ConsumerState<WaterRecordScreen> createState() => _WaterRecordScreenState();
 }
 
-class _WaterRecordScreenState extends State<WaterRecordScreen> {
-  final _petService = PetService.instance;
-  final _waterService = WaterRecordService();
+class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
+  final _waterService = WaterRecordService.instance;
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
   bool _isLoading = true;
@@ -52,7 +52,7 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
 
   Future<void> _loadActivePet() async {
     try {
-      final pet = await _petService.getActivePet();
+      final pet = ref.read(activePetProvider).valueOrNull;
       if (!mounted) return;
       setState(() {
         _activePetId = pet?.id;
@@ -254,7 +254,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
               Text(
                 l10n.water_inputTitle,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.nearBlack,
@@ -350,7 +349,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
         title: Text(
           l10n.water_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.nearBlack,
@@ -382,7 +380,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                         child: Text(
                           _formatDate(_selectedDate),
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF97928A),
@@ -397,7 +394,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                       child: Text(
                         l10n.water_routine,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.nearBlack,
@@ -409,7 +405,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                     Text(
                       l10n.water_water,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: AppColors.gray500,
@@ -437,7 +432,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                           Text(
                             '${_totalMl.toStringAsFixed(0)}ml',
                             style: TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
                               color: hasData
@@ -461,7 +455,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                     ? l10n.water_tapToEdit
                                     : l10n.water_tapToInput,
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
                                   color: AppColors.gray400,
@@ -493,7 +486,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                 Text(
                                   l10n.water_dailyTarget,
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.nearBlack,
@@ -506,7 +498,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                     _goalMl.toStringAsFixed(0),
                                   ),
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                     color: AppColors.brandPrimary,
@@ -517,7 +508,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                 Text(
                                   l10n.water_dailyCount,
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.nearBlack,
@@ -530,7 +520,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                                     _perDrink.toStringAsFixed(0),
                                   ),
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                     color: AppColors.gray600,
@@ -546,7 +535,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                               Text(
                                 '${_totalMl.toStringAsFixed(2)}ml',
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.nearBlack,
@@ -557,7 +545,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                               Text(
                                 l10n.water_timesCount(_count),
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.nearBlack,
@@ -593,7 +580,6 @@ class _WaterRecordScreenState extends State<WaterRecordScreen> {
                           child: Text(
                             l10n.btn_save,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,

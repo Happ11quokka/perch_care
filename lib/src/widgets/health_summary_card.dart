@@ -42,7 +42,6 @@ class HealthSummaryCard extends StatelessWidget {
               Text(
                 l10n.home_healthSummaryTitle,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF1A1A1A),
@@ -97,7 +96,6 @@ class HealthSummaryCard extends StatelessWidget {
       child: Text(
         'WCI $level',
         style: TextStyle(
-          fontFamily: 'Pretendard',
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: color,
@@ -119,7 +117,6 @@ class HealthSummaryCard extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF6B6B6B),
@@ -145,7 +142,6 @@ class HealthSummaryCard extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -213,7 +209,6 @@ class HealthSummaryCard extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF6B6B6B),
@@ -222,7 +217,6 @@ class HealthSummaryCard extends StatelessWidget {
             Text(
               '${value.toStringAsFixed(0)}%',
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1A1A1A),
@@ -297,7 +291,6 @@ class HealthSummaryCard extends StatelessWidget {
                       Text(
                         l10n.home_healthSummaryUpgrade,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,

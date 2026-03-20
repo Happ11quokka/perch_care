@@ -5,7 +5,8 @@ import '../api/api_client.dart';
 /// 알림 관리 서비스
 /// FastAPI notifications 엔드포인트와 연동
 class NotificationService {
-  NotificationService();
+  NotificationService._();
+  static final NotificationService instance = NotificationService._();
 
   final _api = ApiClient.instance;
 

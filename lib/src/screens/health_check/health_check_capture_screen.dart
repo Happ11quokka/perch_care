@@ -155,7 +155,6 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
         title: Text(
           _getModeLabel(l10n, widget.mode),
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -275,7 +274,6 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
               l10n.hc_photoHint,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF97928A),
@@ -313,7 +311,6 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
                 child: Text(
                   _getPartLabel(l10n, part),
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
@@ -347,7 +344,6 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
       maxLines: 2,
       maxLength: 200,
       style: const TextStyle(
-        fontFamily: 'Pretendard',
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: Color(0xFF1A1A1A),
@@ -356,7 +352,6 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
       decoration: InputDecoration(
         hintText: _getNotesHint(l10n),
         hintStyle: const TextStyle(
-          fontFamily: 'Pretendard',
           fontSize: 13,
           fontWeight: FontWeight.w400,
           color: Color(0xFF97928A),
@@ -404,7 +399,6 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
             Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.brandPrimary,
@@ -437,7 +431,6 @@ class _HealthCheckCaptureScreenState extends State<HealthCheckCaptureScreen> {
         child: Text(
           l10n.hc_analyze,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: isEnabled ? Colors.white : const Color(0xFF9E9E9E),

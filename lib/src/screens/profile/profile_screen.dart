@@ -9,7 +9,8 @@ import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/pet_providers.dart';
 import '../../data/terms_content.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/local_image_avatar.dart';
@@ -24,18 +25,18 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  static const Color _unselectedCardColor = Color(0xFFE7E5E1);
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  static const Color _unselectedCardColor = AppColors.beige;
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   String _userName = '';
   int? _selectedPetIndex = 0;
   List<PetProfileCache> _cachedPets = [];
@@ -225,19 +226,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text(
           l10n.dialog_unlinkTitle,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
         content: Text(
           l10n.dialog_unlinkContent(providerName),
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.mediumGray,
           ),
         ),
         actions: [
@@ -245,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+              style: const TextStyle(color: AppColors.warmGray),
             ),
           ),
           TextButton(
@@ -253,8 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               l10n.profile_unlink,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFFFF9A42),
+                color: AppColors.brandPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -295,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
 
-      final activePet = await _petService.getActivePet();
+      final activePet = ref.read(activePetProvider).valueOrNull;
       if (activePet != null) {
         await _petCache.setActivePetId(activePet.id);
       }
@@ -384,7 +382,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final displayPets = _getDisplayPets(l10n);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -405,7 +403,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
 
                     // 프리미엄 섹션
@@ -415,7 +413,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
 
                     // "나의 반려가족" 타이틀
@@ -424,10 +422,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Text(
                         l10n.profile_myPets,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1A1A1A),
+                          color: AppColors.nearBlack,
                           height: 22 / 16,
                           letterSpacing: 0.08,
                         ),
@@ -460,7 +457,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
 
                     // 소셜 계정 연동 섹션
@@ -470,7 +467,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
 
                     // 언어 설정 섹션
@@ -480,7 +477,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
 
                     // 약관 및 정책 섹션
@@ -490,7 +487,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
 
                     // 앱 지원 섹션
@@ -500,7 +497,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
 
                     // 계정 관리 섹션
@@ -527,10 +524,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             l10n.premium_sectionTitle,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 22 / 16,
               letterSpacing: 0.08,
             ),
@@ -565,10 +561,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isPremium ? AppColors.brandPrimary : const Color(0xFFE7E5E1),
+            color: isPremium ? AppColors.brandPrimary : AppColors.beige,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: isPremium ? const Color(0xFFFFF5ED) : Colors.white,
+          color: isPremium ? AppColors.brandLight : AppColors.white,
         ),
         child: Row(
           children: [
@@ -578,13 +574,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(
                 color: isPremium
                     ? AppColors.brandPrimary
-                    : const Color(0xFFE7E5E1),
+                    : AppColors.beige,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 Icons.workspace_premium,
                 size: 22,
-                color: isPremium ? Colors.white : const Color(0xFF97928A),
+                color: isPremium ? AppColors.white : AppColors.warmGray,
               ),
             ),
             const SizedBox(width: 12),
@@ -597,12 +593,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ? l10n.premium_badgePremium
                         : l10n.premium_badgeFree,
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: isPremium
                           ? AppColors.brandPrimary
-                          : const Color(0xFF6B6B6B),
+                          : AppColors.mediumGray,
                     ),
                   ),
                   if (isPremium && _premiumExpiresAt != null)
@@ -611,20 +606,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         '${_premiumExpiresAt!.year}.${_premiumExpiresAt!.month.toString().padLeft(2, '0')}.${_premiumExpiresAt!.day.toString().padLeft(2, '0')}',
                       ),
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF97928A),
+                        color: AppColors.warmGray,
                       ),
                     )
                   else if (!isPremium)
                     Text(
                       l10n.premium_enterCode,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF97928A),
+                        color: AppColors.warmGray,
                       ),
                     ),
                 ],
@@ -634,7 +627,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Icon(
                 Icons.chevron_right,
                 size: 20,
-                color: Color(0xFF97928A),
+                color: AppColors.warmGray,
               ),
           ],
         ),
@@ -657,10 +650,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             l10n.profile_languageSettings,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 22 / 16,
               letterSpacing: 0.08,
             ),
@@ -673,7 +665,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFE7E5E1)),
+                border: Border.all(color: AppColors.beige),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -681,24 +673,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Icon(
                     Icons.language,
                     size: 20,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.mediumGray,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       displayName,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                       ),
                     ),
                   ),
                   const Icon(
                     Icons.chevron_right,
                     size: 20,
-                    color: Color(0xFF97928A),
+                    color: AppColors.warmGray,
                   ),
                 ],
               ),
@@ -720,10 +711,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text(
           l10n.profile_languageSelect,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
         content: Column(
@@ -803,20 +793,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     label,
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? AppColors.brandPrimary : const Color(0xFF1A1A1A),
+                      color: isSelected ? AppColors.brandPrimary : AppColors.nearBlack,
                     ),
                   ),
                   if (subtitle != null)
                     Text(
                       subtitle,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF97928A),
+                        color: AppColors.warmGray,
                       ),
                     ),
                 ],
@@ -844,10 +832,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             l10n.terms_sectionTitle,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 22 / 16,
               letterSpacing: 0.08,
             ),
@@ -886,7 +873,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE7E5E1)),
+          border: Border.all(color: AppColors.beige),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -895,17 +882,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 label,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.nearBlack,
                 ),
               ),
             ),
             const Icon(
               Icons.chevron_right,
               size: 20,
-              color: Color(0xFF97928A),
+              color: AppColors.warmGray,
             ),
           ],
         ),
@@ -948,10 +934,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text(
               l10n.profile_title,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
                 height: 34 / 20,
                 letterSpacing: -0.5,
               ),
@@ -1013,7 +998,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'assets/images/profile/edit.svg',
                           width: 10,
                           height: 10,
-                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
                         ),
                       ),
                     ),
@@ -1031,10 +1016,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ? l10n.profile_user
                 : '$_userName${l10n.profile_userSuffix}',
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 22 / 16,
               letterSpacing: 0.08,
             ),
@@ -1062,11 +1046,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (petId != null) {
           _petCache.setActivePetId(petId);
           // 서버에 활성 펫 변경 저장
-          try {
-            await _petService.setActivePet(petId);
-          } catch (_) {}
-          // 서버 저장 후 다른 화면에 알림
-          ActivePetNotifier.instance.notify(petId);
+          ref.read(activePetProvider.notifier).switchPet(petId);
         }
       },
       child: Container(
@@ -1074,7 +1054,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         margin: const EdgeInsets.fromLTRB(32, 0, 32, 12),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFF5ED) : _unselectedCardColor,
+          color: isSelected ? AppColors.brandLight : _unselectedCardColor,
           border: Border.all(
             color: isSelected ? AppColors.brandPrimary : Colors.transparent,
             width: 1,
@@ -1109,10 +1089,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         pet['name'],
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1A1A1A),
+                          color: AppColors.nearBlack,
                           height: 22 / 16,
                           letterSpacing: 0.08,
                         ),
@@ -1138,10 +1117,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     pet['species'],
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       height: 22 / 12,
                       letterSpacing: 0.06,
                     ),
@@ -1151,10 +1129,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     pet['age'],
                     style: TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       height: 22 / 12,
                       letterSpacing: 0.06,
                     ),
@@ -1173,7 +1150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.brandPrimary : const Color(0xFF97928A),
+                  color: isSelected ? AppColors.brandPrimary : AppColors.warmGray,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -1181,7 +1158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     'assets/images/profile/edit.svg',
                     width: 14,
                     height: 14,
-                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                    colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
                   ),
                 ),
               ),
@@ -1202,10 +1179,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             l10n.profile_socialAccounts,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 22 / 16,
               letterSpacing: 0.08,
             ),
@@ -1276,11 +1252,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: isLinked ? AppColors.brandPrimary : const Color(0xFFE7E5E1),
+          color: isLinked ? AppColors.brandPrimary : AppColors.beige,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(12),
-        color: isLinked ? const Color(0xFFFFF5ED) : Colors.white,
+        color: isLinked ? AppColors.brandLight : AppColors.white,
       ),
       child: Row(
         children: [
@@ -1290,10 +1266,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               label,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
               ),
             ),
           ),
@@ -1302,19 +1277,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: isLinked ? Colors.white : AppColors.brandPrimary,
+                color: isLinked ? AppColors.white : AppColors.brandPrimary,
                 borderRadius: BorderRadius.circular(8),
                 border: isLinked
-                    ? Border.all(color: const Color(0xFFE7E5E1))
+                    ? Border.all(color: AppColors.beige)
                     : null,
               ),
               child: Text(
                 isLinked ? l10n.profile_unlink : l10n.profile_link,
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isLinked ? const Color(0xFF97928A) : Colors.white,
+                  color: isLinked ? AppColors.warmGray : AppColors.white,
                 ),
               ),
             ),
@@ -1333,19 +1307,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text(
           l10n.dialog_logoutTitle,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
         content: Text(
           l10n.dialog_logoutContent,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.mediumGray,
           ),
         ),
         actions: [
@@ -1353,7 +1325,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+              style: const TextStyle(color: AppColors.warmGray),
             ),
           ),
           TextButton(
@@ -1361,8 +1333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               l10n.profile_logout,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFFFF9A42),
+                color: AppColors.brandPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1387,19 +1358,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text(
           l10n.dialog_deleteAccountTitle,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
         content: Text(
           l10n.dialog_deleteAccountContent,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.mediumGray,
           ),
         ),
         actions: [
@@ -1407,7 +1376,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(fontFamily: 'Pretendard', color: Color(0xFF97928A)),
+              style: const TextStyle(color: AppColors.warmGray),
             ),
           ),
           TextButton(
@@ -1415,8 +1384,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               l10n.dialog_delete,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
-                color: Color(0xFFE53935),
+                color: AppColors.danger,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1447,10 +1415,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             l10n.profile_appSupport,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 22 / 16,
               letterSpacing: 0.08,
             ),
@@ -1475,10 +1442,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             l10n.profile_accountManagement,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 22 / 16,
               letterSpacing: 0.08,
             ),
@@ -1491,17 +1457,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: double.infinity,
               height: 48,
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFE7E5E1)),
+                border: Border.all(color: AppColors.beige),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
                 child: Text(
                   l10n.profile_logout,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.mediumGray,
                   ),
                 ),
               ),
@@ -1515,17 +1480,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: double.infinity,
               height: 48,
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFE7E5E1)),
+                border: Border.all(color: AppColors.beige),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
                 child: Text(
                   l10n.profile_deleteAccount,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFFE53935),
+                    color: AppColors.danger,
                   ),
                 ),
               ),
@@ -1547,7 +1511,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 32),
         child: DashedBorder(
-          color: const Color(0xFF97928A),
+          color: AppColors.warmGray,
           radius: 16,
           strokeWidth: 1,
           dashWidth: 6,
@@ -1562,13 +1526,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: 14.15,
                   height: 14.15,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF97928A),
+                    color: AppColors.warmGray,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.add,
                     size: 10,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
 
@@ -1578,10 +1542,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   l10n.profile_addNewPet,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF97928A),
+                    color: AppColors.warmGray,
                     height: 34 / 16,
                     letterSpacing: -0.5,
                   ),

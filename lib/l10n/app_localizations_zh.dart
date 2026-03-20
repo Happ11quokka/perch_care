@@ -2319,4 +2319,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get country_selectTitle => '选择国家';
+
+  @override
+  String get datetime_am => '上午';
+
+  @override
+  String get datetime_pm => '下午';
+
+  @override
+  String datetime_yearMonth(int year, int month) {
+    return '$year年$month月';
+  }
+
+  @override
+  String get schedule_noPetInfo => '没有宠物信息。';
+
+  @override
+  String get schedule_noTitle => '无标题';
+
+  @override
+  String get schedule_endTimeAfterStart => '结束时间必须在开始时间之后。';
+
+  @override
+  String get schedule_titleHint => '标题';
+
+  @override
+  String get common_defaultPetName => '宝贝';
 }

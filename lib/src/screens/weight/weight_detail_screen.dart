@@ -13,7 +13,8 @@ import '../../services/schedule/schedule_service.dart';
 import '../../services/daily_record/daily_record_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/pet_providers.dart';
 import '../../router/route_names.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
 import '../../widgets/add_daily_record_bottom_sheet.dart';
@@ -22,17 +23,17 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../../l10n/app_localizations.dart';
 
-class WeightDetailScreen extends StatefulWidget {
+class WeightDetailScreen extends ConsumerStatefulWidget {
   const WeightDetailScreen({super.key});
 
   @override
-  State<WeightDetailScreen> createState() => _WeightDetailScreenState();
+  ConsumerState<WeightDetailScreen> createState() => _WeightDetailScreenState();
 }
 
-class _WeightDetailScreenState extends State<WeightDetailScreen> {
+class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
   final _weightService = WeightService.instance;
-  final _scheduleService = ScheduleService();
-  final _dailyRecordService = DailyRecordService();
+  final _scheduleService = ScheduleService.instance;
+  final _dailyRecordService = DailyRecordService.instance;
   final _petCache = PetLocalCacheService.instance;
   final _petService = PetService.instance;
   final _scrollController = ScrollController();
@@ -73,12 +74,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   void initState() {
     super.initState();
     _loadActivePet();
-    ActivePetNotifier.instance.addListener(_onActivePetChanged);
   }
 
   @override
   void dispose() {
-    ActivePetNotifier.instance.removeListener(_onActivePetChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -122,20 +121,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     ).day;
     final clampedDay = math.min(_selectedDay, lastDayOfTargetMonth);
     _setFocusedDate(DateTime(targetMonth.year, targetMonth.month, clampedDay));
-  }
-
-  void _onActivePetChanged() {
-    final petId = ActivePetNotifier.instance.activePetId;
-    if (petId != null && petId != _activePetId) {
-      // petList에서 해당 펫을 찾아 _switchPet 호출
-      final pet = _petList.where((p) => p.id == petId).firstOrNull;
-      if (pet != null) {
-        _switchPet(pet);
-      } else {
-        // petList에 없으면 전체 리로드
-        _loadActivePet();
-      }
-    }
   }
 
   Future<void> _loadActivePet() async {
@@ -371,9 +356,18 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final activePetAsync = ref.watch(activePetProvider);
+    final activePet = activePetAsync.valueOrNull;
+    // 펫 변경 감지 → _switchPet 호출
+    if (activePet != null && activePet.id != _activePetId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _switchPet(activePet);
+      });
+    }
+
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         appBar: _buildAppBar(),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -382,14 +376,14 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
     if (_activePetId == null) {
       final l10n = AppLocalizations.of(context);
       return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         appBar: _buildAppBar(),
         body: Center(child: Text(l10n.weightDetail_noPet)),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -432,7 +426,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   PreferredSizeWidget _buildAppBar() {
     final l10n = AppLocalizations.of(context);
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: IconButton(
@@ -447,7 +441,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       title: Text(
         l10n.weightDetail_title,
         style: const TextStyle(
-          fontFamily: 'Pretendard',
           fontSize: 20,
           fontWeight: FontWeight.w500,
           color: AppColors.nearBlack,
@@ -467,7 +460,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             l10n.weightDetail_headerLine1,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 24,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -481,7 +473,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             ),
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 24,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -494,7 +485,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             l10n.weightDetail_subLine1,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w400,
               color: AppColors.mediumGray,
@@ -505,7 +495,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             l10n.weightDetail_subLine2,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w400,
               color: AppColors.mediumGray,
@@ -534,7 +523,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           height: toggleHeight,
           padding: const EdgeInsets.all(2),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(100),
             border: Border.all(color: AppColors.brandPrimary, width: 1),
           ),
@@ -599,10 +588,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : AppColors.mediumGray,
+              color: isSelected ? AppColors.white : AppColors.mediumGray,
               letterSpacing: -0.325,
             ),
             child: Text(label),
@@ -695,7 +683,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         child: Text(
           l10n.common_noData,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             color: AppColors.mediumGray,
           ),
@@ -786,8 +773,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
-                                    Color(0xFFFF9A42),
-                                    Color(0xFFFF7C2A),
+                                    AppColors.brandPrimary,
+                                    AppColors.brandDark,
                                   ],
                                 ),
                               ),
@@ -802,10 +789,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                               child: Text(
                                 '${selectedValue.toStringAsFixed(1)} g',
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   letterSpacing: -0.3,
                                 ),
                               ),
@@ -820,7 +806,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                               height: dotSize,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.white,
+                                color: AppColors.white,
                                 border: Border.all(
                                   color: AppColors.brandPrimary,
                                   width: 3,
@@ -851,7 +837,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                             spots: spots,
                             isCurved: true,
                             curveSmoothness: 0.4,
-                            color: const Color(0xFFBBBBBB),
+                            color: AppColors.gray450,
                             barWidth: 2,
                             isStrokeCapRound: true,
                             dashArray: [6, 4],
@@ -869,7 +855,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                                 }
                                 return FlDotCirclePainter(
                                   radius: 4,
-                                  color: const Color(0xFFBBBBBB),
+                                  color: AppColors.gray450,
                                   strokeWidth: 0,
                                 );
                               },
@@ -921,7 +907,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                             child: Text(
                               labels[index],
                               style: TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 13,
                                 fontWeight: isSelected
                                     ? FontWeight.w600
@@ -1017,13 +1002,12 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               height: labelHeight,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: AppColors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(9),
               ),
               child: Text(
                 '${spot.y.toStringAsFixed(1)}g',
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
                   color: AppColors.mediumGray,
@@ -1208,7 +1192,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       child: Text(
         l10n.weightDetail_recordSummary(_petName, _totalRecordDays),
         style: const TextStyle(
-          fontFamily: 'Pretendard',
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: AppColors.nearBlack,
@@ -1224,11 +1207,11 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.black.withValues(alpha: 0.04),
             offset: const Offset(0, 2),
             blurRadius: 4,
           ),
@@ -1265,7 +1248,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               context,
             ).weightDetail_yearMonth(_selectedYear, _selectedMonth),
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -1314,10 +1296,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               child: Text(
                 day,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF97928A),
+                  color: AppColors.warmGray,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -1417,7 +1398,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   width: 30,
                   height: 30,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0F0F0),
+                    color: AppColors.gray150,
                     borderRadius: BorderRadius.circular(100),
                   ),
                 ),
@@ -1444,17 +1425,16 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               Text(
                 '$day',
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: isSelected
-                      ? Colors.white
+                      ? AppColors.white
                       : isOtherMonth
-                      ? const Color(0xFF97928A)
+                      ? AppColors.warmGray
                       : isToday
                       ? AppColors.brandPrimary
                       : isSunday
-                      ? const Color(0xFFEE3300)
+                      ? AppColors.sundayRed
                       : AppColors.nearBlack,
                   letterSpacing: -0.3,
                 ),
@@ -1520,7 +1500,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
       builder: (context) {
         return Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
           child: Column(
@@ -1531,7 +1511,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0E0E0),
+                  color: AppColors.gray300,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1584,7 +1564,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: AppColors.nearBlack,
@@ -1617,7 +1596,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             Text(
               l10n.weightDetail_dateDailyRecord(_selectedMonth, _selectedDay),
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppColors.nearBlack,
@@ -1629,7 +1607,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+                color: AppColors.gray100,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -1643,7 +1621,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   Text(
                     l10n.weightDetail_noDailyRecordOnDate,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: AppColors.mediumGray,
@@ -1654,7 +1631,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   Text(
                     l10n.weightDetail_addDailyRecordHint,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       color: AppColors.mediumGray,
                       letterSpacing: -0.3,
@@ -1678,7 +1654,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           Text(
             l10n.weightDetail_dateDailyRecord(_selectedMonth, _selectedDay),
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -1715,10 +1690,10 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFFF572D),
+          color: AppColors.gradientBottom,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.delete_outline, color: Colors.white),
+        child: const Icon(Icons.delete_outline, color: AppColors.white),
       ),
       onDismissed: (_) async {
         try {
@@ -1744,12 +1719,12 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE8E8E8)),
+            border: Border.all(color: AppColors.gray250),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: AppColors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -1764,7 +1739,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   Text(
                     '${date.month}/${date.day}',
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppColors.nearBlack,
@@ -1783,10 +1757,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                       child: Text(
                         l10n.weightDetail_today,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       ),
                     ),
@@ -1812,7 +1785,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                       size: 18,
                       color: index < record.activityLevel!
                           ? AppColors.brandPrimary
-                          : const Color(0xFFD0D0D0),
+                          : AppColors.gray350,
                     );
                   }),
                 ),
@@ -1824,7 +1797,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: AppColors.mediumGray,
@@ -1860,7 +1832,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             Text(
               l10n.weightDetail_dateSchedule(_selectedMonth, _selectedDay),
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppColors.nearBlack,
@@ -1872,7 +1843,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+                color: AppColors.gray100,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -1886,7 +1857,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   Text(
                     l10n.weightDetail_noScheduleOnDate,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: AppColors.mediumGray,
@@ -1897,7 +1867,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   Text(
                     l10n.weightDetail_addScheduleHint,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       color: AppColors.mediumGray,
                       letterSpacing: -0.3,
@@ -1919,7 +1888,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           Text(
             l10n.weightDetail_dateSchedule(_selectedMonth, _selectedDay),
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -1963,7 +1931,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               Text(
                 l10n.schedule_dateDisplay(date.month, date.day, weekday),
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isToday ? AppColors.brandPrimary : AppColors.nearBlack,
@@ -1984,10 +1951,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   child: Text(
                     l10n.weightDetail_today,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.white,
                     ),
                   ),
                 ),
@@ -2032,22 +1998,22 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: Colors.red,
+          color: AppColors.danger,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(Icons.delete, color: AppColors.white),
       ),
       onDismissed: (_) => _deleteSchedule(schedule),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE8E8E8)),
+          border: Border.all(color: AppColors.gray250),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: AppColors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -2071,7 +2037,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   Text(
                     schedule.title,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.nearBlack,
@@ -2082,7 +2047,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   Text(
                     schedule.formattedTimeRange,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 12,
                       color: AppColors.mediumGray,
                       letterSpacing: -0.3,
@@ -2095,7 +2059,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: AppColors.gray100,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -2110,7 +2074,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                     Text(
                       l10n.schedule_reminderMinutes(schedule.reminderMinutes!),
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 11,
                         color: AppColors.mediumGray,
                       ),
@@ -2140,22 +2103,21 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.brandPrimary : Colors.white,
+                color: isSelected ? AppColors.brandPrimary : AppColors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
                       ? AppColors.brandPrimary
-                      : const Color(0xFFE0E0E0),
+                      : AppColors.gray300,
                 ),
               ),
               child: Center(
                 child: Text(
                   pet.name,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : AppColors.mediumGray,
+                    color: isSelected ? AppColors.white : AppColors.mediumGray,
                     letterSpacing: -0.35,
                   ),
                 ),
@@ -2197,7 +2159,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
+            color: AppColors.gray100,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -2211,7 +2173,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               Text(
                 l10n.weightDetail_noWeightRecord,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.mediumGray,
@@ -2265,7 +2226,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
           Text(
             l10n.weightDetail_monthWeightRecord(_selectedMonth),
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -2292,9 +2252,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE8E8E8)),
+                  border: Border.all(color: AppColors.gray250),
                 ),
                 child: Row(
                   children: [
@@ -2305,7 +2265,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                           Text(
                             '${date.month}/${date.day} ($weekday)',
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: AppColors.nearBlack,
@@ -2316,7 +2275,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                           Text(
                             timeText,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
                               color: AppColors.mediumGray,
@@ -2329,7 +2287,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                     Text(
                       '${record.weight.toStringAsFixed(1)} g',
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.brandPrimary,
@@ -2347,9 +2304,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE8E8E8)),
+                  border: Border.all(color: AppColors.gray250),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2369,7 +2326,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                                 Text(
                                   '${date.month}/${date.day} ($weekday)',
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.nearBlack,
@@ -2380,7 +2336,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                                 Text(
                                   l10n.weight_multipleRecords(records.length),
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
                                     fontSize: 12,
                                     fontWeight: FontWeight.w400,
                                     color: AppColors.mediumGray,
@@ -2396,7 +2351,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                               Text(
                                 '${avgWeight.toStringAsFixed(1)} g',
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.brandPrimary,
@@ -2407,7 +2361,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                               Text(
                                 l10n.weight_dailyAverage,
                                 style: const TextStyle(
-                                  fontFamily: 'Pretendard',
                                   fontSize: 11,
                                   fontWeight: FontWeight.w400,
                                   color: AppColors.mediumGray,
@@ -2423,7 +2376,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(horizontal: 16),
-                      color: const Color(0xFFF0F0F0),
+                      color: AppColors.gray150,
                     ),
                     // 하위 항목들
                     ...records.map((record) {
@@ -2443,7 +2396,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                             Text(
                               timeText,
                               style: TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 13,
                                 fontWeight: FontWeight.w400,
                                 color: record.hasTime
@@ -2456,7 +2408,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                             Text(
                               '${record.weight.toStringAsFixed(1)} g',
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.nearBlack,
@@ -2490,7 +2441,6 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                           ? l10n.common_collapse
                           : l10n.common_showAll(sortedDateKeys.length),
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: AppColors.mediumGray,
@@ -2530,7 +2480,7 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
               gradient: const LinearGradient(
                 begin: Alignment(-0.95, 0),
                 end: Alignment(0.95, 0),
-                colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                colors: [AppColors.brandPrimary, AppColors.brandDark],
               ),
             ),
             child: Row(
@@ -2541,20 +2491,19 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   height: 18,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.25),
+                    border: Border.all(color: AppColors.white, width: 1.25),
                   ),
                   child: const Center(
-                    child: Icon(Icons.add, size: 12, color: Colors.white),
+                    child: Icon(Icons.add, size: 12, color: AppColors.white),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   l10n.btn_addRecord,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.white,
                     letterSpacing: -0.45,
                   ),
                 ),

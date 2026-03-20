@@ -19,7 +19,7 @@ class ForgotPasswordMethodScreen extends StatefulWidget {
 
 class _ForgotPasswordMethodScreenState
     extends State<ForgotPasswordMethodScreen> {
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   final _emailController = TextEditingController();
   final _emailFocusNode = FocusNode();
 
@@ -62,7 +62,6 @@ class _ForgotPasswordMethodScreenState
         title: Text(
           l10n.forgot_title,
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1A1A1A),
@@ -84,7 +83,6 @@ class _ForgotPasswordMethodScreenState
                       Text(
                         l10n.forgot_description,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF97928A),
@@ -97,7 +95,6 @@ class _ForgotPasswordMethodScreenState
                       Text(
                         l10n.input_email,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF1A1A1A),
@@ -110,7 +107,6 @@ class _ForgotPasswordMethodScreenState
                         focusNode: _emailFocusNode,
                         keyboardType: TextInputType.emailAddress,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF1A1A1A),
@@ -119,7 +115,6 @@ class _ForgotPasswordMethodScreenState
                         decoration: InputDecoration(
                           hintText: 'example@email.com',
                           hintStyle: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
                             color: Color(0xFFD1CCC3),
@@ -167,7 +162,6 @@ class _ForgotPasswordMethodScreenState
                         Text(
                           _emailError!,
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
                             color: Color(0xFFE53935),
@@ -218,7 +212,6 @@ class _ForgotPasswordMethodScreenState
               : Text(
                   l10n.btn_sendCode,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,

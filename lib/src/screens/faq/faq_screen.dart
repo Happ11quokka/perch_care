@@ -113,7 +113,6 @@ class FaqScreen extends StatelessWidget {
                     Text(
                       l10n.faq_title,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF1A1A1A),
@@ -143,7 +142,6 @@ class FaqScreen extends StatelessWidget {
                         child: Text(
                           category.title,
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1A1A1A),
@@ -187,7 +185,6 @@ class FaqScreen extends StatelessWidget {
           title: Text(
             item.question,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Color(0xFF1A1A1A),
@@ -199,7 +196,6 @@ class FaqScreen extends StatelessWidget {
               child: Text(
                 item.answer,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF6B6B6B),

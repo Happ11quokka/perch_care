@@ -143,7 +143,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
         title: Text(
           l10n.paywall_purchaseSuccessTitle,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -152,7 +151,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
         content: Text(
           l10n.paywall_purchaseSuccessContent,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF6B6B6B),
@@ -167,7 +165,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
             child: Text(
               l10n.common_confirm,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 color: AppColors.brandPrimary,
                 fontWeight: FontWeight.w600,
               ),
@@ -301,7 +298,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
             Text(
               l10n.paywall_title,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF1A1A1A),
@@ -340,7 +336,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
           l10n.paywall_headline,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Color(0xFF1A1A1A),
@@ -387,7 +382,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   child: Text(
                     text,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF1A1A1A),
@@ -496,7 +490,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       Text(
                         label,
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: isSelected ? const Color(0xFF1A1A1A) : const Color(0xFF6B6B6B),
@@ -513,7 +506,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           child: Text(
                             badge,
                             style: const TextStyle(
-                              fontFamily: 'Pretendard',
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -530,7 +522,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
             Text(
               price,
               style: TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: isSelected ? AppColors.brandPrimary : const Color(0xFF6B6B6B),
@@ -565,7 +556,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
         child: Text(
           l10n.paywall_ctaButton,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 17,
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -585,7 +575,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
           child: Text(
             l10n.paywall_restore,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF97928A),
@@ -603,7 +592,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
           child: Text(
             l10n.paywall_promoCode,
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF97928A),
@@ -630,7 +618,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
           Text(
             l10n.paywall_alreadyPremium,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Color(0xFF1A1A1A),
@@ -661,7 +648,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
               Text(
                 l10n.paywall_loading,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF6B6B6B),

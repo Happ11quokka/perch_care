@@ -3,7 +3,8 @@ import '../api/api_client.dart';
 
 /// 음식 기록 CRUD 서비스
 class FoodRecordService {
-  FoodRecordService();
+  FoodRecordService._();
+  static final FoodRecordService instance = FoodRecordService._();
 
   final _api = ApiClient.instance;
 

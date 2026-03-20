@@ -154,7 +154,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
               child: Text(
                 title,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF1A1A1A),
@@ -166,7 +165,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
         content: Text(
           message,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF6B6B6B),
@@ -180,7 +178,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
             child: Text(
               l10n.premium_maybeLater,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF6B6B6B),
@@ -202,7 +199,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
             child: Text(
               l10n.premium_activateNow,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppColors.brandPrimary,
@@ -238,7 +234,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
         title: Text(
           l10n.hc_title,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -264,7 +259,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
               Text(
                 l10n.hc_selectTarget,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF6B6B6B),
@@ -395,7 +389,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
                         Text(
                           _getModeLabel(l10n, mode),
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1A1A1A),
@@ -418,7 +411,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
                             child: Text(
                               l10n.healthCheck_freeTrialBadge,
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFFF57C00),
@@ -432,7 +424,6 @@ class _HealthCheckMainScreenState extends State<HealthCheckMainScreen>
                     Text(
                       description,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF6B6B6B),

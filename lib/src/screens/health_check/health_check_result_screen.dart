@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../config/environment.dart';
@@ -8,13 +9,13 @@ import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
-import '../../services/pet/active_pet_notifier.dart';
+import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 
 /// 건강체크 분석 결과 화면
-class HealthCheckResultScreen extends StatefulWidget {
+class HealthCheckResultScreen extends ConsumerStatefulWidget {
   const HealthCheckResultScreen({
     super.key,
     required this.mode,
@@ -39,11 +40,11 @@ class HealthCheckResultScreen extends StatefulWidget {
   final String? serverCheckedAt;
 
   @override
-  State<HealthCheckResultScreen> createState() =>
+  ConsumerState<HealthCheckResultScreen> createState() =>
       _HealthCheckResultScreenState();
 }
 
-class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
+class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScreen> {
   VisionMode get mode => widget.mode;
   Map<String, dynamic> get result => widget.result;
 
@@ -104,7 +105,7 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
 
   Future<void> _saveResult() async {
     try {
-      final petId = ActivePetNotifier.instance.activePetId;
+      final petId = ref.read(activePetProvider).valueOrNull?.id;
       final id = widget.serverId ?? const Uuid().v4();
       final overallStatus = widget.serverStatus ??
           (result['overall_status'] ??
@@ -181,7 +182,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
         title: Text(
           l10n.hc_resultTitle,
           style: const TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -284,7 +284,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
               Text(
                 l10n.hc_overallStatus,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF1A1A1A),
@@ -301,7 +300,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 child: Text(
                   statusLabel,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: statusColor,
@@ -319,7 +317,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 Text(
                   l10n.hc_confidence,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF6B6B6B),
@@ -342,7 +339,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 Text(
                   '${confidence.toStringAsFixed(0)}%',
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A1A1A),
@@ -378,7 +374,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 Text(
                   l10n.hc_vetVisitRecommended,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFFFF572D),
@@ -390,7 +385,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                   Text(
                     reason,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF6B6B6B),
@@ -491,7 +485,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 Text(
                   l10n.hc_possibleCauses,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A1A1A),
@@ -511,7 +504,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                             child: Text(
                               c,
                               style: const TextStyle(
-                                fontFamily: 'Pretendard',
                                 fontSize: 13,
                                 fontWeight: FontWeight.w400,
                                 color: Color(0xFF6B6B6B),
@@ -568,7 +560,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 Text(
                   l10n.hc_nutritionBalance,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A1A1A),
@@ -579,7 +570,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 Text(
                   nutritionBalance,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF6B6B6B),
@@ -624,7 +614,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                       const Text(
                         '• ',
                         style: TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.brandPrimary,
@@ -634,7 +623,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                         child: Text(
                           r,
                           style: const TextStyle(
-                            fontFamily: 'Pretendard',
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: Color(0xFF1A1A1A),
@@ -668,7 +656,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
               child: Text(
                 l10n.hc_goHome,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF6B6B6B),
@@ -695,7 +682,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
               child: Text(
                 l10n.hc_recheckButton,
                 style: const TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -713,7 +699,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
     return Text(
       title,
       style: const TextStyle(
-        fontFamily: 'Pretendard',
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: Color(0xFF1A1A1A),
@@ -749,7 +734,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A1A1A),
@@ -767,7 +751,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                 child: Text(
                   severityLabel,
                   style: TextStyle(
-                    fontFamily: 'Pretendard',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: severityColor,
@@ -781,7 +764,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
             Text(
               observation,
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF6B6B6B),
@@ -795,7 +777,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
             Text(
               '${l10n.hc_possibleCausesPrefix}${details.join(', ')}',
               style: const TextStyle(
-                fontFamily: 'Pretendard',
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF97928A),
@@ -818,7 +799,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                   Text(
                     l10n.hc_firstAidTitle,
                     style: const TextStyle(
-                      fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFFE65100),
@@ -831,7 +811,6 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
                     child: Text(
                       '${e.key + 1}. ${e.value}',
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF6B6B6B),

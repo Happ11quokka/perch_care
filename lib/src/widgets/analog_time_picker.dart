@@ -131,7 +131,6 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
           Text(
             l10n.timePicker_title,
             style: const TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: AppColors.nearBlack,
@@ -172,7 +171,6 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
                       Text(
                         l10n.timePicker_confirm,
                         style: const TextStyle(
-                          fontFamily: 'Pretendard',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -208,7 +206,6 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
           child: Text(
             ':',
             style: TextStyle(
-              fontFamily: 'Pretendard',
               fontSize: 48,
               fontWeight: FontWeight.w600,
               color: AppColors.nearBlack,
@@ -265,7 +262,6 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
             FilteringTextInputFormatter.digitsOnly,
           ],
           style: TextStyle(
-            fontFamily: 'Pretendard',
             fontSize: 40,
             fontWeight: FontWeight.w600,
             color: isFocused ? AppColors.brandPrimary : AppColors.nearBlack,
@@ -302,7 +298,6 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
               child: Text(
                 l10n.weight_amPeriod,
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: _isAM ? Colors.white : AppColors.mediumGray,
@@ -321,7 +316,6 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
               child: Text(
                 l10n.weight_pmPeriod,
                 style: TextStyle(
-                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: !_isAM ? Colors.white : AppColors.mediumGray,

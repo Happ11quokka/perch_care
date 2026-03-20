@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
@@ -59,14 +60,14 @@ class SyncService with WidgetsBindingObserver {
     // App resume 시 큐 재처리를 위해 옵저버 등록
     WidgetsBinding.instance.addObserver(this);
 
-    debugPrint('[SyncService] Loaded ${_queue.length} pending items');
+    if (kDebugMode) { debugPrint('[SyncService] Loaded ${_queue.length} pending items'); }
   }
 
   /// App resume 시 큐 자동 재처리
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _queue.isNotEmpty) {
-      debugPrint(
+      if (kDebugMode) debugPrint(
         '[SyncService] App resumed, draining queue (${_queue.length} items)',
       );
       processQueue();
@@ -104,7 +105,7 @@ class SyncService with WidgetsBindingObserver {
     );
     if (_queue.length == before) return;
     await _persist();
-    debugPrint(
+    if (kDebugMode) debugPrint(
       '[SyncService] Cleared pending: $type $date (entity: $entityId)',
     );
   }
@@ -112,7 +113,7 @@ class SyncService with WidgetsBindingObserver {
   /// 서버 저장 성공 후 호출: 큐에 남은 항목이 있으면 백그라운드 드레인
   Future<void> drainAfterSuccess() async {
     if (_queue.isNotEmpty && !_isProcessing) {
-      debugPrint(
+      if (kDebugMode) debugPrint(
         '[SyncService] Drain after successful save (${_queue.length} items)',
       );
       await processQueue();
@@ -132,7 +133,7 @@ class SyncService with WidgetsBindingObserver {
     );
     _queue.add(item);
     await _persist();
-    debugPrint(
+    if (kDebugMode) debugPrint(
       '[SyncService] Enqueued: ${item.type} ${item.date} (entity: ${item.entityId})',
     );
   }
@@ -163,7 +164,7 @@ class SyncService with WidgetsBindingObserver {
 
     // 토큰 없으면 전송 시도 자체를 스킵 — 다음 로그인 후 처리
     if (TokenService.instance.accessToken == null) {
-      debugPrint('[SyncService] No auth token, skipping queue processing');
+      if (kDebugMode) { debugPrint('[SyncService] No auth token, skipping queue processing'); }
       return;
     }
 
@@ -175,13 +176,13 @@ class SyncService with WidgetsBindingObserver {
       if (item.totalRetryCount >= _maxTotalRetries) {
         // 전체 누적 최대치 도달 — 영구 제거
         succeeded.add(item);
-        debugPrint(
+        if (kDebugMode) debugPrint(
           '[SyncService] Removing item after ${item.totalRetryCount} total retries: ${item.type} ${item.date}',
         );
         continue;
       }
       if (item.retryCount >= _maxRetries) {
-        debugPrint(
+        if (kDebugMode) debugPrint(
           '[SyncService] Skipping this session after max retries: ${item.type} ${item.date}',
         );
         continue;
@@ -189,29 +190,29 @@ class SyncService with WidgetsBindingObserver {
       try {
         await _sendToServer(item);
         succeeded.add(item);
-        debugPrint('[SyncService] Synced: ${item.type} ${item.date}');
+        if (kDebugMode) { debugPrint('[SyncService] Synced: ${item.type} ${item.date}'); }
       } catch (e) {
         if (e is FormatException || e is StateError) {
           // 데이터 자체가 손상 — retry 무의미, 즉시 제거
           succeeded.add(item);
-          debugPrint(
+          if (kDebugMode) debugPrint(
             '[SyncService] Removing corrupted item: ${item.type} ${item.date} - $e',
           );
         } else if (_isNonRetryableError(e)) {
           // 서버가 명확히 거부 (404, 422, FK violation 등) — 재시도 무의미
           succeeded.add(item);
-          debugPrint(
+          if (kDebugMode) debugPrint(
             '[SyncService] Removing non-retryable item: ${item.type} ${item.date} - $e',
           );
         } else {
           item.retryCount++;
           item.totalRetryCount++;
-          debugPrint(
+          if (kDebugMode) debugPrint(
             '[SyncService] Failed (${item.retryCount}/$_maxRetries, total: ${item.totalRetryCount}/$_maxTotalRetries): ${item.type} ${item.date} - $e',
           );
           if (item.retryCount >= _maxRetries) {
             // 이번 세션에서는 스킵, 다음 세션에서 재시도 (데이터 삭제 안 함)
-            debugPrint(
+            if (kDebugMode) debugPrint(
               '[SyncService] Max retries this session, will retry next launch: ${item.type} ${item.date}',
             );
           }
@@ -222,7 +223,7 @@ class SyncService with WidgetsBindingObserver {
     _queue.removeWhere(succeeded.contains);
     await _persist();
     _isProcessing = false;
-    debugPrint('[SyncService] Queue remaining: ${_queue.length}');
+    if (kDebugMode) { debugPrint('[SyncService] Queue remaining: ${_queue.length}'); }
   }
 
   /// 최초 1회: 로컬 SharedPreferences의 food/water 데이터를 서버로 업로드
@@ -233,7 +234,7 @@ class SyncService with WidgetsBindingObserver {
     // default 키는 1회만 처리 (여러 펫 순회 시 중복 방지)
     final defaultAlreadyMigrated = prefs.getBool(_defaultMigratedKey) == true;
 
-    debugPrint(
+    if (kDebugMode) debugPrint(
       '[SyncService] Starting initial local→server sync for pet: $petId (defaultMigrated: $defaultAlreadyMigrated)',
     );
     int synced = 0;
@@ -284,7 +285,7 @@ class SyncService with WidgetsBindingObserver {
           }
         }
 
-        await FoodRecordService().upsert(
+        await FoodRecordService.instance.upsert(
           petId: keyPetId == 'default' ? petId : keyPetId,
           recordedDate: date,
           totalGrams: totalEaten,
@@ -295,7 +296,7 @@ class SyncService with WidgetsBindingObserver {
         synced++;
       } catch (e) {
         failed++;
-        debugPrint('[SyncService] Food sync failed for $key: $e');
+        if (kDebugMode) { debugPrint('[SyncService] Food sync failed for $key: $e'); }
       }
     }
 
@@ -327,7 +328,7 @@ class SyncService with WidgetsBindingObserver {
         final totalMl = (data['totalMl'] as num?)?.toDouble() ?? 0;
         final count = (data['count'] as num?)?.toInt() ?? 1;
 
-        await WaterRecordService().upsert(
+        await WaterRecordService.instance.upsert(
           petId: keyPetId == 'default' ? petId : keyPetId,
           recordedDate: date,
           totalMl: totalMl,
@@ -337,7 +338,7 @@ class SyncService with WidgetsBindingObserver {
         synced++;
       } catch (e) {
         failed++;
-        debugPrint('[SyncService] Water sync failed for $key: $e');
+        if (kDebugMode) { debugPrint('[SyncService] Water sync failed for $key: $e'); }
       }
     }
 
@@ -348,7 +349,7 @@ class SyncService with WidgetsBindingObserver {
 
     // 실패가 있으면 완료 마킹하지 않음 — 다음 앱 시작 시 재시도
     if (failed > 0) {
-      debugPrint(
+      if (kDebugMode) debugPrint(
         '[SyncService] Initial sync partial: $synced synced, $failed failed — will retry next launch',
       );
     } else {
@@ -357,7 +358,7 @@ class SyncService with WidgetsBindingObserver {
       if (!defaultAlreadyMigrated) {
         await prefs.setBool(_defaultMigratedKey, true);
       }
-      debugPrint('[SyncService] Initial sync complete: $synced records synced');
+      if (kDebugMode) { debugPrint('[SyncService] Initial sync complete: $synced records synced'); }
     }
   }
 
@@ -378,7 +379,7 @@ class SyncService with WidgetsBindingObserver {
 
     switch (item.type) {
       case 'food':
-        await FoodRecordService().upsert(
+        await FoodRecordService.instance.upsert(
           petId: item.petId,
           recordedDate: date,
           totalGrams: (item.payload['totalGrams'] as num?)?.toDouble() ?? 0,
@@ -388,7 +389,7 @@ class SyncService with WidgetsBindingObserver {
         );
         break;
       case 'water':
-        await WaterRecordService().upsert(
+        await WaterRecordService.instance.upsert(
           petId: item.petId,
           recordedDate: date,
           totalMl: (item.payload['totalMl'] as num?)?.toDouble() ?? 0,
