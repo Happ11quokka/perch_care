@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../config/environment.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
@@ -411,6 +412,7 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
               'mode': mode,
               'result': record.result,
               'isFromHistory': true,
+              if (record.imageUrl != null) 'imageUrl': record.imageUrl,
             },
           );
         },
@@ -423,25 +425,19 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: mode == VisionMode.fullBody
-                    ? SvgPicture.asset(
-                        'assets/images/brand.svg',
-                        width: 22,
-                        height: 22,
-                        colorFilter: ColorFilter.mode(
-                          iconColor,
-                          BlendMode.srcIn,
-                        ),
-                      )
-                    : Icon(icon, color: iconColor, size: 22),
-              ),
+              if (record.imageUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    Environment.resolveImageUrl(record.imageUrl!),
+                    width: 44,
+                    height: 44,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildModeIcon(mode, icon, iconColor),
+                  ),
+                )
+              else
+                _buildModeIcon(mode, icon, iconColor),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -505,6 +501,25 @@ class _HealthCheckHistoryScreenState extends State<HealthCheckHistoryScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildModeIcon(VisionMode mode, IconData icon, Color iconColor) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: iconColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: mode == VisionMode.fullBody
+          ? SvgPicture.asset(
+              'assets/images/brand.svg',
+              width: 22,
+              height: 22,
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+            )
+          : Icon(icon, color: iconColor, size: 22),
     );
   }
 

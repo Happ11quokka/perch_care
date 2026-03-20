@@ -1218,6 +1218,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coach_chatbotTab_body => '对鹦鹉有疑问？\n问问AI鹦鹉博士吧！';
 
   @override
+  String get coach_aiHealthCheck_title => 'AI健康检查';
+
+  @override
+  String get coach_aiHealthCheck_body => '一张照片即可让AI分析健康状况。\n点击立即开始！';
+
+  @override
+  String get coach_insights_title => '每周洞察';
+
+  @override
+  String get coach_insights_body => '在这里查看AI分析的健康洞察。\n数据越多越准确。';
+
+  @override
   String get coach_recordToggle_title => '周期切换';
 
   @override
@@ -1240,6 +1252,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get coach_recordAddBtn_body => '点击此按钮添加新的体重记录。';
+
+  @override
+  String get coach_recordSchedule_title => '日程管理';
+
+  @override
+  String get coach_recordSchedule_body => '查看和管理选定日期的日程。\n可以记录就诊、用药等安排。';
+
+  @override
+  String get coach_recordDailyRecord_title => '每日记录';
+
+  @override
+  String get coach_recordDailyRecord_body => '记录每天的状态和特殊情况。\n有助于发现健康规律。';
 
   @override
   String get coach_chatSuggestion_title => '推荐问题';

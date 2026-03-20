@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../config/environment.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
@@ -19,13 +20,23 @@ class HealthCheckResultScreen extends StatefulWidget {
     required this.mode,
     required this.result,
     this.imageBytes,
+    this.imageUrl,
     this.isFromHistory = false,
+    this.serverId,
+    this.serverConfidence,
+    this.serverStatus,
+    this.serverCheckedAt,
   });
 
   final VisionMode mode;
   final Map<String, dynamic> result;
   final Uint8List? imageBytes;
+  final String? imageUrl; // 서버 이미지 상대 경로
   final bool isFromHistory;
+  final String? serverId;
+  final double? serverConfidence;
+  final String? serverStatus;
+  final String? serverCheckedAt;
 
   @override
   State<HealthCheckResultScreen> createState() =>
@@ -94,22 +105,35 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
   Future<void> _saveResult() async {
     try {
       final petId = ActivePetNotifier.instance.activePetId;
-      final id = const Uuid().v4();
-      final overallStatus = (result['overall_status'] ??
-              result['overall_diet_assessment'] ??
-              'normal')
-          .toString();
-      final confidence =
+      final id = widget.serverId ?? const Uuid().v4();
+      final overallStatus = widget.serverStatus ??
+          (result['overall_status'] ??
+                  result['overall_diet_assessment'] ??
+                  'normal')
+              .toString();
+      final confidence = widget.serverConfidence ??
           (result['confidence_score'] as num?)?.toDouble();
+
+      DateTime checkedAt;
+      if (widget.serverCheckedAt != null) {
+        try {
+          checkedAt = DateTime.parse(widget.serverCheckedAt!);
+        } catch (_) {
+          checkedAt = DateTime.now();
+        }
+      } else {
+        checkedAt = DateTime.now();
+      }
 
       final record = HealthCheckRecord(
         id: id,
         petId: petId,
         mode: mode.value,
+        imageUrl: widget.imageUrl,
         result: result,
         confidenceScore: confidence,
         status: overallStatus,
-        checkedAt: DateTime.now(),
+        checkedAt: checkedAt,
       );
 
       await HealthCheckStorageService.instance.saveRecord(record);
@@ -171,6 +195,7 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildImagePreview(),
               _buildOverallStatusCard(l10n),
               const SizedBox(height: 12),
 
@@ -197,6 +222,43 @@ class _HealthCheckResultScreenState extends State<HealthCheckResultScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildImagePreview() {
+    final hasImage = widget.imageBytes != null || widget.imageUrl != null;
+    if (!hasImage) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: widget.imageBytes != null
+            ? Image.memory(
+                widget.imageBytes!,
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+              )
+            : Image.network(
+                Environment.resolveImageUrl(widget.imageUrl!),
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: double.infinity,
+                  height: 200,
+                  color: const Color(0xFFF5F5F5),
+                  child: const Center(
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      size: 48,
+                      color: Color(0xFFD0D0D0),
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }

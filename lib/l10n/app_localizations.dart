@@ -2344,6 +2344,30 @@ abstract class AppLocalizations {
   /// **'앵무새에 대해 궁금한 점이 있다면\nAI 앵박사에게 물어보세요!'**
   String get coach_chatbotTab_body;
 
+  /// No description provided for @coach_aiHealthCheck_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 건강체크'**
+  String get coach_aiHealthCheck_title;
+
+  /// No description provided for @coach_aiHealthCheck_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 한 장으로 건강 상태를 AI가 분석해드려요.\n탭해서 바로 시작해보세요!'**
+  String get coach_aiHealthCheck_body;
+
+  /// No description provided for @coach_insights_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'주간 인사이트'**
+  String get coach_insights_title;
+
+  /// No description provided for @coach_insights_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI가 분석한 건강 인사이트를 확인하세요.\n기록이 쌓일수록 더 정확해져요.'**
+  String get coach_insights_body;
+
   /// No description provided for @coach_recordToggle_title.
   ///
   /// In ko, this message translates to:
@@ -2391,6 +2415,30 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'이 버튼을 눌러 새 체중을 기록하세요.'**
   String get coach_recordAddBtn_body;
+
+  /// No description provided for @coach_recordSchedule_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'일정 관리'**
+  String get coach_recordSchedule_title;
+
+  /// No description provided for @coach_recordSchedule_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택한 날짜의 일정을 확인하고 관리하세요.\n병원 방문, 투약 일정 등을 기록할 수 있어요.'**
+  String get coach_recordSchedule_body;
+
+  /// No description provided for @coach_recordDailyRecord_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록'**
+  String get coach_recordDailyRecord_title;
+
+  /// No description provided for @coach_recordDailyRecord_body.
+  ///
+  /// In ko, this message translates to:
+  /// **'매일의 상태와 특이사항을 기록하세요.\n건강 패턴 파악에 도움이 돼요.'**
+  String get coach_recordDailyRecord_body;
 
   /// No description provided for @coach_chatSuggestion_title.
   ///

@@ -60,6 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // 코치마크 타겟 키
   final _wciCardKey = GlobalKey();
+  final _aiHealthCheckKey = GlobalKey();
+  final _insightsSectionKey = GlobalKey();
   final _weightCardKey = GlobalKey();
   final _waterCardKey = GlobalKey();
   final _foodCardKey = GlobalKey();
@@ -241,38 +243,51 @@ class _HomeScreenState extends State<HomeScreen> {
           title: l10n.coach_wciCard_title,
           body: l10n.coach_wciCard_body,
         ),
-        // 2. 체중 카드
+        // 2. AI 건강체크 배너
+        CoachMarkStep(
+          targetKey: _aiHealthCheckKey,
+          title: l10n.coach_aiHealthCheck_title,
+          body: l10n.coach_aiHealthCheck_body,
+        ),
+        // 3. 주간 인사이트 (펫이 있을 때만 표시됨)
+        if (_activePet != null)
+          CoachMarkStep(
+            targetKey: _insightsSectionKey,
+            title: l10n.coach_insights_title,
+            body: l10n.coach_insights_body,
+          ),
+        // 4. 체중 카드
         CoachMarkStep(
           targetKey: _weightCardKey,
           title: l10n.coach_weightCard_title,
           body: l10n.coach_weightCard_body,
         ),
-        // 3. 수분 카드
-        CoachMarkStep(
-          targetKey: _waterCardKey,
-          title: l10n.coach_waterCard_title,
-          body: l10n.coach_waterCard_body,
-        ),
-        // 4. 사료 카드
+        // 5. 사료 카드
         CoachMarkStep(
           targetKey: _foodCardKey,
           title: l10n.coach_foodCard_title,
           body: l10n.coach_foodCard_body,
         ),
-        // 5. 건강 신호 카드
+        // 6. 수분 카드
+        CoachMarkStep(
+          targetKey: _waterCardKey,
+          title: l10n.coach_waterCard_title,
+          body: l10n.coach_waterCard_body,
+        ),
+        // 7. 건강 신호 카드
         CoachMarkStep(
           targetKey: _healthSignalCardKey,
           title: l10n.coach_healthSignalCard_title,
           body: l10n.coach_healthSignalCard_body,
         ),
-        // 6. 기록 탭 (하단 네비게이션)
+        // 8. 기록 탭 (하단 네비게이션)
         CoachMarkStep(
           targetKey: BottomNavBar.recordsTabKey,
           title: l10n.coach_recordsTab_title,
           body: l10n.coach_recordsTab_body,
           isScrollable: false,
         ),
-        // 7. 앵박사 탭 (하단 네비게이션)
+        // 9. 앵박사 탭 (하단 네비게이션)
         CoachMarkStep(
           targetKey: BottomNavBar.chatbotTabKey,
           title: l10n.coach_chatbotTab_title,
@@ -448,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               if (_healthSummary != null)
                                 const SizedBox(height: 12),
                               // 주간 인사이트 (Phase 3-4)
-                              _buildInsightsSection(),
+                              Container(key: _insightsSectionKey, child: _buildInsightsSection()),
                               // 하단 4개 카드
                               _buildBottomCards(),
                               const SizedBox(height: 24),
@@ -1053,6 +1068,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAiHealthCheckBanner() {
     return GestureDetector(
+      key: _aiHealthCheckKey,
       onTap: () => context.pushNamed(RouteNames.healthCheck),
       child: Container(
         width: double.infinity,

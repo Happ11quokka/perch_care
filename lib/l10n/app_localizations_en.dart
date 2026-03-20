@@ -1268,6 +1268,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Have questions about parrots?\nAsk our AI Dr. Parrot!';
 
   @override
+  String get coach_aiHealthCheck_title => 'AI Health Check';
+
+  @override
+  String get coach_aiHealthCheck_body =>
+      'AI analyzes your bird\'s health from just one photo.\nTap to get started!';
+
+  @override
+  String get coach_insights_title => 'Weekly Insights';
+
+  @override
+  String get coach_insights_body =>
+      'View AI-analyzed health insights here.\nThey get more accurate with more data.';
+
+  @override
   String get coach_recordToggle_title => 'Period Toggle';
 
   @override
@@ -1294,6 +1308,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get coach_recordAddBtn_body =>
       'Tap this button to add a new weight record.';
+
+  @override
+  String get coach_recordSchedule_title => 'Schedule';
+
+  @override
+  String get coach_recordSchedule_body =>
+      'View and manage schedules for the selected date.\nTrack vet visits, medications, and more.';
+
+  @override
+  String get coach_recordDailyRecord_title => 'Daily Record';
+
+  @override
+  String get coach_recordDailyRecord_body =>
+      'Record daily status and notes.\nHelps identify health patterns over time.';
 
   @override
   String get coach_chatSuggestion_title => 'Suggestions';

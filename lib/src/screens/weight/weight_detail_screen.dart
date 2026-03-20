@@ -41,6 +41,8 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
   final _toggleKey = GlobalKey();
   final _chartKey = GlobalKey();
   final _calendarKey = GlobalKey();
+  final _scheduleListKey = GlobalKey();
+  final _dailyRecordListKey = GlobalKey();
   final _addBtnKey = GlobalKey();
 
   bool _isWeeklyView = true; // true: 주, false: 월
@@ -319,6 +321,18 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
         title: l10n.coach_recordCalendar_title,
         body: l10n.coach_recordCalendar_body,
       ),
+      // 4. 일정 목록
+      CoachMarkStep(
+        targetKey: _scheduleListKey,
+        title: l10n.coach_recordSchedule_title,
+        body: l10n.coach_recordSchedule_body,
+      ),
+      // 5. 일일 기록
+      CoachMarkStep(
+        targetKey: _dailyRecordListKey,
+        title: l10n.coach_recordDailyRecord_title,
+        body: l10n.coach_recordDailyRecord_body,
+      ),
       CoachMarkStep(
         targetKey: _addBtnKey,
         title: l10n.coach_recordAddBtn_title,
@@ -399,9 +413,9 @@ class _WeightDetailScreenState extends State<WeightDetailScreen> {
                   const SizedBox(height: 16),
                   _buildCalendarCard(),
                   const SizedBox(height: 16),
-                  _buildScheduleList(),
+                  Container(key: _scheduleListKey, child: _buildScheduleList()),
                   const SizedBox(height: 16),
-                  _buildDailyRecordList(),
+                  Container(key: _dailyRecordListKey, child: _buildDailyRecordList()),
                   const SizedBox(height: 16),
                   _buildWeightRecordsList(),
                   const SizedBox(height: 24),

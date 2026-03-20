@@ -90,6 +90,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   bool _isScrolling = false;
+  bool _scrollDirty = false;
 
   @override
   void initState() {
@@ -102,6 +103,10 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
       parent: _controller,
       curve: Curves.easeOut,
     );
+
+    // 스크롤 변경 시 spotlight 위치 동기화
+    widget.scrollController?.addListener(_onScroll);
+
     // initState에서는 MediaQuery 사용 불가 → 첫 프레임 이후 실행
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToTargetAndShow(0);
@@ -110,8 +115,22 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
 
   @override
   void dispose() {
+    widget.scrollController?.removeListener(_onScroll);
     _controller.dispose();
     super.dispose();
+  }
+
+  /// 스크롤 시 spotlight/tooltip 위치를 타겟에 맞게 갱신 (프레임당 1회 제한)
+  void _onScroll() {
+    if (!_isScrolling && mounted && !_scrollDirty) {
+      _scrollDirty = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {});
+          _scrollDirty = false;
+        }
+      });
+    }
   }
 
   /// 타겟 위젯이 화면에 보이도록 스크롤 후 fade-in

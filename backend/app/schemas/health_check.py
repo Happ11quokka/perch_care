@@ -47,6 +47,7 @@ class VisionAnalyzeResponse(BaseModel):
     id: UUID
     pet_id: UUID
     check_type: str
+    image_url: str | None = None
     result: dict[str, Any]
     confidence_score: float | None = None
     status: str

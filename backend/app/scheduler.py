@@ -9,9 +9,9 @@ scheduler = AsyncIOScheduler()
 
 
 async def daily_image_cleanup_job():
-    """매일 03:00 UTC에 실행: 만료된 프리미엄 사용자의 이미지를 정리한다."""
+    """매일 03:00 UTC에 실행: 만료된 프리미엄 사용자의 이미지 + 30일 초과 건강체크 이미지를 정리한다."""
     from app.database import async_session_factory
-    from app.services.image_cleanup_service import process_cleanups
+    from app.services.image_cleanup_service import process_cleanups, cleanup_expired_health_check_images
 
     logger.info("Starting daily image cleanup job")
     try:
@@ -20,6 +20,13 @@ async def daily_image_cleanup_job():
             logger.info(f"Image cleanup job completed: {count} users processed")
     except Exception as e:
         logger.error(f"Image cleanup job failed: {e}", exc_info=True)
+
+    try:
+        async with async_session_factory() as db:
+            expired = await cleanup_expired_health_check_images(db)
+            logger.info(f"Health check image cleanup completed: {expired} expired images deleted")
+    except Exception as e:
+        logger.error(f"Health check image cleanup failed: {e}", exc_info=True)
 
 
 def start_scheduler():

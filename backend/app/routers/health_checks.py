@@ -1,5 +1,6 @@
 import base64
 import logging
+import os
 import time
 from uuid import UUID
 from datetime import datetime, timezone
@@ -25,7 +26,7 @@ from app.schemas.health_check import (
     VisionPart,
 )
 from app.services import ai_service, health_check_service
-from app.utils.file_storage import save_upload_file
+from app.utils.file_storage import save_upload_file, save_image_bytes
 from app.utils.security import decode_token
 
 logger = logging.getLogger(__name__)
@@ -248,7 +249,15 @@ async def analyze_health_check_vision(
             detail="이미지 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
         )
 
-    # 8. DB 저장
+    # 8. 이미지를 디스크에 저장 (30일 보관)
+    ext = os.path.splitext(image.filename or "photo.jpg")[1] or ".jpg"
+    try:
+        image_url = await save_image_bytes(image_bytes, str(current_user.id), ext)
+    except Exception as e:
+        logger.warning("Image save failed (analysis still succeeds): %s", e)
+        image_url = None
+
+    # 9. DB 저장
     overall_status = result.get("overall_status", "normal")
     confidence = result.get("confidence_score")
     if isinstance(confidence, (int, float)):
@@ -258,6 +267,7 @@ async def analyze_health_check_vision(
 
     check_data = HealthCheckCreate(
         check_type=mode,
+        image_url=image_url,
         result=result,
         confidence_score=confidence,
         status=overall_status,
@@ -265,7 +275,7 @@ async def analyze_health_check_vision(
     )
     saved_check = await health_check_service.create_check(db, pet_id, check_data)
 
-    # 9. Vision 사용 로그 업데이트/생성
+    # 10. Vision 사용 로그 업데이트/생성
     elapsed_ms = int((time.monotonic() - start_time) * 1000)
     if reservation:
         # Free 사용자: 예약 로그 업데이트

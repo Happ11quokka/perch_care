@@ -11,6 +11,7 @@ class HealthCheckRecord {
   final String id;
   final String? petId;
   final String mode; // VisionMode.value (full_body, part_specific, droppings, food)
+  final String? imageUrl; // 서버 이미지 상대 경로 (30일 보관)
   final Map<String, dynamic> result;
   final double? confidenceScore;
   final String status; // overall_status
@@ -20,6 +21,7 @@ class HealthCheckRecord {
     required this.id,
     this.petId,
     required this.mode,
+    this.imageUrl,
     required this.result,
     this.confidenceScore,
     required this.status,
@@ -31,6 +33,7 @@ class HealthCheckRecord {
       id: json['id'] as String,
       petId: json['pet_id'] as String?,
       mode: json['mode'] as String,
+      imageUrl: json['image_url'] as String?,
       result: json['result'] as Map<String, dynamic>,
       confidenceScore: (json['confidence_score'] as num?)?.toDouble(),
       status: json['status'] as String? ?? 'normal',
@@ -43,6 +46,7 @@ class HealthCheckRecord {
       'id': id,
       if (petId != null) 'pet_id': petId,
       'mode': mode,
+      if (imageUrl != null) 'image_url': imageUrl,
       'result': result,
       if (confidenceScore != null) 'confidence_score': confidenceScore,
       'status': status,
@@ -198,6 +202,7 @@ class HealthCheckStorageService {
           id: json['id'] as String,
           petId: json['pet_id'] as String?,
           mode: json['check_type'] as String,
+          imageUrl: json['image_url'] as String?,
           result: json['result'] as Map<String, dynamic>,
           confidenceScore: (json['confidence_score'] as num?)?.toDouble(),
           status: json['status'] as String? ?? 'normal',

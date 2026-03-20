@@ -142,6 +142,14 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
           ? response['result'] as Map<String, dynamic>
           : response;
 
+      // 서버 할당 메타데이터 추출
+      final serverId = response['id'] as String?;
+      final serverImageUrl = response['image_url'] as String?;
+      final serverConfidence =
+          (response['confidence_score'] as num?)?.toDouble();
+      final serverStatus = response['status'] as String?;
+      final serverCheckedAt = response['checked_at'] as String?;
+
       if (!mounted || _cancelled) return;
       context.pushReplacementNamed(
         RouteNames.healthCheckResult,
@@ -149,6 +157,11 @@ class _HealthCheckAnalyzingScreenState extends State<HealthCheckAnalyzingScreen>
           'mode': widget.mode,
           'result': analysisResult,
           'imageBytes': widget.imageBytes,
+          if (serverId != null) 'serverId': serverId,
+          if (serverImageUrl != null) 'imageUrl': serverImageUrl,
+          if (serverConfidence != null) 'serverConfidence': serverConfidence,
+          if (serverStatus != null) 'serverStatus': serverStatus,
+          if (serverCheckedAt != null) 'serverCheckedAt': serverCheckedAt,
         },
       );
     } on ApiException catch (e) {

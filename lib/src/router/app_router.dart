@@ -301,8 +301,18 @@ class AppRouter {
                                 map['result'] as Map<String, dynamic>,
                             imageBytes:
                                 map['imageBytes'] as Uint8List?,
+                            imageUrl:
+                                map['imageUrl'] as String?,
                             isFromHistory:
                                 map['isFromHistory'] as bool? ?? false,
+                            serverId:
+                                map['serverId'] as String?,
+                            serverConfidence:
+                                map['serverConfidence'] as double?,
+                            serverStatus:
+                                map['serverStatus'] as String?,
+                            serverCheckedAt:
+                                map['serverCheckedAt'] as String?,
                           );
                         },
                       ),
