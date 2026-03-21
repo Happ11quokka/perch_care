@@ -22,11 +22,11 @@ void main() {
       species: 'lovebird',
     );
 
-    /// SharedPreferences를 테스트 데이터로 초기화
-    void setUpPrefs({
+    /// SharedPreferences를 테스트 데이터로 초기화 + 인메모리 캐시 리셋
+    Future<void> setUpPrefs({
       required List<PetProfileCache> pets,
       String? activePetId,
-    }) {
+    }) async {
       final map = <String, Object>{
         'local_pet_profiles': jsonEncode(
           pets.map((p) => p.toJson()).toList(),
@@ -36,10 +36,15 @@ void main() {
         map['local_active_pet_id'] = activePetId;
       }
       SharedPreferences.setMockInitialValues(map);
+      // 인메모리 캐시만 무효화 (SharedPreferences mock 데이터는 유지)
+      // clearAll()은 SharedPreferences도 지우므로 직접 캐시 리셋
+      await PetLocalCacheService.instance.clearAll();
+      // clearAll이 SharedPreferences를 지웠으므로 mock 데이터 재설정
+      SharedPreferences.setMockInitialValues(map);
     }
 
     test('4.1 펫 삭제 시 리스트에서 제거', () async {
-      setUpPrefs(pets: [petA, petB, petC], activePetId: petA.id);
+      await setUpPrefs(pets: [petA, petB, petC], activePetId: petA.id);
 
       final service = PetLocalCacheService.instance;
       await service.removePet(petB.id);
@@ -51,7 +56,7 @@ void main() {
     });
 
     test('4.2 활성 펫 삭제 시 첫 번째 펫으로 재할당', () async {
-      setUpPrefs(pets: [petA, petB, petC], activePetId: petB.id);
+      await setUpPrefs(pets: [petA, petB, petC], activePetId: petB.id);
 
       final service = PetLocalCacheService.instance;
       await service.removePet(petB.id);
@@ -62,7 +67,7 @@ void main() {
     });
 
     test('4.3 마지막 펫 삭제 시 activePetId 키 제거', () async {
-      setUpPrefs(pets: [petA], activePetId: petA.id);
+      await setUpPrefs(pets: [petA], activePetId: petA.id);
 
       final service = PetLocalCacheService.instance;
       await service.removePet(petA.id);
@@ -76,7 +81,7 @@ void main() {
     });
 
     test('4.4 비활성 펫 삭제 시 활성 펫 변경 없음', () async {
-      setUpPrefs(pets: [petA, petB, petC], activePetId: petA.id);
+      await setUpPrefs(pets: [petA, petB, petC], activePetId: petA.id);
 
       final service = PetLocalCacheService.instance;
       await service.removePet(petC.id);
@@ -90,7 +95,7 @@ void main() {
     });
 
     test('4.5 존재하지 않는 petId 삭제 시 변경 없음', () async {
-      setUpPrefs(pets: [petA, petB], activePetId: petA.id);
+      await setUpPrefs(pets: [petA, petB], activePetId: petA.id);
 
       final service = PetLocalCacheService.instance;
       await service.removePet('non-existent-id');
@@ -100,7 +105,7 @@ void main() {
     });
 
     test('4.6 모든 펫 삭제 후 빈 리스트 반환', () async {
-      setUpPrefs(pets: [petA, petB], activePetId: petA.id);
+      await setUpPrefs(pets: [petA, petB], activePetId: petA.id);
 
       final service = PetLocalCacheService.instance;
       await service.removePet(petA.id);
