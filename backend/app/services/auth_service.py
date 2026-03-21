@@ -17,7 +17,7 @@ _MAX_RESET_ATTEMPTS = 5
 async def signup(db: AsyncSession, email: str, password: str, nickname: str | None = None) -> dict:
     existing = await db.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Signup failed")
 
     user = User(email=email, hashed_password=hash_password(password), nickname=nickname)
     db.add(user)
