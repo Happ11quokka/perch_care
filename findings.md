@@ -76,7 +76,7 @@
   - 10개 서비스 DI 래퍼 (`service_providers.dart`)
   - 로그아웃 헬퍼 (`auth_actions.dart`) + SplashScreen provider 시딩
   - 레거시 `ActivePetNotifier` (ChangeNotifier) 파일 삭제 + 브릿지 코드 제거
-- **상세:** `2026-03-21-findings-followup-code-review.md` 참조
+- **상세:** `development_logs/2026-03-21-findings-followup-code-review.md` 참조
 - **수정일:** 2026-03-21
 
 ### H-6. 테스트 커버리지 부족 `부분 수정`
@@ -165,12 +165,10 @@
   - 현재: 전체 27개 서비스 모두 싱글턴 패턴 통일
 - **수정일:** 2026-03-20
 
-### M-7. FCM 포그라운드 핸들러 미구현 `미수정`
+### ~~M-7. FCM 포그라운드 핸들러 미구현~~ `해당 없음 (의도적 설계)`
 
-- **위치:** `push_notification_service.dart:90-94` — 빈 핸들러
-- **영향:** 앱 포그라운드에서 푸시 알림 수신 불가
-- **수정:** `flutter_local_notifications`로 포그라운드 알림 표시
-- **미수정 사유:** 코드 주석상 의도적 미구현 (NotificationService polling으로 처리)
+- **결론:** NotificationService polling으로 인앱 알림을 처리하고 있어 FCM 포그라운드 팝업 불필요
+- **상세:** `development_logs/m7-fcm-foreground-decision.md` 참조
 
 ---
 
@@ -214,7 +212,8 @@
 | 수정 완료 (Riverpod) | 1건 | H-5 (Phase 0-7 전체 완료) |
 | 부분 수정 | 1건 | H-6 (53 → 169 케이스, 핵심 서비스+모델 커버) |
 | 미수정 (Flutter 대규모) | 0건 | — |
-| 미수정 (기타) | 3건 | M-7, L-1, L-2, L-5, L-6 |
+| 미수정 (LOW) | 4건 | L-1, L-2, L-5, L-6 |
+| 해당 없음 (의도적) | 1건 | M-7 (FCM 포그라운드 — polling 대체) |
 | 해당 없음 (오탐) | 1건 | L-3 |
 
 ### 검증 결과
@@ -229,7 +228,7 @@
 
 ## Riverpod 마이그레이션 현황
 
-> 상세 구현 기록: `2026-03-21-findings-followup-code-review.md`
+> 상세 구현 기록: `development_logs/2026-03-21-findings-followup-code-review.md`
 
 ### 전체 완료 (Phase 0-7)
 
