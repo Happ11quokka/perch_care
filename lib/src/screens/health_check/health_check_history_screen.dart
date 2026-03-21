@@ -237,14 +237,14 @@ class _HealthCheckHistoryScreenState
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.gray100,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -252,7 +252,7 @@ class _HealthCheckHistoryScreenState
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.4,
           ),
         ),
@@ -260,7 +260,7 @@ class _HealthCheckHistoryScreenState
           IconButton(
             key: _vetSummaryButtonKey,
             icon: const Icon(Icons.local_hospital_outlined,
-                color: Color(0xFF6B6B6B)),
+                color: AppColors.mediumGray),
             tooltip: l10n.report_vetSummary,
             onPressed: () =>
                 context.pushNamed(RouteNames.vetSummary),
@@ -268,7 +268,7 @@ class _HealthCheckHistoryScreenState
           IconButton(
             key: _shareButtonKey,
             icon: const Icon(Icons.share_outlined,
-                color: Color(0xFF6B6B6B)),
+                color: AppColors.mediumGray),
             tooltip: l10n.report_shareHealth,
             onPressed: _shareHealthReport,
           ),
@@ -303,7 +303,7 @@ class _HealthCheckHistoryScreenState
           const Icon(
             Icons.history,
             size: 64,
-            color: Color(0xFFD0D0D0),
+            color: AppColors.gray350,
           ),
           const SizedBox(height: 16),
           Text(
@@ -311,7 +311,7 @@ class _HealthCheckHistoryScreenState
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF6B6B6B),
+              color: AppColors.mediumGray,
               letterSpacing: -0.4,
             ),
           ),
@@ -321,7 +321,7 @@ class _HealthCheckHistoryScreenState
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF97928A),
+              color: AppColors.warmGray,
               letterSpacing: -0.3,
             ),
             textAlign: TextAlign.center,
@@ -350,7 +350,7 @@ class _HealthCheckHistoryScreenState
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF97928A),
+                  color: AppColors.warmGray,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -443,7 +443,7 @@ class _HealthCheckHistoryScreenState
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -453,7 +453,7 @@ class _HealthCheckHistoryScreenState
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF97928A),
+                        color: AppColors.warmGray,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -484,7 +484,7 @@ class _HealthCheckHistoryScreenState
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF97928A),
+                    color: AppColors.warmGray,
                   ),
                 ),
               ],
@@ -517,9 +517,9 @@ class _HealthCheckHistoryScreenState
   (IconData, Color) _getModeIcon(VisionMode mode) {
     return switch (mode) {
       VisionMode.fullBody => (Icons.pets, AppColors.brandPrimary),
-      VisionMode.partSpecific => (Icons.search, const Color(0xFF42A5F5)),
-      VisionMode.droppings => (Icons.science_outlined, const Color(0xFF7E57C2)),
-      VisionMode.food => (Icons.restaurant, const Color(0xFF66BB6A)),
+      VisionMode.partSpecific => (Icons.search, AppColors.partSpecificBlue),
+      VisionMode.droppings => (Icons.science_outlined, AppColors.droppingsPurple),
+      VisionMode.food => (Icons.restaurant, AppColors.foodGreen),
     };
   }
 
@@ -536,28 +536,28 @@ class _HealthCheckHistoryScreenState
       String status, AppLocalizations l10n) {
     return switch (status.toLowerCase()) {
       'normal' || 'safe' => (
-        const Color(0xFF4CAF50),
-        const Color(0xFFE8F5E9),
+        AppColors.success,
+        AppColors.successLight,
         l10n.hc_severityNormal,
       ),
       'caution' => (
-        const Color(0xFFFF9800),
-        const Color(0xFFFFF3E0),
+        AppColors.warning,
+        AppColors.brandLighter,
         l10n.hc_severityCaution,
       ),
       'warning' => (
-        const Color(0xFFFF9A42),
-        const Color(0xFFFFF5ED),
+        AppColors.brandPrimary,
+        AppColors.brandLight,
         l10n.hc_severityWarning,
       ),
       'critical' || 'toxic' || 'danger' || 'dangerous' => (
-        const Color(0xFFFF572D),
-        const Color(0xFFFFEBEE),
+        AppColors.gradientBottom,
+        AppColors.dangerLight,
         l10n.hc_severityCritical,
       ),
       _ => (
-        const Color(0xFF9E9E9E),
-        const Color(0xFFF5F5F5),
+        AppColors.gray500,
+        AppColors.gray100,
         l10n.hc_severityUnknown,
       ),
     };

@@ -92,7 +92,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
             width: 18,
             height: 14,
             colorFilter: const ColorFilter.mode(
-              Color(0xFF1A1A1A),
+              AppColors.nearBlack,
               BlendMode.srcIn,
             ),
           ),
@@ -101,10 +101,10 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
         centerTitle: true,
         title: Text(
           l10n.forgot_newPasswordTitle,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -123,10 +123,10 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                       // 안내 문구
                       Text(
                         l10n.forgot_newPasswordDescription,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF97928A),
+                          color: AppColors.warmGray,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),
@@ -191,12 +191,12 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
   }) {
     final isActive = hasFocus || hasValue;
     final borderColor =
-        isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+        isActive ? AppColors.brandPrimary : AppColors.warmGray;
     final bgColor = (hasFocus && hasValue)
-        ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
+        ? AppColors.brandPrimary.withValues(alpha: 0.1)
         : Colors.transparent;
     final iconColor =
-        isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+        isActive ? AppColors.brandPrimary : AppColors.warmGray;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,7 +206,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF97928A),
+            color: AppColors.warmGray,
             letterSpacing: 0.5,
           ),
         ),
@@ -237,7 +237,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: 0.07,
                   ),
                   decoration: InputDecoration(
@@ -245,7 +245,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
@@ -266,7 +266,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                     width: 20,
                     height: 17,
                     colorFilter: const ColorFilter.mode(
-                      Color(0xFF97928A),
+                      AppColors.warmGray,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -289,7 +289,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
           gradient: const LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            colors: [AppColors.brandPrimary, AppColors.brandDark],
           ),
           borderRadius: BorderRadius.circular(16),
         ),

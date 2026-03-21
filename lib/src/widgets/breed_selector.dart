@@ -55,7 +55,7 @@ class _BreedSelectorState extends State<BreedSelector> {
   Widget build(BuildContext context) {
     final hasSelection = widget.selectedBreedId != null;
 
-    final borderColor = hasSelection ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final borderColor = hasSelection ? AppColors.brandPrimary : AppColors.warmGray;
 
     return GestureDetector(
       onTap: _openBreedDialog,
@@ -80,14 +80,14 @@ class _BreedSelectorState extends State<BreedSelector> {
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasSelection
-                      ? const Color(0xFF1A1A1A)
-                      : const Color(0xFF97928A),
+                      ? AppColors.nearBlack
+                      : AppColors.warmGray,
                   letterSpacing: -0.35,
                 ),
               ),
               Icon(
                 Icons.arrow_drop_down,
-                color: hasSelection ? const Color(0xFFFF9A42) : const Color(0xFF97928A),
+                color: hasSelection ? AppColors.brandPrimary : AppColors.warmGray,
               ),
             ],
           ),
@@ -255,11 +255,11 @@ class _BreedSearchDialogState extends State<_BreedSearchDialog> {
                     : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                  borderSide: const BorderSide(color: AppColors.gray300),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                  borderSide: const BorderSide(color: AppColors.gray300),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

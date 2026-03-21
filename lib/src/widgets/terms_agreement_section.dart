@@ -74,7 +74,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
         _buildSelectAllRow(l10n),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 8),
-          child: Divider(height: 1, color: Color(0xFFF0F0F0)),
+          child: Divider(height: 1, color: AppColors.gray150),
         ),
         // [필수] 이용약관
         _buildItemRow(
@@ -119,7 +119,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
               ),
             ),
           ),
@@ -148,7 +148,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
+                color: AppColors.mediumGray,
               ),
             ),
           ),
@@ -160,7 +160,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF97928A),
+                  color: AppColors.warmGray,
                   decoration: TextDecoration.underline,
                 ),
               ),
@@ -177,7 +177,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
       decoration: BoxDecoration(
         color: checked ? AppColors.brandPrimary : Colors.transparent,
         border: Border.all(
-          color: checked ? AppColors.brandPrimary : const Color(0xFFE7E5E1),
+          color: checked ? AppColors.brandPrimary : AppColors.beige,
           width: 1.5,
         ),
         borderRadius: BorderRadius.circular(6),

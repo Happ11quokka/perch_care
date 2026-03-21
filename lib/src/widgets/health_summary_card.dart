@@ -44,7 +44,7 @@ class HealthSummaryCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.nearBlack,
                   letterSpacing: -0.4,
                 ),
               ),
@@ -74,7 +74,7 @@ class HealthSummaryCard extends StatelessWidget {
 
           // Premium 전용 영역
           if (isPremium) ...[
-            const Divider(height: 24, color: Color(0xFFF0F0F0)),
+            const Divider(height: 24, color: AppColors.gray150),
             _buildPremiumDetails(l10n),
           ] else ...[
             const SizedBox(height: 12),
@@ -112,14 +112,14 @@ class HealthSummaryCard extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF97928A)),
+        Icon(icon, size: 18, color: AppColors.warmGray),
         const SizedBox(width: 8),
         Text(
           label,
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.mediumGray,
           ),
         ),
         const Spacer(),
@@ -132,10 +132,10 @@ class HealthSummaryCard extends StatelessWidget {
                     : Icons.trending_flat,
             size: 16,
             color: trend == 'up'
-                ? const Color(0xFFD32F2F)
+                ? AppColors.dangerDark
                 : trend == 'down'
-                    ? const Color(0xFF1976D2)
-                    : const Color(0xFF97928A),
+                    ? AppColors.infoDark
+                    : AppColors.warmGray,
           ),
           const SizedBox(width: 4),
         ],
@@ -144,7 +144,7 @@ class HealthSummaryCard extends StatelessWidget {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
       ],
@@ -211,7 +211,7 @@ class HealthSummaryCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
+                color: AppColors.mediumGray,
               ),
             ),
             Text(
@@ -219,7 +219,7 @@ class HealthSummaryCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
               ),
             ),
           ],
@@ -229,13 +229,13 @@ class HealthSummaryCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: value / 100,
-            backgroundColor: const Color(0xFFF0F0F0),
+            backgroundColor: AppColors.gray150,
             valueColor: AlwaysStoppedAnimation<Color>(
               value >= 70
-                  ? const Color(0xFF4CAF50)
+                  ? AppColors.success
                   : value >= 40
                       ? AppColors.brandPrimary
-                      : const Color(0xFFD32F2F),
+                      : AppColors.dangerDark,
             ),
             minHeight: 6,
           ),
@@ -329,17 +329,17 @@ class HealthSummaryCard extends StatelessWidget {
   Color _wciColor(int level) {
     switch (level) {
       case 5:
-        return const Color(0xFF4CAF50);
+        return AppColors.success;
       case 4:
-        return const Color(0xFF8BC34A);
+        return AppColors.lime;
       case 3:
         return AppColors.brandPrimary;
       case 2:
-        return const Color(0xFFF57C00);
+        return AppColors.warningDark;
       case 1:
-        return const Color(0xFFD32F2F);
+        return AppColors.dangerDark;
       default:
-        return const Color(0xFF97928A);
+        return AppColors.warmGray;
     }
   }
 }

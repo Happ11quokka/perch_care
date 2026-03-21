@@ -171,10 +171,10 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFFF9A42),
+              primary: AppColors.brandPrimary,
               onPrimary: Colors.white,
               surface: Colors.white,
-              onSurface: Color(0xFF1A1A1A),
+              onSurface: AppColors.nearBlack,
             ),
           ),
           child: child!,
@@ -395,7 +395,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
         leading: widget.isInitialSetup
             ? null
             : IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+                icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
                 onPressed: () => context.pop(),
               ),
         automaticallyImplyLeading: !widget.isInitialSetup,
@@ -405,7 +405,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -431,7 +431,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                                   height: 120,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: const Color(0xFFD9D9D9),
+                                    color: AppColors.gray350,
                                     image: _selectedImage != null
                                         ? DecorationImage(
                                             image: FileImage(_selectedImage!),
@@ -453,7 +453,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                                           child: Icon(
                                             Icons.pets,
                                             size: 60,
-                                            color: Color(0xFF6B6B6B),
+                                            color: AppColors.mediumGray,
                                           ),
                                         )
                                       : null,
@@ -468,7 +468,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                                       height: 32,
                                       decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: Color(0xFFFF9A42),
+                                        color: AppColors.brandPrimary,
                                       ),
                                       child: const Icon(
                                         Icons.edit,
@@ -576,7 +576,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                         gradient: const LinearGradient(
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
-                          colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                          colors: [AppColors.brandPrimary, AppColors.brandDark],
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -624,12 +624,12 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
     final errorText = fieldKey != null ? _fieldErrors[fieldKey] : null;
     final hasError = errorText != null;
     final borderColor = hasError
-        ? const Color(0xFFFF572D)
+        ? AppColors.gradientBottom
         : isActive
-        ? const Color(0xFFFF9A42)
-        : const Color(0xFF97928A);
+        ? AppColors.brandPrimary
+        : AppColors.warmGray;
     final bgColor = (hasFocus && hasValue)
-        ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
+        ? AppColors.brandPrimary.withValues(alpha: 0.1)
         : Colors.white;
 
     return Column(
@@ -671,7 +671,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
                 letterSpacing: -0.35,
               ),
               decoration: InputDecoration(
@@ -679,7 +679,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                 hintStyle: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF97928A),
+                  color: AppColors.warmGray,
                   letterSpacing: -0.35,
                 ),
                 border: InputBorder.none,
@@ -704,7 +704,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFFFF572D),
+                color: AppColors.gradientBottom,
                 letterSpacing: -0.3,
               ),
             ),
@@ -718,8 +718,8 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
     final displayValue = _mapGenderToDisplay(_selectedGender, l10n);
     final hasValue = _selectedGender != null;
     final borderColor = hasValue
-        ? const Color(0xFFFF9A42)
-        : const Color(0xFF97928A);
+        ? AppColors.brandPrimary
+        : AppColors.warmGray;
 
     return GestureDetector(
       onTap: () async {
@@ -760,16 +760,16 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasValue
-                      ? const Color(0xFF1A1A1A)
-                      : const Color(0xFF97928A),
+                      ? AppColors.nearBlack
+                      : AppColors.warmGray,
                   letterSpacing: -0.35,
                 ),
               ),
               Icon(
                 Icons.arrow_drop_down,
                 color: hasValue
-                    ? const Color(0xFFFF9A42)
-                    : const Color(0xFF97928A),
+                    ? AppColors.brandPrimary
+                    : AppColors.warmGray,
               ),
             ],
           ),
@@ -782,8 +782,8 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
     final displayValue = _mapGrowthStageToDisplay(_selectedGrowthStage, l10n);
     final hasValue = _selectedGrowthStage != null;
     final borderColor = hasValue
-        ? const Color(0xFFFF9A42)
-        : const Color(0xFF97928A);
+        ? AppColors.brandPrimary
+        : AppColors.warmGray;
 
     return GestureDetector(
       onTap: () async {
@@ -824,16 +824,16 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasValue
-                      ? const Color(0xFF1A1A1A)
-                      : const Color(0xFF97928A),
+                      ? AppColors.nearBlack
+                      : AppColors.warmGray,
                   letterSpacing: -0.35,
                 ),
               ),
               Icon(
                 Icons.arrow_drop_down,
                 color: hasValue
-                    ? const Color(0xFFFF9A42)
-                    : const Color(0xFF97928A),
+                    ? AppColors.brandPrimary
+                    : AppColors.warmGray,
               ),
             ],
           ),
@@ -849,8 +849,8 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
   }) {
     final hasValue = selectedDate != null;
     final borderColor = hasValue
-        ? const Color(0xFFFF9A42)
-        : const Color(0xFF97928A);
+        ? AppColors.brandPrimary
+        : AppColors.warmGray;
 
     return GestureDetector(
       onTap: onTap,
@@ -875,8 +875,8 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: hasValue
-                      ? const Color(0xFF1A1A1A)
-                      : const Color(0xFF97928A),
+                      ? AppColors.nearBlack
+                      : AppColors.warmGray,
                   letterSpacing: -0.35,
                 ),
               ),

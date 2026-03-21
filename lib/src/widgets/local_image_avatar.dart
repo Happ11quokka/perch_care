@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../services/storage/local_image_storage_service.dart';
+import '../theme/colors.dart';
 
 /// SQLite에서 이미지를 로드하여 원형으로 표시하는 재사용 위젯
 class LocalImageAvatar extends StatefulWidget {
@@ -54,7 +55,7 @@ class _LocalImageAvatarState extends State<LocalImageAvatar> {
       height: widget.size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color(0xFFD9D9D9),
+        color: AppColors.gray350,
         image: _imageBytes != null
             ? DecorationImage(
                 image: MemoryImage(_imageBytes!),

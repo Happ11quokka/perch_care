@@ -568,7 +568,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                           vertical: 14,
                         ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFBDBDBD)),
+                          border: Border.all(color: AppColors.lightGray),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
@@ -678,8 +678,8 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                   colors: [
-                                    Color(0xFFFF9A42),
-                                    Color(0xFFFF7C2A),
+                                    AppColors.brandPrimary,
+                                    AppColors.brandDark,
                                   ],
                                 ),
                               ),
@@ -810,7 +810,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                          border: Border.all(color: AppColors.gray300),
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: Text(
@@ -818,7 +818,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF97928A),
+                            color: AppColors.warmGray,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -867,7 +867,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                     DashedBorder(
                       key: _addButtonKey,
                       radius: 16,
-                      color: const Color(0xFFBDBDBD),
+                      color: AppColors.lightGray,
                       strokeWidth: 1,
                       dashWidth: 6,
                       dashGap: 4,
@@ -887,13 +887,13 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                                 width: 20,
                                 height: 20,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFFEDEDED),
+                                  color: AppColors.gray200,
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
                                   Icons.add,
                                   size: 14,
-                                  color: Color(0xFF97928A),
+                                  color: AppColors.warmGray,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -904,7 +904,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF97928A),
+                                  color: AppColors.warmGray,
                                   letterSpacing: -0.35,
                                 ),
                               ),
@@ -933,7 +933,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                           gradient: const LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
-                            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                            colors: [AppColors.brandPrimary, AppColors.brandDark],
                           ),
                         ),
                         child: Center(
@@ -1023,7 +1023,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
       height: 32,
       width: 1,
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      color: const Color(0xFFE0E0E0),
+      color: AppColors.gray300,
     );
   }
 
@@ -1033,7 +1033,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
     return Container(
       key: _dietToggleKey,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: AppColors.gray100,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
@@ -1090,7 +1090,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: AppColors.gray300),
         ),
         child: Row(
           children: [

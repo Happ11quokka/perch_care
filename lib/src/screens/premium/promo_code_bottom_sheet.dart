@@ -109,7 +109,7 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFE7E5E1),
+                color: AppColors.beige,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -122,7 +122,7 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
             ),
           ),
           const SizedBox(height: 16),
@@ -135,7 +135,7 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
               fontSize: 16,
               fontWeight: FontWeight.w500,
               letterSpacing: 1.5,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
             ),
             decoration: InputDecoration(
               hintText: l10n.premium_codeInputHint,
@@ -143,16 +143,16 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 1.5,
-                color: Color(0xFFB5B0A8),
+                color: AppColors.lightGray,
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE7E5E1)),
+                borderSide: const BorderSide(color: AppColors.beige),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE7E5E1)),
+                borderSide: const BorderSide(color: AppColors.beige),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -162,7 +162,7 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
               errorStyle: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFFE53935),
+                color: AppColors.danger,
               ),
             ),
             onChanged: (_) {
@@ -182,10 +182,10 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
               decoration: BoxDecoration(
                 gradient: !_isActivating
                     ? const LinearGradient(
-                        colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                        colors: [AppColors.brandPrimary, AppColors.brandDark],
                       )
                     : null,
-                color: _isActivating ? const Color(0xFFE7E5E1) : null,
+                color: _isActivating ? AppColors.beige : null,
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,

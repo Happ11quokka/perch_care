@@ -87,7 +87,7 @@ class WeightRangeIndicator extends StatelessWidget {
           text,
           style: const TextStyle(
             fontSize: 11,
-            color: Color(0xFF757575),
+            color: AppColors.gray600,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -104,9 +104,9 @@ class _WeightRangePainter extends CustomPainter {
   final double maxG;
 
   // Color constants
-  static const Color _lightOrange = Color(0xFFFFE0B2);
-  static const Color _idealGreen = Color(0xFF4CAF50);
-  static const Color _warningRed = Color(0xFFEF5350);
+  static const Color _lightOrange = AppColors.weightLight;
+  static const Color _idealGreen = AppColors.weightIdeal;
+  static const Color _warningRed = AppColors.weightWarning;
 
   const _WeightRangePainter({
     required this.currentWeight,

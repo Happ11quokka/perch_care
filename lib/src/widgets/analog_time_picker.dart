@@ -158,7 +158,7 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
                 height: 56,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                    colors: [AppColors.brandPrimary, AppColors.brandDark],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -244,7 +244,7 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
         decoration: BoxDecoration(
           color: isFocused
               ? AppColors.brandPrimary.withValues(alpha: 0.12)
-              : const Color(0xFFF5F5F5),
+              : AppColors.gray100,
           borderRadius: BorderRadius.circular(16),
           border: isFocused
               ? Border.all(color: AppColors.brandPrimary, width: 2)
@@ -281,7 +281,7 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
   Widget _buildAmPmToggle(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: AppColors.gray100,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:country_picker/country_picker.dart';
+import '../../../theme/colors.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 국가 선택 바텀시트
@@ -54,7 +55,7 @@ class _CountrySelectorBottomSheetState extends ConsumerState<CountrySelectorBott
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     height: 24 / 14,
                     letterSpacing: -0.35,
                   ),
@@ -90,7 +91,7 @@ class _CountrySelectorBottomSheetState extends ConsumerState<CountrySelectorBott
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        color: isSelected ? const Color(0xFFFFF5ED) : Colors.transparent,
+        color: isSelected ? AppColors.brandLight : Colors.transparent,
         child: Row(
           children: [
             // 국기 이모지
@@ -105,7 +106,7 @@ class _CountrySelectorBottomSheetState extends ConsumerState<CountrySelectorBott
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
                 height: 24 / 14,
                 letterSpacing: -0.35,
               ),

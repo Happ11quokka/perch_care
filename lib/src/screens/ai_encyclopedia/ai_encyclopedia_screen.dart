@@ -809,9 +809,9 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFFFF5C2F),
+                      AppColors.gradientBottomAlt,
                       AppColors.brandPrimary,
-                      Color(0xFFFFE812),
+                      AppColors.yellow,
                     ],
                   ),
                 ),
@@ -849,9 +849,9 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFFF5C2F),
+                    AppColors.gradientBottomAlt,
                     AppColors.brandPrimary,
-                    Color(0xFFFFE812),
+                    AppColors.yellow,
                   ],
                 ),
               ),
@@ -891,7 +891,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       height: 36,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color(0xFFD9D9D9),
+        color: AppColors.gray350,
       ),
       child: const Icon(Icons.person, size: 20, color: Colors.white),
     );
@@ -1091,7 +1091,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       ),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF5ED),
+        color: AppColors.brandLight,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -1112,7 +1112,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     height: 1.4,
                     letterSpacing: -0.3,
                   ),
@@ -1155,7 +1155,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             onTap: _dismissPremiumBanner,
             child: const Padding(
               padding: EdgeInsets.all(2),
-              child: Icon(Icons.close, size: 18, color: Color(0xFF97928A)),
+              child: Icon(Icons.close, size: 18, color: AppColors.warmGray),
             ),
           ),
         ],

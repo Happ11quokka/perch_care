@@ -92,7 +92,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         centerTitle: true,
@@ -101,7 +101,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -204,7 +204,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   _confirmPasswordController.text ==
                                       _passwordController.text)
                               ? const Icon(Icons.check_circle,
-                                  color: Color(0xFF4CAF50), size: 20)
+                                  color: AppColors.success, size: 20)
                               : null,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -246,7 +246,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -258,10 +258,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF9A42),
+                        color: AppColors.brandPrimary,
                         letterSpacing: -0.35,
                         decoration: TextDecoration.underline,
-                        decorationColor: Color(0xFFFF9A42),
+                        decorationColor: AppColors.brandPrimary,
                       ),
                     ),
                   ),
@@ -291,11 +291,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }) {
     // 활성 상태: 포커스가 있거나 값이 있을 때
     final isActive = hasFocus || hasValue;
-    final borderColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final borderColor = isActive ? AppColors.brandPrimary : AppColors.warmGray;
     final bgColor = (hasFocus && hasValue)
-        ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
+        ? AppColors.brandPrimary.withValues(alpha: 0.1)
         : Colors.transparent;
-    final iconColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final iconColor = isActive ? AppColors.brandPrimary : AppColors.warmGray;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,7 +305,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF97928A),
+            color: AppColors.warmGray,
             letterSpacing: 0.5,
           ),
         ),
@@ -339,7 +339,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: 0.07,
                   ),
                   decoration: InputDecoration(
@@ -347,7 +347,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
@@ -387,10 +387,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ? const LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
-                  colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                  colors: [AppColors.brandPrimary, AppColors.brandDark],
                 )
               : null,
-          color: isEnabled ? null : const Color(0xFFE7E5E1),
+          color: isEnabled ? null : AppColors.beige,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
@@ -430,7 +430,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
         content: Text(
@@ -438,7 +438,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.mediumGray,
           ),
         ),
         actions: [
@@ -456,7 +456,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: Text(
               l10n.common_later,
               style: const TextStyle(
-                color: Color(0xFF97928A),
+                color: AppColors.warmGray,
               ),
             ),
           ),
@@ -474,7 +474,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: Text(
               l10n.common_confirm,
               style: const TextStyle(
-                color: Color(0xFFFF9A42),
+                color: AppColors.brandPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),

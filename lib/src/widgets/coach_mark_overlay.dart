@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/colors.dart';
 
 /// 코치마크 단계 데이터
 class CoachMarkStep {
@@ -257,7 +258,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
               Container(
                 width: screenSize.width,
                 height: screenSize.height,
-                color: const Color(0x80000000),
+                color: AppColors.overlay50,
               ),
 
             // 배경 탭으로 다음 단계
@@ -340,12 +341,12 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                  colors: [AppColors.brandPrimary, AppColors.brandDark],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x33000000),
+                    color: AppColors.overlay30,
                     offset: Offset(0, 4),
                     blurRadius: 16,
                   ),
@@ -361,7 +362,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xCCFFFFFF),
+                      color: AppColors.overlayWhite80,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -383,7 +384,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xE6FFFFFF),
+                      color: AppColors.overlayWhite90,
                       letterSpacing: -0.35,
                       height: 1.5,
                     ),
@@ -400,7 +401,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: Color(0x99FFFFFF),
+                            color: AppColors.overlayWhite60,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -421,7 +422,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFFF9A42),
+                              color: AppColors.brandPrimary,
                               letterSpacing: -0.35,
                             ),
                           ),
@@ -474,7 +475,7 @@ class _SpotlightPainter extends CustomPainter {
       ));
     path.fillType = PathFillType.evenOdd;
 
-    canvas.drawPath(path, Paint()..color = const Color(0x80000000));
+    canvas.drawPath(path, Paint()..color = AppColors.overlay50);
   }
 
   @override
@@ -492,7 +493,7 @@ class _ArrowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFFF9A42)
+      ..color = AppColors.brandPrimary
       ..style = PaintingStyle.fill;
 
     final path = Path();

@@ -163,14 +163,14 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.gray100,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () {
             if (widget.isFromHistory) {
               context.pop();
@@ -184,7 +184,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.4,
           ),
         ),
@@ -249,12 +249,12 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                 errorBuilder: (_, __, ___) => Container(
                   width: double.infinity,
                   height: 200,
-                  color: const Color(0xFFF5F5F5),
+                  color: AppColors.gray100,
                   child: const Center(
                     child: Icon(
                       Icons.image_not_supported_outlined,
                       size: 48,
-                      color: Color(0xFFD0D0D0),
+                      color: AppColors.gray350,
                     ),
                   ),
                 ),
@@ -286,7 +286,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.nearBlack,
                   letterSpacing: -0.4,
                 ),
               ),
@@ -319,7 +319,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.mediumGray,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -331,7 +331,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                       value: confidence / 100,
                       minHeight: 8,
                       color: AppColors.brandPrimary,
-                      backgroundColor: const Color(0xFFFFE0C0),
+                      backgroundColor: AppColors.brandSoft,
                     ),
                   ),
                 ),
@@ -341,7 +341,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -358,14 +358,14 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFEBEE),
+        color: AppColors.dangerLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFF572D).withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.gradientBottom.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.local_hospital, color: Color(0xFFFF572D), size: 24),
+          const Icon(Icons.local_hospital, color: AppColors.gradientBottom, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -376,7 +376,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF572D),
+                    color: AppColors.gradientBottom,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -387,7 +387,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       letterSpacing: -0.3,
                       height: 1.4,
                     ),
@@ -487,7 +487,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -499,14 +499,14 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                         children: [
                           const Text('• ',
                               style: TextStyle(
-                                  color: Color(0xFF6B6B6B), fontSize: 14)),
+                                  color: AppColors.mediumGray, fontSize: 14)),
                           Expanded(
                             child: Text(
                               c,
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w400,
-                                color: Color(0xFF6B6B6B),
+                                color: AppColors.mediumGray,
                                 letterSpacing: -0.3,
                                 height: 1.4,
                               ),
@@ -562,7 +562,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -572,7 +572,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.mediumGray,
                     letterSpacing: -0.3,
                     height: 1.4,
                   ),
@@ -625,7 +625,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF1A1A1A),
+                            color: AppColors.nearBlack,
                             letterSpacing: -0.3,
                             height: 1.5,
                           ),
@@ -649,7 +649,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
               height: 52,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE0E0E0)),
+                border: Border.all(color: AppColors.gray300),
                 color: Colors.white,
               ),
               alignment: Alignment.center,
@@ -658,7 +658,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF6B6B6B),
+                  color: AppColors.mediumGray,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -674,7 +674,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
               height: 52,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                  colors: [AppColors.brandPrimary, AppColors.brandDark],
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -701,7 +701,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
       style: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF1A1A1A),
+        color: AppColors.nearBlack,
         letterSpacing: -0.4,
       ),
     );
@@ -736,7 +736,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -766,7 +766,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
+                color: AppColors.mediumGray,
                 letterSpacing: -0.3,
                 height: 1.4,
               ),
@@ -779,7 +779,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF97928A),
+                color: AppColors.warmGray,
                 letterSpacing: -0.3,
               ),
             ),
@@ -790,7 +790,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
+                color: AppColors.brandLighter,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -801,7 +801,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFE65100),
+                      color: AppColors.warningDark,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -813,7 +813,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF6B6B6B),
+                        color: AppColors.mediumGray,
                         letterSpacing: -0.3,
                         height: 1.4,
                       ),
@@ -838,28 +838,28 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
   (Color, Color, String) _getSeverityStyle(String severity, AppLocalizations l10n) {
     return switch (severity.toLowerCase()) {
       'normal' || 'safe' => (
-        const Color(0xFF4CAF50),
-        const Color(0xFFE8F5E9),
+        AppColors.success,
+        AppColors.successLight,
         l10n.hc_severityNormal,
       ),
       'caution' => (
-        const Color(0xFFFF9800),
-        const Color(0xFFFFF3E0),
+        AppColors.warning,
+        AppColors.brandLighter,
         l10n.hc_severityCaution,
       ),
       'warning' => (
-        const Color(0xFFFF9A42),
-        const Color(0xFFFFF5ED),
+        AppColors.brandPrimary,
+        AppColors.brandLight,
         l10n.hc_severityWarning,
       ),
       'critical' || 'toxic' || 'danger' || 'dangerous' => (
-        const Color(0xFFFF572D),
-        const Color(0xFFFFEBEE),
+        AppColors.gradientBottom,
+        AppColors.dangerLight,
         l10n.hc_severityCritical,
       ),
       _ => (
-        const Color(0xFF9E9E9E),
-        const Color(0xFFF5F5F5),
+        AppColors.gray500,
+        AppColors.gray100,
         l10n.hc_severityUnknown,
       ),
     };

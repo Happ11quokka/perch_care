@@ -53,7 +53,7 @@ class _ForgotPasswordMethodScreenState
             width: 18,
             height: 14,
             colorFilter: const ColorFilter.mode(
-              Color(0xFF1A1A1A),
+              AppColors.nearBlack,
               BlendMode.srcIn,
             ),
           ),
@@ -62,10 +62,10 @@ class _ForgotPasswordMethodScreenState
         centerTitle: true,
         title: Text(
           l10n.forgot_title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -83,10 +83,10 @@ class _ForgotPasswordMethodScreenState
                       const SizedBox(height: 24),
                       Text(
                         l10n.forgot_description,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF97928A),
+                          color: AppColors.warmGray,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),
@@ -95,10 +95,10 @@ class _ForgotPasswordMethodScreenState
                       // 이메일 입력 필드
                       Text(
                         l10n.input_email,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF1A1A1A),
+                          color: AppColors.nearBlack,
                           letterSpacing: -0.35,
                         ),
                       ),
@@ -110,7 +110,7 @@ class _ForgotPasswordMethodScreenState
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF1A1A1A),
+                          color: AppColors.nearBlack,
                           letterSpacing: -0.4,
                         ),
                         decoration: InputDecoration(
@@ -118,7 +118,7 @@ class _ForgotPasswordMethodScreenState
                           hintStyle: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFFD1CCC3),
+                            color: AppColors.lightGray,
                             letterSpacing: -0.4,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
@@ -129,26 +129,26 @@ class _ForgotPasswordMethodScreenState
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
                               color: _emailError != null
-                                  ? const Color(0xFFE53935)
-                                  : const Color(0xFFE8E3DA),
+                                  ? AppColors.danger
+                                  : AppColors.beige,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Color(0xFFFF9A42),
+                              color: AppColors.brandPrimary,
                             ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Color(0xFFE53935),
+                              color: AppColors.danger,
                             ),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Color(0xFFE53935),
+                              color: AppColors.danger,
                             ),
                           ),
                         ),
@@ -165,7 +165,7 @@ class _ForgotPasswordMethodScreenState
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFFE53935),
+                            color: AppColors.danger,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -196,7 +196,7 @@ class _ForgotPasswordMethodScreenState
           gradient: const LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            colors: [AppColors.brandPrimary, AppColors.brandDark],
           ),
           borderRadius: BorderRadius.circular(16),
         ),

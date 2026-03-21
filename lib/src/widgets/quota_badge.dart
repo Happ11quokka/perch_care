@@ -37,18 +37,18 @@ class QuotaBadge extends StatelessWidget {
     final String text;
 
     if (quota.isExhausted) {
-      bgColor = const Color(0xFFFFEBEE);
-      textColor = const Color(0xFFD32F2F);
+      bgColor = AppColors.dangerLight;
+      textColor = AppColors.dangerDark;
       icon = Icons.block;
       text = exhaustedText;
     } else if (quota.isWarning) {
-      bgColor = const Color(0xFFFFF3E0);
-      textColor = const Color(0xFFF57C00);
+      bgColor = AppColors.brandLighter;
+      textColor = AppColors.warningDark;
       icon = Icons.warning_amber;
       text = normalText;
     } else {
-      bgColor = const Color(0xFFE8F5E9);
-      textColor = const Color(0xFF2E7D32);
+      bgColor = AppColors.successLight;
+      textColor = AppColors.successMedium;
       icon = Icons.check_circle_outline;
       text = normalText;
     }

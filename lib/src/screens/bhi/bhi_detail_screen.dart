@@ -107,7 +107,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
           Icon(
             Icons.health_and_safety_outlined,
             size: 64,
-            color: const Color(0xFFBDBDBD),
+            color: AppColors.lightGray,
           ),
           const SizedBox(height: 16),
           Text(
@@ -115,7 +115,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF6B6B6B),
+              color: AppColors.mediumGray,
               letterSpacing: -0.4,
             ),
           ),
@@ -125,7 +125,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF97928A),
+              color: AppColors.warmGray,
               letterSpacing: -0.35,
             ),
           ),
@@ -204,7 +204,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF8F3),
+              color: AppColors.brandLight,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: AppColors.brandPrimary.withValues(alpha: 0.3),
@@ -225,7 +225,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       letterSpacing: -0.3,
                       height: 1.4,
                     ),
@@ -244,7 +244,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF97928A),
+                color: AppColors.warmGray,
                 letterSpacing: -0.3,
               ),
             ),
@@ -260,7 +260,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
+        color: AppColors.gray50,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -270,7 +270,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF6B6B6B),
+              color: AppColors.mediumGray,
               letterSpacing: -0.35,
             ),
           ),
@@ -282,7 +282,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
               size: 180,
               strokeWidth: 14,
               activeColor: _getScoreColor(bhi.bhiScore),
-              trackColor: const Color(0xFFF0F0F0),
+              trackColor: AppColors.gray100,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -301,7 +301,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                     ),
                   ),
                 ],
@@ -325,7 +325,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF97928A),
+              color: AppColors.warmGray,
               letterSpacing: -0.3,
               height: 1.5,
             ),
@@ -352,7 +352,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFF0F0F0),
+          color: AppColors.gray100,
           width: 1,
         ),
       ),
@@ -371,7 +371,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                         BlendMode.srcIn,
                       )
                     : const ColorFilter.mode(
-                        Color(0xFFBDBDBD),
+                        AppColors.lightGray,
                         BlendMode.srcIn,
                       ),
               ),
@@ -401,7 +401,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF97928A),
+                        color: AppColors.warmGray,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -418,7 +418,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                   width: double.infinity,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0F0F0),
+                    color: AppColors.gray100,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -432,11 +432,11 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                           ? const LinearGradient(
                               colors: [
                                 AppColors.brandPrimary,
-                                Color(0xFFFF7C2A),
+                                AppColors.brandDark,
                               ],
                             )
                           : null,
-                      color: hasData ? null : const Color(0xFFF0F0F0),
+                      color: hasData ? null : AppColors.gray100,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -460,7 +460,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFF0F0F0),
+          color: AppColors.gray100,
           width: 1,
         ),
       ),
@@ -506,7 +506,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF97928A),
+                    color: AppColors.warmGray,
                   ),
                 ),
             ],
@@ -534,7 +534,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             const Divider(
               height: 1,
               thickness: 1,
-              color: Color(0xFFF0F0F0),
+              color: AppColors.gray100,
             ),
             const SizedBox(height: 16),
             Row(
@@ -544,7 +544,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.mediumGray,
                     letterSpacing: -0.35,
                   ),
                 ),
@@ -555,7 +555,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
+                    color: AppColors.gray100,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -594,7 +594,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             border: Border.all(
               color: wciLevel > 0
                   ? AppColors.brandPrimary
-                  : const Color(0xFFF0F0F0),
+                  : AppColors.gray100,
               width: 2,
             ),
             color: Colors.white,
@@ -618,10 +618,10 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
       width: 56,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? AppColors.brandPrimary : const Color(0xFFF0F0F0),
+        color: isActive ? AppColors.brandPrimary : AppColors.gray100,
         borderRadius: BorderRadius.circular(1),
         border: Border.all(
-          color: const Color(0xFFF0F0F0),
+          color: AppColors.gray100,
           width: 1,
         ),
       ),
@@ -631,10 +631,10 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
   // --- 헬퍼 메서드 ---
 
   Color _getScoreColor(double score) {
-    if (score >= 80) return const Color(0xFF4CAF50);
+    if (score >= 80) return AppColors.success;
     if (score >= 60) return AppColors.brandPrimary;
-    if (score >= 40) return const Color(0xFFFF9800);
-    return const Color(0xFFFF572D);
+    if (score >= 40) return AppColors.warning;
+    return AppColors.gradientBottom;
   }
 
   String _getScoreLabel(double score, AppLocalizations l10n) {

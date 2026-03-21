@@ -142,7 +142,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -157,7 +157,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -206,7 +206,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -218,10 +218,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF9A42),
+                        color: AppColors.brandPrimary,
                         letterSpacing: -0.35,
                         decoration: TextDecoration.underline,
-                        decorationColor: Color(0xFFFF9A42),
+                        decorationColor: AppColors.brandPrimary,
                       ),
                     ),
                   ),
@@ -245,7 +245,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Container(
         height: 64,
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFF97928A), width: 1),
+          border: Border.all(color: AppColors.warmGray, width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -295,7 +295,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           gradient: const LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            colors: [AppColors.brandPrimary, AppColors.brandDark],
           ),
           borderRadius: BorderRadius.circular(16),
         ),

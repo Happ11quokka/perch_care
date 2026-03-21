@@ -374,7 +374,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                          border: Border.all(color: AppColors.gray300),
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: Text(
@@ -382,7 +382,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF97928A),
+                            color: AppColors.warmGray,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -474,7 +474,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFBDBDBD)),
+                        border: Border.all(color: AppColors.lightGray),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -573,7 +573,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                           gradient: const LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
-                            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                            colors: [AppColors.brandPrimary, AppColors.brandDark],
                           ),
                         ),
                         child: Center(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../theme/colors.dart';
 
 /// 하단 네비게이션 바 위젯
 class BottomNavBar extends StatelessWidget {
@@ -28,7 +29,7 @@ class BottomNavBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.shadowLight,
             offset: Offset(0, -10),
             blurRadius: 10,
           ),
@@ -90,7 +91,7 @@ class BottomNavBar extends StatelessWidget {
               width: 30,
               height: 30,
               colorFilter: ColorFilter.mode(
-                isSelected ? const Color(0xFFFF9A42) : const Color(0xFF97928A),
+                isSelected ? AppColors.brandPrimary : AppColors.warmGray,
                 BlendMode.srcIn,
               ),
             ),

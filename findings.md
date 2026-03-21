@@ -104,20 +104,22 @@
   - `iap_service.dart`: 기존에 이미 kDebugMode 래핑 완료 확인
 - **수정일:** 2026-03-20
 
-### M-2. 하드코딩된 색상 600+ 건 `부분 수정`
+### M-2. 하드코딩된 색상 600+ 건 `수정 완료`
 
-- **수정 완료 파일 (상위 3개 + 1개, 244건 → 0건):**
-  - `weight_detail_screen.dart`: 115건 → 0건
-  - `profile_screen.dart`: 82건 → 0건
-  - `home_screen.dart`: 47건 → 0건
-  - `add_schedule_bottom_sheet.dart`: 4건 → 0건
-- **신규 AppColors 상수 11개 추가** (`colors.dart`):
-  - `gray150`, `gray250`, `gray350`, `gray450` (회색 보간)
-  - `warmGray`, `beige` (따뜻한 톤)
-  - `brandLight`, `brandDark`, `brandSoft` (브랜드 변형)
-  - `danger`, `sundayRed` (시맨틱 색상)
-- **미수정:** 나머지 38개 파일 약 400건 잔여
-- **수정일:** 2026-03-20
+- **수정 전:** screens + widgets에서 ~530건 `Color(0x...)` 하드코딩
+- **수정 후:** 0건 (전체 제거)
+- **AppColors 상수 추가 (colors.dart):**
+  - 시맨틱: `danger`, `dangerLight`, `dangerDark`, `dangerDarker`, `dangerDeep`
+  - 시맨틱: `success`, `successLight`, `successDark`, `successDarker`, `successMedium`
+  - 시맨틱: `info`, `infoLight`, `infoDark`, `infoDarker`, `infoDeep`
+  - 시맨틱: `warning`, `warningDark`, `warningDeep`
+  - 브랜드: `brandLighter`, `brandPale`, `brandAccent`, `gradientBottomAlt`
+  - 오버레이: `shadowLight`, `shadowMedium`, `overlay50`, `overlay30`, `overlayWhite60/80/90`
+  - 차트: `yellow`, `yellowLight`, `lime`
+  - 헬스체크: `partSpecificBlue`, `droppingsPurple`, `foodGreen`
+  - 체중: `weightIdeal`, `weightWarning`, `weightLight`
+  - 회색: `gray100Alt`
+- **수정일:** 2026-03-20 (상위 4파일), 2026-03-21 (나머지 전체)
 
 ### M-3. fontFamily: 'Pretendard' 419건 하드코딩 `수정 완료`
 
@@ -203,9 +205,10 @@
 
 | 상태 | 항목 수 | 목록 |
 |------|---------|------|
-| 수정 완료 | 12건 | C-1, C-2, H-1, H-2, H-3, H-4, M-1, M-3, M-4, M-6, L-4, M-2(부분) |
+| 수정 완료 | 13건 | C-1, C-2, H-1, H-2, H-3, H-4, M-1, M-2, M-3, M-4, M-6, L-4 |
 | 수정 완료 (Riverpod) | 1건 | H-5 (Phase 0-7 전체 완료) |
-| 미수정 (Flutter 대규모) | 3건 | H-6, M-5, M-2(잔여) |
+| 부분 수정 | 1건 | H-6 (53 → 169 케이스, 핵심 서비스+모델 커버) |
+| 미수정 (Flutter 대규모) | 2건 | M-5 |
 | 미수정 (기타) | 3건 | M-7, L-1, L-2, L-5, L-6 |
 | 해당 없음 (오탐) | 1건 | L-3 |
 
@@ -254,7 +257,7 @@
 | API 클라이언트 | 9/10    | 9/10       | 토큰 갱신, 타임아웃, 보안 저장소               |
 | 오프라인 싱크  | 8/10    | 8/10       | 스마트한 설계, 일부 엣지케이스                 |
 | i18n           | 9/10    | **9.5/10** | 3언어 117키 동기화, 하드코딩 0건 (수정)        |
-| 테마           | 7/10    | **8.5/10** | fontFamily 전역화, 상위 3파일 색상 정리 (수정) |
+| 테마           | 7/10    | **9.5/10** | fontFamily 전역화, 하드코딩 색상 전체 제거    |
 | 네비게이션     | 9/10    | 9/10       | go_router 인증 가드, 구조 우수                 |
 | 상태관리       | 5/10    | **8.5/10** | Riverpod SSOT 완료, 전체 스크린 전환, 레거시 삭제 |
 | 테스트         | 3/10    | **5.5/10** | 8개 파일 169 케이스, 핵심 서비스+모델 커버     |
@@ -262,5 +265,5 @@
 | 백엔드 보안    | 5/10    | **8/10**   | IDOR 수정, rate limiting, 비밀번호 정책 추가   |
 | 플랫폼 통합    | 7/10    | **7.5/10** | debugPrint 가드 완료 (수정), FCM 미완          |
 
-**종합: 6.6/10 → 7.8/10** (Flutter 6개 + 백엔드 6개 + Riverpod SSOT + 테스트 확대 반영)
+**종합: 6.6/10 → 7.9/10** (Flutter 6개 + 백엔드 6개 + Riverpod SSOT + 테스트 확대 + 색상 전체 정리 반영)
 

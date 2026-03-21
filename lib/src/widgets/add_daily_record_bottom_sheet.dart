@@ -157,7 +157,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE0E0E0),
+                      color: AppColors.gray300,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -212,7 +212,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
           decoration: BoxDecoration(
             color: _showCalendar
                 ? AppColors.brandPrimary
-                : const Color(0xFFF5F5F5),
+                : AppColors.gray100,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -274,7 +274,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.brandPrimary.withValues(alpha: 0.12)
-                            : const Color(0xFFF5F5F5),
+                            : AppColors.gray100,
                         borderRadius: BorderRadius.circular(14),
                         border: isSelected
                             ? Border.all(
@@ -344,7 +344,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                     size: 36,
                     color: isActive
                         ? AppColors.brandPrimary
-                        : const Color(0xFFD0D0D0),
+                        : AppColors.gray350,
                   ),
                 ),
               );
@@ -383,7 +383,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                 color: AppColors.mediumGray,
               ),
               filled: true,
-              fillColor: const Color(0xFFF5F5F5),
+              fillColor: AppColors.gray100,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -413,7 +413,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
               child: Container(
                 height: 52,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: AppColors.gray100,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -537,7 +537,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                     ),
                   ),
                 ),
@@ -596,7 +596,7 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                   color: isSelected
                       ? Colors.white
                       : isSunday
-                          ? const Color(0xFFEE3300)
+                          ? AppColors.sundayRed
                           : AppColors.nearBlack,
                 ),
               ),

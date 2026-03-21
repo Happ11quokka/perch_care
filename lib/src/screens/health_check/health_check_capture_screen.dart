@@ -144,14 +144,14 @@ class _HealthCheckCaptureScreenState
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.gray100,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -159,7 +159,7 @@ class _HealthCheckCaptureScreenState
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.4,
           ),
         ),
@@ -253,7 +253,7 @@ class _HealthCheckCaptureScreenState
 
     return DashedBorder(
       radius: 16,
-      color: const Color(0xFFBDBDBD),
+      color: AppColors.lightGray,
       strokeWidth: 1.5,
       dashWidth: 8,
       dashGap: 4,
@@ -269,7 +269,7 @@ class _HealthCheckCaptureScreenState
             Icon(
               Icons.camera_alt_outlined,
               size: 48,
-              color: const Color(0xFFBDBDBD),
+              color: AppColors.lightGray,
             ),
             const SizedBox(height: 16),
             Text(
@@ -278,7 +278,7 @@ class _HealthCheckCaptureScreenState
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF97928A),
+                color: AppColors.warmGray,
                 letterSpacing: -0.3,
                 height: 1.5,
               ),
@@ -307,7 +307,7 @@ class _HealthCheckCaptureScreenState
                   borderRadius: BorderRadius.circular(18),
                   border: isSelected
                       ? null
-                      : Border.all(color: const Color(0xFFE0E0E0)),
+                      : Border.all(color: AppColors.gray300),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -315,7 +315,7 @@ class _HealthCheckCaptureScreenState
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
+                    color: isSelected ? Colors.white : AppColors.nearBlack,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -348,7 +348,7 @@ class _HealthCheckCaptureScreenState
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w400,
-        color: Color(0xFF1A1A1A),
+        color: AppColors.nearBlack,
         letterSpacing: -0.3,
       ),
       decoration: InputDecoration(
@@ -356,7 +356,7 @@ class _HealthCheckCaptureScreenState
         hintStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w400,
-          color: Color(0xFF97928A),
+          color: AppColors.warmGray,
           letterSpacing: -0.3,
         ),
         filled: true,
@@ -365,11 +365,11 @@ class _HealthCheckCaptureScreenState
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+          borderSide: const BorderSide(color: AppColors.gray300),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+          borderSide: const BorderSide(color: AppColors.gray300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -423,10 +423,10 @@ class _HealthCheckCaptureScreenState
         decoration: BoxDecoration(
           gradient: isEnabled
               ? const LinearGradient(
-                  colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                  colors: [AppColors.brandPrimary, AppColors.brandDark],
                 )
               : null,
-          color: isEnabled ? null : const Color(0xFFE0E0E0),
+          color: isEnabled ? null : AppColors.gray300,
           borderRadius: BorderRadius.circular(16),
         ),
         alignment: Alignment.center,
@@ -435,7 +435,7 @@ class _HealthCheckCaptureScreenState
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: isEnabled ? Colors.white : const Color(0xFF9E9E9E),
+            color: isEnabled ? Colors.white : AppColors.gray500,
             letterSpacing: -0.4,
           ),
         ),

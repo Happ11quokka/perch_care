@@ -148,7 +148,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -160,10 +160,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
         centerTitle: true,
         title: Text(
           l10n.profile_title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -181,7 +181,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                   // 구분선
                   Container(
                     height: 1,
-                    color: const Color(0xFFF0F0F0),
+                    color: AppColors.gray100,
                   ),
                   const SizedBox(height: 20),
                   // 나의 반려가족
@@ -189,10 +189,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
                       l10n.profile_myPets,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         letterSpacing: 0.08,
                       ),
                     ),
@@ -231,7 +231,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             height: 50,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFFE0E0E0),
+              color: AppColors.gray300,
             ),
             child: Center(
               child: SvgPicture.asset(
@@ -249,7 +249,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               letterSpacing: 0.08,
             ),
           ),
@@ -287,9 +287,9 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
         margin: const EdgeInsets.only(left: 32, right: 32, bottom: 12),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFF5ED) : const Color(0xFFF0F0F0),
+          color: isSelected ? AppColors.brandLight : AppColors.gray100,
           border: Border.all(
-            color: isSelected ? const Color(0xFFFF9A42) : Colors.transparent,
+            color: isSelected ? AppColors.brandPrimary : Colors.transparent,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -302,7 +302,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               height: 62.64,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFFD9D9D9),
+                color: AppColors.gray350,
               ),
               child: Center(
                 child: SvgPicture.asset(
@@ -326,7 +326,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF1A1A1A),
+                          color: AppColors.nearBlack,
                           letterSpacing: 0.08,
                         ),
                       ),
@@ -350,7 +350,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       letterSpacing: 0.06,
                     ),
                   ),
@@ -359,7 +359,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                       letterSpacing: 0.06,
                     ),
                   ),
@@ -381,8 +381,8 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isSelected
-                      ? const Color(0xFFFF9A42)
-                      : const Color(0xFF97928A),
+                      ? AppColors.brandPrimary
+                      : AppColors.warmGray,
                 ),
                 child: const Icon(
                   Icons.edit,
@@ -409,7 +409,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
         padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
           border: Border.all(
-            color: const Color(0xFF97928A),
+            color: AppColors.warmGray,
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -422,7 +422,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               height: 14.15,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF97928A),
+                color: AppColors.warmGray,
               ),
               child: const Icon(
                 Icons.add,
@@ -436,7 +436,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF97928A),
+                color: AppColors.warmGray,
                 letterSpacing: -0.5,
               ),
             ),

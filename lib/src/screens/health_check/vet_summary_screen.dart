@@ -69,14 +69,14 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.gray100,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -84,7 +84,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.4,
           ),
         ),
@@ -115,7 +115,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.nearBlack,
                   letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,
@@ -126,7 +126,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF6B6B6B),
+                  color: AppColors.mediumGray,
                   height: 1.5,
                   letterSpacing: -0.3,
                 ),
@@ -203,7 +203,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF5ED),
+            color: AppColors.brandLight,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 18, color: AppColors.brandPrimary),
@@ -215,7 +215,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+              color: AppColors.nearBlack,
               letterSpacing: -0.3,
             ),
           ),

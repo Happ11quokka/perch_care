@@ -146,7 +146,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
         content: Text(
@@ -154,7 +154,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.mediumGray,
           ),
         ),
         actions: [
@@ -301,7 +301,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
                 height: 34 / 20,
                 letterSpacing: -0.5,
               ),
@@ -320,7 +320,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           height: 64,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+              colors: [AppColors.brandPrimary, AppColors.brandDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -339,7 +339,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             height: 1.4,
             letterSpacing: -0.5,
           ),
@@ -359,7 +359,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF5ED),
+        color: AppColors.brandLight,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -385,7 +385,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF1A1A1A),
+                      color: AppColors.nearBlack,
                       height: 1.4,
                     ),
                   ),
@@ -449,7 +449,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppColors.brandPrimary : const Color(0xFFE7E5E1),
+            color: isSelected ? AppColors.brandPrimary : AppColors.beige,
             width: isSelected ? 2 : 1,
           ),
           color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.05) : Colors.white,
@@ -463,7 +463,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? AppColors.brandPrimary : const Color(0xFFB5B0A8),
+                  color: isSelected ? AppColors.brandPrimary : AppColors.lightGray,
                   width: 2,
                 ),
               ),
@@ -493,7 +493,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isSelected ? const Color(0xFF1A1A1A) : const Color(0xFF6B6B6B),
+                          color: isSelected ? AppColors.nearBlack : AppColors.mediumGray,
                         ),
                       ),
                       if (badge != null) ...[
@@ -525,7 +525,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: isSelected ? AppColors.brandPrimary : const Color(0xFF6B6B6B),
+                color: isSelected ? AppColors.brandPrimary : AppColors.mediumGray,
               ),
             ),
           ],
@@ -542,12 +542,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         height: 56,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            colors: [AppColors.brandPrimary, AppColors.brandDark],
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF9A42).withValues(alpha: 0.3),
+              color: AppColors.brandPrimary.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -578,14 +578,14 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF97928A),
+              color: AppColors.warmGray,
             ),
           ),
         ),
         Container(
           width: 1,
           height: 14,
-          color: const Color(0xFFE7E5E1),
+          color: AppColors.beige,
         ),
         TextButton(
           key: _promoCodeButtonKey,
@@ -595,7 +595,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF97928A),
+              color: AppColors.warmGray,
             ),
           ),
         ),
@@ -608,7 +608,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF5ED),
+        color: AppColors.brandLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
       ),
@@ -621,7 +621,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
             ),
           ),
         ],
@@ -643,7 +643,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(
-                color: Color(0xFFFF9A42),
+                color: AppColors.brandPrimary,
               ),
               const SizedBox(height: 16),
               Text(
@@ -651,7 +651,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF6B6B6B),
+                  color: AppColors.mediumGray,
                 ),
               ),
             ],

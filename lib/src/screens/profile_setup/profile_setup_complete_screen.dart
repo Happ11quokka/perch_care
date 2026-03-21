@@ -51,7 +51,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         height: 34 / 20,
                         letterSpacing: -0.5,
                       ),
@@ -70,14 +70,14 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
+                      color: AppColors.gray350,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Icon(
                         Icons.person,
                         size: 60,
-                        color: const Color(0xFF6B6B6B),
+                        color: AppColors.mediumGray,
                       ),
                     ),
                   ),
@@ -89,7 +89,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A1A1A),
+                      color: AppColors.nearBlack,
                       height: 34 / 24,
                       letterSpacing: -0.6,
                     ),
@@ -102,7 +102,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: const Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       height: 20 / 14,
                       letterSpacing: -0.35,
                     ),
@@ -131,7 +131,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: const Color(0xFF97928A),
+                    color: AppColors.warmGray,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(16),
@@ -142,7 +142,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: -0.45,
                       height: 1.44,
                     ),
@@ -162,7 +162,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                    colors: [AppColors.brandPrimary, AppColors.brandDark],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),

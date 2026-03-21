@@ -177,7 +177,7 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
                 color: config.backgroundColor,
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x1A000000),
+                    color: AppColors.shadowLight,
                     offset: Offset(0, 4),
                     blurRadius: 12,
                     spreadRadius: 0,
@@ -252,38 +252,38 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
     switch (type) {
       case SnackBarType.success:
         return _SnackBarConfig(
-          backgroundColor: const Color(0xFFE8F5E9),
-          iconBackgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: AppColors.successLight,
+          iconBackgroundColor: AppColors.success,
           iconColor: AppColors.white,
-          textColor: const Color(0xFF1B5E20),
-          closeColor: const Color(0xFF388E3C),
+          textColor: AppColors.successDarker,
+          closeColor: AppColors.successDark,
           icon: Icons.check_circle_rounded,
         );
       case SnackBarType.error:
         return _SnackBarConfig(
-          backgroundColor: const Color(0xFFFFEBEE),
+          backgroundColor: AppColors.dangerLight,
           iconBackgroundColor: AppColors.error,
           iconColor: AppColors.white,
-          textColor: const Color(0xFFB71C1C),
-          closeColor: const Color(0xFFC62828),
+          textColor: AppColors.dangerDarker,
+          closeColor: AppColors.dangerDeep,
           icon: Icons.error_rounded,
         );
       case SnackBarType.warning:
         return _SnackBarConfig(
-          backgroundColor: const Color(0xFFFFF3E0),
+          backgroundColor: AppColors.brandLighter,
           iconBackgroundColor: AppColors.brandPrimary,
           iconColor: AppColors.white,
-          textColor: const Color(0xFFE65100),
-          closeColor: const Color(0xFFF57C00),
+          textColor: AppColors.warningDeep,
+          closeColor: AppColors.warningDark,
           icon: Icons.warning_rounded,
         );
       case SnackBarType.info:
         return _SnackBarConfig(
-          backgroundColor: const Color(0xFFE3F2FD),
-          iconBackgroundColor: const Color(0xFF1976D2),
+          backgroundColor: AppColors.infoLight,
+          iconBackgroundColor: AppColors.infoDark,
           iconColor: AppColors.white,
-          textColor: const Color(0xFF0D47A1),
-          closeColor: const Color(0xFF1565C0),
+          textColor: AppColors.infoDarker,
+          closeColor: AppColors.infoDeep,
           icon: Icons.info_rounded,
         );
     }

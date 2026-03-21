@@ -71,5 +71,61 @@ class AppColors {
 
   // Semantic Colors
   static const Color danger = Color(0xFFE53935);
+  static const Color dangerLight = Color(0xFFFFEBEE);
   static const Color sundayRed = Color(0xFFEE3300);
+  static const Color success = Color(0xFF4CAF50);
+  static const Color successLight = Color(0xFFE8F5E9);
+  static const Color info = Color(0xFF2196F3);
+  static const Color infoLight = Color(0xFFE3F2FD);
+  static const Color warning = Color(0xFFFF9800);
+  static const Color warningDark = Color(0xFFF57C00);
+
+  // Brand Extended
+  static const Color brandLighter = Color(0xFFFFF3E0);
+  static const Color brandPale = Color(0xFFFFF8F3);
+
+  // Overlay / Shadow
+  static const Color shadowLight = Color(0x0A000000);
+  static const Color overlay50 = Color(0x80000000);
+  static const Color overlay30 = Color(0x4D000000);
+
+  // Chart / Accent
+  static const Color yellow = Color(0xFFFFE812);
+  static const Color yellowLight = Color(0xFFFFF9C4);
+  static const Color lime = Color(0xFF8BC34A);
+
+  // Semantic Dark Variants (SnackBar, Text)
+  static const Color successDark = Color(0xFF388E3C);
+  static const Color successDarker = Color(0xFF1B5E20);
+  static const Color dangerDark = Color(0xFFD32F2F);
+  static const Color dangerDarker = Color(0xFFB71C1C);
+  static const Color dangerDeep = Color(0xFFC62828);
+  static const Color warningDeep = Color(0xFFE65100);
+  static const Color infoDark = Color(0xFF1976D2);
+  static const Color infoDarker = Color(0xFF0D47A1);
+  static const Color infoDeep = Color(0xFF1565C0);
+  static const Color successMedium = Color(0xFF2E7D32);
+
+  // Health Check Mode Colors
+  static const Color partSpecificBlue = Color(0xFF42A5F5);
+  static const Color droppingsPurple = Color(0xFF7E57C2);
+  static const Color foodGreen = Color(0xFF66BB6A);
+
+  // Gradient Extended
+  static const Color brandAccent = Color(0xFFFF7B29);
+  static const Color gradientBottomAlt = Color(0xFFFF5C2F);
+
+  // Weight Range
+  static const Color weightIdeal = Color(0xFF4CAF50);
+  static const Color weightWarning = Color(0xFFEF5350);
+  static const Color weightLight = Color(0xFFFFE0B2);
+
+  // Overlay Variants
+  static const Color overlayWhite80 = Color(0xCCFFFFFF);
+  static const Color overlayWhite90 = Color(0xE6FFFFFF);
+  static const Color overlayWhite60 = Color(0x99FFFFFF);
+  static const Color shadowMedium = Color(0x3F000000);
+
+  // Gray Extended
+  static const Color gray100Alt = Color(0xFFF6F6F6);
 }

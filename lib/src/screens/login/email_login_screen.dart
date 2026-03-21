@@ -116,7 +116,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         centerTitle: true,
@@ -125,7 +125,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -193,7 +193,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -205,10 +205,10 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF9A42),
+                        color: AppColors.brandPrimary,
                         letterSpacing: -0.35,
                         decoration: TextDecoration.underline,
-                        decorationColor: Color(0xFFFF9A42),
+                        decorationColor: AppColors.brandPrimary,
                       ),
                     ),
                   ),
@@ -235,11 +235,11 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   }) {
     // 활성 상태: 포커스가 있거나 값이 있을 때
     final isActive = hasFocus || hasValue;
-    final borderColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final borderColor = isActive ? AppColors.brandPrimary : AppColors.warmGray;
     final bgColor = (hasFocus && hasValue)
-        ? const Color(0xFFFF9A42).withValues(alpha: 0.1)
+        ? AppColors.brandPrimary.withValues(alpha: 0.1)
         : Colors.transparent;
-    final iconColor = isActive ? const Color(0xFFFF9A42) : const Color(0xFF97928A);
+    final iconColor = isActive ? AppColors.brandPrimary : AppColors.warmGray;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,7 +249,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF97928A),
+            color: AppColors.warmGray,
             letterSpacing: 0.5,
           ),
         ),
@@ -281,7 +281,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.nearBlack,
                     letterSpacing: 0.07,
                   ),
                   decoration: InputDecoration(
@@ -289,7 +289,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
@@ -315,7 +315,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                       width: 20,
                       height: 17,
                       colorFilter: const ColorFilter.mode(
-                        Color(0xFF97928A),
+                        AppColors.warmGray,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -348,9 +348,9 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
-                  color: _saveId ? const Color(0xFFFF9A42) : Colors.transparent,
+                  color: _saveId ? AppColors.brandPrimary : Colors.transparent,
                   border: Border.all(
-                    color: _saveId ? const Color(0xFFFF9A42) : const Color(0xFF97928A),
+                    color: _saveId ? AppColors.brandPrimary : AppColors.warmGray,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(6),
@@ -379,7 +379,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF97928A),
+                  color: AppColors.warmGray,
                   letterSpacing: 0.07,
                 ),
               ),
@@ -396,7 +396,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF97928A),
+              color: AppColors.warmGray,
               letterSpacing: 0.07,
             ),
           ),
@@ -415,7 +415,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           gradient: const LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            colors: [AppColors.brandPrimary, AppColors.brandDark],
           ),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -490,7 +490,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         height: 60,
         decoration: BoxDecoration(
           color: backgroundColor,
-          border: Border.all(color: borderColor ?? const Color(0xFFE0E0E0), width: 1),
+          border: Border.all(color: borderColor ?? AppColors.gray300, width: 1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(

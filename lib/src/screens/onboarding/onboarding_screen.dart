@@ -642,12 +642,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             gradient: const LinearGradient(
               begin: Alignment(0.00, 0.50),
               end: Alignment(1.00, 0.50),
-              colors: [Color(0xFFFF9A42), Color(0xFFFF7B29)],
+              colors: [AppColors.brandPrimary, AppColors.brandAccent],
             ),
             shape: RoundedRectangleBorder(borderRadius: borderRadius),
             shadows: const [
               BoxShadow(
-                color: Color(0x3F000000),
+                color: AppColors.shadowMedium,
                 blurRadius: 4,
                 offset: Offset(0, 4),
               ),

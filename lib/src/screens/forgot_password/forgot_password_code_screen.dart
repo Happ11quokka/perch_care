@@ -109,7 +109,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
             width: 18,
             height: 14,
             colorFilter: const ColorFilter.mode(
-              Color(0xFF1A1A1A),
+              AppColors.nearBlack,
               BlendMode.srcIn,
             ),
           ),
@@ -118,10 +118,10 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
         centerTitle: true,
         title: Text(
           l10n.forgot_codeTitle,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.5,
           ),
         ),
@@ -140,10 +140,10 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                       // 안내 문구
                       Text(
                         l10n.forgot_codeDescription,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF97928A),
+                          color: AppColors.warmGray,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),
@@ -155,7 +155,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF97928A),
+                          color: AppColors.warmGray,
                           letterSpacing: -0.35,
                         ),
                       ),
@@ -170,7 +170,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF97928A),
+                            color: AppColors.warmGray,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -208,26 +208,26 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
                 letterSpacing: -0.6,
               ),
               decoration: InputDecoration(
                 counterText: '',
                 filled: hasValue,
-                fillColor: const Color(0xFFFF9A42).withValues(alpha: 0.1),
+                fillColor: AppColors.brandPrimary.withValues(alpha: 0.1),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(
                     color: hasValue
-                        ? const Color(0xFFFF9A42)
-                        : const Color(0xFF97928A),
+                        ? AppColors.brandPrimary
+                        : AppColors.warmGray,
                     width: 1,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(
-                    color: Color(0xFFFF9A42),
+                    color: AppColors.brandPrimary,
                     width: 1,
                   ),
                 ),
@@ -263,7 +263,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
           gradient: const LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+            colors: [AppColors.brandPrimary, AppColors.brandDark],
           ),
           borderRadius: BorderRadius.circular(16),
         ),

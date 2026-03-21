@@ -14,8 +14,8 @@ class PasswordStrengthIndicator extends StatelessWidget {
 
   const PasswordStrengthIndicator({super.key, required this.password});
 
-  static const _strongGreen = Color(0xFF4CAF50);
-  static const _mediumAmber = Color(0xFFFFA726);
+  static const _strongGreen = AppColors.success;
+  static const _mediumAmber = AppColors.warning;
 
   /// 비밀번호 강도 계산
   static PasswordStrength calculateStrength(String password) {

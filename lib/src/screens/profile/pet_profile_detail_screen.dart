@@ -250,7 +250,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFFF572D)),
+                              border: Border.all(color: AppColors.gradientBottom),
                             ),
                             child: Center(
                               child: Text(
@@ -258,7 +258,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFFF572D),
+                                  color: AppColors.gradientBottom,
                                   letterSpacing: -0.45,
                                 ),
                               ),
@@ -314,7 +314,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
                 height: 34 / 20,
                 letterSpacing: -0.5,
               ),
@@ -464,7 +464,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: const Color(0xFF97928A),
+          color: AppColors.warmGray,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(16),
@@ -483,7 +483,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               height: 20 / 14,
               letterSpacing: -0.35,
             ),
@@ -492,7 +492,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
               hintStyle: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xFF97928A),
+                color: AppColors.warmGray,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),
@@ -522,7 +522,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
-            color: const Color(0xFF97928A),
+            color: AppColors.warmGray,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -538,15 +538,15 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: displayGender != null
-                    ? const Color(0xFF1A1A1A)
-                    : const Color(0xFF97928A),
+                    ? AppColors.nearBlack
+                    : AppColors.warmGray,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),
             ),
             Icon(
               Icons.keyboard_arrow_down,
-              color: const Color(0xFF97928A),
+              color: AppColors.warmGray,
               size: 20,
             ),
           ],
@@ -568,7 +568,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
-            color: const Color(0xFF97928A),
+            color: AppColors.warmGray,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -585,8 +585,8 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: selectedDate != null
-                    ? const Color(0xFF1A1A1A)
-                    : const Color(0xFF97928A),
+                    ? AppColors.nearBlack
+                    : AppColors.warmGray,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),
@@ -605,7 +605,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
       height: 60,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.brandPrimary, const Color(0xFFFF7C2A)],
+          colors: [AppColors.brandPrimary, AppColors.brandDark],
         ),
         borderRadius: BorderRadius.circular(16),
       ),

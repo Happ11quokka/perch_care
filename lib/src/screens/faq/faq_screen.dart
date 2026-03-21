@@ -116,7 +116,7 @@ class FaqScreen extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         height: 34 / 20,
                         letterSpacing: -0.5,
                       ),
@@ -145,7 +145,7 @@ class FaqScreen extends ConsumerWidget {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1A1A),
+                            color: AppColors.nearBlack,
                             letterSpacing: 0.08,
                           ),
                         ),
@@ -167,7 +167,7 @@ class FaqScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFE7E5E1)),
+        border: Border.all(color: AppColors.beige),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Theme(
@@ -182,13 +182,13 @@ class FaqScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           iconColor: AppColors.brandPrimary,
-          collapsedIconColor: const Color(0xFF97928A),
+          collapsedIconColor: AppColors.warmGray,
           title: Text(
             item.question,
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
             ),
           ),
           children: [
@@ -199,7 +199,7 @@ class FaqScreen extends ConsumerWidget {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF6B6B6B),
+                  color: AppColors.mediumGray,
                   height: 1.6,
                 ),
               ),

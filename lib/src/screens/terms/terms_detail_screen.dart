@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/terms_content.dart';
+import '../../theme/colors.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 약관 상세 화면
@@ -25,7 +26,7 @@ class TermsDetailScreen extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => Navigator.of(context).pop(),
         ),
         centerTitle: true,
@@ -34,7 +35,7 @@ class TermsDetailScreen extends ConsumerWidget {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
           ),
         ),
       ),
@@ -46,7 +47,7 @@ class TermsDetailScreen extends ConsumerWidget {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF6B6B6B),
+              color: AppColors.mediumGray,
               height: 1.6,
             ),
           ),

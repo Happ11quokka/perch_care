@@ -25,7 +25,7 @@ class ProfileSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
-  static const _fieldBorderColor = Color(0xFF97928A);
+  static const _fieldBorderColor = AppColors.warmGray;
   static const _fieldRadius = 16.0;
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -140,7 +140,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF1A1A1A),
+                        color: AppColors.nearBlack,
                         height: 34 / 20,
                         letterSpacing: -0.5,
                       ),
@@ -192,7 +192,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFFD9D9D9),
+              color: AppColors.gray350,
               shape: BoxShape.circle,
               image: _selectedImage != null
                   ? DecorationImage(
@@ -211,7 +211,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     child: Icon(
                       Icons.person,
                       size: 60,
-                      color: const Color(0xFF6B6B6B),
+                      color: AppColors.mediumGray,
                     ),
                   )
                 : null,
@@ -269,7 +269,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.35,
           ),
           decoration: InputDecoration(
@@ -287,7 +287,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             hintStyle: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF97928A),
+              color: AppColors.warmGray,
               letterSpacing: -0.35,
             ),
           ),
@@ -316,14 +316,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: _selectedGender != null
-                    ? const Color(0xFF1A1A1A)
+                    ? AppColors.nearBlack
                     : _fieldBorderColor,
                 letterSpacing: -0.35,
               ),
             ),
             Icon(
               Icons.keyboard_arrow_down,
-              color: const Color(0xFF97928A),
+              color: AppColors.warmGray,
               size: 20,
             ),
           ],
@@ -337,7 +337,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        color: hasEmail ? const Color(0xFFF5F5F5) : Colors.white,
+        color: hasEmail ? AppColors.gray100 : Colors.white,
         border: Border.all(
           color: _fieldBorderColor,
           width: 1,
@@ -361,7 +361,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: hasEmail ? const Color(0xFF97928A) : const Color(0xFF1A1A1A),
+            color: hasEmail ? AppColors.warmGray : AppColors.nearBlack,
             letterSpacing: -0.35,
           ),
           decoration: InputDecoration(
@@ -379,7 +379,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             hintStyle: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF97928A),
+              color: AppColors.warmGray,
               letterSpacing: -0.35,
             ),
           ),
@@ -426,7 +426,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 const SizedBox(width: 6),
                 Icon(
                   Icons.keyboard_arrow_down,
-                  color: const Color(0xFF97928A),
+                  color: AppColors.warmGray,
                   size: 20,
                 ),
               ],
@@ -449,7 +449,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.nearBlack,
                   letterSpacing: -0.35,
                 ),
                 decoration: InputDecoration(
@@ -467,7 +467,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   hintStyle: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xFF97928A),
+                    color: AppColors.warmGray,
                     letterSpacing: -0.35,
                   ),
                 ),
@@ -493,7 +493,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 height: 60,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: const Color(0xFF97928A),
+                    color: AppColors.warmGray,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(16),
@@ -504,7 +504,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF97928A),
+                      color: AppColors.warmGray,
                       letterSpacing: -0.45,
                     ),
                   ),
@@ -523,7 +523,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   gradient: const LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                    colors: [AppColors.brandPrimary, AppColors.brandDark],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -587,7 +587,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF1A1A1A),
+                      color: AppColors.nearBlack,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -598,7 +598,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF1A1A1A),
+                      color: AppColors.nearBlack,
                     ),
                   ),
                   onTap: () {
@@ -612,7 +612,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF1A1A1A),
+                      color: AppColors.nearBlack,
                     ),
                   ),
                   onTap: () {

@@ -280,7 +280,7 @@ class _HealthCheckAnalyzingScreenState
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1A1A1A),
+              color: AppColors.nearBlack,
               letterSpacing: -0.4,
             ),
           ),
@@ -290,7 +290,7 @@ class _HealthCheckAnalyzingScreenState
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF6B6B6B),
+              color: AppColors.mediumGray,
               letterSpacing: -0.3,
             ),
           ),
@@ -299,7 +299,7 @@ class _HealthCheckAnalyzingScreenState
             width: 200,
             child: LinearProgressIndicator(
               color: AppColors.brandPrimary,
-              backgroundColor: const Color(0xFFFFE0C0),
+              backgroundColor: AppColors.brandSoft,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -322,7 +322,7 @@ class _HealthCheckAnalyzingScreenState
               size: 64,
               color: _isPremiumError
                   ? AppColors.brandPrimary
-                  : const Color(0xFFFF572D),
+                  : AppColors.gradientBottom,
             ),
             const SizedBox(height: 24),
             Text(
@@ -332,7 +332,7 @@ class _HealthCheckAnalyzingScreenState
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.nearBlack,
                 letterSpacing: -0.4,
               ),
             ),
@@ -343,7 +343,7 @@ class _HealthCheckAnalyzingScreenState
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF6B6B6B),
+                color: AppColors.mediumGray,
                 letterSpacing: -0.3,
                 height: 1.5,
               ),
@@ -364,7 +364,7 @@ class _HealthCheckAnalyzingScreenState
                   height: 48,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                      colors: [AppColors.brandPrimary, AppColors.brandDark],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -389,7 +389,7 @@ class _HealthCheckAnalyzingScreenState
                   height: 48,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFFF9A42), Color(0xFFFF7C2A)],
+                      colors: [AppColors.brandPrimary, AppColors.brandDark],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -414,7 +414,7 @@ class _HealthCheckAnalyzingScreenState
                 height: 48,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE0E0E0)),
+                  border: Border.all(color: AppColors.gray300),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -422,7 +422,7 @@ class _HealthCheckAnalyzingScreenState
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.mediumGray,
                     letterSpacing: -0.3,
                   ),
                 ),

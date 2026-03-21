@@ -158,7 +158,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.nearBlack,
                 ),
               ),
             ),
@@ -169,7 +169,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.mediumGray,
             height: 1.5,
             letterSpacing: -0.3,
           ),
@@ -182,7 +182,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF6B6B6B),
+                color: AppColors.mediumGray,
               ),
             ),
           ),
@@ -217,14 +217,14 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.gray100,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -238,14 +238,14 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: AppColors.nearBlack,
             letterSpacing: -0.4,
           ),
         ),
         actions: [
           IconButton(
             key: _historyButtonKey,
-            icon: const Icon(Icons.history, color: Color(0xFF1A1A1A)),
+            icon: const Icon(Icons.history, color: AppColors.nearBlack),
             onPressed: () {
               context.pushNamed(RouteNames.healthCheckHistory);
             },
@@ -263,7 +263,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF6B6B6B),
+                  color: AppColors.mediumGray,
                   letterSpacing: -0.4,
                 ),
               ),
@@ -357,8 +357,8 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                 height: 48,
                 decoration: BoxDecoration(
                   color: locked
-                      ? const Color(0xFFE8E8E8)
-                      : const Color(0xFFFFF5ED),
+                      ? AppColors.gray250
+                      : AppColors.brandLight,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: mode == VisionMode.fullBody
@@ -368,7 +368,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                         height: 24,
                         colorFilter: ColorFilter.mode(
                           locked
-                              ? const Color(0xFF9E9E9E)
+                              ? AppColors.gray500
                               : AppColors.brandPrimary,
                           BlendMode.srcIn,
                         ),
@@ -376,7 +376,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                     : Icon(
                         icon,
                         color: locked
-                            ? const Color(0xFF9E9E9E)
+                            ? AppColors.gray500
                             : AppColors.brandPrimary,
                         size: 24,
                       ),
@@ -393,7 +393,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1A1A),
+                            color: AppColors.nearBlack,
                             letterSpacing: -0.4,
                           ),
                         ),
@@ -407,7 +407,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFF3E0),
+                              color: AppColors.brandLighter,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
@@ -415,7 +415,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFFF57C00),
+                                color: AppColors.warningDark,
                               ),
                             ),
                           ),
@@ -428,7 +428,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF6B6B6B),
+                        color: AppColors.mediumGray,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -438,7 +438,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
               const SizedBox(width: 8),
               Icon(
                 locked ? Icons.lock_outline : Icons.chevron_right,
-                color: const Color(0xFF97928A),
+                color: AppColors.warmGray,
                 size: 24,
               ),
             ],
