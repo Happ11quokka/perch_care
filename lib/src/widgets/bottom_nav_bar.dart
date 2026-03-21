@@ -75,24 +75,31 @@ class BottomNavBar extends StatelessWidget {
   }) {
     // currentIndex가 -1이면 선택된 탭 없음 (프로필 페이지 등)
     final isSelected = currentIndex >= 0 && currentIndex == index;
+    final tabLabels = ['Home', 'Records', 'Chat'];
+    final label = index < tabLabels.length ? tabLabels[index] : 'Tab $index';
 
     return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          key: itemKey,
-          height: 92,
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
-          ),
-          child: Center(
-            child: SvgPicture.asset(
-              iconPath,
-              width: 30,
-              height: 30,
-              colorFilter: ColorFilter.mode(
-                isSelected ? AppColors.brandPrimary : AppColors.warmGray,
-                BlendMode.srcIn,
+      child: Semantics(
+        button: true,
+        label: label,
+        selected: isSelected,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            key: itemKey,
+            height: 92,
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                iconPath,
+                width: 30,
+                height: 30,
+                colorFilter: ColorFilter.mode(
+                  isSelected ? AppColors.brandPrimary : AppColors.warmGray,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),

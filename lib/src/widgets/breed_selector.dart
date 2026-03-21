@@ -57,39 +57,45 @@ class _BreedSelectorState extends State<BreedSelector> {
 
     final borderColor = hasSelection ? AppColors.brandPrimary : AppColors.warmGray;
 
-    return GestureDetector(
-      onTap: _openBreedDialog,
-      child: Container(
-        height: 60,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: borderColor, width: 1),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                hasSelection
-                    ? widget.selectedBreedDisplayName ?? widget.hintText
-                    : widget.hintText,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: hasSelection
-                      ? AppColors.nearBlack
-                      : AppColors.warmGray,
-                  letterSpacing: -0.35,
+    return Semantics(
+      button: true,
+      label: hasSelection
+          ? widget.selectedBreedDisplayName ?? widget.hintText
+          : widget.hintText,
+      child: GestureDetector(
+        onTap: _openBreedDialog,
+        child: Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: borderColor, width: 1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  hasSelection
+                      ? widget.selectedBreedDisplayName ?? widget.hintText
+                      : widget.hintText,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: hasSelection
+                        ? AppColors.nearBlack
+                        : AppColors.warmGray,
+                    letterSpacing: -0.35,
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_drop_down,
-                color: hasSelection ? AppColors.brandPrimary : AppColors.warmGray,
-              ),
-            ],
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: hasSelection ? AppColors.brandPrimary : AppColors.warmGray,
+                ),
+              ],
+            ),
           ),
         ),
       ),

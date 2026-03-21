@@ -77,23 +77,27 @@ class QuotaBadge extends StatelessWidget {
           ),
           if (quota.isExhausted && onUpgradePressed != null) ...[
             const SizedBox(width: AppSpacing.xs),
-            GestureDetector(
-              onTap: onUpgradePressed,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.brandPrimary,
-                  borderRadius: AppRadius.radiusSm,
-                ),
-                child: Text(
-                  upgradeText,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+            Semantics(
+              button: true,
+              label: upgradeText,
+              child: GestureDetector(
+                onTap: onUpgradePressed,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary,
+                    borderRadius: AppRadius.radiusSm,
+                  ),
+                  child: Text(
+                    upgradeText,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),

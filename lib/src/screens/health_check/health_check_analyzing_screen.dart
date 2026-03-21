@@ -351,7 +351,10 @@ class _HealthCheckAnalyzingScreenState
             const SizedBox(height: 32),
             if (_isPremiumError) ...[
               // 프리미엄 업그레이드 버튼 (primary)
-              GestureDetector(
+              Semantics(
+                button: true,
+                label: l10n.premium_upgradeToPremium,
+                child: GestureDetector(
                 onTap: () async {
                   AnalyticsService.instance.logPremiumFeatureBlocked(
                     feature: 'vision',
@@ -379,10 +382,14 @@ class _HealthCheckAnalyzingScreenState
                     ),
                   ),
                 ),
+                ),
               ),
             ] else ...[
               // 다시 시도 버튼 (primary)
-              GestureDetector(
+              Semantics(
+                button: true,
+                label: l10n.hc_retry,
+                child: GestureDetector(
                 onTap: _startAnalysis,
                 child: Container(
                   width: 200,
@@ -404,10 +411,14 @@ class _HealthCheckAnalyzingScreenState
                     ),
                   ),
                 ),
+                ),
               ),
             ],
             const SizedBox(height: 12),
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: l10n.hc_goBack,
+              child: GestureDetector(
               onTap: () => context.pop(),
               child: Container(
                 width: 200,
@@ -426,6 +437,7 @@ class _HealthCheckAnalyzingScreenState
                     letterSpacing: -0.3,
                   ),
                 ),
+              ),
               ),
             ),
           ],

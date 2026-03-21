@@ -283,7 +283,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           children: [
             Positioned(
               left: 0,
-              child: GestureDetector(
+              child: Semantics(
+                button: true,
+                label: 'Go back',
+                child: GestureDetector(
                 onTap: () {
                   if (context.canPop()) context.pop();
                 },
@@ -293,6 +296,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                   child: SvgPicture.asset(
                     'assets/images/profile/back_arrow.svg',
                   ),
+                ),
                 ),
               ),
             ),
@@ -441,7 +445,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: '$label $price',
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
@@ -531,11 +538,15 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
   Widget _buildCtaButton(AppLocalizations l10n) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.paywall_ctaButton,
+      child: GestureDetector(
       onTap: _isLoading ? null : _startPurchase,
       child: Container(
         width: double.infinity,
@@ -563,6 +574,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             letterSpacing: -0.3,
           ),
         ),
+      ),
       ),
     );
   }

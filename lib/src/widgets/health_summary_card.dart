@@ -272,31 +272,35 @@ class HealthSummaryCard extends StatelessWidget {
           // 잠금 오버레이
           Positioned.fill(
             child: Center(
-              child: GestureDetector(
-                onTap: onUpgradePressed,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandPrimary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.lock, size: 14, color: Colors.white),
-                      const SizedBox(width: 6),
-                      Text(
-                        l10n.home_healthSummaryUpgrade,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+              child: Semantics(
+                button: true,
+                label: l10n.home_healthSummaryUpgrade,
+                child: GestureDetector(
+                  onTap: onUpgradePressed,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandPrimary,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock, size: 14, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Text(
+                          l10n.home_healthSummaryUpgrade,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

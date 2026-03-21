@@ -495,7 +495,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                         spacing: 8,
                         runSpacing: 6,
                         children: _pastFoodNames.reversed.take(10).map((name) {
-                          return GestureDetector(
+                          return Semantics(
+                            button: true,
+                            label: name,
+                            child: GestureDetector(
                             onTap: () {
                               nameController.text = name;
                               nameController.selection =
@@ -526,6 +529,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                                 ),
                               ),
                             ),
+                          ),
                           );
                         }).toList(),
                       ),
@@ -552,7 +556,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                     ),
                     const SizedBox(height: 12),
                     // 시간 선택
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: l10n.diet_selectTime,
+                      child: GestureDetector(
                       onTap: () async {
                         final time = await showAnalogTimePicker(
                           context: context,
@@ -595,6 +602,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                         ),
                       ),
                     ),
+                    ),
                     const SizedBox(height: 12),
                     // 메모 (선택)
                     TextField(
@@ -634,7 +642,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: GestureDetector(
+                          child: Semantics(
+                            button: true,
+                            label: l10n.common_save,
+                            child: GestureDetector(
                             onTap: () {
                               final name = nameController.text.trim();
                               final grams = double.tryParse(
@@ -695,6 +706,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                                 ),
                               ),
                             ),
+                          ),
                           ),
                         ),
                       ],
@@ -802,7 +814,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // ── 날짜 선택 pill ────────────────────────────────────
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: 'Select date',
+                      child: GestureDetector(
                       onTap: _pickDate,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -823,6 +838,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                           ),
                         ),
                       ),
+                    ),
                     ),
                     const SizedBox(height: 24),
 
@@ -916,7 +932,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                     const SizedBox(height: 32),
 
                     // ── 저장 버튼 ─────────────────────────────────────────
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: l10n.common_save,
+                      child: GestureDetector(
                       key: _saveButtonKey,
                       onTap: () async {
                         await _saveEntries();
@@ -948,6 +967,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                           ),
                         ),
                       ),
+                    ),
                     ),
                   ],
                 ),
@@ -1059,7 +1079,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
     required bool isActive,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: text,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -1076,13 +1099,17 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
   // ── 기록 카드 ──────────────────────────────────────────────────────────────
 
   Widget _buildEntryCard(DietEntry entry) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: 'Edit food record',
+      child: GestureDetector(
       onTap: () => _openEntryModal(existing: entry),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -1154,7 +1181,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
               ),
             ),
             // 삭제 버튼
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: 'Delete food record',
+              child: GestureDetector(
               onTap: () => _deleteEntry(entry),
               child: Container(
                 margin: const EdgeInsets.only(left: 8),
@@ -1166,9 +1196,11 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                 ),
               ),
             ),
+            ),
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -1181,7 +1213,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
     required ValueChanged<DietType?> onChanged,
   }) {
     final isSelected = value == groupValue;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
       onTap: () => onChanged(value),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1223,6 +1258,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

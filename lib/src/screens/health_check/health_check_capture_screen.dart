@@ -231,7 +231,10 @@ class _HealthCheckCaptureScreenState
           Positioned(
             top: 8,
             right: 8,
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: 'Remove selected image',
+              child: GestureDetector(
               onTap: () => setState(() {
                 _selectedImage = null;
                 _fileName = '';
@@ -245,6 +248,7 @@ class _HealthCheckCaptureScreenState
                 ),
                 child: const Icon(Icons.close, color: Colors.white, size: 18),
               ),
+            ),
             ),
           ),
         ],
@@ -296,7 +300,10 @@ class _HealthCheckCaptureScreenState
         children: BodyPart.values.map((part) {
           final isSelected = _selectedPart == part;
           return Expanded(
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: _getPartLabel(l10n, part),
+              child: GestureDetector(
               onTap: () => setState(() => _selectedPart = part),
               child: Container(
                 margin: EdgeInsets.only(
@@ -320,6 +327,7 @@ class _HealthCheckCaptureScreenState
                   ),
                 ),
               ),
+            ),
             ),
           );
         }).toList(),
@@ -384,7 +392,10 @@ class _HealthCheckCaptureScreenState
     required String label,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         height: 48,
@@ -410,12 +421,16 @@ class _HealthCheckCaptureScreenState
           ],
         ),
       ),
+    ),
     );
   }
 
   Widget _buildAnalyzeButton(AppLocalizations l10n) {
     final isEnabled = _selectedImage != null;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.hc_analyze,
+      child: GestureDetector(
       onTap: isEnabled ? _onAnalyze : null,
       child: Container(
         width: double.infinity,
@@ -440,6 +455,7 @@ class _HealthCheckCaptureScreenState
           ),
         ),
       ),
+    ),
     );
   }
 }

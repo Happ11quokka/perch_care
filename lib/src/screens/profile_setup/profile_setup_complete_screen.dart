@@ -33,7 +33,10 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                   // 뒤로가기 버튼
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: GestureDetector(
+                    child: Semantics(
+                      button: true,
+                      label: 'Go back',
+                      child: GestureDetector(
                       onTap: () => context.pop(),
                       child: SizedBox(
                         width: 28,
@@ -41,6 +44,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                         child: SvgPicture.asset(
                           'assets/images/profile/back_arrow.svg',
                         ),
+                      ),
                       ),
                     ),
                   ),
@@ -125,7 +129,10 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
         children: [
           // 다음에 버튼
           Expanded(
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: l10n.common_later,
+              child: GestureDetector(
               onTap: () => _handleSkip(context),
               child: Container(
                 height: 60,
@@ -149,12 +156,16 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              ),
             ),
           ),
           const SizedBox(width: 8),
           // 기록 시작! 버튼
           Expanded(
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: l10n.profileSetup_startRecording,
+              child: GestureDetector(
               onTap: () => _handleStart(context),
               child: Container(
                 height: 60,
@@ -178,6 +189,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+              ),
               ),
             ),
           ),

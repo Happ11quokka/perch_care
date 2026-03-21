@@ -205,36 +205,40 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
   Widget _buildDateSelector() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: GestureDetector(
-        onTap: () => setState(() => _showCalendar = !_showCalendar),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: _showCalendar
-                ? AppColors.brandPrimary
-                : AppColors.gray100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 18,
-                color: _showCalendar ? Colors.white : AppColors.nearBlack,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                _formatDate(_selectedDate),
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color:
-                      _showCalendar ? Colors.white : AppColors.nearBlack,
-                  letterSpacing: -0.35,
+      child: Semantics(
+        button: true,
+        label: _formatDate(_selectedDate),
+        child: GestureDetector(
+          onTap: () => setState(() => _showCalendar = !_showCalendar),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: _showCalendar
+                  ? AppColors.brandPrimary
+                  : AppColors.gray100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 18,
+                  color: _showCalendar ? Colors.white : AppColors.nearBlack,
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Text(
+                  _formatDate(_selectedDate),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color:
+                        _showCalendar ? Colors.white : AppColors.nearBlack,
+                    letterSpacing: -0.35,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -261,47 +265,52 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: _moodOptions.map((option) {
               final isSelected = _selectedMood == option.$1;
-              return GestureDetector(
-                onTap: () => setState(() {
-                  _selectedMood =
-                      _selectedMood == option.$1 ? null : option.$1;
-                }),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.brandPrimary.withValues(alpha: 0.12)
-                            : AppColors.gray100,
-                        borderRadius: BorderRadius.circular(14),
-                        border: isSelected
-                            ? Border.all(
-                                color: AppColors.brandPrimary, width: 2)
-                            : null,
-                      ),
-                      child: Center(
-                        child: Text(
-                          option.$2,
-                          style: const TextStyle(fontSize: 22),
+              return Semantics(
+                button: true,
+                label: _moodLabel(option.$1),
+                selected: isSelected,
+                child: GestureDetector(
+                  onTap: () => setState(() {
+                    _selectedMood =
+                        _selectedMood == option.$1 ? null : option.$1;
+                  }),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.brandPrimary.withValues(alpha: 0.12)
+                              : AppColors.gray100,
+                          borderRadius: BorderRadius.circular(14),
+                          border: isSelected
+                              ? Border.all(
+                                  color: AppColors.brandPrimary, width: 2)
+                              : null,
+                        ),
+                        child: Center(
+                          child: Text(
+                            option.$2,
+                            style: const TextStyle(fontSize: 22),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _moodLabel(option.$1),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w400,
-                        color: isSelected
-                            ? AppColors.brandPrimary
-                            : AppColors.mediumGray,
-                        letterSpacing: -0.3,
+                      const SizedBox(height: 4),
+                      Text(
+                        _moodLabel(option.$1),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w400,
+                          color: isSelected
+                              ? AppColors.brandPrimary
+                              : AppColors.mediumGray,
+                          letterSpacing: -0.3,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             }).toList(),
@@ -333,18 +342,23 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
               final level = index + 1;
               final isActive =
                   _activityLevel != null && level <= _activityLevel!;
-              return GestureDetector(
-                onTap: () => setState(() {
-                  _activityLevel = _activityLevel == level ? null : level;
-                }),
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Icon(
-                    isActive ? Icons.star_rounded : Icons.star_outline_rounded,
-                    size: 36,
-                    color: isActive
-                        ? AppColors.brandPrimary
-                        : AppColors.gray350,
+              return Semantics(
+                button: true,
+                label: 'Activity level $level',
+                selected: isActive,
+                child: GestureDetector(
+                  onTap: () => setState(() {
+                    _activityLevel = _activityLevel == level ? null : level;
+                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Icon(
+                      isActive ? Icons.star_rounded : Icons.star_outline_rounded,
+                      size: 36,
+                      color: isActive
+                          ? AppColors.brandPrimary
+                          : AppColors.gray350,
+                    ),
                   ),
                 ),
               );
@@ -408,21 +422,25 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
       child: Row(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.gray100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    l10n.common_cancel,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.mediumGray,
+            child: Semantics(
+              button: true,
+              label: l10n.common_cancel,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      l10n.common_cancel,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.mediumGray,
+                      ),
                     ),
                   ),
                 ),
@@ -432,21 +450,25 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
-            child: GestureDetector(
-              onTap: _save,
-              child: Container(
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.brandPrimary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    l10n.common_save,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+            child: Semantics(
+              button: true,
+              label: l10n.common_save,
+              child: GestureDetector(
+                onTap: _save,
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      l10n.common_save,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -481,22 +503,26 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              GestureDetector(
-                onTap: () {
-                  final newDate = DateTime(year, month - 1);
-                  setState(() {
-                    _selectedDate = DateTime(
-                      newDate.year,
-                      newDate.month,
-                      _selectedDate.day.clamp(
-                        1,
-                        DateTime(newDate.year, newDate.month + 1, 0).day,
-                      ),
-                    );
-                  });
-                  _loadExistingRecord();
-                },
-                child: const Icon(Icons.chevron_left, size: 20),
+              Semantics(
+                button: true,
+                label: 'Previous month',
+                child: GestureDetector(
+                  onTap: () {
+                    final newDate = DateTime(year, month - 1);
+                    setState(() {
+                      _selectedDate = DateTime(
+                        newDate.year,
+                        newDate.month,
+                        _selectedDate.day.clamp(
+                          1,
+                          DateTime(newDate.year, newDate.month + 1, 0).day,
+                        ),
+                      );
+                    });
+                    _loadExistingRecord();
+                  },
+                  child: const Icon(Icons.chevron_left, size: 20),
+                ),
               ),
               const SizedBox(width: 16),
               Text(
@@ -508,22 +534,26 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
                 ),
               ),
               const SizedBox(width: 16),
-              GestureDetector(
-                onTap: () {
-                  final newDate = DateTime(year, month + 1);
-                  setState(() {
-                    _selectedDate = DateTime(
-                      newDate.year,
-                      newDate.month,
-                      _selectedDate.day.clamp(
-                        1,
-                        DateTime(newDate.year, newDate.month + 1, 0).day,
-                      ),
-                    );
-                  });
-                  _loadExistingRecord();
-                },
-                child: const Icon(Icons.chevron_right, size: 20),
+              Semantics(
+                button: true,
+                label: 'Next month',
+                child: GestureDetector(
+                  onTap: () {
+                    final newDate = DateTime(year, month + 1);
+                    setState(() {
+                      _selectedDate = DateTime(
+                        newDate.year,
+                        newDate.month,
+                        _selectedDate.day.clamp(
+                          1,
+                          DateTime(newDate.year, newDate.month + 1, 0).day,
+                        ),
+                      );
+                    });
+                    _loadExistingRecord();
+                  },
+                  child: const Icon(Icons.chevron_right, size: 20),
+                ),
               ),
             ],
           ),
@@ -572,32 +602,37 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
 
       currentRow.add(
         Expanded(
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedDate = DateTime(year, month, day);
-              });
-              _loadExistingRecord();
-            },
-            child: Container(
-              height: 36,
-              alignment: Alignment.center,
-              decoration: isSelected
-                  ? BoxDecoration(
-                      color: AppColors.brandPrimary,
-                      borderRadius: BorderRadius.circular(18),
-                    )
-                  : null,
-              child: Text(
-                '$day',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? Colors.white
-                      : isSunday
-                          ? AppColors.sundayRed
-                          : AppColors.nearBlack,
+          child: Semantics(
+            button: true,
+            label: '$month/$day',
+            selected: isSelected,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedDate = DateTime(year, month, day);
+                });
+                _loadExistingRecord();
+              },
+              child: Container(
+                height: 36,
+                alignment: Alignment.center,
+                decoration: isSelected
+                    ? BoxDecoration(
+                        color: AppColors.brandPrimary,
+                        borderRadius: BorderRadius.circular(18),
+                      )
+                    : null,
+                child: Text(
+                  '$day',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : isSunday
+                            ? AppColors.sundayRed
+                            : AppColors.nearBlack,
+                  ),
                 ),
               ),
             ),

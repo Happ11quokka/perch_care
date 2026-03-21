@@ -211,7 +211,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  GestureDetector(
+                  Semantics(
+                    button: true,
+                    label: l10n.login_signup,
+                    child: GestureDetector(
                     onTap: () => context.pushNamed(RouteNames.signup),
                     child: Text(
                       l10n.login_signup,
@@ -223,6 +226,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         decoration: TextDecoration.underline,
                         decorationColor: AppColors.brandPrimary,
                       ),
+                    ),
                     ),
                   ),
                 ],
@@ -240,7 +244,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     required VoidCallback onTap,
     required bool isLoading,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
       onTap: isLoading ? null : onTap,
       child: Container(
         height: 64,
@@ -272,6 +279,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -284,7 +292,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _buildPrimaryLoginButton(AppLocalizations l10n) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.login_button,
+      child: GestureDetector(
       onTap: () {
         // 이메일 로그인 화면으로 이동
         context.pushNamed(RouteNames.emailLogin);
@@ -310,6 +321,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

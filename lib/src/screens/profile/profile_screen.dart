@@ -544,7 +544,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildPremiumStatusCard(AppLocalizations l10n) {
     final isPremium = _premiumTier == 'premium';
 
-    return GestureDetector(
+    return Semantics(
+      button: !isPremium,
+      label: isPremium ? null : 'Upgrade to premium',
+      child: GestureDetector(
       key: _premiumCardKey,
       onTap: isPremium
           ? null
@@ -632,6 +635,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -658,7 +662,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Select language',
+            child: GestureDetector(
             onTap: () => _showLanguageDialog(l10n),
             child: Container(
               width: double.infinity,
@@ -694,6 +701,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
             ),
+          ),
           ),
         ],
       ),
@@ -866,7 +874,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildTermsRow({required String label, required VoidCallback onTap}) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
@@ -896,6 +907,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -912,7 +924,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // 뒤로가기 버튼
             Positioned(
               left: 0,
-              child: GestureDetector(
+              child: Semantics(
+                button: true,
+                label: 'Go back',
+                child: GestureDetector(
                 onTap: () {
                   if (context.canPop()) {
                     context.pop();
@@ -927,6 +942,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'assets/images/profile/back_arrow.svg',
                   ),
                 ),
+              ),
               ),
             ),
 
@@ -954,7 +970,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Row(
         children: [
           // 프로필 아이콘과 편집 버튼
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Edit profile',
+            child: GestureDetector(
             onTap: () {
               context.pushNamed(RouteNames.profileSetup);
             },
@@ -1007,6 +1026,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
+          ),
 
           const SizedBox(width: 16),
 
@@ -1036,7 +1056,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }) {
     final isSelected = index == _selectedPetIndex;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: 'Select pet',
+      child: GestureDetector(
       key: isFirst ? _firstPetCardKey : null,
       onTap: () async {
         setState(() {
@@ -1141,7 +1164,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
 
             // 편집 아이콘
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: 'Edit pet profile',
+              child: GestureDetector(
               onTap: () async {
                 await context.pushNamed(RouteNames.petProfileDetail);
                 await _loadPets();
@@ -1163,9 +1189,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ),
+            ),
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -1272,7 +1300,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: isLinked ? l10n.profile_unlink : l10n.profile_link,
+            child: GestureDetector(
             onTap: _isLinkingSocial ? null : (isLinked ? onUnlink : onLink),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1292,6 +1323,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ),
+          ),
           ),
         ],
       ),
@@ -1451,7 +1483,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           // 로그아웃 버튼
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: l10n.profile_logout,
+            child: GestureDetector(
             onTap: () => _handleLogout(l10n),
             child: Container(
               width: double.infinity,
@@ -1472,9 +1507,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
+          ),
           const SizedBox(height: 8),
           // 회원 탈퇴 버튼
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: l10n.profile_deleteAccount,
+            child: GestureDetector(
             onTap: () => _handleDeleteAccount(l10n),
             child: Container(
               width: double.infinity,
@@ -1495,6 +1534,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
+          ),
         ],
       ),
     );
@@ -1502,7 +1542,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   /// 새로운 아이 등록하기 버튼
   Widget _buildAddPetButton(AppLocalizations l10n) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.profile_addNewPet,
+      child: GestureDetector(
       key: _addPetButtonKey,
       onTap: () async {
         await context.pushNamed(RouteNames.petAdd);
@@ -1554,6 +1597,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

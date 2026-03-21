@@ -142,12 +142,17 @@
   - `common_defaultPetName`
 - **수정일:** 2026-03-20
 
-### M-5. 접근성 (Semantics) 거의 미구현 `미수정`
+### M-5. 접근성 (Semantics) 거의 미구현 `수정 완료`
 
-- **현황:** Semantics 위젯 0건, Tooltip 1건 (coach_mark_overlay)
-- **영향:** 스크린리더 사용자 접근 불가
-- **수정:** GestureDetector에 semantic label, 아이콘 버튼에 tooltip 추가
-- **미수정 사유:** 144개 GestureDetector + 전체 화면 대상, 별도 세션 필요
+- **수정 전:** Semantics 위젯 0건, Tooltip 1건
+- **수정 후:** 144개 GestureDetector 전체에 `Semantics(button: true, label: ...)` 래핑
+- **수정 내용:**
+  - 37개 파일 (screens 27개 + widgets 10개)의 모든 GestureDetector에 Semantics 추가
+  - 텍스트 버튼: 텍스트/l10n 키를 label로 사용
+  - 아이콘 버튼: 동작 설명 label ('Go back', 'Close', 'Send message' 등)
+  - 체크박스: `checked:` 속성 추가 (terms_agreement_section)
+  - 선택 요소: `selected:` 속성 추가 (날짜, 색상, 탭)
+- **수정일:** 2026-03-21
 
 ### M-6. 서비스 싱글턴 패턴 비일관 `수정 완료`
 
@@ -205,10 +210,10 @@
 
 | 상태 | 항목 수 | 목록 |
 |------|---------|------|
-| 수정 완료 | 13건 | C-1, C-2, H-1, H-2, H-3, H-4, M-1, M-2, M-3, M-4, M-6, L-4 |
+| 수정 완료 | 14건 | C-1, C-2, H-1, H-2, H-3, H-4, M-1, M-2, M-3, M-4, M-5, M-6, L-4 |
 | 수정 완료 (Riverpod) | 1건 | H-5 (Phase 0-7 전체 완료) |
 | 부분 수정 | 1건 | H-6 (53 → 169 케이스, 핵심 서비스+모델 커버) |
-| 미수정 (Flutter 대규모) | 2건 | M-5 |
+| 미수정 (Flutter 대규모) | 0건 | — |
 | 미수정 (기타) | 3건 | M-7, L-1, L-2, L-5, L-6 |
 | 해당 없음 (오탐) | 1건 | L-3 |
 
@@ -261,9 +266,9 @@
 | 네비게이션     | 9/10    | 9/10       | go_router 인증 가드, 구조 우수                 |
 | 상태관리       | 5/10    | **8.5/10** | Riverpod SSOT 완료, 전체 스크린 전환, 레거시 삭제 |
 | 테스트         | 3/10    | **5.5/10** | 8개 파일 169 케이스, 핵심 서비스+모델 커버     |
-| 접근성         | 2/10    | 2/10       | Semantics 거의 미구현                          |
+| 접근성         | 2/10    | **6.5/10** | 144개 GestureDetector Semantics 래핑 완료      |
 | 백엔드 보안    | 5/10    | **8/10**   | IDOR 수정, rate limiting, 비밀번호 정책 추가   |
 | 플랫폼 통합    | 7/10    | **7.5/10** | debugPrint 가드 완료 (수정), FCM 미완          |
 
-**종합: 6.6/10 → 7.9/10** (Flutter 6개 + 백엔드 6개 + Riverpod SSOT + 테스트 확대 + 색상 전체 정리 반영)
+**종합: 6.6/10 → 8.2/10** (코드 리뷰 수정 + Riverpod SSOT + 테스트 확대 + 색상 정리 + 접근성 반영)
 

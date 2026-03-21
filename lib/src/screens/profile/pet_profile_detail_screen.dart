@@ -242,7 +242,10 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                       // 삭제 버튼
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: GestureDetector(
+                        child: Semantics(
+                          button: true,
+                          label: l10n.pet_delete,
+                          child: GestureDetector(
                           onTap: _isLoading ? null : _handleDelete,
                           child: Container(
                             width: double.infinity,
@@ -264,6 +267,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                               ),
                             ),
                           ),
+                        ),
                         ),
                       ),
 
@@ -289,7 +293,10 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
           // 뒤로가기 버튼
           Align(
             alignment: Alignment.centerLeft,
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: 'Go back',
+              child: GestureDetector(
               onTap: () {
                 if (context.canPop()) {
                   context.pop();
@@ -304,6 +311,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                   'assets/images/profile/back_arrow.svg',
                 ),
               ),
+            ),
             ),
           ),
 
@@ -371,7 +379,10 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
             Positioned(
               right: 0,
               bottom: 0,
-              child: GestureDetector(
+              child: Semantics(
+                button: true,
+                label: 'Edit pet profile photo',
+                child: GestureDetector(
                 onTap: _handlePickImage,
                 child: Container(
                   width: 36,
@@ -389,6 +400,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                     ),
                   ),
                 ),
+              ),
               ),
             ),
           ],
@@ -514,7 +526,10 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
   /// 성별 선택기
   Widget _buildGenderSelector(AppLocalizations l10n) {
     final displayGender = _mapGenderToDisplay(_selectedGender, l10n);
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.pet_gender_hint,
+      child: GestureDetector(
       key: _genderSelectorKey,
       onTap: () => _showGenderPicker(l10n),
       child: Container(
@@ -552,6 +567,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -561,7 +577,10 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
     required DateTime? selectedDate,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: hintText,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         height: 60,
@@ -594,6 +613,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
           ],
         ),
       ),
+    ),
     );
   }
 

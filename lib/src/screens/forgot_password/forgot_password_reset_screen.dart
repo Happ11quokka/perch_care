@@ -257,7 +257,10 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                   ),
                 ),
               ),
-              GestureDetector(
+              Semantics(
+                button: true,
+                label: obscureText ? 'Show password' : 'Hide password',
+                child: GestureDetector(
                 onTap: onToggleObscure,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 20),
@@ -271,6 +274,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                     ),
                   ),
                 ),
+                ),
               ),
             ],
           ),
@@ -281,7 +285,10 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
 
   Widget _buildResetButton() {
     final l10n = AppLocalizations.of(context);
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.btn_resetComplete,
+      child: GestureDetector(
       onTap: _isLoading ? null : _handleResetPassword,
       child: Container(
         height: 60,
@@ -313,6 +320,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                   ),
                 ),
         ),
+      ),
       ),
     );
   }

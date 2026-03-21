@@ -198,7 +198,10 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  GestureDetector(
+                  Semantics(
+                    button: true,
+                    label: l10n.login_signup,
+                    child: GestureDetector(
                     onTap: () => context.pushNamed(RouteNames.signup),
                     child: Text(
                       l10n.login_signup,
@@ -211,6 +214,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                         decorationColor: AppColors.brandPrimary,
                       ),
                     ),
+                  ),
                   ),
                 ],
               ),
@@ -336,7 +340,10 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // 아이디 저장 체크박스
-        GestureDetector(
+        Semantics(
+          button: true,
+          label: l10n.login_saveId,
+          child: GestureDetector(
           onTap: () {
             setState(() {
               _saveId = !_saveId;
@@ -386,8 +393,12 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             ],
           ),
         ),
+        ),
         // 아이디/비밀번호 찾기
-        GestureDetector(
+        Semantics(
+          button: true,
+          label: l10n.login_findIdPassword,
+          child: GestureDetector(
           onTap: () {
             context.pushNamed(RouteNames.forgotPasswordMethod);
           },
@@ -401,13 +412,17 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             ),
           ),
         ),
+        ),
       ],
     );
   }
 
   Widget _buildLoginButton() {
     final l10n = AppLocalizations.of(context)!;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.login_button,
+      child: GestureDetector(
       onTap: _isLoading ? null : _handleLogin,
       child: Container(
         height: 60,
@@ -440,6 +455,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                 ),
         ),
       ),
+    ),
     );
   }
 
@@ -451,6 +467,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         _buildSocialLoginButton(
           onTap: _handleGoogleLogin,
           isLoading: _isGoogleLoading,
+          semanticsLabel: 'Sign in with Google',
           child: SvgPicture.asset(
             'assets/images/btn_google/btn_google.svg',
             width: 24,
@@ -465,6 +482,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           backgroundColor: Colors.black,
           borderColor: Colors.black,
           loadingColor: Colors.white,
+          semanticsLabel: 'Sign in with Apple',
           child: SvgPicture.asset(
             'assets/images/btn_apple/apple_logo_white.svg',
             width: 60,
@@ -482,8 +500,12 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     Color? backgroundColor,
     Color? borderColor,
     Color? loadingColor,
+    String? semanticsLabel,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: semanticsLabel,
+      child: GestureDetector(
       onTap: isLoading ? null : onTap,
       child: Container(
         width: 60,
@@ -506,6 +528,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
               : child,
         ),
       ),
+    ),
     );
   }
 

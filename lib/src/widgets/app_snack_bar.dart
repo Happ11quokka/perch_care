@@ -164,80 +164,87 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
         position: _slideAnimation,
         child: FadeTransition(
           opacity: _fadeAnimation,
-          child: GestureDetector(
-            onVerticalDragEnd: (details) {
-              if (details.primaryVelocity != null &&
-                  details.primaryVelocity! < 0) {
-                _animateOut();
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.only(top: topPadding + AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: config.backgroundColor,
-                boxShadow: const [
-                  BoxShadow(
-                    color: AppColors.shadowLight,
-                    offset: Offset(0, 4),
-                    blurRadius: 12,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
+          child: Semantics(
+            label: widget.message,
+            child: GestureDetector(
+              onVerticalDragEnd: (details) {
+                if (details.primaryVelocity != null &&
+                    details.primaryVelocity! < 0) {
+                  _animateOut();
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.only(top: topPadding + AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: config.backgroundColor,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.shadowLight,
+                      offset: Offset(0, 4),
+                      blurRadius: 12,
+                      spreadRadius: 0,
+                    ),
+                  ],
                 ),
-                child: SafeArea(
-                  top: false,
-                  bottom: false,
-                  child: Row(
-                    children: [
-                      // 아이콘
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: config.iconBackgroundColor,
-                          borderRadius: AppRadius.radiusFull,
-                        ),
-                        child: Icon(
-                          config.icon,
-                          color: config.iconColor,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-
-                      // 메시지
-                      Expanded(
-                        child: Text(
-                          widget.message,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: config.textColor,
-                            fontWeight: FontWeight.w500,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    bottom: false,
+                    child: Row(
+                      children: [
+                        // 아이콘
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: config.iconBackgroundColor,
+                            borderRadius: AppRadius.radiusFull,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-
-                      // 닫기 버튼
-                      GestureDetector(
-                        onTap: _animateOut,
-                        behavior: HitTestBehavior.opaque,
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.xs),
                           child: Icon(
-                            Icons.close_rounded,
-                            color: config.closeColor,
-                            size: 18,
+                            config.icon,
+                            color: config.iconColor,
+                            size: 20,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: AppSpacing.md),
+
+                        // 메시지
+                        Expanded(
+                          child: Text(
+                            widget.message,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: config.textColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+
+                        // 닫기 버튼
+                        Semantics(
+                          button: true,
+                          label: 'Close',
+                          child: GestureDetector(
+                            onTap: _animateOut,
+                            behavior: HitTestBehavior.opaque,
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.xs),
+                              child: Icon(
+                                Icons.close_rounded,
+                                color: config.closeColor,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

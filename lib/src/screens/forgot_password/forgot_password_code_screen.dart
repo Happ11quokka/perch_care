@@ -255,7 +255,10 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
 
   Widget _buildResendButton() {
     final l10n = AppLocalizations.of(context);
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.btn_resendCode,
+      child: GestureDetector(
       onTap: _isResending ? null : _handleResendCode,
       child: Container(
         height: 60,
@@ -287,6 +290,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                   ),
                 ),
         ),
+      ),
       ),
     );
   }

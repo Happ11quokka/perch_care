@@ -106,24 +106,29 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
   }
 
   Widget _buildSelectAllRow(AppLocalizations l10n) {
-    return GestureDetector(
-      onTap: () => _onAgreeAllChanged(!_agreeAll),
-      behavior: HitTestBehavior.opaque,
-      child: Row(
-        children: [
-          _buildCheckbox(_agreeAll),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              l10n.terms_agreeAll,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.nearBlack,
+    return Semantics(
+      button: true,
+      label: l10n.terms_agreeAll,
+      checked: _agreeAll,
+      child: GestureDetector(
+        onTap: () => _onAgreeAllChanged(!_agreeAll),
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          children: [
+            _buildCheckbox(_agreeAll),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.terms_agreeAll,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.nearBlack,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -135,37 +140,46 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
     required AppLocalizations l10n,
     TermsType? termsType,
   }) {
-    return GestureDetector(
-      onTap: () => onChanged(!checked),
-      behavior: HitTestBehavior.opaque,
-      child: Row(
-        children: [
-          _buildCheckbox(checked),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.mediumGray,
-              ),
-            ),
-          ),
-          if (termsType != null)
-            GestureDetector(
-              onTap: () => _openTerms(termsType),
+    return Semantics(
+      button: true,
+      label: label,
+      checked: checked,
+      child: GestureDetector(
+        onTap: () => onChanged(!checked),
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          children: [
+            _buildCheckbox(checked),
+            const SizedBox(width: 10),
+            Expanded(
               child: Text(
-                l10n.common_view,
+                label,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.warmGray,
-                  decoration: TextDecoration.underline,
+                  color: AppColors.mediumGray,
                 ),
               ),
             ),
-        ],
+            if (termsType != null)
+              Semantics(
+                button: true,
+                label: '${l10n.common_view}: $label',
+                child: GestureDetector(
+                  onTap: () => _openTerms(termsType),
+                  child: Text(
+                    l10n.common_view,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.warmGray,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

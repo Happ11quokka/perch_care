@@ -577,7 +577,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     required double width,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(
@@ -597,6 +600,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -1234,13 +1238,17 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Previous month',
+            child: GestureDetector(
             onTap: _previousMonth,
             child: const Icon(
               Icons.chevron_left,
               size: 20,
               color: AppColors.nearBlack,
             ),
+          ),
           ),
           const SizedBox(width: 10),
           Text(
@@ -1255,13 +1263,17 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Next month',
+            child: GestureDetector(
             onTap: _nextMonth,
             child: const Icon(
               Icons.chevron_right,
               size: 20,
               color: AppColors.nearBlack,
             ),
+          ),
           ),
         ],
       ),
@@ -1386,7 +1398,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     final selectedDate = DateTime(_selectedYear, _selectedMonth, day);
 
     return Expanded(
-      child: GestureDetector(
+      child: Semantics(
+        button: !isOtherMonth,
+        label: isOtherMonth ? null : '$day',
+        child: GestureDetector(
         onTap: isOtherMonth ? null : () => _setFocusedDate(selectedDate),
         child: SizedBox(
           height: 44,
@@ -1442,6 +1457,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -1545,7 +1561,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     required String label,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
@@ -1575,6 +1594,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -1712,7 +1732,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
           }
         }
       },
-      child: GestureDetector(
+      child: Semantics(
+        button: true,
+        label: 'Edit daily record',
+        child: GestureDetector(
         onTap: () => _openDailyRecordBottomSheetFor(date),
         child: Container(
           width: double.infinity,
@@ -1807,6 +1830,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -2098,7 +2122,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
         itemBuilder: (context, index) {
           final pet = _petList[index];
           final isSelected = pet.id == _activePetId;
-          return GestureDetector(
+          return Semantics(
+            button: true,
+            label: 'Select pet ${pet.name}',
+            child: GestureDetector(
             onTap: () => _switchPet(pet),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -2123,6 +2150,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                 ),
               ),
             ),
+          ),
           );
         },
       ),
@@ -2424,7 +2452,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
             }
           }),
           if (sortedDateKeys.length > 10)
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: _isRecordsExpanded ? l10n.common_collapse : l10n.common_showAll(sortedDateKeys.length),
+              child: GestureDetector(
               onTap: () {
                 setState(() {
                   _isRecordsExpanded = !_isRecordsExpanded;
@@ -2459,6 +2490,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                 ),
               ),
             ),
+            ),
         ],
       ),
     );
@@ -2471,7 +2503,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-        child: GestureDetector(
+        child: Semantics(
+          button: true,
+          label: l10n.btn_addRecord,
+          child: GestureDetector(
           onTap: _showAddRecordMenu,
           child: Container(
             height: 60,
@@ -2510,6 +2545,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );

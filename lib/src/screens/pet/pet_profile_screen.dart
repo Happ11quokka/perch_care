@@ -255,7 +255,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
           ),
           const Spacer(),
           // 설정 버튼
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: l10n.profile_title,
+            child: GestureDetector(
             onTap: () {
               context.pushNamed(RouteNames.profile);
             },
@@ -263,6 +266,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               'assets/images/settings_icon.svg',
               width: 24,
               height: 24,
+            ),
             ),
           ),
         ],
@@ -274,7 +278,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     final isSelected = pet['id'] == _selectedPetId;
     final petId = pet['id'] as String;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: pet['name'] as String,
+      child: GestureDetector(
       onTap: () async {
         setState(() {
           _selectedPetId = petId;
@@ -367,7 +374,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               ),
             ),
             // 수정 버튼
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: 'Edit ${pet['name']}',
+              child: GestureDetector(
               onTap: () async {
                 await context.pushNamed(
                   RouteNames.petAdd,
@@ -390,16 +400,21 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                   color: Colors.white,
                 ),
               ),
+              ),
             ),
           ],
         ),
+      ),
       ),
     );
   }
 
   Widget _buildAddPetButton() {
     final l10n = AppLocalizations.of(context);
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.profile_addNewPet,
+      child: GestureDetector(
       onTap: () async {
         await context.pushNamed(RouteNames.petAdd);
         await _loadPets();
@@ -442,6 +457,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

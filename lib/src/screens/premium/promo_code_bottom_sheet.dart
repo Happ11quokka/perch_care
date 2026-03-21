@@ -174,7 +174,10 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
           const SizedBox(height: 20),
 
           // 활성화 버튼
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: l10n.premium_activateButton,
+            child: GestureDetector(
             onTap: _isActivating ? null : _activateCode,
             child: Container(
               width: double.infinity,
@@ -207,6 +210,7 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
                         letterSpacing: -0.3,
                       ),
                     ),
+            ),
             ),
           ),
         ],

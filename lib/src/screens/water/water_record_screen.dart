@@ -366,7 +366,10 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: _formatDate(_selectedDate),
+                      child: GestureDetector(
                       onTap: _pickDate,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -386,6 +389,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                             letterSpacing: -0.35,
                           ),
                         ),
+                      ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -412,7 +416,10 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: l10n.water_water,
+                      child: GestureDetector(
                       key: _waterIconKey,
                       onTap: _openEditor,
                       child: Column(
@@ -464,6 +471,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                             ],
                           ),
                         ],
+                      ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -557,7 +565,10 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: l10n.btn_save,
+                      child: GestureDetector(
                       onTap: () async {
                         await _saveRecord();
                         if (!mounted) return;
@@ -587,6 +598,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                             ),
                           ),
                         ),
+                      ),
                       ),
                     ),
                   ],

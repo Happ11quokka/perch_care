@@ -207,40 +207,48 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           Expanded(
             child: Column(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showStartCalendar = !_showStartCalendar;
-                      _showEndCalendar = false;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _showStartCalendar ? AppColors.brandPrimary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _formatDate(_startDate),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _showStartCalendar ? Colors.white : AppColors.nearBlack,
-                        letterSpacing: -0.35,
+                Semantics(
+                  button: true,
+                  label: _formatDate(_startDate),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showStartCalendar = !_showStartCalendar;
+                        _showEndCalendar = false;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _showStartCalendar ? AppColors.brandPrimary : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _formatDate(_startDate),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _showStartCalendar ? Colors.white : AppColors.nearBlack,
+                          letterSpacing: -0.35,
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                GestureDetector(
-                  onTap: _selectStartTime,
-                  child: Text(
-                    _formatTime(_startTime),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.nearBlack,
-                      letterSpacing: -0.4,
+                Semantics(
+                  button: true,
+                  label: _formatTime(_startTime),
+                  child: GestureDetector(
+                    onTap: _selectStartTime,
+                    child: Text(
+                      _formatTime(_startTime),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.nearBlack,
+                        letterSpacing: -0.4,
+                      ),
                     ),
                   ),
                 ),
@@ -256,40 +264,48 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           Expanded(
             child: Column(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showEndCalendar = !_showEndCalendar;
-                      _showStartCalendar = false;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _showEndCalendar ? AppColors.brandPrimary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _formatDate(_endDate),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _showEndCalendar ? Colors.white : AppColors.nearBlack,
-                        letterSpacing: -0.35,
+                Semantics(
+                  button: true,
+                  label: _formatDate(_endDate),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showEndCalendar = !_showEndCalendar;
+                        _showStartCalendar = false;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _showEndCalendar ? AppColors.brandPrimary : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _formatDate(_endDate),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _showEndCalendar ? Colors.white : AppColors.nearBlack,
+                          letterSpacing: -0.35,
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                GestureDetector(
-                  onTap: _selectEndTime,
-                  child: Text(
-                    _formatTime(_endTime),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.nearBlack,
-                      letterSpacing: -0.4,
+                Semantics(
+                  button: true,
+                  label: _formatTime(_endTime),
+                  child: GestureDetector(
+                    onTap: _selectEndTime,
+                    child: Text(
+                      _formatTime(_endTime),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.nearBlack,
+                        letterSpacing: -0.4,
+                      ),
                     ),
                   ),
                 ),
@@ -337,14 +353,18 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
             ),
           ),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => setState(() => _showColorPalette = !_showColorPalette),
-            child: Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: _selectedColor,
-                shape: BoxShape.circle,
+          Semantics(
+            button: true,
+            label: 'Select color',
+            child: GestureDetector(
+              onTap: () => setState(() => _showColorPalette = !_showColorPalette),
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: _selectedColor,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
           ),
@@ -361,20 +381,25 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
         runSpacing: 12,
         children: ScheduleRecord.colorPalette.map((color) {
           final isSelected = color == _selectedColor;
-          return GestureDetector(
-            onTap: () => setState(() {
-              _selectedColor = color;
-              _showColorPalette = false;
-            }),
-            child: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: isSelected
-                    ? Border.all(color: AppColors.nearBlack, width: 2)
-                    : null,
+          return Semantics(
+            button: true,
+            label: 'Select color',
+            selected: isSelected,
+            child: GestureDetector(
+              onTap: () => setState(() {
+                _selectedColor = color;
+                _showColorPalette = false;
+              }),
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: isSelected
+                      ? Border.all(color: AppColors.nearBlack, width: 2)
+                      : null,
+                ),
               ),
             ),
           );
@@ -430,18 +455,22 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    final newDate = DateTime(year, month - 1);
-                    if (isStart) {
-                      _startDate = DateTime(newDate.year, newDate.month, _startDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
-                    } else {
-                      _endDate = DateTime(newDate.year, newDate.month, _endDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
-                    }
-                  });
-                },
-                child: const Icon(Icons.chevron_left, size: 20),
+              Semantics(
+                button: true,
+                label: 'Previous month',
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      final newDate = DateTime(year, month - 1);
+                      if (isStart) {
+                        _startDate = DateTime(newDate.year, newDate.month, _startDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
+                      } else {
+                        _endDate = DateTime(newDate.year, newDate.month, _endDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
+                      }
+                    });
+                  },
+                  child: const Icon(Icons.chevron_left, size: 20),
+                ),
               ),
               const SizedBox(width: 16),
               Text(
@@ -453,18 +482,22 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                 ),
               ),
               const SizedBox(width: 16),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    final newDate = DateTime(year, month + 1);
-                    if (isStart) {
-                      _startDate = DateTime(newDate.year, newDate.month, _startDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
-                    } else {
-                      _endDate = DateTime(newDate.year, newDate.month, _endDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
-                    }
-                  });
-                },
-                child: const Icon(Icons.chevron_right, size: 20),
+              Semantics(
+                button: true,
+                label: 'Next month',
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      final newDate = DateTime(year, month + 1);
+                      if (isStart) {
+                        _startDate = DateTime(newDate.year, newDate.month, _startDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
+                      } else {
+                        _endDate = DateTime(newDate.year, newDate.month, _endDate.day.clamp(1, DateTime(newDate.year, newDate.month + 1, 0).day));
+                      }
+                    });
+                  },
+                  child: const Icon(Icons.chevron_right, size: 20),
+                ),
               ),
             ],
           ),
@@ -518,35 +551,40 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
 
       currentRow.add(
         Expanded(
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                if (isStart) {
-                  _startDate = DateTime(year, month, day);
-                } else {
-                  _endDate = DateTime(year, month, day);
-                }
-              });
-            },
-            child: Container(
-              height: 36,
-              alignment: Alignment.center,
-              decoration: isSelected
-                  ? BoxDecoration(
-                      color: AppColors.brandPrimary,
-                      borderRadius: BorderRadius.circular(18),
-                    )
-                  : null,
-              child: Text(
-                '$day',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? Colors.white
-                      : isSunday
-                          ? AppColors.sundayRed
-                          : AppColors.nearBlack,
+          child: Semantics(
+            button: true,
+            label: '$month/$day',
+            selected: isSelected,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (isStart) {
+                    _startDate = DateTime(year, month, day);
+                  } else {
+                    _endDate = DateTime(year, month, day);
+                  }
+                });
+              },
+              child: Container(
+                height: 36,
+                alignment: Alignment.center,
+                decoration: isSelected
+                    ? BoxDecoration(
+                        color: AppColors.brandPrimary,
+                        borderRadius: BorderRadius.circular(18),
+                      )
+                    : null,
+                child: Text(
+                  '$day',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : isSunday
+                            ? AppColors.sundayRed
+                            : AppColors.nearBlack,
+                  ),
                 ),
               ),
             ),
@@ -577,21 +615,25 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
       child: Row(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.gray100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    AppLocalizations.of(context).common_cancel,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.mediumGray,
+            child: Semantics(
+              button: true,
+              label: AppLocalizations.of(context).common_cancel,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context).common_cancel,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.mediumGray,
+                      ),
                     ),
                   ),
                 ),
@@ -601,21 +643,25 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
-            child: GestureDetector(
-              onTap: _save,
-              child: Container(
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.brandPrimary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    AppLocalizations.of(context).common_save,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+            child: Semantics(
+              button: true,
+              label: AppLocalizations.of(context).common_save,
+              child: GestureDetector(
+                onTap: _save,
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context).common_save,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

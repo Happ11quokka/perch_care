@@ -399,7 +399,10 @@ class _HealthCheckHistoryScreenState
       ),
       confirmDismiss: (_) => _showDeleteConfirmDialog(),
       onDismissed: (_) => _performDelete(record),
-      child: GestureDetector(
+      child: Semantics(
+        button: true,
+        label: _getModeLabel(mode, l10n),
+        child: GestureDetector(
         onTap: () {
           context.pushNamed(
             RouteNames.healthCheckResult,
@@ -490,6 +493,7 @@ class _HealthCheckHistoryScreenState
               ],
             ],
           ),
+        ),
         ),
       ),
     );

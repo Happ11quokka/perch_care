@@ -194,13 +194,84 @@ if (TokenService.instance.isLoggedIn) {
 
 ---
 
+---
+
+## M-2: 하드코딩 색상 전체 제거 (완료)
+
+screens + widgets에서 `Color(0x...)` 하드코딩 ~530건 → **0건** 달성.
+
+### 작업 내용
+- 46개 파일의 모든 `Color(0xFFXXXXXX)` → `AppColors.xxx` 상수로 교체
+- `colors.dart`에 35개 신규 AppColors 상수 추가:
+  - 시맨틱: `danger/success/info/warning` 계열 (밝은/어두운 변형 포함)
+  - 브랜드: `brandLighter`, `brandPale`, `brandAccent`, `gradientBottomAlt`
+  - 오버레이/그림자: `shadowLight`, `shadowMedium`, `overlay30/50`, `overlayWhite60/80/90`
+  - 차트/헬스체크/체중: `yellow`, `lime`, `partSpecificBlue`, `weightIdeal` 등
+
+### 교체 규칙
+- `Color(0xFF1A1A1A)` → `AppColors.nearBlack` (92건, 최다)
+- `Color(0xFF97928A)` → `AppColors.warmGray` (93건)
+- `Color(0xFFFF9A42)` → `AppColors.brandPrimary` (65건)
+- `const Color(0x...)` → `AppColors.xxx` (const 키워드 제거 — AppColors가 이미 static const)
+
+---
+
+## M-5: 접근성 Semantics 구현 (완료)
+
+144개 GestureDetector 전체에 `Semantics` 위젯 래핑 완료.
+
+### 작업 내용
+- 37개 파일 (screens 27개 + widgets 10개)의 모든 GestureDetector에 Semantics 추가
+- 스크린리더(VoiceOver/TalkBack)가 모든 터치 영역을 인식 가능
+
+### Semantics 적용 패턴
+
+**버튼 (onTap 있는 GestureDetector):**
+```dart
+Semantics(
+  button: true,
+  label: '저장',  // 또는 l10n 키
+  child: GestureDetector(onTap: ..., child: ...),
+)
+```
+
+**체크박스 (terms_agreement_section):**
+```dart
+Semantics(
+  button: true,
+  label: '전체 동의',
+  checked: isChecked,
+  child: GestureDetector(...),
+)
+```
+
+**선택 요소 (날짜, 색상, 탭):**
+```dart
+Semantics(
+  button: true,
+  label: 'March 21',
+  selected: isSelected,
+  child: GestureDetector(...),
+)
+```
+
+### label 규칙
+| 유형 | label 소스 | 예시 |
+|------|-----------|------|
+| 텍스트 버튼 | l10n 키 또는 텍스트 | `l10n.btn_save`, `l10n.profile_logout` |
+| 아이콘 버튼 | 동작 설명 (영문) | `'Go back'`, `'Close'`, `'Send message'` |
+| 카드/영역 | 핵심 내용 | `'Select pet'`, 펫 이름, 모드 레이블 |
+| 동적 | 파라미터 기반 | `hint` (날짜 필드), `q` (채팅 칩) |
+
+---
+
 ## 최종 검증 결과
 
 ```
-flutter analyze: 0 errors (37 info/warning — 모두 기존)
-flutter test:    53/53 passed
+flutter analyze: 0 errors
+flutter test:    169/169 passed
 
-ActivePetNotifier (레거시 ChangeNotifier): 파일 삭제됨, 참조 0건
-StatefulWidget in screens: OnboardingScreen 1건 (정상 - ConsumerStatefulWidget 전환됨)
-StatelessWidget in screens: _NotificationCard 1건 (정상 - private 하위 위젯)
+Color(0x...) in screens + widgets: 0건
+Semantics-wrapped GestureDetectors: 144건
+ActivePetNotifier 레거시: 완전 삭제
 ```

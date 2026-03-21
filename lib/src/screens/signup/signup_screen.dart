@@ -106,7 +106,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ),
         ),
       ),
-      body: GestureDetector(
+      body: Semantics(
+        label: 'Dismiss keyboard',
+        child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,
         child: SafeArea(
@@ -251,7 +253,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  GestureDetector(
+                  Semantics(
+                    button: true,
+                    label: l10n.login_button,
+                    child: GestureDetector(
                     onTap: () => context.pop(),
                     child: Text(
                       l10n.login_button,
@@ -264,12 +269,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         decorationColor: AppColors.brandPrimary,
                       ),
                     ),
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
+      ),
       ),
       ),
     );
@@ -378,7 +385,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget _buildSignupButton() {
     final l10n = AppLocalizations.of(context)!;
     final isEnabled = _allRequiredTermsAgreed && !_isLoading;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.signup_button,
+      child: GestureDetector(
       onTap: isEnabled ? _handleSignup : null,
       child: Container(
         height: 60,
@@ -413,6 +423,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                 ),
         ),
+      ),
       ),
     );
   }

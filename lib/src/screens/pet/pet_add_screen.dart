@@ -461,7 +461,10 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                                 Positioned(
                                   right: 0,
                                   bottom: 0,
-                                  child: GestureDetector(
+                                  child: Semantics(
+                                    button: true,
+                                    label: 'Edit pet photo',
+                                    child: GestureDetector(
                                     onTap: _handlePickImage,
                                     child: Container(
                                       width: 32,
@@ -476,6 +479,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                                         color: Colors.white,
                                       ),
                                     ),
+                                  ),
                                   ),
                                 ),
                               ],
@@ -568,7 +572,10 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                 // 저장 버튼
                 Padding(
                   padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                  child: GestureDetector(
+                  child: Semantics(
+                    button: true,
+                    label: l10n.common_save,
+                    child: GestureDetector(
                     onTap: _isLoading ? null : _handleSave,
                     child: Container(
                       height: 60,
@@ -603,6 +610,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                               ),
                       ),
                     ),
+                  ),
                   ),
                 ),
               ],
@@ -721,7 +729,10 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
         ? AppColors.brandPrimary
         : AppColors.warmGray;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.pet_gender_hint,
+      child: GestureDetector(
       onTap: () async {
         final selected = await showDialog<String>(
           context: context,
@@ -775,6 +786,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -785,7 +797,10 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
         ? AppColors.brandPrimary
         : AppColors.warmGray;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.pet_growthStage_hint,
+      child: GestureDetector(
       onTap: () async {
         final selected = await showDialog<String>(
           context: context,
@@ -839,6 +854,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -852,7 +868,10 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
         ? AppColors.brandPrimary
         : AppColors.warmGray;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: hint,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         height: 60,
@@ -884,6 +903,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

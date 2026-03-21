@@ -921,7 +921,10 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         runSpacing: AppSpacing.sm,
         children: samples
             .map(
-              (q) => GestureDetector(
+              (q) => Semantics(
+                button: true,
+                label: q,
+                child: GestureDetector(
                 onTap: () {
                   _inputController.text = q;
                   _handleSend();
@@ -943,6 +946,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                     ),
                   ),
                 ),
+              ),
               ),
             )
             .toList(),
@@ -1118,7 +1122,10 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                   ),
                 ),
                 const SizedBox(height: 4),
-                GestureDetector(
+                Semantics(
+                  button: true,
+                  label: l10n.chatbot_premiumUpgrade,
+                  child: GestureDetector(
                   onTap: () async {
                     AnalyticsService.instance.logPremiumFeatureBlocked(
                       feature: 'ai',
@@ -1148,15 +1155,20 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                     ),
                   ),
                 ),
+                ),
               ],
             ),
           ),
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Close',
+            child: GestureDetector(
             onTap: _dismissPremiumBanner,
             child: const Padding(
               padding: EdgeInsets.all(2),
               child: Icon(Icons.close, size: 18, color: AppColors.warmGray),
             ),
+          ),
           ),
         ],
       ),
@@ -1202,7 +1214,10 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Send message',
+            child: GestureDetector(
             onTap: _isSending ? null : _handleSend,
             child: Container(
               width: 44,
@@ -1225,6 +1240,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                       size: 22,
                     ),
             ),
+          ),
           ),
         ],
       ),

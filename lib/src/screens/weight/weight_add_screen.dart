@@ -411,7 +411,10 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
   }
 
   Widget _buildBottomSheet(Size size, EdgeInsets padding) {
-    return GestureDetector(
+    final l10n = AppLocalizations.of(context);
+    return Semantics(
+      label: l10n.weight_title,
+      child: GestureDetector(
       onVerticalDragUpdate: (details) {
         setState(() {
           _sheetHeight -= details.delta.dy;
@@ -456,7 +459,10 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
         ),
         child: Column(
           children: [
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: 'Expand or collapse input sheet',
+              child: GestureDetector(
               onTap: () {
                 setState(() {
                   _sheetHeight = _sheetHeight == _peekHeight
@@ -473,6 +479,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
+            ),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -498,6 +505,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -513,7 +521,10 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
     final timeText =
         '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.weight_selectTime,
+      child: GestureDetector(
       onTap: () async {
         final picked = await showAnalogTimePicker(
           context: context,
@@ -565,6 +576,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -698,7 +710,10 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
 
   Widget _buildSaveButton(Size size) {
     final l10n = AppLocalizations.of(context);
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.btn_saveRecord,
+      child: GestureDetector(
       onTap: _isLoading ? null : _onSave,
       child: Container(
         width: size.width,
@@ -744,6 +759,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
                   color: Colors.white,
                 ),
               ),
+      ),
       ),
     );
   }

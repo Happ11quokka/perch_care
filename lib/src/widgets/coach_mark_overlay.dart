@@ -263,9 +263,13 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
 
             // 배경 탭으로 다음 단계
             Positioned.fill(
-              child: GestureDetector(
-                onTap: _nextStep,
-                behavior: HitTestBehavior.translucent,
+              child: Semantics(
+                button: true,
+                label: 'Next',
+                child: GestureDetector(
+                  onTap: _nextStep,
+                  behavior: HitTestBehavior.translucent,
+                ),
               ),
             ),
 
@@ -394,36 +398,44 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: _animateOut,
-                        child: Text(
-                          widget.skipLabel,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.overlayWhite60,
-                            letterSpacing: -0.35,
+                      Semantics(
+                        button: true,
+                        label: widget.skipLabel,
+                        child: GestureDetector(
+                          onTap: _animateOut,
+                          child: Text(
+                            widget.skipLabel,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.overlayWhite60,
+                              letterSpacing: -0.35,
+                            ),
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: _nextStep,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Text(
-                            isLastStep ? widget.gotItLabel : widget.nextLabel,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.brandPrimary,
-                              letterSpacing: -0.35,
+                      Semantics(
+                        button: true,
+                        label: isLastStep ? widget.gotItLabel : widget.nextLabel,
+                        child: GestureDetector(
+                          onTap: _nextStep,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Text(
+                              isLastStep ? widget.gotItLabel : widget.nextLabel,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.brandPrimary,
+                                letterSpacing: -0.35,
+                              ),
                             ),
                           ),
                         ),

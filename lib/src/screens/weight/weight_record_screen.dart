@@ -408,7 +408,10 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: _formatDate(_selectedDate),
+                      child: GestureDetector(
                       onTap: _pickDate,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -428,6 +431,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                             letterSpacing: -0.35,
                           ),
                         ),
+                      ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -672,7 +676,10 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: l10n.btn_save,
+                      child: GestureDetector(
                       key: _saveButtonKey,
                       onTap: _isSaving ? null : _saveWeight,
                       child: Container(
@@ -711,6 +718,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                                 ),
                         ),
                       ),
+                      ),
                     ),
                   ],
                 ),
@@ -730,7 +738,10 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
     final timeText =
         '$period $displayHour:${_selectedTime.minute.toString().padLeft(2, '0')}';
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.weight_selectTime,
+      child: GestureDetector(
       key: _timeCardKey,
       onTap: () async {
         final picked = await showAnalogTimePicker(
@@ -785,6 +796,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

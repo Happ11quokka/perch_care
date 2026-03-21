@@ -521,7 +521,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   _buildViewToggle(),
                   const Spacer(),
                   // 펫 이름 칩
-                  GestureDetector(
+                  Semantics(
+                    button: true,
+                    label: 'Select pet',
+                    child: GestureDetector(
                     onTap: () {
                       context.pushNamed(RouteNames.profile);
                     },
@@ -585,6 +588,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ],
                       ),
                     ),
+                  ),
                   ),
                 ],
               ),
@@ -651,7 +655,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Row(
               children: [
                 Expanded(
-                  child: GestureDetector(
+                  child: Semantics(
+                    button: true,
+                    label: l10n.home_monthlyUnit,
+                    child: GestureDetector(
                     onTap: () {
                       if (_isMonthlyView) return;
                       setState(() {
@@ -675,9 +682,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   ),
+                  ),
                 ),
                 Expanded(
-                  child: GestureDetector(
+                  child: Semantics(
+                    button: true,
+                    label: l10n.home_weeklyUnit,
+                    child: GestureDetector(
                     onTap: () {
                       if (!_isMonthlyView) return;
                       final now = DateTime.now();
@@ -705,6 +716,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Text(l10n.home_weeklyUnit),
                       ),
                     ),
+                  ),
                   ),
                 ),
               ],
@@ -759,7 +771,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             itemBuilder: (context, index) {
               final entry = monthsWithYear[index];
               final isSelected = entry.month == _selectedMonth && entry.year == _selectedYear;
-              return GestureDetector(
+              return Semantics(
+                button: true,
+                label: l10n.home_monthFormat(entry.month),
+                child: GestureDetector(
                 onTap: () {
                   if (_selectedMonth == entry.month && _selectedYear == entry.year) return;
                   setState(() {
@@ -786,6 +801,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ),
+              ),
               );
             },
           );
@@ -813,7 +829,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: weeks.map((week) {
           final isSelected = week == _selectedWeek;
-          return GestureDetector(
+          return Semantics(
+            button: true,
+            label: l10n.home_weekFormat(week),
+            child: GestureDetector(
             onTap: () {
               if (_selectedWeek == week) return;
               setState(() {
@@ -840,6 +859,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
+          ),
           );
         }).toList(),
       ),
@@ -866,7 +886,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                GestureDetector(
+                Semantics(
+                  button: true,
+                  label: 'WCI health status',
+                  child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => context.pushNamed(RouteNames.wciIndex),
                   child: RichText(
@@ -893,6 +916,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                   ),
+                ),
                 ),
                 Row(
                   children: [
@@ -1061,7 +1085,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildAiHealthCheckBanner() {
-    return GestureDetector(
+    final l10n = AppLocalizations.of(context);
+    return Semantics(
+      button: true,
+      label: l10n.hc_title,
+      child: GestureDetector(
       key: _aiHealthCheckKey,
       onTap: () => context.pushNamed(RouteNames.healthCheck),
       child: Container(
@@ -1107,6 +1135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -1196,7 +1225,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!_isPremium && _activePet != null) {
       return Column(
         children: [
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Upgrade to premium insights',
+            child: GestureDetector(
             onTap: () {
               context.pushNamed(RouteNames.premium).then((_) {
                 if (_activePet != null) {
@@ -1235,6 +1267,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ),
+          ),
           ),
           const SizedBox(height: 12),
         ],
@@ -1324,7 +1357,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required bool hasData,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: title,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         height: 170,
@@ -1385,13 +1421,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
   Widget _buildHealthSignalCard() {
     final l10n = AppLocalizations.of(context);
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.home_todayHealthSignal,
+      child: GestureDetector(
       onTap: () {
         AnalyticsService.instance.logBhiViewed(_activePet?.id ?? '');
         context.pushNamed(
@@ -1470,6 +1510,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

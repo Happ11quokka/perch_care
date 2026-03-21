@@ -122,7 +122,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   // 뒤로가기 버튼
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: GestureDetector(
+                    child: Semantics(
+                      button: true,
+                      label: 'Go back',
+                      child: GestureDetector(
                       onTap: () => context.pop(),
                       child: SizedBox(
                         width: 28,
@@ -131,6 +134,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                           'assets/images/profile/back_arrow.svg',
                         ),
                       ),
+                    ),
                     ),
                   ),
                   // 제목
@@ -220,7 +224,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           Positioned(
             bottom: 0,
             right: 0,
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: 'Edit profile photo',
+              child: GestureDetector(
               onTap: _handleEditPhoto,
               child: Container(
                 width: 24,
@@ -237,6 +244,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   ),
                 ),
               ),
+            ),
             ),
           ),
         ],
@@ -297,7 +305,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Widget _buildGenderField(AppLocalizations l10n) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.pet_gender_hint,
+      child: GestureDetector(
       onTap: () => _showGenderPicker(l10n),
       child: Container(
         height: 60,
@@ -329,6 +340,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -405,7 +417,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 국가 선택
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: 'Select country',
+            child: GestureDetector(
             onTap: _showCountrySelector,
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -431,6 +446,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 ),
               ],
             ),
+          ),
           ),
           const SizedBox(width: 10),
           // 전화번호 입력
@@ -487,7 +503,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         children: [
           // 다음에 버튼
           Expanded(
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: l10n.common_later,
+              child: GestureDetector(
               onTap: _handleSkip,
               child: Container(
                 height: 60,
@@ -511,11 +530,15 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 ),
               ),
             ),
+            ),
           ),
           const SizedBox(width: 8),
           // 입력완료 버튼
           Expanded(
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: l10n.profileSetup_complete,
+              child: GestureDetector(
               onTap: _handleComplete,
               child: Container(
                 height: 60,
@@ -539,6 +562,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   ),
                 ),
               ),
+            ),
             ),
           ),
         ],

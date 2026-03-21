@@ -94,7 +94,10 @@ class FaqScreen extends ConsumerWidget {
                   children: [
                     Positioned(
                       left: 0,
-                      child: GestureDetector(
+                      child: Semantics(
+                        button: true,
+                        label: 'Go back',
+                        child: GestureDetector(
                         onTap: () {
                           if (context.canPop()) {
                             context.pop();
@@ -108,6 +111,7 @@ class FaqScreen extends ConsumerWidget {
                           child: SvgPicture.asset(
                             'assets/images/profile/back_arrow.svg',
                           ),
+                        ),
                         ),
                       ),
                     ),

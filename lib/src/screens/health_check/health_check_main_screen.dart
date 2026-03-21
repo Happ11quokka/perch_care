@@ -331,7 +331,10 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
   }) {
     final locked = _isLocked && !_isLoading;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: _getModeLabel(l10n, mode),
+      child: GestureDetector(
       onTap: () {
         if (locked) {
           _showPremiumDialog(isTrialExhausted: true);
@@ -444,6 +447,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
             ],
           ),
         ),
+      ),
       ),
     );
   }

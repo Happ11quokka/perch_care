@@ -188,7 +188,10 @@ class _ForgotPasswordMethodScreenState
 
   Widget _buildSendCodeButton() {
     final l10n = AppLocalizations.of(context);
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: l10n.btn_sendCode,
+      child: GestureDetector(
       onTap: _isSending ? null : _handleSendCode,
       child: Container(
         height: 60,
@@ -220,6 +223,7 @@ class _ForgotPasswordMethodScreenState
                   ),
                 ),
         ),
+      ),
       ),
     );
   }

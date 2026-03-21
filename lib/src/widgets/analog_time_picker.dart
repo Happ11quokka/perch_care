@@ -147,37 +147,41 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
           // 선택 완료 버튼
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).unfocus();
-                widget.onTimeSelected(_currentTime);
-                Navigator.pop(context);
-              },
-              child: Container(
-                width: double.infinity,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.brandPrimary, AppColors.brandDark],
+            child: Semantics(
+              button: true,
+              label: AppLocalizations.of(context).timePicker_confirm,
+              child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  widget.onTimeSelected(_currentTime);
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.brandPrimary, AppColors.brandDark],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.timePicker_confirm,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: -0.4,
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.timePicker_confirm,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: -0.4,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -230,48 +234,53 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
     ValueChanged<String>? onSubmitted,
   }) {
     final isFocused = focusNode.hasFocus;
-    return GestureDetector(
-      onTap: () {
-        focusNode.requestFocus();
-        controller.selection = TextSelection(
-          baseOffset: 0,
-          extentOffset: controller.text.length,
-        );
-      },
-      child: Container(
-        width: 96,
-        height: 72,
-        decoration: BoxDecoration(
-          color: isFocused
-              ? AppColors.brandPrimary.withValues(alpha: 0.12)
-              : AppColors.gray100,
-          borderRadius: BorderRadius.circular(16),
-          border: isFocused
-              ? Border.all(color: AppColors.brandPrimary, width: 2)
-              : null,
-        ),
-        alignment: Alignment.center,
-        child: TextField(
-          controller: controller,
-          focusNode: focusNode,
-          keyboardType: TextInputType.number,
-          textAlign: TextAlign.center,
-          maxLength: 2,
-          onSubmitted: onSubmitted,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-          ],
-          style: TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.w600,
-            color: isFocused ? AppColors.brandPrimary : AppColors.nearBlack,
-            letterSpacing: -1.0,
+    final isHour = maxValue == 12;
+    return Semantics(
+      button: true,
+      label: isHour ? 'Select hour' : 'Select minute',
+      child: GestureDetector(
+        onTap: () {
+          focusNode.requestFocus();
+          controller.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: controller.text.length,
+          );
+        },
+        child: Container(
+          width: 96,
+          height: 72,
+          decoration: BoxDecoration(
+            color: isFocused
+                ? AppColors.brandPrimary.withValues(alpha: 0.12)
+                : AppColors.gray100,
+            borderRadius: BorderRadius.circular(16),
+            border: isFocused
+                ? Border.all(color: AppColors.brandPrimary, width: 2)
+                : null,
           ),
-          decoration: const InputDecoration(
-            counterText: '',
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-            isDense: true,
+          alignment: Alignment.center,
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            maxLength: 2,
+            onSubmitted: onSubmitted,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            style: TextStyle(
+              fontSize: 40,
+              fontWeight: FontWeight.w600,
+              color: isFocused ? AppColors.brandPrimary : AppColors.nearBlack,
+              letterSpacing: -1.0,
+            ),
+            decoration: const InputDecoration(
+              counterText: '',
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
+            ),
           ),
         ),
       ),
@@ -287,38 +296,48 @@ class _AnalogTimePickerState extends State<AnalogTimePicker> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
-            onTap: () => setState(() => _isAM = true),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              decoration: BoxDecoration(
-                color: _isAM ? AppColors.brandPrimary : Colors.transparent,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Text(
-                l10n.weight_amPeriod,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _isAM ? Colors.white : AppColors.mediumGray,
+          Semantics(
+            button: true,
+            label: l10n.weight_amPeriod,
+            selected: _isAM,
+            child: GestureDetector(
+              onTap: () => setState(() => _isAM = true),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _isAM ? AppColors.brandPrimary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Text(
+                  l10n.weight_amPeriod,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _isAM ? Colors.white : AppColors.mediumGray,
+                  ),
                 ),
               ),
             ),
           ),
-          GestureDetector(
-            onTap: () => setState(() => _isAM = false),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              decoration: BoxDecoration(
-                color: !_isAM ? AppColors.brandPrimary : Colors.transparent,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Text(
-                l10n.weight_pmPeriod,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: !_isAM ? Colors.white : AppColors.mediumGray,
+          Semantics(
+            button: true,
+            label: l10n.weight_pmPeriod,
+            selected: !_isAM,
+            child: GestureDetector(
+              onTap: () => setState(() => _isAM = false),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: !_isAM ? AppColors.brandPrimary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Text(
+                  l10n.weight_pmPeriod,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: !_isAM ? Colors.white : AppColors.mediumGray,
+                  ),
                 ),
               ),
             ),

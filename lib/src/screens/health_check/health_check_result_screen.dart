@@ -643,7 +643,10 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
     return Row(
       children: [
         Expanded(
-          child: GestureDetector(
+          child: Semantics(
+            button: true,
+            label: l10n.hc_goHome,
+            child: GestureDetector(
             onTap: () => context.goNamed(RouteNames.home),
             child: Container(
               height: 52,
@@ -663,11 +666,15 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                 ),
               ),
             ),
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: GestureDetector(
+          child: Semantics(
+            button: true,
+            label: l10n.hc_recheckButton,
+            child: GestureDetector(
             onTap: () => context.goNamed(RouteNames.healthCheck),
             child: Container(
               key: _recheckButtonKey,
@@ -688,6 +695,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                   letterSpacing: -0.3,
                 ),
               ),
+            ),
             ),
           ),
         ),
