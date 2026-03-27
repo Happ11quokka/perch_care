@@ -77,13 +77,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get login_title => '로그인';
 
   @override
-  String get login_kakao => '카카오 로그인';
+  String get login_google => 'Google로 로그인';
 
   @override
-  String get login_google => '구글로 로그인';
+  String get login_apple => 'Apple로 로그인';
 
   @override
-  String get login_apple => '애플로 로그인';
+  String get login_email => '이메일로 로그인';
 
   @override
   String get login_button => '로그인';
@@ -117,16 +117,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get input_name_hint => '이름을 입력해 주세요';
-
-  @override
-  String get dialog_kakaoLoginTitle => '카카오 로그인 안내';
-
-  @override
-  String get dialog_kakaoLoginContent1 => '카카오 정책으로 인해 바로 로그인할 수 없습니다.';
-
-  @override
-  String get dialog_kakaoLoginContent2 =>
-      '먼저 이메일로 회원가입 후, 마이페이지에서 카카오 계정을 연동하시면 다음부터 카카오 로그인을 사용할 수 있습니다.';
 
   @override
   String get dialog_goSignup => '회원가입하기';
@@ -506,6 +496,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profile_link => '연동';
 
   @override
+  String get profile_linked => '연동됨';
+
+  @override
+  String get profile_notLinked => '미연동';
+
+  @override
   String get profile_unlink => '해제';
 
   @override
@@ -553,7 +549,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get dialog_deleteAccountContent =>
-      '탈퇴하시면 모든 데이터가 삭제되며 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?';
+      '탈퇴하시면 체중, 사료, 수분, 건강체크 등 기록된 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.';
+
+  @override
+  String get dialog_deleteAccountFinalTitle => '정말 탈퇴하시겠습니까?';
+
+  @override
+  String get dialog_deleteAccountFinalContent => '이 작업은 되돌릴 수 없습니다.';
 
   @override
   String get dialog_delete => '탈퇴';
@@ -613,9 +615,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get error_appleLogin => 'Apple 로그인 중 오류가 발생했습니다.';
 
   @override
-  String get error_kakaoLogin => 'Kakao 로그인 중 오류가 발생했습니다.';
-
-  @override
   String get error_login => '로그인 중 오류가 발생했습니다.';
 
   @override
@@ -651,9 +650,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get error_linkApple => 'Apple 계정 연동에 실패했습니다.';
 
   @override
-  String get error_linkKakao => '카카오 계정 연동에 실패했습니다.';
-
-  @override
   String error_unlinkFailed(String provider) {
     return '$provider 계정 연동 해제에 실패했습니다.';
   }
@@ -681,9 +677,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get snackbar_appleLinked => 'Apple 계정이 연동되었습니다.';
-
-  @override
-  String get snackbar_kakaoLinked => '카카오 계정이 연동되었습니다.';
 
   @override
   String snackbar_unlinked(String provider) {
@@ -747,9 +740,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String datetime_dateShort(int month, int day, String weekday) {
     return '$month/$day ($weekday)';
   }
-
-  @override
-  String get social_kakao => '카카오';
 
   @override
   String get social_google => 'Google';
@@ -2005,6 +1995,105 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get hc_areaInjuryDetected => '부상 감지';
+
+  @override
+  String get hc_aspectPlantarSurface => '발바닥 상태';
+
+  @override
+  String get hc_aspectNailLength => '발톱 길이';
+
+  @override
+  String get hc_aspectSwelling => '부종';
+
+  @override
+  String get hc_aspectSkinTexture => '피부 질감';
+
+  @override
+  String get hc_aspectGripStrength => '쥐는 힘';
+
+  @override
+  String get hc_aspectToeAlignment => '발가락 정렬';
+
+  @override
+  String get hc_aspectBurns => '화상';
+
+  @override
+  String get hc_aspectLacerations => '열상';
+
+  @override
+  String get hc_aspectFractures => '골절';
+
+  @override
+  String get hc_aspectBiteWounds => '교상';
+
+  @override
+  String get hc_aspectBandInjuries => '밴드 손상';
+
+  @override
+  String get hc_aspectDischarge => '분비물';
+
+  @override
+  String get hc_aspectPupilResponse => '동공 반응';
+
+  @override
+  String get hc_aspectCornealClarity => '각막 투명도';
+
+  @override
+  String get hc_aspectPeriorbitalArea => '눈 주변부';
+
+  @override
+  String get hc_aspectSymmetry => '대칭성';
+
+  @override
+  String get hc_aspectCornealScratches => '각막 손상';
+
+  @override
+  String get hc_aspectForeignBody => '이물질';
+
+  @override
+  String get hc_aspectColor => '색상';
+
+  @override
+  String get hc_aspectTexture => '질감';
+
+  @override
+  String get hc_aspectOvergrowth => '과성장';
+
+  @override
+  String get hc_aspectCracks => '갈라짐';
+
+  @override
+  String get hc_aspectPeeling => '벗겨짐';
+
+  @override
+  String get hc_aspectCereCondition => '코비늘 상태';
+
+  @override
+  String get hc_aspectAlignment => '정렬 상태';
+
+  @override
+  String get hc_aspectDensity => '밀도';
+
+  @override
+  String get hc_aspectLuster => '윤기';
+
+  @override
+  String get hc_aspectDiscoloration => '변색';
+
+  @override
+  String get hc_aspectDamagePatterns => '손상 패턴';
+
+  @override
+  String get hc_aspectPluckingSigns => '깃털 뽑기 흔적';
+
+  @override
+  String get hc_aspectPinFeathers => '솜깃털';
+
+  @override
+  String get hc_aspectStressBars => '스트레스 바';
+
+  @override
+  String get hc_aspectMoltingStatus => '환우 상태';
 
   @override
   String get hc_firstAidTitle => '응급 처치';

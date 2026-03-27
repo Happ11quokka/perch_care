@@ -38,6 +38,7 @@ dependencies:
   in_app_purchase: ^3.2.0
   share_plus: ^10.1.4
   flutter_riverpod: ^2.6.1
+  google_fonts: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -62,7 +63,6 @@ flutter:
     - assets/images/login_vector/
     - assets/images/btn_google/
     - assets/images/btn_apple/
-    - assets/images/btn_naver/
 
     - assets/images/signup_vector/
     - assets/images/home_vector/

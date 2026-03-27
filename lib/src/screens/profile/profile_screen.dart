@@ -215,7 +215,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final providerName = switch (provider) {
       'google' => l10n.social_google,
       'apple' => l10n.social_apple,
-      'kakao' => l10n.social_kakao,
       _ => provider,
     };
 
@@ -1218,42 +1217,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           if (_isLoadingSocial)
             const Center(child: CircularProgressIndicator(strokeWidth: 2))
           else ...[
-            // TODO: 사업자 등록 완료 후 카카오 연동 활성화
-            // _buildSocialAccountRow(
-            //   provider: 'kakao',
-            //   label: l10n.social_kakao,
-            //   icon: SvgPicture.asset(
-            //     'assets/images/btn_kakao/btn_kakao.svg',
-            //     width: 24,
-            //     height: 24,
-            //   ),
-            //   isLinked: _isProviderLinked('kakao'),
-            //   onLink: _handleLinkKakao,
-            //   onUnlink: () => _handleUnlinkSocial('kakao'),
-            //   l10n: l10n,
-            // ),
-            // const SizedBox(height: 8),
             _buildSocialAccountRow(
               provider: 'google',
               label: l10n.social_google,
               icon: SvgPicture.asset(
                 'assets/images/btn_google/btn_google.svg',
-                width: 24,
-                height: 24,
+                width: 20,
+                height: 20,
               ),
               isLinked: _isProviderLinked('google'),
               onLink: _handleLinkGoogle,
               onUnlink: () => _handleUnlinkSocial('google'),
               l10n: l10n,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             _buildSocialAccountRow(
               provider: 'apple',
               label: l10n.social_apple,
               icon: SvgPicture.asset(
-                'assets/images/btn_apple/apple_logo_black.svg',
-                width: 24,
-                height: 24,
+                'assets/images/btn_apple/btn_apple.svg',
+                width: 20,
+                height: 20,
               ),
               isLinked: _isProviderLinked('apple'),
               onLink: _handleLinkApple,
@@ -1276,54 +1260,78 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required AppLocalizations l10n,
   }) {
     return Container(
-      height: 56,
+      height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: isLinked ? AppColors.brandPale : AppColors.gray50,
         border: Border.all(
-          color: isLinked ? AppColors.brandPrimary : AppColors.beige,
+          color: isLinked ? AppColors.brandSoft : AppColors.gray200,
           width: 1,
         ),
-        borderRadius: BorderRadius.circular(12),
-        color: isLinked ? AppColors.brandLight : AppColors.white,
       ),
       child: Row(
         children: [
-          icon,
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.gray200, width: 0.5),
+            ),
+            child: Center(child: icon),
+          ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.nearBlack,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.nearBlack,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isLinked ? l10n.profile_linked : l10n.profile_notLinked,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: isLinked ? AppColors.brandDark : AppColors.warmGray,
+                  ),
+                ),
+              ],
             ),
           ),
           Semantics(
             button: true,
             label: isLinked ? l10n.profile_unlink : l10n.profile_link,
             child: GestureDetector(
-            onTap: _isLinkingSocial ? null : (isLinked ? onUnlink : onLink),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isLinked ? AppColors.white : AppColors.brandPrimary,
-                borderRadius: BorderRadius.circular(8),
-                border: isLinked
-                    ? Border.all(color: AppColors.beige)
-                    : null,
-              ),
-              child: Text(
-                isLinked ? l10n.profile_unlink : l10n.profile_link,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isLinked ? AppColors.warmGray : AppColors.white,
+              onTap: _isLinkingSocial ? null : (isLinked ? onUnlink : onLink),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: isLinked ? AppColors.white : AppColors.brandPrimary,
+                  borderRadius: BorderRadius.circular(20),
+                  border: isLinked
+                      ? Border.all(color: AppColors.gray300)
+                      : null,
+                ),
+                child: Text(
+                  isLinked ? l10n.profile_unlink : l10n.profile_link,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isLinked ? AppColors.mediumGray : AppColors.white,
+                  ),
                 ),
               ),
             ),
-          ),
           ),
         ],
       ),
@@ -1381,9 +1389,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     context.goNamed(RouteNames.login);
   }
 
-  /// 회원 탈퇴 처리
+  /// 회원 탈퇴 처리 (이중 확인)
   Future<void> _handleDeleteAccount(AppLocalizations l10n) async {
-    final confirm = await showDialog<bool>(
+    // 1단계: 데이터 삭제 안내
+    final firstConfirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -1425,7 +1434,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
 
-    if (confirm != true || !mounted) return;
+    if (firstConfirm != true || !mounted) return;
+
+    // 2단계: 최종 확인
+    final finalConfirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.dialog_deleteAccountFinalTitle,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.nearBlack,
+          ),
+        ),
+        content: Text(
+          l10n.dialog_deleteAccountFinalContent,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.mediumGray,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              l10n.common_cancel,
+              style: const TextStyle(color: AppColors.warmGray),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              l10n.dialog_delete,
+              style: const TextStyle(
+                color: AppColors.danger,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (finalConfirm != true || !mounted) return;
 
     try {
       await _authService.deleteAccount();

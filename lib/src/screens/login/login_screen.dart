@@ -49,7 +49,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (result.success) {
       await _navigateAfterLogin();
     } else if (result.signupRequired) {
-      final l10n = AppLocalizations.of(context)!;
+      final l10n = AppLocalizations.of(context);
       AppSnackBar.error(context, message: l10n.error_socialAccountConflict);
     }
   }
@@ -57,7 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleGoogleLogin() async {
     if (_isGoogleLoading) return;
     setState(() => _isGoogleLoading = true);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       if (kDebugMode) debugPrint('[Google] Starting login...');
       final signIn = GoogleSignIn.instance;
@@ -89,7 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleAppleLogin() async {
     if (_isAppleLoading) return;
     setState(() => _isAppleLoading = true);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -134,7 +134,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -179,17 +179,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onTap: _handleGoogleLogin,
                         isLoading: _isGoogleLoading,
                       ),
-                      const SizedBox(height: 16),
-                      SignInWithAppleButton(
-                        onPressed: _isAppleLoading ? null : _handleAppleLogin,
-                        text: l10n.login_apple,
-                        style: SignInWithAppleButtonStyle.black,
-                        height: 64,
-                        borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      const SizedBox(height: 12),
+                      _buildSocialLoginButton(
+                        icon: SvgPicture.asset(
+                          'assets/images/btn_apple/btn_apple.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        label: l10n.login_apple,
+                        onTap: _handleAppleLogin,
+                        isLoading: _isAppleLoading,
+                        backgroundColor: Colors.black,
+                        textColor: Colors.white,
+                        borderColor: Colors.black,
+                        loadingColor: Colors.white,
                       ),
-                      const SizedBox(height: 32),
-                      // Primary Login Button
-                      _buildPrimaryLoginButton(l10n),
+                      const SizedBox(height: 12),
+                      _buildSocialLoginButton(
+                        icon: const Icon(
+                          Icons.email_outlined,
+                          size: 20,
+                          color: AppColors.brandDark,
+                        ),
+                        label: l10n.login_email,
+                        onTap: () => context.pushNamed(RouteNames.emailLogin),
+                        isLoading: false,
+                        borderColor: AppColors.brandPrimary,
+                        textColor: AppColors.brandDark,
+                      ),
                     ],
                   ),
                 ),
@@ -243,42 +264,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     required String label,
     required VoidCallback onTap,
     required bool isLoading,
+    Color backgroundColor = Colors.white,
+    Color textColor = const Color(0xFF1F1F1F),
+    Color borderColor = const Color(0xFF747775),
+    Color loadingColor = Colors.black,
   }) {
     return Semantics(
       button: true,
       label: label,
       child: GestureDetector(
-      onTap: isLoading ? null : onTap,
-      child: Container(
-        height: 64,
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.warmGray, width: 1),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading)
-              const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              icon,
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-                letterSpacing: -0.5,
+        onTap: isLoading ? null : onTap,
+        child: Container(
+          height: 56,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            border: Border.all(color: borderColor, width: 1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: loadingColor,
+                  ),
+                )
+              else
+                icon,
+              const SizedBox(width: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                  letterSpacing: -0.3,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -286,43 +315,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _buildGoogleIcon() {
     return SvgPicture.asset(
       'assets/images/btn_google/btn_google.svg',
-      width: 24,
-      height: 24,
-    );
-  }
-
-  Widget _buildPrimaryLoginButton(AppLocalizations l10n) {
-    return Semantics(
-      button: true,
-      label: l10n.login_button,
-      child: GestureDetector(
-      onTap: () {
-        // 이메일 로그인 화면으로 이동
-        context.pushNamed(RouteNames.emailLogin);
-      },
-      child: Container(
-        height: 60,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [AppColors.brandPrimary, AppColors.brandDark],
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Center(
-          child: Text(
-            l10n.login_button,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              letterSpacing: -0.45,
-            ),
-          ),
-        ),
-      ),
-      ),
+      width: 20,
+      height: 20,
     );
   }
 }

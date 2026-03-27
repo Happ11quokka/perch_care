@@ -77,13 +77,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login_title => 'Login';
 
   @override
-  String get login_kakao => 'Login with Kakao';
+  String get login_google => 'Sign in with Google';
 
   @override
-  String get login_google => 'Login with Google';
+  String get login_apple => 'Sign in with Apple';
 
   @override
-  String get login_apple => 'Login with Apple';
+  String get login_email => 'Sign in with Email';
 
   @override
   String get login_button => 'Login';
@@ -117,17 +117,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get input_name_hint => 'Enter your name';
-
-  @override
-  String get dialog_kakaoLoginTitle => 'Kakao Login Notice';
-
-  @override
-  String get dialog_kakaoLoginContent1 =>
-      'Due to Kakao\'s policy, direct login is not available.';
-
-  @override
-  String get dialog_kakaoLoginContent2 =>
-      'Please sign up with email first, then link your Kakao account in My Page to use Kakao login next time.';
 
   @override
   String get dialog_goSignup => 'Go to Sign Up';
@@ -518,6 +507,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile_link => 'Link';
 
   @override
+  String get profile_linked => 'Connected';
+
+  @override
+  String get profile_notLinked => 'Not connected';
+
+  @override
   String get profile_unlink => 'Unlink';
 
   @override
@@ -565,7 +560,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dialog_deleteAccountContent =>
-      'All data will be deleted and cannot be recovered.\nAre you sure?';
+      'All recorded data including weight, food, water, and health check records will be permanently deleted and cannot be recovered.';
+
+  @override
+  String get dialog_deleteAccountFinalTitle => 'Are you sure?';
+
+  @override
+  String get dialog_deleteAccountFinalContent =>
+      'This action cannot be undone.';
 
   @override
   String get dialog_delete => 'Delete';
@@ -625,9 +627,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get error_appleLogin => 'Error during Apple login.';
 
   @override
-  String get error_kakaoLogin => 'Error during Kakao login.';
-
-  @override
   String get error_login => 'Error during login.';
 
   @override
@@ -664,9 +663,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get error_linkApple => 'Failed to link Apple account.';
 
   @override
-  String get error_linkKakao => 'Failed to link Kakao account.';
-
-  @override
   String error_unlinkFailed(String provider) {
     return 'Failed to unlink $provider account.';
   }
@@ -694,9 +690,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get snackbar_appleLinked => 'Apple account linked.';
-
-  @override
-  String get snackbar_kakaoLinked => 'Kakao account linked.';
 
   @override
   String snackbar_unlinked(String provider) {
@@ -761,9 +754,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String datetime_dateShort(int month, int day, String weekday) {
     return '$month/$day ($weekday)';
   }
-
-  @override
-  String get social_kakao => 'Kakao';
 
   @override
   String get social_google => 'Google';
@@ -2072,6 +2062,105 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hc_areaInjuryDetected => 'Injury Detected';
+
+  @override
+  String get hc_aspectPlantarSurface => 'Plantar Surface';
+
+  @override
+  String get hc_aspectNailLength => 'Nail Length';
+
+  @override
+  String get hc_aspectSwelling => 'Swelling';
+
+  @override
+  String get hc_aspectSkinTexture => 'Skin Texture';
+
+  @override
+  String get hc_aspectGripStrength => 'Grip Strength';
+
+  @override
+  String get hc_aspectToeAlignment => 'Toe Alignment';
+
+  @override
+  String get hc_aspectBurns => 'Burns';
+
+  @override
+  String get hc_aspectLacerations => 'Lacerations';
+
+  @override
+  String get hc_aspectFractures => 'Fractures';
+
+  @override
+  String get hc_aspectBiteWounds => 'Bite Wounds';
+
+  @override
+  String get hc_aspectBandInjuries => 'Band Injuries';
+
+  @override
+  String get hc_aspectDischarge => 'Discharge';
+
+  @override
+  String get hc_aspectPupilResponse => 'Pupil Response';
+
+  @override
+  String get hc_aspectCornealClarity => 'Corneal Clarity';
+
+  @override
+  String get hc_aspectPeriorbitalArea => 'Periorbital Area';
+
+  @override
+  String get hc_aspectSymmetry => 'Symmetry';
+
+  @override
+  String get hc_aspectCornealScratches => 'Corneal Scratches';
+
+  @override
+  String get hc_aspectForeignBody => 'Foreign Body';
+
+  @override
+  String get hc_aspectColor => 'Color';
+
+  @override
+  String get hc_aspectTexture => 'Texture';
+
+  @override
+  String get hc_aspectOvergrowth => 'Overgrowth';
+
+  @override
+  String get hc_aspectCracks => 'Cracks';
+
+  @override
+  String get hc_aspectPeeling => 'Peeling';
+
+  @override
+  String get hc_aspectCereCondition => 'Cere Condition';
+
+  @override
+  String get hc_aspectAlignment => 'Alignment';
+
+  @override
+  String get hc_aspectDensity => 'Density';
+
+  @override
+  String get hc_aspectLuster => 'Luster';
+
+  @override
+  String get hc_aspectDiscoloration => 'Discoloration';
+
+  @override
+  String get hc_aspectDamagePatterns => 'Damage Patterns';
+
+  @override
+  String get hc_aspectPluckingSigns => 'Plucking Signs';
+
+  @override
+  String get hc_aspectPinFeathers => 'Pin Feathers';
+
+  @override
+  String get hc_aspectStressBars => 'Stress Bars';
+
+  @override
+  String get hc_aspectMoltingStatus => 'Molting Status';
 
   @override
   String get hc_firstAidTitle => 'Emergency First Aid';

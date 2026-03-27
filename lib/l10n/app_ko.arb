@@ -34,9 +34,9 @@
   "btn_start": "시작하기",
 
   "login_title": "로그인",
-  "login_kakao": "카카오 로그인",
-  "login_google": "구글로 로그인",
-  "login_apple": "애플로 로그인",
+  "login_google": "Google로 로그인",
+  "login_apple": "Apple로 로그인",
+  "login_email": "이메일로 로그인",
   "login_button": "로그인",
   "login_notMember": "아직 회원이 아니신가요?",
   "login_signup": "회원가입",
@@ -50,9 +50,6 @@
   "input_name": "이름",
   "input_name_hint": "이름을 입력해 주세요",
 
-  "dialog_kakaoLoginTitle": "카카오 로그인 안내",
-  "dialog_kakaoLoginContent1": "카카오 정책으로 인해 바로 로그인할 수 없습니다.",
-  "dialog_kakaoLoginContent2": "먼저 이메일로 회원가입 후, 마이페이지에서 카카오 계정을 연동하시면 다음부터 카카오 로그인을 사용할 수 있습니다.",
   "dialog_goSignup": "회원가입하기",
 
   "signup_title": "가입하기",
@@ -272,6 +269,8 @@
   "pet_deleteConfirmButton": "삭제",
   "profile_socialAccounts": "소셜 계정 연동",
   "profile_link": "연동",
+  "profile_linked": "연동됨",
+  "profile_notLinked": "미연동",
   "profile_unlink": "해제",
   "profile_appSupport": "앱 지원",
   "profile_rateApp": "앱 평가하기",
@@ -299,7 +298,9 @@
   "dialog_logoutTitle": "로그아웃",
   "dialog_logoutContent": "로그아웃 하시겠습니까?",
   "dialog_deleteAccountTitle": "회원 탈퇴",
-  "dialog_deleteAccountContent": "탈퇴하시면 모든 데이터가 삭제되며 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?",
+  "dialog_deleteAccountContent": "탈퇴하시면 체중, 사료, 수분, 건강체크 등 기록된 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.",
+  "dialog_deleteAccountFinalTitle": "정말 탈퇴하시겠습니까?",
+  "dialog_deleteAccountFinalContent": "이 작업은 되돌릴 수 없습니다.",
   "dialog_delete": "탈퇴",
 
   "pet_profile": "프로필",
@@ -321,7 +322,6 @@
 
   "error_googleLogin": "Google 로그인 중 오류가 발생했습니다.",
   "error_appleLogin": "Apple 로그인 중 오류가 발생했습니다.",
-  "error_kakaoLogin": "Kakao 로그인 중 오류가 발생했습니다.",
   "error_login": "로그인 중 오류가 발생했습니다.",
   "error_loginRetry": "로그인 중 오류가 발생했습니다. 다시 시도해주세요.",
   "error_sendCode": "코드 전송 중 오류가 발생했습니다.",
@@ -338,7 +338,6 @@
   "error_deleteAccount": "회원 탈퇴에 실패했습니다. 다시 시도해주세요.",
   "error_linkGoogle": "Google 계정 연동에 실패했습니다.",
   "error_linkApple": "Apple 계정 연동에 실패했습니다.",
-  "error_linkKakao": "카카오 계정 연동에 실패했습니다.",
   "error_unlinkFailed": "{provider} 계정 연동 해제에 실패했습니다.",
   "@error_unlinkFailed": {
     "placeholders": {
@@ -354,7 +353,6 @@
   "snackbar_deleted": "삭제되었습니다.",
   "snackbar_googleLinked": "Google 계정이 연동되었습니다.",
   "snackbar_appleLinked": "Apple 계정이 연동되었습니다.",
-  "snackbar_kakaoLinked": "카카오 계정이 연동되었습니다.",
   "snackbar_unlinked": "{provider} 계정 연동이 해제되었습니다.",
   "@snackbar_unlinked": {
     "placeholders": {
@@ -397,7 +395,6 @@
     }
   },
 
-  "social_kakao": "카카오",
   "social_google": "Google",
   "social_apple": "Apple",
 
@@ -951,6 +948,44 @@
   "hc_areaUrates": "요산",
   "hc_areaUrine": "소변",
   "hc_areaInjuryDetected": "부상 감지",
+
+  "hc_aspectPlantarSurface": "발바닥 상태",
+  "hc_aspectNailLength": "발톱 길이",
+  "hc_aspectSwelling": "부종",
+  "hc_aspectSkinTexture": "피부 질감",
+  "hc_aspectGripStrength": "쥐는 힘",
+  "hc_aspectToeAlignment": "발가락 정렬",
+  "hc_aspectBurns": "화상",
+  "hc_aspectLacerations": "열상",
+  "hc_aspectFractures": "골절",
+  "hc_aspectBiteWounds": "교상",
+  "hc_aspectBandInjuries": "밴드 손상",
+
+  "hc_aspectDischarge": "분비물",
+  "hc_aspectPupilResponse": "동공 반응",
+  "hc_aspectCornealClarity": "각막 투명도",
+  "hc_aspectPeriorbitalArea": "눈 주변부",
+  "hc_aspectSymmetry": "대칭성",
+  "hc_aspectCornealScratches": "각막 손상",
+  "hc_aspectForeignBody": "이물질",
+
+  "hc_aspectColor": "색상",
+  "hc_aspectTexture": "질감",
+  "hc_aspectOvergrowth": "과성장",
+  "hc_aspectCracks": "갈라짐",
+  "hc_aspectPeeling": "벗겨짐",
+  "hc_aspectCereCondition": "코비늘 상태",
+  "hc_aspectAlignment": "정렬 상태",
+
+  "hc_aspectDensity": "밀도",
+  "hc_aspectLuster": "윤기",
+  "hc_aspectDiscoloration": "변색",
+  "hc_aspectDamagePatterns": "손상 패턴",
+  "hc_aspectPluckingSigns": "깃털 뽑기 흔적",
+  "hc_aspectPinFeathers": "솜깃털",
+  "hc_aspectStressBars": "스트레스 바",
+  "hc_aspectMoltingStatus": "환우 상태",
+
   "hc_firstAidTitle": "응급 처치",
   "hc_notesHint": "부상이나 사고 상황을 설명해 주세요 (선택사항)",
   "hc_notesHintFullBody": "전반적인 건강 상태나 특이사항을 설명해 주세요 (선택사항)",

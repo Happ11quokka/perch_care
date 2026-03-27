@@ -76,13 +76,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get login_title => '登录';
 
   @override
-  String get login_kakao => '使用Kakao登录';
-
-  @override
   String get login_google => '使用Google登录';
 
   @override
   String get login_apple => '使用Apple登录';
+
+  @override
+  String get login_email => '使用邮箱登录';
 
   @override
   String get login_button => '登录';
@@ -116,16 +116,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get input_name_hint => '请输入姓名';
-
-  @override
-  String get dialog_kakaoLoginTitle => 'Kakao登录说明';
-
-  @override
-  String get dialog_kakaoLoginContent1 => '由于Kakao政策限制，无法直接登录。';
-
-  @override
-  String get dialog_kakaoLoginContent2 =>
-      '请先使用邮箱注册，然后在个人中心绑定Kakao账号，之后即可使用Kakao登录。';
 
   @override
   String get dialog_goSignup => '去注册';
@@ -500,6 +490,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile_link => '绑定';
 
   @override
+  String get profile_linked => '已绑定';
+
+  @override
+  String get profile_notLinked => '未绑定';
+
+  @override
   String get profile_unlink => '解绑';
 
   @override
@@ -546,7 +542,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dialog_deleteAccountTitle => '注销账号';
 
   @override
-  String get dialog_deleteAccountContent => '注销后所有数据将被删除且无法恢复。\n确定要注销吗？';
+  String get dialog_deleteAccountContent =>
+      '注销后体重、饲料、饮水、健康检查等所有记录数据将被永久删除且无法恢复。';
+
+  @override
+  String get dialog_deleteAccountFinalTitle => '确定要注销吗？';
+
+  @override
+  String get dialog_deleteAccountFinalContent => '此操作无法撤消。';
 
   @override
   String get dialog_delete => '注销';
@@ -606,9 +609,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get error_appleLogin => 'Apple登录时发生错误。';
 
   @override
-  String get error_kakaoLogin => 'Kakao登录时发生错误。';
-
-  @override
   String get error_login => '登录时发生错误。';
 
   @override
@@ -644,9 +644,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get error_linkApple => '绑定Apple账号失败。';
 
   @override
-  String get error_linkKakao => '绑定Kakao账号失败。';
-
-  @override
   String error_unlinkFailed(String provider) {
     return '解绑$provider账号失败。';
   }
@@ -674,9 +671,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get snackbar_appleLinked => 'Apple账号已绑定。';
-
-  @override
-  String get snackbar_kakaoLinked => 'Kakao账号已绑定。';
 
   @override
   String snackbar_unlinked(String provider) {
@@ -740,9 +734,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String datetime_dateShort(int month, int day, String weekday) {
     return '$month/$day（周$weekday）';
   }
-
-  @override
-  String get social_kakao => 'Kakao';
 
   @override
   String get social_google => 'Google';
@@ -1951,6 +1942,105 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hc_areaInjuryDetected => '检测到外伤';
+
+  @override
+  String get hc_aspectPlantarSurface => '脚掌状态';
+
+  @override
+  String get hc_aspectNailLength => '指甲长度';
+
+  @override
+  String get hc_aspectSwelling => '肿胀';
+
+  @override
+  String get hc_aspectSkinTexture => '皮肤质地';
+
+  @override
+  String get hc_aspectGripStrength => '抓握力';
+
+  @override
+  String get hc_aspectToeAlignment => '脚趾排列';
+
+  @override
+  String get hc_aspectBurns => '烧伤';
+
+  @override
+  String get hc_aspectLacerations => '撕裂伤';
+
+  @override
+  String get hc_aspectFractures => '骨折';
+
+  @override
+  String get hc_aspectBiteWounds => '咬伤';
+
+  @override
+  String get hc_aspectBandInjuries => '脚环损伤';
+
+  @override
+  String get hc_aspectDischarge => '分泌物';
+
+  @override
+  String get hc_aspectPupilResponse => '瞳孔反应';
+
+  @override
+  String get hc_aspectCornealClarity => '角膜透明度';
+
+  @override
+  String get hc_aspectPeriorbitalArea => '眼周区域';
+
+  @override
+  String get hc_aspectSymmetry => '对称性';
+
+  @override
+  String get hc_aspectCornealScratches => '角膜损伤';
+
+  @override
+  String get hc_aspectForeignBody => '异物';
+
+  @override
+  String get hc_aspectColor => '颜色';
+
+  @override
+  String get hc_aspectTexture => '质地';
+
+  @override
+  String get hc_aspectOvergrowth => '过度生长';
+
+  @override
+  String get hc_aspectCracks => '裂纹';
+
+  @override
+  String get hc_aspectPeeling => '脱皮';
+
+  @override
+  String get hc_aspectCereCondition => '蜡膜状态';
+
+  @override
+  String get hc_aspectAlignment => '排列状态';
+
+  @override
+  String get hc_aspectDensity => '密度';
+
+  @override
+  String get hc_aspectLuster => '光泽';
+
+  @override
+  String get hc_aspectDiscoloration => '变色';
+
+  @override
+  String get hc_aspectDamagePatterns => '损伤模式';
+
+  @override
+  String get hc_aspectPluckingSigns => '拔羽迹象';
+
+  @override
+  String get hc_aspectPinFeathers => '针羽';
+
+  @override
+  String get hc_aspectStressBars => '应激纹';
+
+  @override
+  String get hc_aspectMoltingStatus => '换羽状态';
 
   @override
   String get hc_firstAidTitle => '应急处理';

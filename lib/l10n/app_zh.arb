@@ -29,9 +29,9 @@
   "btn_start": "开始使用",
 
   "login_title": "登录",
-  "login_kakao": "使用Kakao登录",
   "login_google": "使用Google登录",
   "login_apple": "使用Apple登录",
+  "login_email": "使用邮箱登录",
   "login_button": "登录",
   "login_notMember": "还不是会员？",
   "login_signup": "注册",
@@ -45,9 +45,6 @@
   "input_name": "姓名",
   "input_name_hint": "请输入姓名",
 
-  "dialog_kakaoLoginTitle": "Kakao登录说明",
-  "dialog_kakaoLoginContent1": "由于Kakao政策限制，无法直接登录。",
-  "dialog_kakaoLoginContent2": "请先使用邮箱注册，然后在个人中心绑定Kakao账号，之后即可使用Kakao登录。",
   "dialog_goSignup": "去注册",
 
   "signup_title": "注册",
@@ -267,6 +264,8 @@
   "pet_deleteConfirmButton": "删除",
   "profile_socialAccounts": "社交账号绑定",
   "profile_link": "绑定",
+  "profile_linked": "已绑定",
+  "profile_notLinked": "未绑定",
   "profile_unlink": "解绑",
   "profile_appSupport": "应用支持",
   "profile_rateApp": "评价应用",
@@ -294,7 +293,9 @@
   "dialog_logoutTitle": "退出登录",
   "dialog_logoutContent": "确定要退出登录吗？",
   "dialog_deleteAccountTitle": "注销账号",
-  "dialog_deleteAccountContent": "注销后所有数据将被删除且无法恢复。\n确定要注销吗？",
+  "dialog_deleteAccountContent": "注销后体重、饲料、饮水、健康检查等所有记录数据将被永久删除且无法恢复。",
+  "dialog_deleteAccountFinalTitle": "确定要注销吗？",
+  "dialog_deleteAccountFinalContent": "此操作无法撤消。",
   "dialog_delete": "注销",
 
   "pet_profile": "宠物资料",
@@ -316,7 +317,6 @@
 
   "error_googleLogin": "Google登录时发生错误。",
   "error_appleLogin": "Apple登录时发生错误。",
-  "error_kakaoLogin": "Kakao登录时发生错误。",
   "error_login": "登录时发生错误。",
   "error_loginRetry": "登录时发生错误，请重试。",
   "error_sendCode": "发送验证码时发生错误。",
@@ -333,7 +333,6 @@
   "error_deleteAccount": "注销失败，请重试。",
   "error_linkGoogle": "绑定Google账号失败。",
   "error_linkApple": "绑定Apple账号失败。",
-  "error_linkKakao": "绑定Kakao账号失败。",
   "error_unlinkFailed": "解绑{provider}账号失败。",
   "@error_unlinkFailed": {
     "placeholders": {
@@ -349,7 +348,6 @@
   "snackbar_deleted": "已删除。",
   "snackbar_googleLinked": "Google账号已绑定。",
   "snackbar_appleLinked": "Apple账号已绑定。",
-  "snackbar_kakaoLinked": "Kakao账号已绑定。",
   "snackbar_unlinked": "{provider}账号已解绑。",
   "@snackbar_unlinked": {
     "placeholders": {
@@ -392,7 +390,6 @@
     }
   },
 
-  "social_kakao": "Kakao",
   "social_google": "Google",
   "social_apple": "Apple",
 
@@ -920,6 +917,44 @@
   "hc_areaUrates": "尿酸盐",
   "hc_areaUrine": "尿液",
   "hc_areaInjuryDetected": "检测到外伤",
+
+  "hc_aspectPlantarSurface": "脚掌状态",
+  "hc_aspectNailLength": "指甲长度",
+  "hc_aspectSwelling": "肿胀",
+  "hc_aspectSkinTexture": "皮肤质地",
+  "hc_aspectGripStrength": "抓握力",
+  "hc_aspectToeAlignment": "脚趾排列",
+  "hc_aspectBurns": "烧伤",
+  "hc_aspectLacerations": "撕裂伤",
+  "hc_aspectFractures": "骨折",
+  "hc_aspectBiteWounds": "咬伤",
+  "hc_aspectBandInjuries": "脚环损伤",
+
+  "hc_aspectDischarge": "分泌物",
+  "hc_aspectPupilResponse": "瞳孔反应",
+  "hc_aspectCornealClarity": "角膜透明度",
+  "hc_aspectPeriorbitalArea": "眼周区域",
+  "hc_aspectSymmetry": "对称性",
+  "hc_aspectCornealScratches": "角膜损伤",
+  "hc_aspectForeignBody": "异物",
+
+  "hc_aspectColor": "颜色",
+  "hc_aspectTexture": "质地",
+  "hc_aspectOvergrowth": "过度生长",
+  "hc_aspectCracks": "裂纹",
+  "hc_aspectPeeling": "脱皮",
+  "hc_aspectCereCondition": "蜡膜状态",
+  "hc_aspectAlignment": "排列状态",
+
+  "hc_aspectDensity": "密度",
+  "hc_aspectLuster": "光泽",
+  "hc_aspectDiscoloration": "变色",
+  "hc_aspectDamagePatterns": "损伤模式",
+  "hc_aspectPluckingSigns": "拔羽迹象",
+  "hc_aspectPinFeathers": "针羽",
+  "hc_aspectStressBars": "应激纹",
+  "hc_aspectMoltingStatus": "换羽状态",
+
   "hc_firstAidTitle": "应急处理",
   "hc_notesHint": "描述伤情或事故（选填）",
   "hc_notesHintFullBody": "描述整体健康状况或异常情况（选填）",

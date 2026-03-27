@@ -203,7 +203,10 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: _isLoadingData
             ? const Center(child: CircularProgressIndicator())
             : Column(
@@ -279,6 +282,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
             ),
           ],
         ),
+      ),
       ),
     );
   }

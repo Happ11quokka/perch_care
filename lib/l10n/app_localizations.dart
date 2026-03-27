@@ -226,23 +226,23 @@ abstract class AppLocalizations {
   /// **'로그인'**
   String get login_title;
 
-  /// No description provided for @login_kakao.
-  ///
-  /// In ko, this message translates to:
-  /// **'카카오 로그인'**
-  String get login_kakao;
-
   /// No description provided for @login_google.
   ///
   /// In ko, this message translates to:
-  /// **'구글로 로그인'**
+  /// **'Google로 로그인'**
   String get login_google;
 
   /// No description provided for @login_apple.
   ///
   /// In ko, this message translates to:
-  /// **'애플로 로그인'**
+  /// **'Apple로 로그인'**
   String get login_apple;
+
+  /// No description provided for @login_email.
+  ///
+  /// In ko, this message translates to:
+  /// **'이메일로 로그인'**
+  String get login_email;
 
   /// No description provided for @login_button.
   ///
@@ -309,24 +309,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'이름을 입력해 주세요'**
   String get input_name_hint;
-
-  /// No description provided for @dialog_kakaoLoginTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'카카오 로그인 안내'**
-  String get dialog_kakaoLoginTitle;
-
-  /// No description provided for @dialog_kakaoLoginContent1.
-  ///
-  /// In ko, this message translates to:
-  /// **'카카오 정책으로 인해 바로 로그인할 수 없습니다.'**
-  String get dialog_kakaoLoginContent1;
-
-  /// No description provided for @dialog_kakaoLoginContent2.
-  ///
-  /// In ko, this message translates to:
-  /// **'먼저 이메일로 회원가입 후, 마이페이지에서 카카오 계정을 연동하시면 다음부터 카카오 로그인을 사용할 수 있습니다.'**
-  String get dialog_kakaoLoginContent2;
 
   /// No description provided for @dialog_goSignup.
   ///
@@ -1000,6 +982,18 @@ abstract class AppLocalizations {
   /// **'연동'**
   String get profile_link;
 
+  /// No description provided for @profile_linked.
+  ///
+  /// In ko, this message translates to:
+  /// **'연동됨'**
+  String get profile_linked;
+
+  /// No description provided for @profile_notLinked.
+  ///
+  /// In ko, this message translates to:
+  /// **'미연동'**
+  String get profile_notLinked;
+
   /// No description provided for @profile_unlink.
   ///
   /// In ko, this message translates to:
@@ -1087,8 +1081,20 @@ abstract class AppLocalizations {
   /// No description provided for @dialog_deleteAccountContent.
   ///
   /// In ko, this message translates to:
-  /// **'탈퇴하시면 모든 데이터가 삭제되며 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?'**
+  /// **'탈퇴하시면 체중, 사료, 수분, 건강체크 등 기록된 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'**
   String get dialog_deleteAccountContent;
+
+  /// No description provided for @dialog_deleteAccountFinalTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'정말 탈퇴하시겠습니까?'**
+  String get dialog_deleteAccountFinalTitle;
+
+  /// No description provided for @dialog_deleteAccountFinalContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 작업은 되돌릴 수 없습니다.'**
+  String get dialog_deleteAccountFinalContent;
 
   /// No description provided for @dialog_delete.
   ///
@@ -1204,12 +1210,6 @@ abstract class AppLocalizations {
   /// **'Apple 로그인 중 오류가 발생했습니다.'**
   String get error_appleLogin;
 
-  /// No description provided for @error_kakaoLogin.
-  ///
-  /// In ko, this message translates to:
-  /// **'Kakao 로그인 중 오류가 발생했습니다.'**
-  String get error_kakaoLogin;
-
   /// No description provided for @error_login.
   ///
   /// In ko, this message translates to:
@@ -1276,12 +1276,6 @@ abstract class AppLocalizations {
   /// **'Apple 계정 연동에 실패했습니다.'**
   String get error_linkApple;
 
-  /// No description provided for @error_linkKakao.
-  ///
-  /// In ko, this message translates to:
-  /// **'카카오 계정 연동에 실패했습니다.'**
-  String get error_linkKakao;
-
   /// No description provided for @error_unlinkFailed.
   ///
   /// In ko, this message translates to:
@@ -1335,12 +1329,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'Apple 계정이 연동되었습니다.'**
   String get snackbar_appleLinked;
-
-  /// No description provided for @snackbar_kakaoLinked.
-  ///
-  /// In ko, this message translates to:
-  /// **'카카오 계정이 연동되었습니다.'**
-  String get snackbar_kakaoLinked;
 
   /// No description provided for @snackbar_unlinked.
   ///
@@ -1455,12 +1443,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'{month}/{day} ({weekday})'**
   String datetime_dateShort(int month, int day, String weekday);
-
-  /// No description provided for @social_kakao.
-  ///
-  /// In ko, this message translates to:
-  /// **'카카오'**
-  String get social_kakao;
 
   /// No description provided for @social_google.
   ///
@@ -3777,6 +3759,204 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'부상 감지'**
   String get hc_areaInjuryDetected;
+
+  /// No description provided for @hc_aspectPlantarSurface.
+  ///
+  /// In ko, this message translates to:
+  /// **'발바닥 상태'**
+  String get hc_aspectPlantarSurface;
+
+  /// No description provided for @hc_aspectNailLength.
+  ///
+  /// In ko, this message translates to:
+  /// **'발톱 길이'**
+  String get hc_aspectNailLength;
+
+  /// No description provided for @hc_aspectSwelling.
+  ///
+  /// In ko, this message translates to:
+  /// **'부종'**
+  String get hc_aspectSwelling;
+
+  /// No description provided for @hc_aspectSkinTexture.
+  ///
+  /// In ko, this message translates to:
+  /// **'피부 질감'**
+  String get hc_aspectSkinTexture;
+
+  /// No description provided for @hc_aspectGripStrength.
+  ///
+  /// In ko, this message translates to:
+  /// **'쥐는 힘'**
+  String get hc_aspectGripStrength;
+
+  /// No description provided for @hc_aspectToeAlignment.
+  ///
+  /// In ko, this message translates to:
+  /// **'발가락 정렬'**
+  String get hc_aspectToeAlignment;
+
+  /// No description provided for @hc_aspectBurns.
+  ///
+  /// In ko, this message translates to:
+  /// **'화상'**
+  String get hc_aspectBurns;
+
+  /// No description provided for @hc_aspectLacerations.
+  ///
+  /// In ko, this message translates to:
+  /// **'열상'**
+  String get hc_aspectLacerations;
+
+  /// No description provided for @hc_aspectFractures.
+  ///
+  /// In ko, this message translates to:
+  /// **'골절'**
+  String get hc_aspectFractures;
+
+  /// No description provided for @hc_aspectBiteWounds.
+  ///
+  /// In ko, this message translates to:
+  /// **'교상'**
+  String get hc_aspectBiteWounds;
+
+  /// No description provided for @hc_aspectBandInjuries.
+  ///
+  /// In ko, this message translates to:
+  /// **'밴드 손상'**
+  String get hc_aspectBandInjuries;
+
+  /// No description provided for @hc_aspectDischarge.
+  ///
+  /// In ko, this message translates to:
+  /// **'분비물'**
+  String get hc_aspectDischarge;
+
+  /// No description provided for @hc_aspectPupilResponse.
+  ///
+  /// In ko, this message translates to:
+  /// **'동공 반응'**
+  String get hc_aspectPupilResponse;
+
+  /// No description provided for @hc_aspectCornealClarity.
+  ///
+  /// In ko, this message translates to:
+  /// **'각막 투명도'**
+  String get hc_aspectCornealClarity;
+
+  /// No description provided for @hc_aspectPeriorbitalArea.
+  ///
+  /// In ko, this message translates to:
+  /// **'눈 주변부'**
+  String get hc_aspectPeriorbitalArea;
+
+  /// No description provided for @hc_aspectSymmetry.
+  ///
+  /// In ko, this message translates to:
+  /// **'대칭성'**
+  String get hc_aspectSymmetry;
+
+  /// No description provided for @hc_aspectCornealScratches.
+  ///
+  /// In ko, this message translates to:
+  /// **'각막 손상'**
+  String get hc_aspectCornealScratches;
+
+  /// No description provided for @hc_aspectForeignBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'이물질'**
+  String get hc_aspectForeignBody;
+
+  /// No description provided for @hc_aspectColor.
+  ///
+  /// In ko, this message translates to:
+  /// **'색상'**
+  String get hc_aspectColor;
+
+  /// No description provided for @hc_aspectTexture.
+  ///
+  /// In ko, this message translates to:
+  /// **'질감'**
+  String get hc_aspectTexture;
+
+  /// No description provided for @hc_aspectOvergrowth.
+  ///
+  /// In ko, this message translates to:
+  /// **'과성장'**
+  String get hc_aspectOvergrowth;
+
+  /// No description provided for @hc_aspectCracks.
+  ///
+  /// In ko, this message translates to:
+  /// **'갈라짐'**
+  String get hc_aspectCracks;
+
+  /// No description provided for @hc_aspectPeeling.
+  ///
+  /// In ko, this message translates to:
+  /// **'벗겨짐'**
+  String get hc_aspectPeeling;
+
+  /// No description provided for @hc_aspectCereCondition.
+  ///
+  /// In ko, this message translates to:
+  /// **'코비늘 상태'**
+  String get hc_aspectCereCondition;
+
+  /// No description provided for @hc_aspectAlignment.
+  ///
+  /// In ko, this message translates to:
+  /// **'정렬 상태'**
+  String get hc_aspectAlignment;
+
+  /// No description provided for @hc_aspectDensity.
+  ///
+  /// In ko, this message translates to:
+  /// **'밀도'**
+  String get hc_aspectDensity;
+
+  /// No description provided for @hc_aspectLuster.
+  ///
+  /// In ko, this message translates to:
+  /// **'윤기'**
+  String get hc_aspectLuster;
+
+  /// No description provided for @hc_aspectDiscoloration.
+  ///
+  /// In ko, this message translates to:
+  /// **'변색'**
+  String get hc_aspectDiscoloration;
+
+  /// No description provided for @hc_aspectDamagePatterns.
+  ///
+  /// In ko, this message translates to:
+  /// **'손상 패턴'**
+  String get hc_aspectDamagePatterns;
+
+  /// No description provided for @hc_aspectPluckingSigns.
+  ///
+  /// In ko, this message translates to:
+  /// **'깃털 뽑기 흔적'**
+  String get hc_aspectPluckingSigns;
+
+  /// No description provided for @hc_aspectPinFeathers.
+  ///
+  /// In ko, this message translates to:
+  /// **'솜깃털'**
+  String get hc_aspectPinFeathers;
+
+  /// No description provided for @hc_aspectStressBars.
+  ///
+  /// In ko, this message translates to:
+  /// **'스트레스 바'**
+  String get hc_aspectStressBars;
+
+  /// No description provided for @hc_aspectMoltingStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'환우 상태'**
+  String get hc_aspectMoltingStatus;
 
   /// No description provided for @hc_firstAidTitle.
   ///

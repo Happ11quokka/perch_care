@@ -110,7 +110,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: Column(
           children: [
             // 상단 앱바
@@ -180,6 +183,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             _buildBottomButtons(l10n),
           ],
         ),
+      ),
       ),
     );
   }

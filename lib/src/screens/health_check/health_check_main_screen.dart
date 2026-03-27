@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,6 +11,7 @@ import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/premium/premium_service.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 
@@ -72,13 +76,18 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
         });
         _maybeShowCoachMarks();
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() {
           _isLocked = true;
           _hasVisionTrial = false;
           _isLoading = false;
         });
+        // 네트워크 에러 시 사용자에게 안내 (프리미엄 상태 확인 불가)
+        if (e is SocketException || e is TimeoutException) {
+          final l10n = AppLocalizations.of(context);
+          AppSnackBar.error(context, message: l10n.error_network);
+        }
       }
     }
   }

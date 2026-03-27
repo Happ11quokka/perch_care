@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../services/pet/pet_local_cache_service.dart';
@@ -53,6 +54,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // WCI 레벨 (0: 데이터 없음, 1~5: 각 단계)
   int _wciLevel = 0;
   bool _isBhiLoading = false; // 기간 변경 시 BHI 로딩 상태
+  bool _pendingCoachMark = false; // 코치마크 대기 플래그 (자식 라우트에서 복귀 시)
   String? _lastUpdateText; // WCI 카드 타임스탬프 표시 텍스트
 
   // 건강 요약 + 인사이트 (Phase 3-3, 3-4)
@@ -90,6 +92,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_pendingCoachMark && !_isLoading) {
+      _pendingCoachMark = false;
+      _loadPets();
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -97,8 +108,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// 특정 petId로 펫 정보 + BHI를 서버에서 병렬 로드
   Future<void> _refreshForPet(String petId) async {
-    // 이미 같은 펫이면 무시
-    if (_activePet?.id == petId) return;
 
     // 펫 정보 + BHI를 동시에 로드 (독립적이므로 병렬 가능)
     late Pet? pet;
@@ -225,6 +234,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // 레이아웃 안정화 대기
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
+
+    // 홈 화면이 실제로 보이는 상태인지 확인 (자식 라우트가 위에 없을 때만)
+    final currentPath = GoRouterState.of(context).uri.path;
+    if (currentPath != RoutePaths.home) {
+      _pendingCoachMark = true;
+      return;
+    }
 
     final l10n = AppLocalizations.of(context);
 

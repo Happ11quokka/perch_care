@@ -49,6 +49,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        final l10n = AppLocalizations.of(context);
+        AppSnackBar.error(context, message: l10n.error_network);
       }
     }
   }

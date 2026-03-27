@@ -158,21 +158,6 @@ class AuthService {
     return result;
   }
 
-  /// Kakao 로그인 (회원가입 필요 여부 확인)
-  Future<SocialLoginResult> signInWithKakao({
-    required String accessToken,
-  }) async {
-    final response = await _api.post(
-      '/auth/oauth/kakao',
-      body: {'access_token': accessToken},
-      auth: false,
-    );
-
-    final result = await _handleOAuthResponse(response);
-    if (result.success) AnalyticsService.instance.logLogin('kakao');
-    return result;
-  }
-
   /// OAuth 응답 처리 공통 로직
   Future<SocialLoginResult> _handleOAuthResponse(dynamic response) async {
     final map = response as Map<String, dynamic>;

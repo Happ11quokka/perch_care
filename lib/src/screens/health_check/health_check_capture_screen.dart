@@ -8,6 +8,7 @@ import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../services/premium/premium_service.dart';
 import '../../theme/colors.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../widgets/dashed_border.dart';
 
 /// 건강체크 이미지 촬영/선택 화면
@@ -89,9 +90,7 @@ class _HealthCheckCaptureScreenState
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.hc_imagePickError(e.toString()))),
-      );
+      AppSnackBar.error(context, message: l10n.hc_imagePickError(l10n.error_unexpected));
     } finally {
       if (mounted) setState(() => _isPickingImage = false);
     }

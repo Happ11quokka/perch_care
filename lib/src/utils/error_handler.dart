@@ -62,6 +62,8 @@ class ErrorHandler {
         return l10n.error_loginUserNotFound;
       case 422:
         return l10n.error_invalidData;
+      case 429:
+        return l10n.error_tooManyRequests;
       default:
         return l10n.error_loginRetry;
     }
@@ -74,6 +76,8 @@ class ErrorHandler {
         return l10n.error_signupEmailExists;
       case 422:
         return l10n.error_signupInvalidData;
+      case 429:
+        return l10n.error_tooManyRequests;
       default:
         return l10n.error_unexpected;
     }
@@ -116,6 +120,8 @@ class ErrorHandler {
         return l10n.error_invalidData;
       case 404:
         return l10n.error_notFound;
+      case 429:
+        return l10n.error_tooManyRequests;
       default:
         return _getContextualMessage(context, l10n);
     }

@@ -109,7 +109,10 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
           ),
         ),
       ),
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: Column(
           children: [
             Expanded(
@@ -175,6 +178,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
             ),
           ],
         ),
+      ),
       ),
     );
   }

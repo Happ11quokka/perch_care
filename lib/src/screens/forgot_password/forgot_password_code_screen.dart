@@ -70,6 +70,10 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
     _timer?.cancel();
     _remainingSeconds = 120;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       if (_remainingSeconds > 0) {
         setState(() {
           _remainingSeconds--;
@@ -126,7 +130,10 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
           ),
         ),
       ),
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: Column(
           children: [
             Expanded(
@@ -185,6 +192,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
             ),
           ],
         ),
+      ),
       ),
     );
   }

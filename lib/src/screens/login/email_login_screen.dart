@@ -99,7 +99,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
       await _navigateAfterLogin();
     } else if (result.signupRequired) {
       final l10n = AppLocalizations.of(context)!;
-      AppSnackBar.error(context, message: l10n.error_loginRetry);
+      AppSnackBar.error(context, message: l10n.error_socialAccountConflict);
     }
   }
 
@@ -130,7 +130,10 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           ),
         ),
       ),
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: Column(
           children: [
             Expanded(
@@ -221,6 +224,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -467,6 +471,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         _buildSocialLoginButton(
           onTap: _handleGoogleLogin,
           isLoading: _isGoogleLoading,
+          borderColor: const Color(0xFF747775),
           semanticsLabel: 'Sign in with Google',
           child: SvgPicture.asset(
             'assets/images/btn_google/btn_google.svg',
@@ -556,7 +561,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         email: email,
         password: password,
       );
-      _navigateAfterLogin();
+      await _navigateAfterLogin();
     } catch (e) {
       if (!mounted) return;
       final msg = ErrorHandler.getUserMessage(e, l10n, context: ErrorContext.login);

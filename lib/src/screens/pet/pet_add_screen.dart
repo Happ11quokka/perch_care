@@ -410,7 +410,10 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
           ),
         ),
       ),
-      body: _isLoadingData
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: _isLoadingData
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -615,6 +618,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 

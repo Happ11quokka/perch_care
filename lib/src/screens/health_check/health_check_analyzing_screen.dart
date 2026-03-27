@@ -71,7 +71,10 @@ class _HealthCheckAnalyzingScreenState
         context.goNamed(RouteNames.healthCheck);
         return;
       }
-    } catch (_) {}
+    } catch (_) {
+      // 프리미엄 확인 실패 시에도 분석 진행 (서버 API에서 403으로 재차단)
+    }
+    if (!mounted) return;
     _startAnalysis();
   }
 
@@ -175,7 +178,7 @@ class _HealthCheckAnalyzingScreenState
         _isPremiumError = e.statusCode == 403;
         _errorMessage = e.statusCode == 403
             ? l10n.premium_healthCheckBlocked
-            : e.message;
+            : (e.statusCode >= 500 ? l10n.error_server : l10n.hc_analysisError);
       });
     } catch (e, st) {
       debugPrint('[HealthCheck] Error: $e');

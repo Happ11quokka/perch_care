@@ -875,16 +875,55 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
 
   String _getAreaLabel(String area, AppLocalizations l10n) {
     return switch (area.toLowerCase()) {
+      // full_body 대분류
       'feather' => l10n.hc_areaFeather,
       'posture' => l10n.hc_areaPosture,
       'eye' => l10n.hc_areaEye,
       'beak' => l10n.hc_areaBeak,
       'foot' => l10n.hc_areaFoot,
       'body_shape' => l10n.hc_areaBodyShape,
+      'injury_detected' => l10n.hc_areaInjuryDetected,
+      // droppings
       'feces' => l10n.hc_areaFeces,
       'urates' => l10n.hc_areaUrates,
       'urine' => l10n.hc_areaUrine,
-      'injury_detected' => l10n.hc_areaInjuryDetected,
+      // foot 세부
+      'plantar surface' => l10n.hc_aspectPlantarSurface,
+      'nail length' => l10n.hc_aspectNailLength,
+      'swelling' => l10n.hc_aspectSwelling,
+      'skin texture' => l10n.hc_aspectSkinTexture,
+      'grip strength indicators' || 'grip strength' => l10n.hc_aspectGripStrength,
+      'toe alignment' => l10n.hc_aspectToeAlignment,
+      'burns' => l10n.hc_aspectBurns,
+      'lacerations' => l10n.hc_aspectLacerations,
+      'fractures' => l10n.hc_aspectFractures,
+      'bite wounds' => l10n.hc_aspectBiteWounds,
+      'band injuries' => l10n.hc_aspectBandInjuries,
+      // eye 세부
+      'discharge' => l10n.hc_aspectDischarge,
+      'pupil response' => l10n.hc_aspectPupilResponse,
+      'corneal clarity' => l10n.hc_aspectCornealClarity,
+      'periorbital area' => l10n.hc_aspectPeriorbitalArea,
+      'symmetry' || 'symmetry between eyes' => l10n.hc_aspectSymmetry,
+      'corneal scratches' || 'corneal scratches/trauma' => l10n.hc_aspectCornealScratches,
+      'foreign body' => l10n.hc_aspectForeignBody,
+      // beak 세부
+      'color' => l10n.hc_aspectColor,
+      'texture' => l10n.hc_aspectTexture,
+      'overgrowth' => l10n.hc_aspectOvergrowth,
+      'cracks' => l10n.hc_aspectCracks,
+      'peeling' => l10n.hc_aspectPeeling,
+      'cere condition' => l10n.hc_aspectCereCondition,
+      'alignment' => l10n.hc_aspectAlignment,
+      // feather 세부
+      'density' => l10n.hc_aspectDensity,
+      'luster' => l10n.hc_aspectLuster,
+      'discoloration' => l10n.hc_aspectDiscoloration,
+      'damage patterns' => l10n.hc_aspectDamagePatterns,
+      'plucking signs' => l10n.hc_aspectPluckingSigns,
+      'pin feathers' => l10n.hc_aspectPinFeathers,
+      'stress bars' => l10n.hc_aspectStressBars,
+      'molting status' => l10n.hc_aspectMoltingStatus,
       _ => area,
     };
   }
