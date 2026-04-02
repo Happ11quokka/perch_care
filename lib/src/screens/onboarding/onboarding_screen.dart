@@ -577,7 +577,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildBottomContent(double screenWidth, double screenHeight) {
     double w(double value) => (value / _designWidth) * screenWidth;
     double h(double value) => (value / _designHeight) * screenHeight;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return Positioned(
       left: 0,

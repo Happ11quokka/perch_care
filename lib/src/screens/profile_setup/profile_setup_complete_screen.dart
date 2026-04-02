@@ -17,7 +17,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final displayName = petName ?? l10n.pet_defaultName;
     return Scaffold(
       backgroundColor: AppColors.white,

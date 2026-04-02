@@ -216,10 +216,6 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
     await _loadRecord();
   }
 
-  double get _progress {
-    if (_goalMl == 0) return 0;
-    return (_totalMl / _goalMl).clamp(0.0, 1.0);
-  }
 
   double get _perDrink => _count == 0 ? 0 : _totalMl / _count;
 
@@ -571,7 +567,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                       child: GestureDetector(
                       onTap: () async {
                         await _saveRecord();
-                        if (!mounted) return;
+                        if (!context.mounted) return;
                         AppSnackBar.success(
                           context,
                           message: l10n.snackbar_saved,

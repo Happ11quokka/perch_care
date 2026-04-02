@@ -98,7 +98,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     if (result.success) {
       await _navigateAfterLogin();
     } else if (result.signupRequired) {
-      final l10n = AppLocalizations.of(context)!;
+      final l10n = AppLocalizations.of(context);
       AppSnackBar.error(context, message: l10n.error_socialAccountConflict);
     }
   }
@@ -108,7 +108,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -339,7 +339,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   }
 
   Widget _buildOptionsRow() {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -422,7 +422,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   }
 
   Widget _buildLoginButton() {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Semantics(
       button: true,
       label: l10n.login_button,
@@ -539,7 +539,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
 
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -574,7 +574,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   Future<void> _handleGoogleLogin() async {
     if (_isGoogleLoading) return;
     setState(() => _isGoogleLoading = true);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       if (kDebugMode) debugPrint('[Google] Starting login...');
       final signIn = GoogleSignIn.instance;
@@ -606,7 +606,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   Future<void> _handleAppleLogin() async {
     if (_isAppleLoading) return;
     setState(() => _isAppleLoading = true);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [

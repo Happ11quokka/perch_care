@@ -939,7 +939,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                       key: _saveButtonKey,
                       onTap: () async {
                         await _saveEntries();
-                        if (!mounted) return;
+                        if (!context.mounted) return;
                         AppSnackBar.success(
                           context,
                           message: l10n.snackbar_saved,

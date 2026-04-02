@@ -84,7 +84,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -383,7 +383,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Widget _buildSignupButton() {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final isEnabled = _allRequiredTermsAgreed && !_isLoading;
     return Semantics(
       button: true,
@@ -430,7 +430,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   /// 회원가입 성공 후 소셜 계정 연동 안내 다이얼로그
   void _showSocialLinkDialog() {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -454,15 +454,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_hasNavigatedAfterSignup) return;
               _hasNavigatedAfterSignup = true;
+              final router = GoRouter.of(context);
               Navigator.pop(dialogContext);
               // 가입 시 자동 저장된 토큰 제거 후 로그인 페이지로 이동
-              TokenService.instance.clearTokens().then((_) {
-                if (!context.mounted) return;
-                context.goNamed(RouteNames.login);
-              });
+              await TokenService.instance.clearTokens();
+              router.goNamed(RouteNames.login);
             },
             child: Text(
               l10n.common_later,
@@ -472,15 +471,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_hasNavigatedAfterSignup) return;
               _hasNavigatedAfterSignup = true;
+              final router = GoRouter.of(context);
               Navigator.pop(dialogContext);
               // 가입 시 자동 저장된 토큰 제거 후 로그인 페이지로 이동
-              TokenService.instance.clearTokens().then((_) {
-                if (!context.mounted) return;
-                context.goNamed(RouteNames.login);
-              });
+              await TokenService.instance.clearTokens();
+              router.goNamed(RouteNames.login);
             },
             child: Text(
               l10n.common_confirm,
@@ -496,7 +494,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Future<void> _handleSignup() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
       // 유효성 검사 실패 시 에러 메시지 표시

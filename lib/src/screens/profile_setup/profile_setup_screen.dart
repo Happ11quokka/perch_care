@@ -107,7 +107,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.white,
       body: GestureDetector(
@@ -680,7 +680,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   Future<void> _handleComplete() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     try {
       await _authService.updateProfile(
