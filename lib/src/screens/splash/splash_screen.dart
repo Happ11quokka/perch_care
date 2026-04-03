@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -337,7 +338,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _navigateToInitialRoute() async {
     final isLoggedIn = TokenService.instance.isLoggedIn;
-    final targetRoute = !isLoggedIn ? RoutePaths.onboarding : RoutePaths.home;
+
+    String targetRoute;
+    if (isLoggedIn) {
+      targetRoute = RoutePaths.home;
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      final hasCompletedOnboarding =
+          prefs.getBool('has_completed_onboarding') ?? false;
+      targetRoute =
+          hasCompletedOnboarding ? RoutePaths.login : RoutePaths.onboarding;
+    }
+
     debugPrint(
       '[Splash] Navigating to: $targetRoute (isLoggedIn: $isLoggedIn)',
     );

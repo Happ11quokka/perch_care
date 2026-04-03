@@ -437,6 +437,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     applyHeightToFirstAscent: false,
                     applyHeightToLastDescent: false,
                   ),
+                  strutStyle: const StrutStyle(
+                    forceStrutHeight: true,
+                    fontSize: 20,
+                    height: 1,
+                  ),
                   style: const TextStyle(
                     fontSize: 20,
                     height: 1,

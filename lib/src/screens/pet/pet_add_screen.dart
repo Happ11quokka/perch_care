@@ -513,6 +513,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                               hasFocus: _weightHasFocus,
                               hintText: l10n.pet_weight_hint,
                               keyboardType: TextInputType.number,
+                              suffixText: 'g',
                             ),
                             const SizedBox(height: 16),
                             // 생일
@@ -630,6 +631,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
     String? fieldKey,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
+    String? suffixText,
   }) {
     final hasValue = controller.text.isNotEmpty;
     final isActive = hasFocus || hasValue;
@@ -693,6 +695,12 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontWeight: FontWeight.w400,
                   color: AppColors.warmGray,
                   letterSpacing: -0.35,
+                ),
+                suffixText: suffixText,
+                suffixStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.mediumGray,
                 ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,

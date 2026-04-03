@@ -437,6 +437,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
             controller: _weightController,
             hintText: l10n.pet_weight_hint,
             keyboardType: TextInputType.number,
+            suffixText: 'g',
           ),
 
           const SizedBox(height: 16),
@@ -474,6 +475,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
     required TextEditingController controller,
     required String hintText,
     TextInputType? keyboardType,
+    String? suffixText,
   }) {
     return Container(
       height: 60,
@@ -511,6 +513,12 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                 color: AppColors.warmGray,
                 height: 20 / 14,
                 letterSpacing: -0.35,
+              ),
+              suffixText: suffixText,
+              suffixStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.mediumGray,
               ),
               isDense: true,
               contentPadding: EdgeInsets.zero,

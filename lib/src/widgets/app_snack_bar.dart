@@ -173,10 +173,16 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
                   _animateOut();
                 }
               },
-              child: Container(
-                padding: EdgeInsets.only(top: topPadding + AppSpacing.sm),
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: topPadding + AppSpacing.sm,
+                  left: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                ),
+                child: Container(
                 decoration: BoxDecoration(
                   color: config.backgroundColor,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                   boxShadow: const [
                     BoxShadow(
                       color: AppColors.shadowLight,
@@ -248,6 +254,7 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
                   ),
                 ),
               ),
+              ),
             ),
           ),
         ),
@@ -259,11 +266,11 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
     switch (type) {
       case SnackBarType.success:
         return _SnackBarConfig(
-          backgroundColor: AppColors.successLight,
-          iconBackgroundColor: AppColors.success,
+          backgroundColor: AppColors.brandLight,
+          iconBackgroundColor: AppColors.brandPrimary,
           iconColor: AppColors.white,
-          textColor: AppColors.successDarker,
-          closeColor: AppColors.successDark,
+          textColor: AppColors.nearBlack,
+          closeColor: AppColors.brandDark,
           icon: Icons.check_circle_rounded,
         );
       case SnackBarType.error:

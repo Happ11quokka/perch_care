@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../../l10n/app_localizations.dart';
@@ -631,7 +632,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       color: Colors.transparent,
       borderRadius: borderRadius,
       child: InkWell(
-        onTap: () {
+        onTap: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('has_completed_onboarding', true);
+          if (!mounted) return;
           context.goNamed(RouteNames.login);
         },
         borderRadius: borderRadius,

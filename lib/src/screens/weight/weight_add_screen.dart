@@ -118,53 +118,27 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
 
       // 로컬 캐시에 먼저 저장
       final localRecord = await _weightService.saveLocalWeightRecord(record);
-      // 백엔드 API에도 저장
-      try {
-        await _weightService.saveWeightRecord(localRecord);
-        await SyncService.instance.markMutationSynced(
-          type: 'weight',
-          petId: _activePetId!,
-          date: dateKey,
-          entityId: entityId,
-        );
-        // 서버 저장 성공 → 밀린 큐 드레인
-        await SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('[WeightAdd] 백엔드 저장 실패, 로컬에만 저장됨: $e');
-        await SyncService.instance.enqueue(
-          SyncItem(
-            type: 'weight',
-            petId: _activePetId!,
-            date: dateKey,
-            entityId: entityId,
-            payload: {
-              'localId': localRecord.id,
-              'weight': weight,
-              'recordedHour': _selectedTime.hour,
-              'recordedMinute': _selectedTime.minute,
-            },
-          ),
-        );
-        if (mounted) {
-          final l10n = AppLocalizations.of(context);
-          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
-        }
-      }
 
-      debugPrint('[WeightAdd] Save success, mounted=$mounted');
+      // 로컬 저장 성공 → 즉시 성공 피드백
       if (mounted) {
-        // 성공 메시지
         final l10n = AppLocalizations.of(context);
-        debugPrint('[WeightAdd] Showing success snackbar...');
         AppSnackBar.success(context, message: l10n.weight_recordSuccess);
         AnalyticsService.instance.logWeightRecorded(_activePetId!);
-        debugPrint('[WeightAdd] Snackbar shown, waiting 1.2s before pop...');
-
-        // 스낵바를 사용자가 확인할 수 있도록 딜레이 후 이전 화면으로 돌아감
-        await Future.delayed(const Duration(milliseconds: 1200));
-        debugPrint('[WeightAdd] Delay done, mounted=$mounted, popping...');
-        if (mounted) context.pop(true);
       }
+
+      // 백엔드 저장은 fire-and-forget (오프라인 시 블로킹 방지)
+      final petId = _activePetId!;
+      _syncToBackend(
+        localRecord: localRecord,
+        petId: petId,
+        dateKey: dateKey,
+        entityId: entityId,
+        weight: weight,
+      );
+
+      // 스낵바 확인 딜레이 후 이전 화면으로 복귀
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (mounted) context.pop(true);
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
@@ -184,6 +158,42 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  /// 백엔드 동기화 (fire-and-forget, UI 블로킹 없음)
+  Future<void> _syncToBackend({
+    required WeightRecord localRecord,
+    required String petId,
+    required String dateKey,
+    required String entityId,
+    required double weight,
+  }) async {
+    try {
+      await _weightService.saveWeightRecord(localRecord);
+      await SyncService.instance.markMutationSynced(
+        type: 'weight',
+        petId: petId,
+        date: dateKey,
+        entityId: entityId,
+      );
+      await SyncService.instance.drainAfterSuccess();
+    } catch (e) {
+      debugPrint('[WeightAdd] 백엔드 저장 실패, 오프라인 큐에 추가: $e');
+      await SyncService.instance.enqueue(
+        SyncItem(
+          type: 'weight',
+          petId: petId,
+          date: dateKey,
+          entityId: entityId,
+          payload: {
+            'localId': localRecord.id,
+            'weight': weight,
+            'recordedHour': localRecord.recordedHour,
+            'recordedMinute': localRecord.recordedMinute,
+          },
+        ),
+      );
     }
   }
 

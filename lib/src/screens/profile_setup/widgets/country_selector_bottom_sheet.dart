@@ -93,10 +93,16 @@ class _CountrySelectorBottomSheetState extends ConsumerState<CountrySelectorBott
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         color: isSelected ? AppColors.brandLight : Colors.transparent,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // 국기 이모지
             Text(
               country.flagEmoji,
+              strutStyle: const StrutStyle(
+                forceStrutHeight: true,
+                fontSize: 32,
+                height: 1,
+              ),
               style: const TextStyle(fontSize: 32),
             ),
             const SizedBox(width: 12),

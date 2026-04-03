@@ -11,6 +11,8 @@ import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/pet/pet_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/auth_actions.dart';
+import '../../router/route_paths.dart';
 import '../../data/terms_content.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/local_image_avatar.dart';
@@ -1384,9 +1386,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     if (confirm != true || !mounted) return;
 
-    await _authService.signOut();
-    if (!mounted) return;
-    context.goNamed(RouteNames.login);
+    final router = GoRouter.of(context);
+    await performLogout(ref);
+    router.go(RoutePaths.login);
   }
 
   /// 회원 탈퇴 처리 (이중 확인)
@@ -1482,9 +1484,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (finalConfirm != true || !mounted) return;
 
     try {
+      final router = GoRouter.of(context);
       await _authService.deleteAccount();
-      if (!mounted) return;
-      context.goNamed(RouteNames.login);
+      ref.invalidate(activePetProvider);
+      router.go(RoutePaths.login);
     } catch (_) {
       if (!mounted) return;
       AppSnackBar.error(context, message: l10n.error_deleteAccount);

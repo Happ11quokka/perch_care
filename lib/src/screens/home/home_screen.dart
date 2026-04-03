@@ -22,7 +22,9 @@ import '../../models/health_summary.dart';
 import '../../models/pet_insight.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../services/sync/sync_service.dart';
+import '../../services/weight/weight_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -54,6 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // WCI 레벨 (0: 데이터 없음, 1~5: 각 단계)
   int _wciLevel = 0;
   bool _isBhiLoading = false; // 기간 변경 시 BHI 로딩 상태
+  bool _isBhiOffline = false; // BHI 서버 로드 실패 (오프라인)
   bool _pendingCoachMark = false; // 코치마크 대기 플래그 (자식 라우트에서 복귀 시)
   String? _lastUpdateText; // WCI 카드 타임스탬프 표시 텍스트
 
@@ -162,6 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _activePet = pet;
         }
         if (bhi != null) {
+          _isBhiOffline = false;
           _bhiResult = bhi;
           _wciLevel = bhi.wciLevel;
           _hasWeightData = bhi.hasWeightData;
@@ -170,6 +174,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
         _lastUpdateText = _formatLastUpdateTime(l10n);
       });
+    }
+
+    // BHI 실패 시 로컬 데이터로 배지 상태 복원
+    if (bhi == null && mounted) {
+      setState(() => _isBhiOffline = true);
+      await _checkLocalDataForBadges(petId);
     }
   }
 
@@ -224,6 +234,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     } catch (e) {
       if (kDebugMode) { debugPrint('[HomeScreen] Offline sync error: $e'); }
+    }
+  }
+
+  /// BHI 서버 로드 실패 시 로컬 데이터 존재 여부로 배지 색상 복원
+  Future<void> _checkLocalDataForBadges(String petId) async {
+    try {
+      final today = DateTime.now();
+      final dateKey = '${today.year}-${today.month}-${today.day}';
+
+      // Weight: 인메모리 캐시 확인
+      final weightRecords =
+          WeightService.instance.getRecordsByDate(today, petId: petId);
+      final hasLocalWeight = weightRecords.isNotEmpty;
+
+      // Food / Water: SharedPreferences 키 확인
+      final prefs = await SharedPreferences.getInstance();
+      final hasLocalFood =
+          prefs.getString('food_${petId}_$dateKey') != null;
+      final hasLocalWater =
+          prefs.getString('water_${petId}_$dateKey') != null;
+
+      if (mounted) {
+        setState(() {
+          if (hasLocalWeight) _hasWeightData = true;
+          if (hasLocalFood) _hasFoodData = true;
+          if (hasLocalWater) _hasWaterData = true;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[HomeScreen] Local badge check failed: $e');
+      }
     }
   }
 
@@ -337,6 +379,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted || requestId != _bhiRequestId) return;
       final l10n = AppLocalizations.of(context);
       setState(() {
+        _isBhiOffline = false;
         _bhiResult = bhi;
         _wciLevel = bhi.wciLevel;
         _hasWeightData = bhi.hasWeightData;
@@ -348,7 +391,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {
       if (kDebugMode) { debugPrint('[HomeScreen] 기간별 BHI 로드 실패: $e'); }
       if (mounted && requestId == _bhiRequestId) {
-        setState(() => _isBhiLoading = false);
+        setState(() {
+          _isBhiLoading = false;
+          _isBhiOffline = true;
+        });
+        await _checkLocalDataForBadges(_activePet!.id);
       }
     }
   }
@@ -375,6 +422,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
         setState(() {
+          _isBhiOffline = false;
           _bhiResult = bhi;
           _wciLevel = bhi.wciLevel;
           _hasWeightData = bhi.hasWeightData;
@@ -385,6 +433,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     } catch (e) {
       if (kDebugMode) { debugPrint('[HomeScreen] BHI 로드 실패: $e'); }
+      if (mounted) {
+        setState(() => _isBhiOffline = true);
+        await _checkLocalDataForBadges(petId);
+      }
     }
 
     // 건강 요약 + 인사이트 병렬 로드
@@ -988,7 +1040,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 const SizedBox(height: 13),
                 // 설명 텍스트
-                if (_wciLevel == 0) ...[
+                if (_wciLevel == 0 && _isBhiOffline) ...[
+                  // 오프라인 상태 안내
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.gray150,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.wifi_off_rounded,
+                          size: 16,
+                          color: AppColors.warmGray,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            l10n.error_network,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.warmGray,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (_wciLevel == 0) ...[
                   Text(
                     l10n.home_enterDataPrompt(petName),
                     style: const TextStyle(
