@@ -32,11 +32,12 @@ class ForgotPasswordCodeScreen extends ConsumerStatefulWidget {
 }
 
 class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScreen> {
+  static const int _codeLength = 6;
   final List<TextEditingController> _controllers = List.generate(
-    4,
+    _codeLength,
     (_) => TextEditingController(),
   );
-  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
+  final List<FocusNode> _focusNodes = List.generate(_codeLength, (_) => FocusNode());
 
   final _authService = AuthService.instance;
   Timer? _timer;
@@ -200,13 +201,13 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
   Widget _buildCodeInputBoxes() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(4, (index) {
+      children: List.generate(_codeLength, (index) {
         final hasValue = _controllers[index].text.isNotEmpty;
         return Container(
-          margin: EdgeInsets.only(right: index < 3 ? 18 : 0),
+          margin: EdgeInsets.only(right: index < _codeLength - 1 ? 12 : 0),
           child: SizedBox(
-            width: 68,
-            height: 68,
+            width: 52,
+            height: 52,
             child: TextField(
               controller: _controllers[index],
               focusNode: _focusNodes[index],
@@ -243,7 +244,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (value) {
                 setState(() {});
-                if (value.isNotEmpty && index < 3) {
+                if (value.isNotEmpty && index < _codeLength - 1) {
                   _focusNodes[index + 1].requestFocus();
                 }
                 if (value.isEmpty && index > 0) {
