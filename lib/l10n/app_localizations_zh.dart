@@ -2227,20 +2227,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String quotaBadge_normal(int count) {
-    return '今日剩余$count次';
+    return '本月剩余$count次';
   }
 
   @override
-  String get quotaBadge_exhausted => '已达每日限额';
+  String get quotaBadge_exhausted => '已达每月限额';
 
   @override
   String get quotaBadge_upgrade => '升级';
 
   @override
-  String get aiEncyclopedia_quotaExhausted => '今日免费使用次数已用完。升级到高级版可无限使用。';
+  String get aiEncyclopedia_quotaExhausted => '本月免费使用次数已用完。升级到高级版可无限使用。';
 
   @override
-  String get aiEncyclopedia_quotaExhaustedHint => '已达每日限额 · 升级到高级版';
+  String get aiEncyclopedia_quotaExhaustedHint => '已达每月限额 · 升级到高级版';
 
   @override
   String get healthCheck_freeTrialBadge => '免费体验';
@@ -2265,7 +2265,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get visionQuotaBadge_exhausted => '体验已用完';
+  String get visionQuotaBadge_exhausted => '已达每月限额';
 
   @override
   String get visionQuotaBadge_upgrade => '输入代码';

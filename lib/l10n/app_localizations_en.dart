@@ -2356,22 +2356,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String quotaBadge_normal(int count) {
-    return '$count left today';
+    return '$count left this month';
   }
 
   @override
-  String get quotaBadge_exhausted => 'Daily limit reached';
+  String get quotaBadge_exhausted => 'Monthly limit reached';
 
   @override
   String get quotaBadge_upgrade => 'Upgrade';
 
   @override
   String get aiEncyclopedia_quotaExhausted =>
-      'You\'ve used all free queries for today. Upgrade to Premium for unlimited access.';
+      'You\'ve used all free queries for this month. Upgrade to Premium for unlimited access.';
 
   @override
   String get aiEncyclopedia_quotaExhaustedHint =>
-      'Daily limit reached · Upgrade to Premium';
+      'Monthly limit reached · Upgrade to Premium';
 
   @override
   String get healthCheck_freeTrialBadge => 'Free trial';
@@ -2396,7 +2396,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get visionQuotaBadge_exhausted => 'Trial exhausted';
+  String get visionQuotaBadge_exhausted => 'Monthly limit reached';
 
   @override
   String get visionQuotaBadge_upgrade => 'Enter code';

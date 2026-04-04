@@ -2280,21 +2280,21 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String quotaBadge_normal(int count) {
-    return '오늘 $count회 남음';
+    return '이번 달 $count회 남음';
   }
 
   @override
-  String get quotaBadge_exhausted => '일일 한도 도달';
+  String get quotaBadge_exhausted => '월간 한도 도달';
 
   @override
   String get quotaBadge_upgrade => '업그레이드';
 
   @override
   String get aiEncyclopedia_quotaExhausted =>
-      '오늘의 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.';
+      '이번 달 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.';
 
   @override
-  String get aiEncyclopedia_quotaExhaustedHint => '일일 한도 도달 · 프리미엄으로 업그레이드하세요';
+  String get aiEncyclopedia_quotaExhaustedHint => '월간 한도 도달 · 프리미엄으로 업그레이드하세요';
 
   @override
   String get healthCheck_freeTrialBadge => '무료 체험';
@@ -2319,7 +2319,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get visionQuotaBadge_exhausted => '체험 소진';
+  String get visionQuotaBadge_exhausted => '월간 한도 도달';
 
   @override
   String get visionQuotaBadge_upgrade => '코드 입력';

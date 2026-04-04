@@ -4309,13 +4309,13 @@ abstract class AppLocalizations {
   /// No description provided for @quotaBadge_normal.
   ///
   /// In ko, this message translates to:
-  /// **'오늘 {count}회 남음'**
+  /// **'이번 달 {count}회 남음'**
   String quotaBadge_normal(int count);
 
   /// No description provided for @quotaBadge_exhausted.
   ///
   /// In ko, this message translates to:
-  /// **'일일 한도 도달'**
+  /// **'월간 한도 도달'**
   String get quotaBadge_exhausted;
 
   /// No description provided for @quotaBadge_upgrade.
@@ -4327,13 +4327,13 @@ abstract class AppLocalizations {
   /// No description provided for @aiEncyclopedia_quotaExhausted.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.'**
+  /// **'이번 달 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.'**
   String get aiEncyclopedia_quotaExhausted;
 
   /// No description provided for @aiEncyclopedia_quotaExhaustedHint.
   ///
   /// In ko, this message translates to:
-  /// **'일일 한도 도달 · 프리미엄으로 업그레이드하세요'**
+  /// **'월간 한도 도달 · 프리미엄으로 업그레이드하세요'**
   String get aiEncyclopedia_quotaExhaustedHint;
 
   /// No description provided for @healthCheck_freeTrialBadge.
@@ -4375,7 +4375,7 @@ abstract class AppLocalizations {
   /// No description provided for @visionQuotaBadge_exhausted.
   ///
   /// In ko, this message translates to:
-  /// **'체험 소진'**
+  /// **'월간 한도 도달'**
   String get visionQuotaBadge_exhausted;
 
   /// No description provided for @visionQuotaBadge_upgrade.
