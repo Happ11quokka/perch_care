@@ -7,10 +7,9 @@ from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from app.models.user import User
 from app.models.social_account import SocialAccount
+from app.models.password_reset_code import PasswordResetCode
 from app.utils.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 
-# In-memory store for reset codes (consider Redis/DB for horizontal scaling)
-_reset_codes: dict[str, dict] = {}
 _MAX_RESET_ATTEMPTS = 5
 
 
@@ -150,21 +149,38 @@ async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: 
     }
 
 
+async def _get_reset_code(db: AsyncSession, email: str) -> PasswordResetCode | None:
+    """이메일로 유효한 리셋 코드 조회."""
+    result = await db.execute(
+        select(PasswordResetCode).where(PasswordResetCode.email == email)
+    )
+    return result.scalar_one_or_none()
+
+
 async def request_password_reset(db: AsyncSession, email: str) -> dict:
-    """Generate a 6-digit reset code and store it (10 min expiry)."""
+    """Generate a 6-digit reset code and store it in DB (10 min expiry)."""
+    email = email.strip().lower()
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
     if not user:
-        # Return success even if email not found (prevent user enumeration)
         return {"message": "If that email exists, a reset code has been sent."}
 
     code = f"{secrets.randbelow(1000000):06d}"
-    _reset_codes[email] = {
-        "code": code,
-        "expires_at": datetime.now(timezone.utc) + timedelta(minutes=10),
-        "attempts": 0,
-    }
+
+    # 기존 코드가 있으면 교체 (upsert)
+    existing = await _get_reset_code(db, email)
+    if existing:
+        existing.code = code
+        existing.expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+        existing.attempts = 0
+    else:
+        db.add(PasswordResetCode(
+            email=email,
+            code=code,
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
+        ))
+    await db.flush()
 
     from app.utils.email import send_reset_code_email
     try:
@@ -177,20 +193,25 @@ async def request_password_reset(db: AsyncSession, email: str) -> dict:
 
 async def verify_reset_code(db: AsyncSession, email: str, code: str) -> dict:
     """Verify the reset code is valid and not expired. Max 5 attempts."""
-    stored = _reset_codes.get(email)
+    email = email.strip().lower()
+    stored = await _get_reset_code(db, email)
+
     if not stored:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset code")
 
-    if datetime.now(timezone.utc) > stored["expires_at"]:
-        _reset_codes.pop(email, None)
+    if datetime.now(timezone.utc) > stored.expires_at:
+        await db.delete(stored)
+        await db.flush()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset code")
 
-    if stored["attempts"] >= _MAX_RESET_ATTEMPTS:
-        _reset_codes.pop(email, None)
+    if stored.attempts >= _MAX_RESET_ATTEMPTS:
+        await db.delete(stored)
+        await db.flush()
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many attempts. Please request a new code.")
 
-    if stored["code"] != code:
-        stored["attempts"] += 1
+    if stored.code != code:
+        stored.attempts += 1
+        await db.flush()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset code")
 
     return {"message": "Code verified successfully"}
@@ -198,16 +219,23 @@ async def verify_reset_code(db: AsyncSession, email: str, code: str) -> dict:
 
 async def update_password(db: AsyncSession, email: str, code: str, new_password: str) -> dict:
     """Verify code again and update the user's password."""
-    stored = _reset_codes.get(email)
-    if not stored or datetime.now(timezone.utc) > stored["expires_at"]:
+    email = email.strip().lower()
+    stored = await _get_reset_code(db, email)
+
+    if not stored or datetime.now(timezone.utc) > stored.expires_at:
+        if stored:
+            await db.delete(stored)
+            await db.flush()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset code")
 
-    if stored["attempts"] >= _MAX_RESET_ATTEMPTS:
-        _reset_codes.pop(email, None)
+    if stored.attempts >= _MAX_RESET_ATTEMPTS:
+        await db.delete(stored)
+        await db.flush()
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many attempts. Please request a new code.")
 
-    if stored["code"] != code:
-        stored["attempts"] += 1
+    if stored.code != code:
+        stored.attempts += 1
+        await db.flush()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset code")
 
     result = await db.execute(select(User).where(User.email == email))
@@ -216,9 +244,7 @@ async def update_password(db: AsyncSession, email: str, code: str, new_password:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     user.hashed_password = hash_password(new_password)
+    await db.delete(stored)
     await db.flush()
-
-    # Remove used code
-    _reset_codes.pop(email, None)
 
     return {"message": "Password updated successfully"}
