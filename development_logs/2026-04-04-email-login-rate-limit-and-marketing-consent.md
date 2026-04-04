@@ -102,3 +102,39 @@ limiter = Limiter(key_func=get_remote_address)
 
 ### 수정 파일
 - `lib/src/screens/forgot_password/forgot_password_code_screen.dart` — 입력 필드 4개 → 6개, 레이아웃 조정
+
+---
+
+## 4. 비밀번호 재설정 인증코드 인메모리 → DB 저장 전환
+
+### 문제
+- 인증코드가 서버 메모리(`_reset_codes` dict)에만 저장됨
+- Railway 배포 등으로 서버가 재시작되면 발급된 코드가 모두 소실
+- 사용자가 이메일로 받은 유효한 코드를 입력해도 "잘못된 인증코드" 에러 발생
+
+### 원인
+- `auth_service.py`의 `_reset_codes: dict[str, dict] = {}` — 프로세스 메모리에만 존재
+- 서버 재시작, 코드 배포, 스케일 아웃 시 데이터 유실
+- 추가로 이메일 조회 시 대소문자 정규화 없이 직접 비교하여 불일치 가능
+
+### 해결
+
+**DB 모델 생성** (`password_reset_code.py`):
+- `password_reset_codes` 테이블: email(indexed), code, expires_at, attempts, created_at
+- 서버 재시작과 무관하게 코드 영속
+
+**Alembic 마이그레이션** (`017_add_password_reset_codes.py`):
+- `password_reset_codes` 테이블 생성 + email 인덱스
+
+**auth_service.py 전환**:
+- `_reset_codes` dict 완전 제거
+- `request_password_reset()`: dict 저장 → DB upsert (기존 코드 있으면 교체)
+- `verify_reset_code()`: dict 조회 → DB SELECT + 만료/시도횟수 체크
+- `update_password()`: dict 조회 → DB SELECT + 검증 후 DELETE
+- 3개 함수 모두 `email = email.strip().lower()` 정규화 적용
+
+### 수정 파일
+- `backend/app/models/password_reset_code.py` — 신규, DB 모델
+- `backend/app/models/__init__.py` — 모델 등록
+- `backend/alembic/versions/017_add_password_reset_codes.py` — 마이그레이션
+- `backend/app/services/auth_service.py` — 인메모리 → DB 전환 + 이메일 정규화
