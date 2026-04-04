@@ -78,69 +78,78 @@ _FREE_FORMAT = (
 
 # ── Premium 티어: 전체 구조화 포맷 ──────────────────────────────────────
 
-_PREMIUM_FORMAT = (
+# ── Premium 티어: 언어별 헤더 자동 치환 ──────────────────────────────
+_HEADERS = {
+    "Korean": {
+        "CAUSES": "가능한 원인", "URGENCY": "응급도", "HOMECARE": "홈케어",
+        "VET_NEEDED": "병원 방문이 필요한 경우", "INJURY_TYPE": "부상 유형",
+        "FIRST_AID": "응급 처치", "VET_VISIT": "병원 방문",
+        "SAFETY": "안전 여부", "NUTRITION": "영양 정보", "FEEDING": "급여 방법",
+        "CAUSE": "원인 분석", "STEPS": "단계별 방법", "CAUTION": "주의사항",
+        "BASIC_INFO": "기본 정보", "CARE_GUIDE": "관리 포인트", "TIPS": "팁",
+        "SEV_LEVELS": "일반 / 주의 / 긴급", "SAFETY_LEVELS": "안전 / 주의 / 금지",
+    },
+    "English": {
+        "CAUSES": "Possible Causes", "URGENCY": "Urgency", "HOMECARE": "Home Care",
+        "VET_NEEDED": "When to See a Vet", "INJURY_TYPE": "Injury Type",
+        "FIRST_AID": "First Aid", "VET_VISIT": "Vet Visit",
+        "SAFETY": "Safety", "NUTRITION": "Nutrition Info", "FEEDING": "Feeding Guide",
+        "CAUSE": "Cause Analysis", "STEPS": "Step-by-Step", "CAUTION": "Precautions",
+        "BASIC_INFO": "Basic Info", "CARE_GUIDE": "Care Guide", "TIPS": "Tips",
+        "SEV_LEVELS": "Normal / Caution / Urgent", "SAFETY_LEVELS": "Safe / Caution / Forbidden",
+    },
+    "Chinese": {
+        "CAUSES": "可能的原因", "URGENCY": "紧急程度", "HOMECARE": "家庭护理",
+        "VET_NEEDED": "需要就医的情况", "INJURY_TYPE": "伤害类型",
+        "FIRST_AID": "急救措施", "VET_VISIT": "就医建议",
+        "SAFETY": "安全性", "NUTRITION": "营养信息", "FEEDING": "喂食方法",
+        "CAUSE": "原因分析", "STEPS": "分步方法", "CAUTION": "注意事项",
+        "BASIC_INFO": "基本信息", "CARE_GUIDE": "饲养要点", "TIPS": "小贴士",
+        "SEV_LEVELS": "一般 / 注意 / 紧急", "SAFETY_LEVELS": "安全 / 注意 / 禁止",
+    },
+}
+
+_PREMIUM_FORMAT_TEMPLATE = (
     "\n\nRESPONSE FORMAT (Structured by category):\n\n"
-    "HEADER LANGUAGE RULE — MANDATORY:\n"
-    "You MUST write ALL section headers in the SAME language as the user's query.\n"
-    "Use the lookup table below. Each row has KEY | KO | EN | ZH.\n"
-    "Find the user's language column, use ONLY that column's text as the header.\n\n"
-    "HEADER LOOKUP TABLE:\n"
-    "  KEY         | KO              | EN                    | ZH\n"
-    "  CAUSES      | 가능한 원인       | Possible Causes       | 可能的原因\n"
-    "  URGENCY     | 응급도           | Urgency               | 紧急程度\n"
-    "  HOMECARE    | 홈케어           | Home Care             | 家庭护理\n"
-    "  VET_NEEDED  | 병원 방문 필요    | When to See a Vet     | 需要就医的情况\n"
-    "  INJURY_TYPE | 부상 유형        | Injury Type           | 伤害类型\n"
-    "  FIRST_AID   | 응급 처치        | First Aid             | 急救措施\n"
-    "  VET_VISIT   | 병원 방문        | Vet Visit             | 就医建议\n"
-    "  SAFETY      | 안전 여부        | Safety                | 安全性\n"
-    "  NUTRITION   | 영양 정보        | Nutrition Info        | 营养信息\n"
-    "  FEEDING     | 급여 방법        | Feeding Guide         | 喂食方法\n"
-    "  CAUSE       | 원인 분석        | Cause Analysis        | 原因分析\n"
-    "  STEPS       | 단계별 방법      | Step-by-Step          | 分步方法\n"
-    "  CAUTION     | 주의사항         | Precautions           | 注意事项\n"
-    "  BASIC_INFO  | 기본 정보        | Basic Info            | 基本信息\n"
-    "  CARE_GUIDE  | 관리 포인트      | Care Guide            | 饲养要点\n"
-    "  TIPS        | 팁              | Tips                  | 小贴士\n\n"
-    "SEVERITY LABELS (pick matching language):\n"
-    "  KO: 일반/주의/긴급   EN: Normal/Caution/Urgent   ZH: 一般/注意/紧急\n"
-    "  KO: 안전/주의/금지   EN: Safe/Caution/Forbidden  ZH: 安全/注意/禁止\n\n"
-    "--- CATEGORY TEMPLATES ---\n\n"
     "For 'disease' questions (general illness):\n"
-    "🔍 [CAUSES]\n- Cause 1 (likelihood)\n- Cause 2\n\n"
-    "⚠️ [URGENCY]: [severity label]\n\n"
-    "🏠 [HOMECARE]\n- Immediate actions\n\n"
+    "🔍 {CAUSES}\n- Cause 1 (likelihood)\n- Cause 2\n\n"
+    "⚠️ {URGENCY}: [{SEV_LEVELS}]\n\n"
+    "🏠 {HOMECARE}\n- Immediate actions\n\n"
     "(Only if severity is warning/critical)\n"
-    "🏥 [VET_NEEDED]\n- Specific conditions\n\n"
+    "🏥 {VET_NEEDED}\n- Specific conditions\n\n"
     "For 'disease' with INJURIES or ENVIRONMENTAL HAZARDS:\n"
-    "🚨 [INJURY_TYPE]\n- Type classification\n\n"
-    "🆘 [FIRST_AID]\n- Step-by-step first aid\n\n"
-    "⚠️ [URGENCY]: [severity label]\n\n"
-    "🏥 [VET_VISIT]\n- Specify urgency\n\n"
+    "🚨 {INJURY_TYPE}\n- Type classification\n\n"
+    "🆘 {FIRST_AID}\n- Step-by-step first aid\n\n"
+    "⚠️ {URGENCY}: [{SEV_LEVELS}]\n\n"
+    "🏥 {VET_VISIT}\n- Specify urgency\n\n"
     "---\n"
     "For 'nutrition' questions:\n"
-    "✅ [SAFETY]: [safety label]\n\n"
-    "📊 [NUTRITION]\n- Nutritional characteristics\n\n"
-    "📋 [FEEDING]\n- Amount, frequency, precautions\n\n"
+    "✅ {SAFETY}: [{SAFETY_LEVELS}]\n\n"
+    "📊 {NUTRITION}\n- Nutritional characteristics\n\n"
+    "📋 {FEEDING}\n- Amount, frequency, precautions\n\n"
     "---\n"
     "For 'behavior' questions:\n"
-    "💡 [CAUSE]\n- Cause analysis\n\n"
-    "📝 [STEPS]\n1. Step 1\n2. Step 2\n3. Step 3\n\n"
-    "⚠️ [CAUTION]\n- What NOT to do\n\n"
+    "💡 {CAUSE}\n- Cause analysis\n\n"
+    "📝 {STEPS}\n1. Step 1\n2. Step 2\n3. Step 3\n\n"
+    "⚠️ {CAUTION}\n- What NOT to do\n\n"
     "---\n"
     "For 'species' questions:\n"
-    "📋 [BASIC_INFO]\n- Scientific name, lifespan, size, origin\n\n"
-    "🏠 [CARE_GUIDE]\n- Key care requirements\n\n"
-    "💡 [TIPS]\n- Species-specific tips\n\n"
+    "📋 {BASIC_INFO}\n- Scientific name, lifespan, size, origin\n\n"
+    "🏠 {CARE_GUIDE}\n- Key care requirements\n\n"
+    "💡 {TIPS}\n- Species-specific tips\n\n"
     "---\n"
     "For 'general' questions:\n"
     "Provide a well-organized answer with clear headings and bullet points.\n\n"
     "ADDITIONAL RULES:\n"
-    "- Replace every [KEY] above with the text from the user's language column.\n"
-    "- NEVER output the KEY itself (like CAUSES, URGENCY). Always replace with translated text.\n"
     "- If you reference knowledge base documents, mention the source briefly.\n"
     "- Include severity indicators where applicable."
 )
+
+
+def _get_premium_format(language: str) -> str:
+    """사용자 언어에 맞는 헤더가 삽입된 프리미엄 포맷 문자열을 반환한다."""
+    headers = _HEADERS.get(language, _HEADERS["English"])
+    return _PREMIUM_FORMAT_TEMPLATE.format(**headers)
 
 _TONE = (
     "\n\nTONE: Be warm, knowledgeable, and practical. "
@@ -160,11 +169,11 @@ _METADATA_INSTRUCTION = (
 )
 
 
-def _build_system_prompt(tier: str) -> str:
+def _build_system_prompt(tier: str, language: str = "Korean") -> str:
     """시스템 프롬프트를 구성한다 (사전 사업자등록: 모든 티어에 프리미엄 포맷 적용)."""
     parts = [_ROLE_AND_LANGUAGE, _CATEGORY_CLASSIFICATION, _VET_POLICY]
     # TODO(post-registration): tier == "premium" 분기 복원
-    parts.append(_PREMIUM_FORMAT)
+    parts.append(_get_premium_format(language))
     parts.append(_TONE)
     parts.append(_METADATA_INSTRUCTION)
     return "".join(parts)
@@ -315,7 +324,7 @@ def _build_system_message(
     user_language: str | None = None,
 ) -> str:
     """시스템 프롬프트 + 지식 베이스 + RAG 컨텍스트 + DeepSeek 보충을 결합한 시스템 메시지를 구성한다."""
-    system_parts = [_build_system_prompt(tier)]
+    system_parts = [_build_system_prompt(tier, language=user_language or "Korean")]
     if knowledge_context:
         system_parts.append(
             f"\n\n{knowledge_context}\n\n"
