@@ -1039,16 +1039,16 @@
     }
   },
 
-  "quotaBadge_normal": "今日剩余{count}次",
+  "quotaBadge_normal": "本月剩余{count}次",
   "@quotaBadge_normal": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "quotaBadge_exhausted": "已达每日限额",
+  "quotaBadge_exhausted": "已达每月限额",
   "quotaBadge_upgrade": "升级",
-  "aiEncyclopedia_quotaExhausted": "今日免费使用次数已用完。升级到高级版可无限使用。",
-  "aiEncyclopedia_quotaExhaustedHint": "已达每日限额 · 升级到高级版",
+  "aiEncyclopedia_quotaExhausted": "本月免费使用次数已用完。升级到高级版可无限使用。",
+  "aiEncyclopedia_quotaExhaustedHint": "已达每月限额 · 升级到高级版",
   "healthCheck_freeTrialBadge": "免费体验",
   "healthCheck_trialExhaustedTitle": "免费体验已完成",
   "healthCheck_trialExhaustedMessage": "您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。",
@@ -1061,7 +1061,7 @@
       "count": {"type": "int"}
     }
   },
-  "visionQuotaBadge_exhausted": "体验已用完",
+  "visionQuotaBadge_exhausted": "已达每月限额",
   "visionQuotaBadge_upgrade": "输入代码",
 
   "paywall_freeTrialBanner": "AI视觉检查和AI聊天机器人\n目前免费体验中",

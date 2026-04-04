@@ -1070,16 +1070,16 @@
     }
   },
 
-  "quotaBadge_normal": "오늘 {count}회 남음",
+  "quotaBadge_normal": "이번 달 {count}회 남음",
   "@quotaBadge_normal": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "quotaBadge_exhausted": "일일 한도 도달",
+  "quotaBadge_exhausted": "월간 한도 도달",
   "quotaBadge_upgrade": "업그레이드",
-  "aiEncyclopedia_quotaExhausted": "오늘의 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.",
-  "aiEncyclopedia_quotaExhaustedHint": "일일 한도 도달 · 프리미엄으로 업그레이드하세요",
+  "aiEncyclopedia_quotaExhausted": "이번 달 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.",
+  "aiEncyclopedia_quotaExhaustedHint": "월간 한도 도달 · 프리미엄으로 업그레이드하세요",
   "healthCheck_freeTrialBadge": "무료 체험",
   "healthCheck_trialExhaustedTitle": "무료 체험 완료",
   "healthCheck_trialExhaustedMessage": "무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.",
@@ -1092,7 +1092,7 @@
       "count": {"type": "int"}
     }
   },
-  "visionQuotaBadge_exhausted": "체험 소진",
+  "visionQuotaBadge_exhausted": "월간 한도 도달",
   "visionQuotaBadge_upgrade": "코드 입력",
 
   "paywall_freeTrialBanner": "현재 AI 비전 체크와 AI 챗봇은\n무료 체험 중입니다",

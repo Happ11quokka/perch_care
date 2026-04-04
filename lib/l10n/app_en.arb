@@ -872,16 +872,16 @@
     }
   },
 
-  "quotaBadge_normal": "{count} left today",
+  "quotaBadge_normal": "{count} left this month",
   "@quotaBadge_normal": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "quotaBadge_exhausted": "Daily limit reached",
+  "quotaBadge_exhausted": "Monthly limit reached",
   "quotaBadge_upgrade": "Upgrade",
-  "aiEncyclopedia_quotaExhausted": "You've used all free queries for today. Upgrade to Premium for unlimited access.",
-  "aiEncyclopedia_quotaExhaustedHint": "Daily limit reached · Upgrade to Premium",
+  "aiEncyclopedia_quotaExhausted": "You've used all free queries for this month. Upgrade to Premium for unlimited access.",
+  "aiEncyclopedia_quotaExhaustedHint": "Monthly limit reached · Upgrade to Premium",
   "healthCheck_freeTrialBadge": "Free trial",
   "healthCheck_trialExhaustedTitle": "Free trial completed",
   "healthCheck_trialExhaustedMessage": "You've already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.",
@@ -894,7 +894,7 @@
       "count": {"type": "int"}
     }
   },
-  "visionQuotaBadge_exhausted": "Trial exhausted",
+  "visionQuotaBadge_exhausted": "Monthly limit reached",
   "visionQuotaBadge_upgrade": "Enter code",
 
   "paywall_freeTrialBanner": "AI Vision Check and AI Chatbot\nare currently free to try",
