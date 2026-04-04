@@ -1,17 +1,16 @@
-# Task Plan: 체중 시간대 기록 + 식이 누적 기록 기능
+# Task Plan: AI 에이전트 정확도 평가
 
 ## Context
-베타 유저 피드백 기반 UX 개선:
-1. 체중 기록 시 시간대(시각) 함께 기록 — 공복체중 표준화가 어려운 직장인을 위해
-2. 식이(배식/취식) 누적 기록 기능 — 앱 활용도 향상
+챗봇(AI Encyclopedia) + 비전(Health Check) 에이전트의 정확도 중심 평가 및 개선 포인트 도출
 
-## Status: 🔍 Phase 1 - Research & Exploration
+## Status: ✅ COMPLETE
 
 ## Phases
-- [ ] Phase 1: Research & Exploration — 기존 코드 구조 파악
-- [ ] Phase 2: Design — 구현 설계
-- [ ] Phase 3: Implementation — 코드 작성
-- [ ] Phase 4: Verification — 테스트 및 검증
+- [x] Phase 1: Research — 전체 AI 파이프라인 코드 분석 (ai_service.py 934줄 + 4개 보조 서비스)
+- [x] Phase 2: Evaluation — P0/P1/P2 이슈 식별 (챗봇 11건 + 비전 12건)
+- [x] Phase 3: Documentation — findings.md에 평가 결과 기록
 
-## Decisions
-(to be filled during planning)
+## Key Findings
+- 챗봇: P0 4건, P1 4건, P2 3건
+- 비전: P0 5건, P1 4건, P2 3건
+- 상세 → findings.md "AI 에이전트 정확도 평가 (2026-04-04)" 섹션

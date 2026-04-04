@@ -1,3 +1,14 @@
+# Progress Log — perch_care
+
+## Session: 2026-04-04 — AI 에이전트 정확도 평가
+- 챗봇 + 비전 에이전트 전체 코드 분석 완료
+- ai_service.py (934줄), embedding_service.py, vector_search_service.py, deepseek_service.py 직독
+- 챗봇 P0 4건 / P1 4건 / P2 3건 식별
+- 비전 P0 5건 / P1 4건 / P2 3건 식별
+- findings.md에 상세 평가 결과 + 개선안 기록
+
+---
+
 # Progress Log — perch_care 체계적 코드 리뷰
 
 ## Session: 2026-03-20

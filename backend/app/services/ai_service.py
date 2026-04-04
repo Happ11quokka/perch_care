@@ -1,9 +1,12 @@
 """
-AI 백과사전 서비스 — OpenAI gpt-5-nano + LangSmith tracing + 간단 RAG
+AI 백과사전 서비스 — OpenAI + LangSmith tracing + RAG + Vision
 """
 import asyncio
+import json as _json
+import logging
 import os
 import re
+from collections import Counter
 from uuid import UUID
 from datetime import date, timedelta
 
@@ -17,6 +20,8 @@ from app.models.pet import Pet
 from app.models.weight_record import WeightRecord
 from app.models.food_record import FoodRecord
 from app.models.water_record import WaterRecord
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -40,15 +45,21 @@ _ROLE_AND_LANGUAGE = (
 )
 
 _CATEGORY_CLASSIFICATION = (
-    "\n\nCATEGORY CLASSIFICATION:\n"
-    "Before answering, silently classify the user's question into ONE of these categories:\n"
+    "\n\nCATEGORY CLASSIFICATION (CB-3: 명시적 분류):\n"
+    "FIRST, classify the user's question into exactly ONE category. "
+    "Your classification determines which response format to use, so choose carefully:\n"
     "- disease: symptoms, illness, injury, burns, trauma, fractures, bite wounds, "
     "environmental hazards (Teflon, chemicals, toxic fumes), poisoning, emergency, health concerns\n"
-    "- nutrition: food safety, diet, supplements, feeding\n"
-    "- behavior: training, habits, behavioral issues, socialization\n"
-    "- species: breed info, characteristics, lifespan, origin\n"
-    "- general: other topics (cage setup, grooming, general care)\n\n"
-    "Then respond using the structured format for that category."
+    "- nutrition: food safety, diet, supplements, feeding, what foods are safe/toxic\n"
+    "- behavior: training, habits, behavioral issues, socialization, feather plucking (behavioral cause)\n"
+    "- species: breed info, characteristics, lifespan, origin, species comparison\n"
+    "- general: cage setup, grooming, general care, equipment, environment\n\n"
+    "IMPORTANT: If a question could fit multiple categories, choose the PRIMARY intent:\n"
+    "  - 'My parrot is plucking feathers and has bald spots' → disease (health symptom)\n"
+    "  - 'How do I stop my parrot from plucking?' → behavior (training focus)\n"
+    "  - 'Can parrots eat apples?' → nutrition\n"
+    "  - 'My cockatiel is sneezing and has discharge' → disease\n\n"
+    "Then use the metadata tag to declare your classification, and respond in that category's format."
 )
 
 _VET_POLICY = (
@@ -142,7 +153,23 @@ _PREMIUM_FORMAT_TEMPLATE = (
     "Provide a well-organized answer with clear headings and bullet points.\n\n"
     "ADDITIONAL RULES:\n"
     "- If you reference knowledge base documents, mention the source briefly.\n"
-    "- Include severity indicators where applicable."
+    "- Include severity indicators where applicable.\n\n"
+    "EXAMPLE (disease category, Korean):\n"
+    "<!-- META:category=disease|severity=caution|vet=false -->\n\n"
+    "🔍 가능한 원인\n"
+    "- 환경 스트레스 (새장 위치 변경, 소음)\n"
+    "- 영양 불균형 (비타민 A 결핍)\n\n"
+    "⚠️ 응급도: [주의]\n\n"
+    "🏠 홈케어\n"
+    "- 스트레스 요인 제거\n"
+    "- 비타민 보충제 급여\n\n"
+    "EXAMPLE (nutrition category, English):\n"
+    "<!-- META:category=nutrition|severity=none|vet=false -->\n\n"
+    "✅ Safety: [Safe]\n\n"
+    "📊 Nutrition Info\n"
+    "- Rich in vitamin C, low sugar\n\n"
+    "📋 Feeding Guide\n"
+    "- Small pieces, 2-3 times per week"
 )
 
 
@@ -154,6 +181,18 @@ def _get_premium_format(language: str) -> str:
 _TONE = (
     "\n\nTONE: Be warm, knowledgeable, and practical. "
     "Provide actionable advice. Avoid excessive disclaimers."
+)
+
+# CB-10: 종별 특화 지시
+_SPECIES_INSTRUCTION = (
+    "\n\nSPECIES-SPECIFIC AWARENESS:\n"
+    "Different parrot species have vastly different normal ranges. "
+    "When health data includes the parrot's species, ALWAYS consider species-specific norms:\n"
+    "- Weight: A normal budgie weighs 30-40g, while an African Grey weighs 400-600g\n"
+    "- Diet: Lories need nectar-based diets; macaws need more fat/nuts\n"
+    "- Behavior: Cockatoos are more prone to feather destruction; Eclectus have unique dietary needs\n"
+    "- Lifespan: Budgies live 5-10 years; macaws can live 50+ years\n"
+    "Tailor your advice to the specific species mentioned in the pet profile data."
 )
 
 _METADATA_INSTRUCTION = (
@@ -172,8 +211,8 @@ _METADATA_INSTRUCTION = (
 def _build_system_prompt(tier: str, language: str = "Korean") -> str:
     """시스템 프롬프트를 구성한다 (사전 사업자등록: 모든 티어에 프리미엄 포맷 적용)."""
     parts = [_ROLE_AND_LANGUAGE, _CATEGORY_CLASSIFICATION, _VET_POLICY]
-    # TODO(post-registration): tier == "premium" 분기 복원
     parts.append(_get_premium_format(language))
+    parts.append(_SPECIES_INSTRUCTION)
     parts.append(_TONE)
     parts.append(_METADATA_INSTRUCTION)
     return "".join(parts)
@@ -181,10 +220,18 @@ def _build_system_prompt(tier: str, language: str = "Korean") -> str:
 
 # ── 메타데이터 파서 ──────────────────────────────────────────────────
 
+# CB-6: 유연한 메타데이터 파싱 — 순서/공백 변형 허용
 _META_PATTERN = re.compile(
-    r"^<!--\s*META:\s*category=(\w+)\|severity=(\w+)\|vet=(true|false)\s*-->\s*\n?",
+    r"^<!--\s*META:\s*category=(\w+)\s*\|\s*severity=(\w+)\s*\|\s*vet=(true|false)\s*-->\s*\n?",
     re.IGNORECASE,
 )
+
+# CB-6: fallback — 순서가 다르거나 일부 필드만 있는 경우
+_META_FIELD_PATTERNS = {
+    "category": re.compile(r"category\s*=\s*(\w+)", re.IGNORECASE),
+    "severity": re.compile(r"severity\s*=\s*(\w+)", re.IGNORECASE),
+    "vet": re.compile(r"vet\s*=\s*(true|false)", re.IGNORECASE),
+}
 
 _VALID_CATEGORIES = {"disease", "nutrition", "behavior", "species", "general"}
 _VALID_SEVERITIES = {"normal", "caution", "warning", "critical", "none"}
@@ -193,25 +240,87 @@ _VALID_SEVERITIES = {"normal", "caution", "warning", "critical", "none"}
 def parse_response_metadata(text: str) -> dict:
     """LLM 응답에서 메타데이터 태그를 파싱하고 본문만 반환한다.
 
+    CB-6: 정규식 유연화 + fallback 파서 추가.
+    순서 변경, 추가 공백, 약간의 포맷 변형도 처리.
+
     Returns:
         {"answer": str, "category": str|None, "severity": str|None, "vet_recommended": bool|None}
     """
+    # 1차: 표준 패턴 매칭
     match = _META_PATTERN.match(text)
-    if not match:
-        return {"answer": text.strip(), "category": None, "severity": None, "vet_recommended": None}
-
-    category = match.group(1).lower()
-    severity = match.group(2).lower()
-    vet = match.group(3).lower() == "true"
+    if match:
+        category = match.group(1).lower()
+        severity = match.group(2).lower()
+        vet = match.group(3).lower() == "true"
+        answer = text[match.end():].strip()
+    else:
+        # 2차: <!-- ... --> 블록 내에서 개별 필드 추출 (CB-6 fallback)
+        meta_block_match = re.match(r"^<!--(.+?)-->\s*\n?", text, re.DOTALL)
+        if meta_block_match:
+            block = meta_block_match.group(1)
+            cat_m = _META_FIELD_PATTERNS["category"].search(block)
+            sev_m = _META_FIELD_PATTERNS["severity"].search(block)
+            vet_m = _META_FIELD_PATTERNS["vet"].search(block)
+            category = cat_m.group(1).lower() if cat_m else None
+            severity = sev_m.group(1).lower() if sev_m else None
+            vet = vet_m.group(1).lower() == "true" if vet_m else None
+            answer = text[meta_block_match.end():].strip()
+            logger.debug("META fallback parse: category=%s severity=%s vet=%s", category, severity, vet)
+        else:
+            return {"answer": text.strip(), "category": None, "severity": None, "vet_recommended": None}
 
     # 유효성 검증
-    if category not in _VALID_CATEGORIES:
+    if category and category not in _VALID_CATEGORIES:
+        logger.warning("Invalid META category=%r, discarding", category)
         category = None
-    if severity not in _VALID_SEVERITIES or severity == "none":
+    if severity and (severity not in _VALID_SEVERITIES or severity == "none"):
         severity = None
 
-    answer = text[match.end():].strip()
     return {"answer": answer, "category": category, "severity": severity, "vet_recommended": vet}
+
+
+# CB-2: RAG 컨텍스트 다국어 레이블
+_RAG_LABELS = {
+    "Korean": {
+        "header": "현재 앵무새 건강 데이터 — 최근 {days}일",
+        "name": "이름", "species": "종", "breed": "품종", "age": "나이",
+        "gender": "성별", "growth_stage": "성장단계",
+        "male": "수컷", "female": "암컷", "unknown": "���상",
+        "adult": "성체", "rapid_growth": "빠른성��기", "post_growth": "후성장기",
+        "age_ym": "{y}�� {m}개월", "age_m": "{m}개��",
+        "weight_h": "최근 {days}일 체중(g)", "weight_none": "최근 {days}일 ���중 기록 없음",
+        "food_h": "최근 {days}일 사료 섭취", "food_row": "  {d}: {t}g / 목표 {g}g",
+        "food_none": "최근 {days}일 사료 기록 없음",
+        "water_h": "최근 {days}일 음수량", "water_row": "  {d}: {t}ml / 목표 {g}ml",
+        "water_none": "최��� {days}일 음수 기록 없음",
+    },
+    "English": {
+        "header": "Current Parrot Health Data — Last {days} days",
+        "name": "Name", "species": "Species", "breed": "Breed", "age": "Age",
+        "gender": "Gender", "growth_stage": "Growth Stage",
+        "male": "Male", "female": "Female", "unknown": "Unknown",
+        "adult": "Adult", "rapid_growth": "Rapid Growth", "post_growth": "Post Growth",
+        "age_ym": "{y} yrs {m} mos", "age_m": "{m} months",
+        "weight_h": "Weight (g) — Last {days} days", "weight_none": "No weight records in last {days} days",
+        "food_h": "Food Intake — Last {days} days", "food_row": "  {d}: {t}g / target {g}g",
+        "food_none": "No food records in last {days} days",
+        "water_h": "Water Intake — Last {days} days", "water_row": "  {d}: {t}ml / target {g}ml",
+        "water_none": "No water records in last {days} days",
+    },
+    "Chinese": {
+        "header": "当前鹦鹉健康数据 — 最近{days}天",
+        "name": "名字", "species": "种类", "breed": "品种", "age": "年龄",
+        "gender": "性别", "growth_stage": "成长阶段",
+        "male": "雄性", "female": "雌性", "unknown": "未知",
+        "adult": "成体", "rapid_growth": "快速成长期", "post_growth": "后成长期",
+        "age_ym": "{y}岁{m}个月", "age_m": "{m}个月",
+        "weight_h": "最近{days}天体重(g)", "weight_none": "最近{days}天无体重记录",
+        "food_h": "最近{days}天饲���摄入", "food_row": "  {d}: {t}g / 目标 {g}g",
+        "food_none": "最近{days}天无饲料记录",
+        "water_h": "最近{days}天饮水量", "water_row": "  {d}: {t}ml / 目标 {g}ml",
+        "water_none": "最近{days}天无饮水���录",
+    },
+}
 
 
 async def _build_rag_context(
@@ -219,8 +328,10 @@ async def _build_rag_context(
     pet_id: str | None,
     user_id: UUID | None = None,
     tier: str = "free",
+    language: str = "Korean",
 ) -> str | None:
-    """펫 ID 기반으로 DB에서 최근 건강 데이터를 조회하여 RAG context 텍스트를 구성한다."""
+    """펫 ID 기반으로 DB에서 최근 건강 데이터를 조회하여 RAG context 텍스트를 구성한다.
+    CB-2: language 파라미터에 따라 다국어 레이블 적용."""
     if not pet_id:
         return None
 
@@ -238,13 +349,11 @@ async def _build_rag_context(
     if pet is None:
         return None
 
+    L = _RAG_LABELS.get(language, _RAG_LABELS["English"])
     today = date.today()
-    # 사전 사업자등록: 모든 티어에 프리미엄 RAG 범위 적용
-    # TODO(post-registration): tier 분기 복원 — free: 7일
     lookback_days = 30
     since = today - timedelta(days=lookback_days)
 
-    # 체중
     weight_result = await db.execute(
         select(WeightRecord.recorded_date, WeightRecord.weight)
         .where(WeightRecord.pet_id == pid, WeightRecord.recorded_date >= since)
@@ -252,7 +361,6 @@ async def _build_rag_context(
     )
     weights = weight_result.all()
 
-    # 사료
     food_result = await db.execute(
         select(FoodRecord.recorded_date, FoodRecord.total_grams, FoodRecord.target_grams)
         .where(FoodRecord.pet_id == pid, FoodRecord.recorded_date >= since)
@@ -260,7 +368,6 @@ async def _build_rag_context(
     )
     foods = food_result.all()
 
-    # 음수량
     water_result = await db.execute(
         select(WaterRecord.recorded_date, WaterRecord.total_ml, WaterRecord.target_ml)
         .where(WaterRecord.pet_id == pid, WaterRecord.recorded_date >= since)
@@ -268,49 +375,46 @@ async def _build_rag_context(
     )
     waters = water_result.all()
 
-    # context 텍스트 구성
-    lines = [f"[현재 앵무새 건강 데이터 — 최근 {lookback_days}일]"]
-
-    # 프로필
-    lines.append(f"이름: {pet.name}")
-    lines.append(f"종: {pet.species}")
+    # 다국어 레이블 적용
+    lines = [f"[{L['header'].format(days=lookback_days)}]"]
+    lines.append(f"{L['name']}: {pet.name}")
+    lines.append(f"{L['species']}: {pet.species}")
     if pet.breed:
-        lines.append(f"품종: {pet.breed}")
+        lines.append(f"{L['breed']}: {pet.breed}")
     if pet.birth_date:
         age_days = (today - pet.birth_date).days
         years, months = divmod(age_days // 30, 12)
-        age_str = f"{years}세 {months}개월" if years > 0 else f"{months}개월"
-        lines.append(f"나이: {age_str}")
+        if years > 0:
+            lines.append(f"{L['age']}: {L['age_ym'].format(y=years, m=months)}")
+        else:
+            lines.append(f"{L['age']}: {L['age_m'].format(m=months)}")
     if pet.gender:
-        gender_map = {"male": "수컷", "female": "암컷", "unknown": "미상"}
-        lines.append(f"성별: {gender_map.get(pet.gender, pet.gender)}")
+        gk = {"male": "male", "female": "female"}.get(pet.gender, "unknown")
+        lines.append(f"{L['gender']}: {L[gk]}")
     if pet.growth_stage:
-        stage_map = {"adult": "성체", "rapid_growth": "빠른성장기", "post_growth": "후성장기"}
-        lines.append(f"성장단계: {stage_map.get(pet.growth_stage, pet.growth_stage)}")
+        sk = {"adult": "adult", "rapid_growth": "rapid_growth", "post_growth": "post_growth"}.get(pet.growth_stage, "adult")
+        lines.append(f"{L['growth_stage']}: {L[sk]}")
 
-    # 체중
     if weights:
-        lines.append(f"\n최근 {lookback_days}일 체중(g):")
+        lines.append(f"\n{L['weight_h'].format(days=lookback_days)}:")
         for w in weights:
             lines.append(f"  {w.recorded_date}: {w.weight}g")
     else:
-        lines.append(f"\n최근 {lookback_days}일 체중 기록 없음")
+        lines.append(f"\n{L['weight_none'].format(days=lookback_days)}")
 
-    # 사료
     if foods:
-        lines.append(f"\n최근 {lookback_days}일 사료 섭취:")
+        lines.append(f"\n{L['food_h'].format(days=lookback_days)}:")
         for f in foods:
-            lines.append(f"  {f.recorded_date}: {f.total_grams}g / 목표 {f.target_grams}g")
+            lines.append(L["food_row"].format(d=f.recorded_date, t=f.total_grams, g=f.target_grams))
     else:
-        lines.append(f"\n최근 {lookback_days}일 사료 기록 없음")
+        lines.append(f"\n{L['food_none'].format(days=lookback_days)}")
 
-    # 음수량
     if waters:
-        lines.append(f"\n최근 {lookback_days}일 음수량:")
+        lines.append(f"\n{L['water_h'].format(days=lookback_days)}:")
         for w in waters:
-            lines.append(f"  {w.recorded_date}: {w.total_ml}ml / 목표 {w.target_ml}ml")
+            lines.append(L["water_row"].format(d=w.recorded_date, t=w.total_ml, g=w.target_ml))
     else:
-        lines.append(f"\n최근 {lookback_days}일 음수 기록 없음")
+        lines.append(f"\n{L['water_none'].format(days=lookback_days)}")
 
     return "\n".join(lines)
 
@@ -371,12 +475,24 @@ def _contains_chinese(text: str) -> bool:
 
 
 def _detect_language(text: str) -> str:
-    """사용자 메시지의 주요 언어를 감지한다."""
-    if _contains_chinese(text):
-        return "Chinese"
-    if any("\uac00" <= ch <= "\ud7af" or "\u3131" <= ch <= "\u3163" for ch in text):
+    """사용자 메시지의 주요 언어를 빈도 기반으로 감지한다.
+
+    CB-7: 단순 문자 범위 체크 → 빈도 기반 감지로 개선.
+    혼합 언어(예: "앵무새 feather plucking")에서도 주요 언어를 정확히 식별.
+    """
+    counts: Counter[str] = Counter()
+    for ch in text:
+        if "\u4e00" <= ch <= "\u9fff":
+            counts["Chinese"] += 1
+        elif "\uac00" <= ch <= "\ud7af" or "\u3131" <= ch <= "\u3163":
+            counts["Korean"] += 1
+        elif ch.isalpha():
+            counts["English"] += 1
+
+    if not counts:
         return "Korean"
-    return "English"
+
+    return counts.most_common(1)[0][0]
 
 
 _LOCALE_TO_LANGUAGE = {"ko": "Korean", "en": "English", "zh": "Chinese"}
@@ -406,21 +522,18 @@ async def prepare_system_message(
     from app.services.vector_search_service import search_knowledge, format_knowledge_context
     from app.services.deepseek_service import get_chinese_supplement
 
-    # 독립 I/O를 병렬 실행하여 지연시간 최소화
-    # 사전 사업자등록: 중국어 질문이면 무조건 DeepSeek 보충 적용
-    # TODO(post-registration): tier == "premium" and 조건 복원
     is_chinese_premium = _contains_chinese(query)
+    user_language = _detect_language(query)
 
     tasks = [
         search_knowledge(query),
-        _build_rag_context(db, pet_id, user_id=user_id, tier=tier),
+        _build_rag_context(db, pet_id, user_id=user_id, tier=tier, language=user_language),
     ]
     if is_chinese_premium:
         tasks.append(get_chinese_supplement(query, mode="text"))
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    # 결과 언팩 (예외 발생 시 graceful fallback)
     knowledge_results = results[0] if not isinstance(results[0], BaseException) else []
     knowledge_context = format_knowledge_context(knowledge_results) if knowledge_results else None
     rag_context = results[1] if not isinstance(results[1], BaseException) else None
@@ -428,7 +541,15 @@ async def prepare_system_message(
     if is_chinese_premium and len(results) > 2:
         deepseek_context = results[2] if not isinstance(results[2], BaseException) else None
 
-    user_language = _detect_language(query)
+    # CB-4: KB 모니터링 — 유사도 점수 로깅 + 저유사도 쿼리 감지
+    if knowledge_results:
+        scores = [r.get("similarity", 0) for r in knowledge_results if isinstance(r, dict)]
+        avg_score = sum(scores) / len(scores) if scores else 0
+        logger.info("KB search: query=%r top_k=%d avg_similarity=%.3f", query[:80], len(scores), avg_score)
+        if avg_score < 0.3:
+            logger.warning("KB LOW COVERAGE: query=%r avg_similarity=%.3f — knowledge base may lack this topic", query[:80], avg_score)
+    else:
+        logger.warning("KB NO RESULTS: query=%r — no knowledge base hits", query[:80])
 
     return _build_system_message(
         rag_context, pet_profile_context, knowledge_context,
@@ -437,9 +558,37 @@ async def prepare_system_message(
     )
 
 
-def _select_model(tier: str) -> tuple[str, int]:
-    """모델과 최대 토큰 수를 반환한다 (사전 사업자등록: 모든 티어에 프리미엄 모델 적용)."""
-    # TODO(post-registration): tier 분기 복원 — free: (MODEL, 1024)
+# ── CB-1+CB-8: 대화 히스토리 관리 ────────────────────────────────────
+
+_MAX_RECENT_TURNS = 10  # 최근 N턴만 유지
+
+
+def _truncate_history(history: list[dict[str, str]]) -> list[dict[str, str]]:
+    """CB-1: 히스토리를 최근 N턴으로 자르고, 이전 대화가 있었음을 알려주는 요약을 삽입한다.
+
+    CB-8: 오래된 대화가 있으면 간단한 컨텍스트 노트를 추가하여 맥락 손실 최소화.
+    """
+    if len(history) <= _MAX_RECENT_TURNS * 2:
+        return history
+
+    trimmed_count = len(history) - _MAX_RECENT_TURNS * 2
+    summary_note = {
+        "role": "user",
+        "content": f"[System note: {trimmed_count} earlier messages were trimmed for context management. "
+                   f"Focus on the recent conversation below.]",
+    }
+    return [summary_note] + history[-_MAX_RECENT_TURNS * 2:]
+
+
+# ── CB-3+CB-11: 카테고리 인식 모델 선택 ──────────────────────────────
+
+def _select_model(tier: str, category: str | None = None) -> tuple[str, int]:
+    """모델과 최대 토큰 수를 반환한다.
+
+    CB-11: disease/critical 카테고리는 더 정확한 모델 사용.
+    """
+    if category in ("disease",):
+        return "gpt-4o-mini", 2048
     return "gpt-4.1-nano", 2048
 
 
@@ -457,14 +606,13 @@ async def ask(
     """사용자 질문에 대해 티어별 모델로 답변을 생성한다."""
     system_message = await prepare_system_message(db, query, pet_id, pet_profile_context, user_id, tier=tier)
 
-    # 티어별 모델 선택
     model, tier_max_tokens = _select_model(tier)
     effective_max_tokens = min(max_tokens, tier_max_tokens)
 
     return await _ask_core(
         system_message=system_message,
         query=query,
-        history=history,
+        history=_truncate_history(history),
         model=model,
         temperature=temperature,
         effective_max_tokens=effective_max_tokens,
@@ -481,7 +629,6 @@ async def _ask_core(
     effective_max_tokens: int,
 ) -> str:
     """LangSmith에 model/effective_max_tokens가 기록되는 실제 LLM 호출."""
-    # 메시지 구성
     messages = [{"role": "system", "content": system_message}]
     for h in history:
         role = h.get("role", "user")
@@ -499,6 +646,10 @@ async def _ask_core(
 
     choice = response.choices[0]
     if choice.message.content:
+        # CB-3: 응답에서 카테고리 추출 후 로깅 (검증용)
+        meta = parse_response_metadata(choice.message.content)
+        if meta.get("category"):
+            logger.info("LLM category=%s severity=%s vet=%s", meta["category"], meta["severity"], meta["vet_recommended"])
         return choice.message.content
 
     return "답변을 생성하지 못했습니다."
@@ -518,14 +669,13 @@ async def ask_stream(
     """SSE 스트리밍 응답 생성기. DB에서 RAG 컨텍스트를 조회 후 토큰 단위로 yield한다."""
     system_message = await prepare_system_message(db, query, pet_id, pet_profile_context, user_id, tier=tier)
 
-    # 티어별 모델 선택 (LangSmith에 기록되도록 미리 계산)
     model, tier_max_tokens = _select_model(tier)
     effective_max_tokens = min(max_tokens, tier_max_tokens)
 
     async for token in ask_stream_with_message(
         system_message=system_message,
         query=query,
-        history=history,
+        history=_truncate_history(history),
         model=model,
         temperature=temperature,
         effective_max_tokens=effective_max_tokens,
@@ -577,6 +727,18 @@ _VISION_COMMON_RULES = (
     "- Also recommend vet for: breathing difficulty, seizures, suspected infection, "
     "tumors, or symptoms persisting 48+ hours.\n"
     "- For mild concerns (severity: caution), suggest monitoring first.\n\n"
+    "VISIBILITY RULE (VIS-2):\n"
+    "If a body area is NOT clearly visible in the image, you MUST set:\n"
+    '  "severity": "not_visible",\n'
+    '  "observation": "This area is not clearly visible in the provided image."\n'
+    "Do NOT guess or assume 'normal' for areas you cannot see. "
+    "Honest uncertainty is better than a false negative.\n\n"
+    "SPECIES-SPECIFIC ANALYSIS (VIS-4):\n"
+    "If the pet's species is provided in the context, consider species-specific norms:\n"
+    "- Different species have different normal feather patterns, beak shapes, body proportions\n"
+    "- A cockatiel's crest position differs from an Amazon's posture indicators\n"
+    "- Budgie normal weight range (30-40g) vs African Grey (400-600g)\n"
+    "Tailor your assessment to the specific species.\n\n"
     "RESPONSE FORMAT: You MUST respond with a valid JSON object. No markdown, no extra text."
 )
 
@@ -608,7 +770,7 @@ _VISION_FULL_BODY_PROMPT = (
     "    {\n"
     '      "area": "<injury_detected|feather|posture|eye|beak|foot|body_shape>",\n'
     '      "observation": "<detailed observation in user\'s language>",\n'
-    '      "severity": "<normal|caution|warning|critical>",\n'
+    '      "severity": "<normal|caution|warning|critical|not_visible>",\n'
     '      "possible_causes": ["<cause1>", "<cause2>"],\n'
     '      "injury_type": "<optional, only for injury_detected>",\n'
     '      "first_aid": ["<optional, only for injury_detected>"]\n'
@@ -620,7 +782,8 @@ _VISION_FULL_BODY_PROMPT = (
     '  "vet_visit_needed": <true|false>,\n'
     '  "vet_reason": "<reason or null>"\n'
     "}\n\n"
-    "Include ALL 6 standard areas in findings even if they appear normal. "
+    "Include ALL 6 standard areas in findings. "
+    "If an area is NOT visible in the image, use severity 'not_visible'. "
     "Add injury_detected ONLY if injury/trauma is actually visible."
 )
 
@@ -656,6 +819,37 @@ _VISION_PART_SPECIFIC_PROMPTS = {
         "Injury: burns from hot surfaces, lacerations, fractures, "
         "bite wounds, band injuries."
     ),
+    # VIS-10: 추가 부위
+    "wing": (
+        "TASK: Analyze this parrot's WING in detail.\n"
+        "Check for: wing droop (nerve damage, fracture), feather condition on flight/covert feathers, "
+        "symmetry between wings, range of motion indicators, swelling at joints, "
+        "blood feathers (broken), and signs of self-mutilation on wing web."
+    ),
+    "tail": (
+        "TASK: Analyze this parrot's TAIL in detail.\n"
+        "Check for: tail bobbing (respiratory distress indicator), feather condition, "
+        "broken/bent tail feathers, vent area cleanliness, preen gland condition, "
+        "and signs of stress bars or discoloration."
+    ),
+    "vent": (
+        "TASK: Analyze this parrot's VENT/CLOACA area in detail.\n"
+        "Check for: soiling/matting around vent (diarrhea indicator), swelling, "
+        "prolapse signs, pasting, discharge, feather loss around vent area, "
+        "and signs of egg binding (distended abdomen near vent)."
+    ),
+    "crop": (
+        "TASK: Analyze this parrot's CROP area in detail.\n"
+        "Check for: crop distension (slow crop, crop stasis), asymmetry, "
+        "skin discoloration over crop, visible food mass that hasn't passed, "
+        "and signs of crop burn or infection (sour crop)."
+    ),
+    "nares": (
+        "TASK: Analyze this parrot's NARES (nostrils) in detail.\n"
+        "Check for: discharge (clear, mucoid, or colored), cere condition and color, "
+        "nostril symmetry, blockage, swelling around nares, "
+        "and signs of respiratory infection or sinusitis."
+    ),
 }
 
 _VISION_DROPPINGS_PROMPT = (
@@ -664,6 +858,19 @@ _VISION_DROPPINGS_PROMPT = (
     "Evaluate the 3 components: feces (green/brown solid), urates (white chalky), "
     "urine (clear liquid). Check color, texture, ratio, and abnormalities "
     "(blood, undigested seeds, watery consistency, discolored urates).\n\n"
+    "DIET-AWARE ANALYSIS (VIS-7):\n"
+    "Diet significantly affects droppings appearance:\n"
+    "- Fruits/vegetables (especially berries, beets): can cause red/purple feces — NOT blood\n"
+    "- Pellet-based diet: typically produces brownish, uniform feces\n"
+    "- Seed-heavy diet: may produce greenish feces with visible hulls\n"
+    "- High water intake or watery foods: increases urine volume — NOT necessarily polyuria\n"
+    "If pet health data is provided, ALWAYS cross-reference recent diet before flagging abnormalities.\n"
+    "Distinguish diet-related color changes from pathological ones.\n\n"
+    "SEVERITY CALIBRATION (VIS-11):\n"
+    "- normal: typical 3-component droppings for species/diet\n"
+    "- caution: minor color variation, slightly watery (monitor 24-48h)\n"
+    "- warning: persistent abnormal color, undigested food, mild blood streaks\n"
+    "- critical: bright blood, black tarry feces, no urates for 12+ hours, complete liquid stool\n\n"
     "JSON schema:\n"
     "{\n"
     '  "mode": "droppings",\n'
@@ -672,7 +879,8 @@ _VISION_DROPPINGS_PROMPT = (
     '      "component": "<feces|urates|urine>",\n'
     '      "color": "<observed color>",\n'
     '      "texture": "<texture description>",\n'
-    '      "status": "<normal|caution|warning|critical>"\n'
+    '      "status": "<normal|caution|warning|critical>",\n'
+    '      "diet_related": <true|false>\n'
     "    }\n"
     "  ],\n"
     '  "overall_status": "<normal|caution|warning|critical>",\n'
@@ -688,8 +896,17 @@ _VISION_FOOD_PROMPT = (
     f"{_VISION_COMMON_RULES}\n\n"
     "TASK: Analyze this photo of food/treats being fed to a parrot.\n"
     "Identify each food item, assess safety (safe/caution/toxic), "
-    "and evaluate overall nutrition balance.\n"
-    "CRITICAL: Flag toxic foods immediately (avocado, chocolate, caffeine, onion, garlic, alcohol).\n\n"
+    "and evaluate overall nutrition balance.\n\n"
+    "TOXIC FOOD DATABASE (VIS-6 — comprehensive list):\n"
+    "CRITICAL TOXIC (immediate danger): avocado (persin), chocolate (theobromine), "
+    "caffeine, onion, garlic, alcohol, rhubarb, raw/dried beans (hemagglutinin)\n"
+    "HIGH TOXIC (dangerous in small amounts): apple seeds/core (cyanide), "
+    "cherry/peach/plum pits, mushrooms (wild), xylitol (artificial sweetener), "
+    "tomato leaves/stems (solanine), nutmeg, raw potato\n"
+    "CAUTION (harmful in excess): high-salt foods, high-fat/fried foods, "
+    "dairy products (lactose intolerance), fruit seeds in general, "
+    "iceberg lettuce (low nutrition, diarrhea risk), raw eggs\n\n"
+    "Flag ANY food matching the toxic lists above with appropriate severity.\n\n"
     "JSON schema:\n"
     "{\n"
     '  "mode": "food",\n'
@@ -819,6 +1036,68 @@ def _vision_trace_inputs(inputs: dict) -> dict:
     return processed
 
 
+def _calibrate_confidence(result: dict, mode: str) -> dict:
+    """VIS-3: Confidence score 보정.
+
+    GPT-4o의 자체 보고 confidence는 과대 추정 경향이 있으므로 보정 적용.
+    - not_visible 영역이 있으면 confidence 감소
+    - 단일 이미지 한계 반영 (최대 85 캡)
+    """
+    raw_confidence = result.get("confidence_score", 50)
+
+    # not_visible 영역 수에 따라 감소
+    findings = result.get("findings", [])
+    not_visible_count = sum(
+        1 for f in findings
+        if isinstance(f, dict) and f.get("severity") == "not_visible"
+    )
+    if not_visible_count > 0:
+        penalty = not_visible_count * 8
+        raw_confidence = max(raw_confidence - penalty, 20)
+
+    # 단일 이미지 한계: 최대 85 캡 (full_body는 80)
+    max_cap = 80 if mode == "full_body" else 85
+    result["confidence_score"] = min(raw_confidence, max_cap)
+    result["_confidence_raw"] = result.get("confidence_score", 50)
+
+    return result
+
+
+async def _fetch_previous_analyses(
+    db: AsyncSession,
+    pet_id: str | None,
+    mode: str,
+    limit: int = 3,
+) -> str | None:
+    """VIS-9: 이전 분석 결과를 조회하여 비교 컨텍스트를 구성한다."""
+    if not pet_id:
+        return None
+
+    try:
+        from app.models.ai_health_check import AiHealthCheck
+        pid = UUID(pet_id)
+        result = await db.execute(
+            select(AiHealthCheck.checked_at, AiHealthCheck.result, AiHealthCheck.confidence_score, AiHealthCheck.status)
+            .where(AiHealthCheck.pet_id == pid)
+            .order_by(AiHealthCheck.checked_at.desc())
+            .limit(limit)
+        )
+        records = result.all()
+        if not records:
+            return None
+
+        lines = [f"[Previous {len(records)} Health Check Results for Comparison]"]
+        for r in records:
+            lines.append(f"- {r.checked_at}: status={r.status}, confidence={r.confidence_score}")
+            if isinstance(r.result, dict):
+                overall = r.result.get("overall_status", "unknown")
+                lines.append(f"  overall_status={overall}")
+        return "\n".join(lines)
+    except Exception as e:
+        logger.debug("Failed to fetch previous analyses: %s", e)
+        return None
+
+
 @traceable(name="ai_vision_health_check", run_type="chain", process_inputs=_vision_trace_inputs)
 async def analyze_vision_health_check(
     db: AsyncSession,
@@ -832,21 +1111,27 @@ async def analyze_vision_health_check(
     tier: str = "premium",
     language: str | None = None,
 ) -> dict:
-    """GPT-4o Vision으로 이미지를 분석하여 구조화 JSON 결과를 반환한다."""
-    import json as _json
+    """GPT-4o Vision으로 이미지를 분석하여 구조화 JSON 결과를 반환한다.
+
+    VIS-1: 이미지 품질 사전 검증
+    VIS-3: Confidence 보정
+    VIS-8: JSON 파싱 재시도
+    VIS-9: 이전 분석 비교 컨텍스트
+    """
     from app.services.vector_search_service import search_knowledge, format_knowledge_context
     from app.services.deepseek_service import get_chinese_supplement
 
     # 0. 응답 언어 결정
     resolved_language = _resolve_language(language, notes)
 
-    # 1. 병렬 I/O: 벡터 검색 + RAG 컨텍스트 + (중국어) DeepSeek 보충
+    # 1. 병렬 I/O: 벡터 검색 + RAG 컨텍스트 + 이전 분석 + (중국어) DeepSeek 보충
     search_query = _get_vision_search_query(mode, part)
     is_chinese = resolved_language == "Chinese"
 
     tasks = [
         search_knowledge(search_query),
-        _build_rag_context(db, pet_id, user_id=user_id, tier=tier),
+        _build_rag_context(db, pet_id, user_id=user_id, tier=tier, language=resolved_language),
+        _fetch_previous_analyses(db, pet_id, mode),
     ]
     if is_chinese:
         tasks.append(get_chinese_supplement(notes or mode, mode=mode))
@@ -856,14 +1141,26 @@ async def analyze_vision_health_check(
     knowledge_results = results[0] if not isinstance(results[0], BaseException) else []
     knowledge_context = format_knowledge_context(knowledge_results) if knowledge_results else None
     rag_context = results[1] if not isinstance(results[1], BaseException) else None
+    previous_context = results[2] if not isinstance(results[2], BaseException) else None
     deepseek_context = None
-    if is_chinese and len(results) > 2:
-        deepseek_context = results[2] if not isinstance(results[2], BaseException) else None
+    if is_chinese and len(results) > 3:
+        deepseek_context = results[3] if not isinstance(results[3], BaseException) else None
 
     # 2. Vision 시스템 프롬프트 구성
     mode_prompt = _build_vision_prompt(mode, part)
+
+    # VIS-9: 이전 분석 결과를 RAG 컨텍스트에 추가
+    combined_rag = rag_context or ""
+    if previous_context:
+        combined_rag += f"\n\n{previous_context}\n" \
+                        "Compare current findings with previous results. " \
+                        "Note any changes or trends."
+
     system_message = _build_vision_system_message(
-        mode_prompt, rag_context, knowledge_context, deepseek_context,
+        mode_prompt,
+        combined_rag if combined_rag else None,
+        knowledge_context,
+        deepseek_context,
         language=resolved_language,
     )
 
@@ -874,6 +1171,15 @@ async def analyze_vision_health_check(
     if notes:
         user_text += f"\nUser notes: {notes}"
     user_text += f"\nRespond in {resolved_language}."
+
+    # VIS-1: 이미지 품질 사전 안내 (프롬프트 레벨)
+    user_text += (
+        "\n\nIMAGE QUALITY CHECK: Before analysis, briefly assess image quality. "
+        "If the image is too blurry, too dark, too far away, or the bird is barely visible, "
+        'set confidence_score below 40 and add a recommendation to retake the photo. '
+        "If the image doesn't contain a parrot or relevant subject, "
+        'set overall_status to "error" and explain.'
+    )
 
     messages = [
         {"role": "system", "content": system_message},
@@ -889,45 +1195,59 @@ async def analyze_vision_health_check(
         },
     ]
 
-    # 4. GPT-4o Vision 호출
-    response = await _openai_client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        max_tokens=2048,
-        temperature=0.2,
-        response_format={"type": "json_object"},
-    )
+    # 4. GPT-4o Vision 호출 (VIS-8: 파싱 실패 시 1회 재시도)
+    _VALID_STATUSES = {"normal", "caution", "warning", "critical", "not_visible"}
+    result = None
 
-    raw_content = response.choices[0].message.content or "{}"
+    for attempt in range(2):
+        temp = 0.2 if attempt == 0 else 0.1
+        response = await _openai_client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            max_tokens=2048,
+            temperature=temp,
+            response_format={"type": "json_object"},
+        )
 
-    # 5. JSON 파싱 + 기본값 보장
-    _VALID_STATUSES = {"normal", "caution", "warning", "critical"}
+        raw_content = response.choices[0].message.content or "{}"
 
-    try:
-        result = _json.loads(raw_content)
-    except _json.JSONDecodeError:
-        result = {
-            "mode": mode,
-            "findings": [],
-            "overall_status": "error",
-            "confidence_score": 0,
-            "recommendations": ["분석 결과를 파싱할 수 없습니다. 다시 시도해주세요."],
-            "vet_visit_needed": False,
-            "_parse_failed": True,
-        }
+        try:
+            result = _json.loads(raw_content)
+            break
+        except _json.JSONDecodeError:
+            if attempt == 0:
+                logger.warning("Vision JSON parse failed (attempt 1), retrying with lower temperature")
+                continue
+            logger.error("Vision JSON parse failed on retry, returning error result")
+            result = {
+                "mode": mode,
+                "findings": [],
+                "overall_status": "error",
+                "confidence_score": 0,
+                "recommendations": ["분석 결과를 파싱할 수 없습니다. 다시 시도해주세요."],
+                "vet_visit_needed": False,
+                "_parse_failed": True,
+            }
 
-    # food 모드: overall_diet_assessment → overall_status 정규화
+    # 5. food 모드 정규화
     if mode == "food" and "overall_diet_assessment" in result:
         result["overall_status"] = result.pop("overall_diet_assessment")
 
-    # 기본값 보장
+    # 6. 기본값 보장
     result.setdefault("mode", mode)
     result.setdefault("overall_status", "normal")
     result.setdefault("confidence_score", 50.0)
     result.setdefault("vet_visit_needed", False)
 
-    # status 값 정규화: 유효하지 않은 값은 "caution"으로 대체 (오류 은폐 방지)
+    # VIS-12: status 정규화 + 로깅
     if result["overall_status"] not in _VALID_STATUSES and result["overall_status"] != "error":
+        logger.warning(
+            "Vision invalid status=%r for mode=%s, defaulting to 'caution'",
+            result["overall_status"], mode,
+        )
         result["overall_status"] = "caution"
+
+    # VIS-3: Confidence 보정
+    result = _calibrate_confidence(result, mode)
 
     return result

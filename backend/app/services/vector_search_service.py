@@ -152,7 +152,7 @@ async def _search_knowledge_impl(
         result = await vdb.execute(sql, params)
         rows = result.all()
 
-    return [
+    results = [
         {
             "content": row.content,
             "source": row.source,
@@ -163,6 +163,35 @@ async def _search_knowledge_impl(
         }
         for row in rows
     ]
+
+    # CB-9: Lightweight re-ranking — boost results with query keyword overlap
+    return _rerank_results(query, results)
+
+
+def _rerank_results(query: str, results: list[dict]) -> list[dict]:
+    """CB-9: Re-rank vector search results by combining embedding similarity with keyword overlap.
+
+    Adds a keyword overlap bonus to the similarity score to surface results that
+    contain exact query terms. No external dependencies required.
+    """
+    if not results:
+        return results
+
+    query_terms = set(query.lower().split())
+    for r in results:
+        content_lower = r["content"].lower()
+        overlap = sum(1 for term in query_terms if term in content_lower)
+        overlap_ratio = overlap / max(len(query_terms), 1)
+        # Blend: 80% embedding similarity + 20% keyword overlap
+        r["_combined_score"] = r["similarity"] * 0.8 + overlap_ratio * 0.2
+
+    results.sort(key=lambda x: x["_combined_score"], reverse=True)
+
+    # Clean up internal scoring field
+    for r in results:
+        r.pop("_combined_score", None)
+
+    return results
 
 
 def format_knowledge_context(results: list[dict]) -> str | None:

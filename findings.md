@@ -207,6 +207,168 @@
 
 ---
 
+---
+
+## AI 에이전트 정확도 평가 (2026-04-04)
+
+> 대상: 챗봇(AI Encyclopedia) + 비전(Health Check) 에이전트
+> 핵심 파일: `backend/app/services/ai_service.py`, `embedding_service.py`, `vector_search_service.py`, `deepseek_service.py`
+
+---
+
+### 챗봇 에이전트 (AI Encyclopedia)
+
+#### P0 — 정확도 직접 영향
+
+**CB-1. 대화 히스토리 길이 제한 없음 — 컨텍스트 오버플로우**
+- **위치:** `ai_service.py:484-491` (`_ask_core`), `:546-552` (`ask_stream_with_message`)
+- **문제:** 전체 `history`를 그대로 messages에 추가. 긴 대화 시 모델 컨텍스트 윈도우 초과 → 시스템 프롬프트 무시, 최근 맥락 손실, 답변 정확도 저하
+- **개선안:** 최근 N턴 슬라이딩 윈도우 (예: 최근 10턴) + 오래된 대화 요약 삽입. 또는 토큰 수 기반 동적 트림 (gpt-4.1-nano 컨텍스트 한계 고려)
+
+**CB-2. RAG 컨텍스트가 한국어 고정 — 다국어 정확도 저하**
+- **위치:** `ai_service.py:272-314` (`_build_rag_context`)
+- **문제:** "이름:", "종:", "최근 30일 체중(g):" 등 모든 RAG 컨텍스트가 한국어. 영어/중국어 사용자 → 모델이 한국어 컨텍스트를 해석 후 번역해야 함 → 정보 손실/혼동 발생
+- **개선안:** `_build_rag_context`에 `language` 파라미터 추가, 레이블을 다국어 딕셔너리로 전환 (기존 `_HEADERS` 패턴 재활용)
+
+**CB-3. 카테고리 분류 검증 없음 — 오분류 시 잘못된 포맷 적용**
+- **위치:** `ai_service.py:42-52` (`_CATEGORY_CLASSIFICATION`)
+- **문제:** "silently classify"로 지시하지만, 모델이 실제로 어떤 카테고리로 분류했는지 검증 불가. 예: 행동 질문을 질병으로 분류 → 불필요한 수의사 추천
+- **개선안:** 2-pass 방식: 1차에서 카테고리만 structured output으로 받고, 2차에서 해당 카테고리 프롬프트로 답변 생성. 또는 `response_format` JSON 사용하여 카테고리를 명시적 필드로 받기
+
+**CB-4. 지식 베이스 품질/커버리지 모니터링 없음**
+- **위치:** vector_search_service.py (검색) + knowledge_chunk 모델
+- **문제:** 벡터 DB에 어떤 콘텐츠가 얼마나 있는지, 어떤 주제가 부족한지 파악 불가. 지식 부재 시 모델이 자체 지식으로 답변 → 최신 정보 부정확
+- **개선안:** 지식 베이스 커버리지 대시보드 + 카테고리별 chunk 수 모니터링 + 유사도 점수 로깅 (threshold 이하 쿼리 = 지식 부족 신호)
+
+#### P1 — 정확도 간접 영향
+
+**CB-5. Few-shot 예시 없음 — 포맷 불일치 빈발**
+- **위치:** `ai_service.py:112-146` (`_PREMIUM_FORMAT_TEMPLATE`)
+- **문제:** 구조화 포맷을 텍스트로만 설명. 모델이 에모지 헤더 순서, 들여쓰기, severity 표기를 일관되게 따르지 않음
+- **개선안:** 각 카테고리별 1개 이상의 few-shot 예시 추가 (시스템 프롬프트 내)
+
+**CB-6. 메타데이터 태그 파싱 취약 — silent failure**
+- **위치:** `ai_service.py:184-214` (`_META_PATTERN`, `parse_response_metadata`)
+- **문제:** `<!-- META:category=X|severity=Y|vet=Z -->` 형식을 정확히 따르지 않으면 (공백, 순서 변경 등) 메타데이터가 null. 클라이언트에서 severity/vet 표시 불가
+- **개선안:** 정규식 유연화 + fallback 파서 (LLM에게 재질문) 또는 structured output 사용
+
+**CB-7. 언어 감지 단순 — 혼합 언어 오탐**
+- **위치:** `ai_service.py:368-379` (`_detect_language`)
+- **문제:** 문자 범위 체크만 사용. "앵무새 feather plucking 치료" → Korean 감지 (맞음), 하지만 "我的budgie有问题" → Chinese 감지 (영어 단어 무시). 일본어 히라가나/카타카나 미지원
+- **개선안:** 빈도 기반 감지 (가장 많은 문자 세트) 또는 langdetect 라이브러리 사용
+
+**CB-8. 대화 요약 없음 — 장기 대화 품질 저하**
+- **문제:** CB-1과 연관. 오래된 대화 컨텍스트를 요약하는 메커니즘이 없어, 짧은 윈도우만 사용하면 이전 대화 맥락 손실
+- **개선안:** 일정 턴 수 초과 시 이전 대화를 LLM으로 요약하여 시스템 메시지에 삽입
+
+#### P2 — 개선 시 정확도 향상
+
+**CB-9. 벡터 검색 Re-ranking 없음**
+- 현재: 코사인 유사도 raw score로 top-k 반환. Cross-encoder reranker 추가 시 검색 정밀도 향상
+
+**CB-10. 종별 특화 정보 부족**
+- 앵무새 종별로 정상 범위가 다름 (예: 잉꼬 vs 대형앵무 체중/사료량). 프롬프트에 종별 정상 범위 참조 지시 없음
+
+**CB-11. 모델 선택 최적화 여지**
+- 현재 `gpt-4.1-nano` 사용. 질병/응급 카테고리는 더 큰 모델 (gpt-4o-mini 이상) 사용 시 의학적 정확도 향상 가능
+
+---
+
+### 비전 에이전트 (Health Check)
+
+#### P0 — 정확도 직접 영향
+
+**VIS-1. 이미지 품질 사전 검증 없음 — 저품질 이미지에서 과신 분석**
+- **위치:** `ai_service.py:822-933` (`analyze_vision_health_check`)
+- **문제:** 흐릿한/어두운/원거리 이미지도 그대로 GPT-4o에 전달 → 모델이 보이지 않는 부분을 추론(환각)하여 높은 confidence로 반환
+- **개선안:** 이미지 전처리 단계 추가 — 1) 밝기/선명도 검사 2) 조류 객체 탐지 (이미지에 새가 있는지) 3) 최소 해상도 검증. 또는 비전 모델에게 먼저 "이미지 품질 평가" 요청 후 threshold 미달 시 재촬영 안내
+
+**VIS-2. full_body 모드: 보이지 않는 부위도 필수 평가 — 환각 유발**
+- **위치:** `ai_service.py:623-624`
+- **문제:** "Include ALL 6 standard areas in findings even if they appear normal" → 발이 안 보이는 사진에서도 foot을 "normal"로 평가. 이것은 거짓 음성(false negative)
+- **개선안:** 프롬프트 수정: "If an area is NOT clearly visible in the image, set severity to 'not_visible' and observation to 'This area is not visible in the provided image. Please take a closer photo.'" + 클라이언트에서 not_visible 상태 처리
+
+**VIS-3. Confidence score 미보정 — 과대 추정**
+- **위치:** `ai_service.py:618` (confidence_score 0-100)
+- **문제:** GPT-4o의 자체 보고 confidence는 실제 정확도와 상관관계가 낮음. 85점이라고 해도 실제 정확도는 60% 수준일 수 있음
+- **개선안:** 1) 수의사 검증 데이터셋으로 confidence 보정 곡선 구축 2) confidence를 범위로 표시 (예: "중간 확신도") 3) "not_visible" 영역 수에 따라 전체 confidence 감소 적용
+
+**VIS-4. 종별 정상 범위 미참조 — 오진 위험**
+- **위치:** Vision 프롬프트 전체
+- **문제:** 코카틸의 정상 깃털 패턴과 아마존 앵무의 정상 패턴이 다름. 프롬프트에 "Consider species-specific norms" 지시 없음. 펫 프로필의 종 정보가 RAG에 포함되지만, 비전 프롬프트에서 종별 차이를 명시적으로 요구하지 않음
+- **개선안:** 비전 프롬프트에 종별 참조 블록 추가: "The parrot's species is {species}. Consider species-specific normal ranges for body condition, feather patterns, beak shape, and foot structure."
+
+**VIS-5. 단일 이미지 분석 — 제한된 진단 정보**
+- **위치:** `ai_service.py:882-889` (단일 image_url)
+- **문제:** 한 장의 사진으로 6개 부위를 모두 평가. 정면 사진에서는 등/꼬리/발바닥 보이지 않음
+- **개선안:** 멀티 이미지 지원 (정면 + 측면 + 위에서) 또는 촬영 가이드 표시 후 모드별 권장 각도 안내
+
+#### P1 — 정확도 간접 영향
+
+**VIS-6. 음식 독성 목록 불완전**
+- **위치:** `ai_service.py:692`
+- **문제:** avocado, chocolate, caffeine, onion, garlic, alcohol만 명시. 누락: apple seeds, cherry/peach pits, mushrooms, raw beans, rhubarb, tomato leaves, xylitol, high-salt/high-fat foods
+- **개선안:** 포괄적 독성 목록 + severity 등급 포함. 또는 지식 베이스에 독성 식품 데이터베이스 적재
+
+**VIS-7. 배변 분석: 종별/식이별 정상 범위 미제공**
+- **위치:** `ai_service.py:661-685` (`_VISION_DROPPINGS_PROMPT`)
+- **문제:** "Check color, texture, ratio, and abnormalities"만 지시. 씨앗 식이 vs 펠릿 식이에 따라 배변 색/질감이 다름. 과일 많이 먹은 날은 수분 증가 → 오진 가능
+- **개선안:** RAG 컨텍스트에서 최근 식이 데이터를 비전 프롬프트에 명시적 연결: "Recent diet: {food_data}. Consider diet-related variations in droppings appearance."
+
+**VIS-8. JSON 파싱 실패 시 재시도 없음**
+- **위치:** `ai_service.py:906-917`
+- **문제:** JSON 파싱 실패 → confidence 0 + 빈 findings 반환. 사용자는 "분석 실패" 경험
+- **개선안:** 1회 재시도 (temperature 약간 낮춰서) + 마크다운 응답에서 JSON 추출 시도
+
+**VIS-9. 이전 분석과 비교 불가 — 변화 추적 불가**
+- **문제:** 각 분석이 독립적. "지난주 대비 깃털 상태 변화" 같은 시계열 비교 불가
+- **개선안:** 이전 분석 결과를 RAG 컨텍스트에 포함 (최근 3회 분석 결과 요약)
+
+#### P2 — 개선 시 정확도 향상
+
+**VIS-10. part_specific 부위 부족**
+- 현재 4부위 (eye, beak, feather, foot). 누락: wing, tail, vent/cloaca, crop, nares(콧구멍)
+
+**VIS-11. severity 기준 모드간 불일치**
+- full_body의 "warning"과 droppings의 "warning"이 임상적으로 다른 의미일 수 있으나 동일 UI 표시
+
+**VIS-12. 잘못된 status 기본값**
+- **위치:** `ai_service.py:929-931`
+- 유효하지 않은 status → "caution"으로 기본 대체. 모델 혼란을 감추어 디버깅 어려움
+
+---
+
+### 우선순위 요약
+
+| 등급 | ID | 에이전트 | 핵심 이슈 | 정확도 영향 |
+|------|-----|----------|-----------|------------|
+| P0 | CB-1 | 챗봇 | 히스토리 길이 무제한 | 긴 대화 시 답변 품질 급락 |
+| P0 | CB-2 | 챗봇 | RAG 한국어 고정 | 영어/중국어 사용자 정확도 저하 |
+| P0 | CB-3 | 챗봇 | 카테고리 무검증 | 오분류 → 잘못된 포맷/추천 |
+| P0 | CB-4 | 챗봇 | 지식 베이스 모니터링 없음 | 부족한 영역 파악 불가 |
+| P0 | VIS-1 | 비전 | 이미지 품질 미검증 | 저품질→환각 분석 |
+| P0 | VIS-2 | 비전 | 안 보이는 부위 필수 평가 | 거짓 음성 (false negative) |
+| P0 | VIS-3 | 비전 | Confidence 미보정 | 사용자 오신뢰 |
+| P0 | VIS-4 | 비전 | 종별 정상 범위 미참조 | 종 차이 무시한 오진 |
+| P0 | VIS-5 | 비전 | 단일 이미지 한계 | 진단 정보 부족 |
+| P1 | CB-5 | 챗봇 | Few-shot 없음 | 포맷 불일치 |
+| P1 | CB-6 | 챗봇 | 메타데이터 파싱 취약 | 심각도 누락 |
+| P1 | CB-7 | 챗봇 | 언어 감지 단순 | 혼합 언어 오탐 |
+| P1 | CB-8 | 챗봇 | 대화 요약 없음 | 장기 대화 맥락 손실 |
+| P1 | VIS-6 | 비전 | 독성 목록 불완전 | 위험 식품 미감지 |
+| P1 | VIS-7 | 비전 | 배변 종별/식이 기준 없음 | 정상 변이를 이상으로 오진 |
+| P1 | VIS-8 | 비전 | JSON 실패 시 무재시도 | 분석 완전 실패 |
+| P1 | VIS-9 | 비전 | 이전 분석 비교 불가 | 시계열 변화 감지 불가 |
+
+### 수정 현황 (2026-04-04)
+
+| 상태 | 항목 수 | 목록 |
+|------|---------|------|
+| 수정 완료 | 23건 | CB-1~11, VIS-1~12 전체 |
+| 상세 | — | `development_logs/2026-04-04-ai-agent-accuracy-improvements.md` 참조 |
+
+---
+
 ## 수정 현황 요약
 
 > 최종 업데이트: 2026-03-21 (Riverpod Phase 0-5 반영)
