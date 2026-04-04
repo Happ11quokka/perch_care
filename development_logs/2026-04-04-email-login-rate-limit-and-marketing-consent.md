@@ -1,4 +1,4 @@
-# 이메�� 로그인 — Rate Limiting 수정 + 마케팅 동의 추가
+# 이메일 로그인 — Rate Limiting 수정 + 마케팅 동의 + 인증코드 6자리
 
 > 구현일: 2026-04-04
 
@@ -81,3 +81,24 @@ limiter = Limiter(key_func=get_remote_address)
 - `lib/src/screens/signup/signup_screen.dart` — `_marketingAgreed` 캡처 + API 전달
 - `lib/src/services/auth/auth_service.dart` — `marketing_agreed` body 필드 추가
 - `lib/l10n/app_ko.arb`, `app_en.arb`, `app_zh.arb` — `terms_marketing` 키 추가
+
+---
+
+## 3. 비밀번호 찾기 인증코드 4자리 → 6자리 수정
+
+### 문제
+- 백엔드에서 6자리 인증코드를 발급하도록 업데이트했으나, 앱 UI가 4자리 입력만 허용
+- 사용자가 6자리 코드를 받아도 뒤 2자리를 입력할 수 없음
+
+### 원인
+- `forgot_password_code_screen.dart`에서 `_controllers`와 `_focusNodes`가 `List.generate(4, ...)`로 하드코딩
+- `_buildCodeInputBoxes()`도 `List.generate(4, ...)`로 4칸만 렌더링
+- 자동 포커스 이동 조건이 `index < 3`으로 고정
+
+### 해결
+- `_codeLength = 6` 상수 도입하여 모든 하드코딩된 `4` 제거
+- 박스 크기 68×68 → 52×52, 간격 18 → 12로 축소 (6칸 레이아웃 적합)
+- 자동 포커스 이동: `index < 3` → `index < _codeLength - 1`
+
+### 수정 파일
+- `lib/src/screens/forgot_password/forgot_password_code_screen.dart` — 입력 필드 4개 → 6개, 레이아웃 조정
