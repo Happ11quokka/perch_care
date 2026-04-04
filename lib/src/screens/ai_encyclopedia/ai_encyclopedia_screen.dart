@@ -20,12 +20,15 @@ import '../../theme/colors.dart';
 import '../../theme/radius.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../widgets/quota_badge.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
 import '../../providers/pet_providers.dart';
@@ -117,7 +120,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   Future<void> _loadQuota({bool logView = false}) async {
     try {
       final status =
-          await PremiumService.instance.getTier(forceRefresh: true);
+          await ref.read(premiumStatusProvider.notifier).refreshAndGet();
       if (mounted) {
         setState(() {
           _premiumStatus = status;
@@ -151,7 +154,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       final dismissed = prefs.getBool(_bannerDismissKey) ?? false;
       if (dismissed) return;
 
-      final status = await PremiumService.instance.getTier();
+      final status = await ref.read(premiumStatusProvider.future);
       if (mounted && status.isFree) {
         setState(() {
           _showPremiumBanner = true;
@@ -178,7 +181,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenChatbot)) return;
     if (!mounted) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -730,7 +733,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
           children: [
             Expanded(
               child: _isLoadingMessages
-                  ? const Center(child: CircularProgressIndicator())
+                  ? AppLoading.fullPage()
                   : _hasUserMessages
                   ? _buildMessages()
                   : _buildWelcomeView(),
@@ -1136,9 +1139,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                     );
                     if (!mounted) return;
                     try {
-                      final status = await PremiumService.instance.getTier(
-                        forceRefresh: true,
-                      );
+                      final status = await ref.read(premiumStatusProvider.notifier).refreshAndGet();
                       if (!mounted || status.isFree) return;
                       setState(() {
                         _showPremiumBanner = false;

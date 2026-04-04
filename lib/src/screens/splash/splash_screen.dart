@@ -18,6 +18,7 @@ import '../../services/sync/sync_service.dart';
 import '../../services/pet/pet_service.dart';
 import '../../router/route_paths.dart';
 import '../../theme/colors.dart';
+import '../../theme/durations.dart';
 
 /// 스플래시 스크린
 class SplashScreen extends ConsumerStatefulWidget {
@@ -45,7 +46,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: AppDurations.splash,
       vsync: this,
     );
 

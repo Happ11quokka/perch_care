@@ -19,12 +19,14 @@ import '../../widgets/local_image_avatar.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/api/token_service.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../providers/locale_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -86,7 +88,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final hasSeen = await service.hasSeen(CoachMarkService.screenProfile);
     if (hasSeen || !mounted) return;
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -138,7 +140,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _loadPremiumStatus() async {
     try {
-      final status = await PremiumService.instance.getTier();
+      final status = await ref.read(premiumStatusProvider.future);
       if (!mounted) return;
       setState(() {
         _premiumTier = status.tier;
@@ -534,7 +536,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           if (_isLoadingPremium)
-            const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            AppLoading.fullPage()
           else
             _buildPremiumStatusCard(l10n),
         ],
@@ -735,7 +737,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               subtitle: l10n.profile_deviceDefaultSubtitle,
               isSelected: currentLocale == null,
               onTap: () async {
-                await LocaleProvider.instance.setLocale(null);
+                await ref.read(localeNotifierProvider.notifier).setLocale(null);
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
                 setState(() {});
               },
@@ -747,7 +749,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: '한국어',
               isSelected: currentLocale == 'ko',
               onTap: () async {
-                await LocaleProvider.instance.setLocale(const Locale('ko'));
+                await ref.read(localeNotifierProvider.notifier).setLocale(const Locale('ko'));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
                 setState(() {});
               },
@@ -759,7 +761,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: 'English',
               isSelected: currentLocale == 'en',
               onTap: () async {
-                await LocaleProvider.instance.setLocale(const Locale('en'));
+                await ref.read(localeNotifierProvider.notifier).setLocale(const Locale('en'));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
                 setState(() {});
               },
@@ -771,7 +773,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: '中文',
               isSelected: currentLocale == 'zh',
               onTap: () async {
-                await LocaleProvider.instance.setLocale(const Locale('zh'));
+                await ref.read(localeNotifierProvider.notifier).setLocale(const Locale('zh'));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
                 setState(() {});
               },
@@ -1217,7 +1219,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           if (_isLoadingSocial)
-            const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            AppLoading.fullPage()
           else ...[
             _buildSocialAccountRow(
               provider: 'google',

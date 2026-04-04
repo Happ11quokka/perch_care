@@ -6,8 +6,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../providers/pet_providers.dart';
+import '../../widgets/app_loading.dart';
 
 /// 병원 방문 요약 공유 화면
 class VetSummaryScreen extends ConsumerStatefulWidget {
@@ -33,7 +34,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
     setState(() => _isSharing = true);
 
     try {
-      final status = await PremiumService.instance.getTier();
+      final status = await ref.read(premiumStatusProvider.future);
       if (status.isFree) {
         if (mounted) context.pushNamed(RouteNames.premium);
         return;
@@ -164,14 +165,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
                     elevation: 0,
                   ),
                   child: _isSharing
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? AppLoading.button()
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

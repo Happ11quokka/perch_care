@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/colors.dart';
 import '../../services/iap/iap_service.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 import 'promo_code_bottom_sheet.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 
 /// Paywall 화면 — 구독 구매, 복원, 프로모 코드 입력
 class PremiumScreen extends ConsumerStatefulWidget {
@@ -26,7 +26,6 @@ class PremiumScreen extends ConsumerStatefulWidget {
 
 class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   final _iapService = IapService.instance;
-  final _premiumService = PremiumService.instance;
   final _analytics = AnalyticsService.instance;
 
   bool _isLoading = false;
@@ -61,7 +60,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
   Future<void> _checkCurrentStatus() async {
     try {
-      final status = await _premiumService.getTier();
+      final status = await ref.read(premiumStatusProvider.future);
       if (mounted) {
         setState(() => _isPremium = status.isPremium);
       }
@@ -76,7 +75,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     final hasSeen = await service.hasSeen(CoachMarkService.screenPremium);
     if (hasSeen || !mounted) return;
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -290,12 +289,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 onTap: () {
                   if (context.canPop()) context.pop();
                 },
-                child: SizedBox(
+                child: const SizedBox(
                   width: 28,
                   height: 28,
-                  child: SvgPicture.asset(
-                    'assets/images/profile/back_arrow.svg',
-                  ),
+                  child: Icon(Icons.arrow_back, color: AppColors.nearBlack),
                 ),
                 ),
               ),

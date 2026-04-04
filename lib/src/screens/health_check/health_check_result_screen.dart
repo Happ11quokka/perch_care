@@ -13,6 +13,7 @@ import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 
 /// 건강체크 분석 결과 화면
 class HealthCheckResultScreen extends ConsumerStatefulWidget {
@@ -68,7 +69,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenHealthCheckResult)) return;
     if (!mounted) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);

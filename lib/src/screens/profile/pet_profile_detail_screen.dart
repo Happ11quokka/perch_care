@@ -16,9 +16,11 @@ import '../../providers/pet_providers.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../utils/error_handler.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 
 /// 반려동물 프로필 상세/편집 화면
 class PetProfileDetailScreen extends ConsumerStatefulWidget {
@@ -144,7 +146,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
     final hasSeen = await service.hasSeen(CoachMarkService.screenPetProfileDetail);
     if (hasSeen || !mounted) return;
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -208,7 +210,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
         behavior: HitTestBehavior.opaque,
         child: SafeArea(
         child: _isLoadingData
-            ? const Center(child: CircularProgressIndicator())
+            ? AppLoading.fullPage()
             : Column(
           children: [
             // 상단 앱바
@@ -678,13 +680,24 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.beige,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             ListTile(
               title: Text(l10n.pet_genderMale),
               onTap: () {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../theme/durations.dart';
 import '../theme/typography.dart';
 import '../theme/radius.dart';
 import '../theme/spacing.dart';
@@ -29,7 +30,7 @@ class AppSnackBar {
     BuildContext context, {
     required String message,
     SnackBarType type = SnackBarType.info,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = AppDurations.snackBarDisplay,
   }) {
     // 기존 스낵바가 있으면 즉시 제거
     _dismiss();
@@ -105,8 +106,8 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 350),
-      reverseDuration: const Duration(milliseconds: 250),
+      duration: AppDurations.snackBarEnter,
+      reverseDuration: AppDurations.snackBarExit,
       vsync: this,
     );
 

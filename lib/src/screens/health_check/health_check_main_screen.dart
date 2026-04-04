@@ -10,10 +10,11 @@ import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 
 /// AI 건강체크 모드 선택 화면
 class HealthCheckMainScreen extends ConsumerStatefulWidget {
@@ -57,9 +58,10 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
 
   Future<void> _loadPremiumStatus({bool forceRefresh = false}) async {
     try {
-      final status = await PremiumService.instance.getTier(
-        forceRefresh: forceRefresh,
-      );
+      if (forceRefresh) {
+        await ref.read(premiumStatusProvider.notifier).refresh();
+      }
+      final status = await ref.read(premiumStatusProvider.future);
       if (mounted) {
         setState(() {
           if (status.isPremium) {
@@ -96,7 +98,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenHealthCheckMain)) return;
     if (!mounted) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);

@@ -9,12 +9,15 @@ import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../providers/pet_providers.dart';
 import '../../widgets/coach_mark_overlay.dart';
+import '../../widgets/empty_state_widget.dart';
+import '../../widgets/app_loading.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 
 /// 건강체크 히스토리 화면
 class HealthCheckHistoryScreen extends ConsumerStatefulWidget {
@@ -90,7 +93,7 @@ class _HealthCheckHistoryScreenState
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenHealthCheckHistory)) return;
     if (!mounted) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -190,7 +193,7 @@ class _HealthCheckHistoryScreenState
         : null;
 
     try {
-      final status = await PremiumService.instance.getTier();
+      final status = await ref.read(premiumStatusProvider.future);
       if (status.isFree) {
         if (mounted) context.pushNamed(RouteNames.premium);
         return;
@@ -276,17 +279,14 @@ class _HealthCheckHistoryScreenState
       ),
       body: SafeArea(
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? AppLoading.fullPage()
             : RefreshIndicator(
                 onRefresh: _loadRecords,
                 color: AppColors.brandPrimary,
                 child: _records.isEmpty
                     ? ListView(
                         children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.6,
-                            child: _buildEmptyState(l10n),
-                          ),
+                          _buildEmptyState(),
                         ],
                       )
                     : _buildRecordList(l10n),
@@ -295,38 +295,14 @@ class _HealthCheckHistoryScreenState
     );
   }
 
-  Widget _buildEmptyState(AppLocalizations l10n) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.history,
-            size: 64,
-            color: AppColors.gray350,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.hc_historyEmpty,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.mediumGray,
-              letterSpacing: -0.4,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.hc_historyEmptyDesc,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
-              letterSpacing: -0.3,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+  Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context);
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.6,
+      child: EmptyStateWidget(
+        icon: Icons.history,
+        title: l10n.hc_historyEmpty,
+        subtitle: l10n.hc_historyEmptyDesc,
       ),
     );
   }

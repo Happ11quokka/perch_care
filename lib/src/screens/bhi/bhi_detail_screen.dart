@@ -6,9 +6,11 @@ import '../../theme/colors.dart';
 import '../../models/bhi_result.dart';
 import '../../router/route_names.dart';
 import '../../widgets/progress_ring.dart';
+import '../../widgets/empty_state_widget.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 
 /// BHI (Bird Health Index) 건강 점수 상세 화면
 class BhiDetailScreen extends ConsumerStatefulWidget {
@@ -36,7 +38,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
     if (widget.bhiResult == null) return; // 데이터 없으면 타겟 위젯 없음
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenBhiDetail)) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -93,44 +95,18 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: widget.bhiResult == null ? _buildEmptyState(l10n) : _buildContent(l10n),
+        child: widget.bhiResult == null ? _buildEmptyState() : _buildContent(l10n),
       ),
     );
   }
 
   /// 데이터 없음 상태
-  Widget _buildEmptyState(AppLocalizations l10n) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.health_and_safety_outlined,
-            size: 64,
-            color: AppColors.lightGray,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.bhi_noDataTitle,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.mediumGray,
-              letterSpacing: -0.4,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.bhi_noDataSubtitle,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
-              letterSpacing: -0.35,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context);
+    return EmptyStateWidget(
+      icon: Icons.health_and_safety_outlined,
+      title: l10n.bhi_noDataTitle,
+      subtitle: l10n.bhi_noDataSubtitle,
     );
   }
 

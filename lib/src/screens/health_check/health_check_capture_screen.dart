@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../theme/colors.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/dashed_border.dart';
@@ -40,7 +40,7 @@ class _HealthCheckCaptureScreenState
 
   Future<void> _checkPremium() async {
     try {
-      final status = await PremiumService.instance.getTier();
+      final status = await ref.read(premiumStatusProvider.future);
       // Phase 2: quota 기반 접근 체크 (trial remaining > 0이면 허용)
       final hasAccess = status.isPremium ||
           (status.quota?.visionTrialRemaining ?? 0) > 0;

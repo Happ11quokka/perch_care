@@ -9,8 +9,9 @@ import '../../theme/colors.dart';
 import '../../services/health_check/health_check_service.dart';
 import '../../providers/pet_providers.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
+import '../../theme/durations.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 건강체크 분석 중 로딩 화면
@@ -50,7 +51,7 @@ class _HealthCheckAnalyzingScreenState
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: AppDurations.analyzing,
     );
     _scaleAnimation = Tween<double>(begin: 0.85, end: 1.15).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
@@ -63,7 +64,7 @@ class _HealthCheckAnalyzingScreenState
 
   Future<void> _checkPremiumThenAnalyze() async {
     try {
-      final status = await PremiumService.instance.getTier();
+      final status = await ref.read(premiumStatusProvider.future);
       // Phase 2: quota 기반 접근 체크 (trial remaining > 0이면 허용)
       final hasAccess = status.isPremium ||
           (status.quota?.visionTrialRemaining ?? 0) > 0;
@@ -133,7 +134,7 @@ class _HealthCheckAnalyzingScreenState
 
       // Phase 2: Vision 체험 사용 analytics (Free 사용자만)
       try {
-        final postStatus = await PremiumService.instance.getTier(forceRefresh: true);
+        final postStatus = await ref.read(premiumStatusProvider.notifier).refreshAndGet();
         if (!postStatus.isPremium) {
           AnalyticsService.instance.logVisionTrialUsed(
             remainingAfter: postStatus.quota?.visionTrialRemaining ?? 0,
@@ -197,7 +198,7 @@ class _HealthCheckAnalyzingScreenState
     if (!mounted) return;
 
     try {
-      final status = await PremiumService.instance.getTier(forceRefresh: true);
+      final status = await ref.read(premiumStatusProvider.notifier).refreshAndGet();
       if (!mounted || status.isFree) return;
       await _startAnalysis();
     } catch (_) {}

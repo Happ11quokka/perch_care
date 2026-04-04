@@ -10,9 +10,11 @@ import '../../services/water/water_record_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -73,7 +75,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
   Future<void> _maybeShowCoachMarks() async {
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenWaterRecord)) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -247,6 +249,17 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.beige,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               Text(
                 l10n.water_inputTitle,
                 style: const TextStyle(
@@ -353,7 +366,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? AppLoading.fullPage()
           : SafeArea(
               top: false,
               child: SingleChildScrollView(

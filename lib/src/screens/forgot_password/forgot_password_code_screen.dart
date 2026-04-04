@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
@@ -109,15 +108,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: SvgPicture.asset(
-            'assets/images/back_arrow_icon.svg',
-            width: 18,
-            height: 14,
-            colorFilter: const ColorFilter.mode(
-              AppColors.nearBlack,
-              BlendMode.srcIn,
-            ),
-          ),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         centerTitle: true,

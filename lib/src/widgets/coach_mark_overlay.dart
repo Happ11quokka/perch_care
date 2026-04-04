@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../theme/durations.dart';
 
 /// 코치마크 단계 데이터
 class CoachMarkStep {
@@ -97,7 +98,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: AppDurations.coachMarkTransition,
       vsync: this,
     );
     _fadeAnimation = CurvedAnimation(

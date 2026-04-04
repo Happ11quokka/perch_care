@@ -20,6 +20,11 @@ class PremiumStatusNotifier extends AsyncNotifier<PremiumStatus> {
     });
   }
 
+  Future<PremiumStatus> refreshAndGet() async {
+    await refresh();
+    return state.requireValue;
+  }
+
   Future<PremiumActivationResult> activateCode(String code) async {
     final result = await PremiumService.instance.activateCode(code);
     if (result.success) await refresh();

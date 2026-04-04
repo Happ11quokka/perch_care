@@ -12,6 +12,7 @@ import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/bhi/bhi_service.dart';
 import '../../providers/pet_providers.dart';
 import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../widgets/local_image_avatar.dart';
@@ -21,8 +22,10 @@ import '../../models/bhi_result.dart';
 import '../../models/health_summary.dart';
 import '../../models/pet_insight.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 import '../../services/sync/sync_service.dart';
 import '../../services/weight/weight_service.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/coach_mark_overlay.dart';
@@ -274,7 +277,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (await coachService.hasSeen(CoachMarkService.screenHome)) return;
 
     // 레이아웃 안정화 대기
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     // 홈 화면이 실제로 보이는 상태인지 확인 (자식 라우트가 위에 없을 때만)
@@ -449,7 +452,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Premium 상태 + 건강 요약 병렬 호출
     try {
       final results = await Future.wait([
-        PremiumService.instance.getTier(),
+        ref.read(premiumStatusProvider.future),
         api.get('/pets/$petId/health-summary'),
       ]);
 
@@ -498,7 +501,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.gray150,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? AppLoading.fullPage()
           : Stack(
               children: [
                 // 스크롤 가능한 컨텐츠

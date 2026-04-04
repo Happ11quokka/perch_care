@@ -7,6 +7,8 @@ import '../../theme/radius.dart';
 import '../../models/notification.dart';
 import '../../services/notification/notification_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/empty_state_widget.dart';
+import '../../widgets/app_loading.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 알림 화면
@@ -151,7 +153,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? AppLoading.fullPage()
           : _notifications.isEmpty
               ? _buildEmptyState()
               : ListView.separated(
@@ -183,26 +185,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.notifications_none,
-            size: 64,
-            color: AppColors.gray400,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            l10n.notification_empty,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.gray600,
-            ),
-          ),
-        ],
-      ),
+    return EmptyStateWidget(
+      icon: Icons.notifications_none,
+      title: l10n.notification_empty,
     );
   }
 }

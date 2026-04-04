@@ -87,15 +87,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: SvgPicture.asset(
-            'assets/images/back_arrow_icon.svg',
-            width: 18,
-            height: 14,
-            colorFilter: const ColorFilter.mode(
-              AppColors.nearBlack,
-              BlendMode.srcIn,
-            ),
-          ),
+          icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
           onPressed: () => context.pop(),
         ),
         centerTitle: true,

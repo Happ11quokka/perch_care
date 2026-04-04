@@ -10,11 +10,13 @@ import '../../services/weight/weight_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/weight_range_indicator.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 import '../../models/breed_standard.dart';
 import '../../services/breed/breed_service.dart';
 import '../../providers/pet_providers.dart';
@@ -116,7 +118,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
   Future<void> _maybeShowCoachMarks() async {
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenWeightRecord)) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -400,7 +402,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? AppLoading.fullPage()
           : SafeArea(
               top: false,
               child: SingleChildScrollView(

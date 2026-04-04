@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/colors.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../services/premium/premium_service.dart';
+import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -19,7 +20,7 @@ class PromoCodeBottomSheet extends ConsumerStatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => const PromoCodeBottomSheet(),
     );
@@ -30,7 +31,6 @@ class PromoCodeBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
-  final _premiumService = PremiumService.instance;
   final _codeController = TextEditingController();
   bool _isActivating = false;
   String? _validationError;
@@ -63,7 +63,7 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
     });
 
     try {
-      final result = await _premiumService.activateCode(code);
+      final result = await ref.read(premiumStatusProvider.notifier).activateCode(code);
       if (!mounted) return;
 
       if (result.success) {
@@ -193,14 +193,7 @@ class _PromoCodeBottomSheetState extends ConsumerState<PromoCodeBottomSheet> {
               ),
               alignment: Alignment.center,
               child: _isActivating
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? AppLoading.button()
                   : Text(
                       l10n.premium_activateButton,
                       style: const TextStyle(

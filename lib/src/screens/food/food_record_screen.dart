@@ -12,9 +12,11 @@ import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/analog_time_picker.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../theme/durations.dart';
 import '../../router/route_names.dart';
 import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
@@ -77,7 +79,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
   Future<void> _maybeShowCoachMarks() async {
     final service = CoachMarkService.instance;
     if (await service.hasSeen(CoachMarkService.screenFoodRecord)) return;
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
     final l10n = AppLocalizations.of(context);
@@ -409,6 +411,17 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        margin: const EdgeInsets.only(top: 12, bottom: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.beige,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
                     // 타이틀
                     Text(
                       isEditing ? l10n.diet_editRecord : l10n.diet_addRecord,
@@ -804,7 +817,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? AppLoading.fullPage()
           : SafeArea(
               top: false,
               child: SingleChildScrollView(

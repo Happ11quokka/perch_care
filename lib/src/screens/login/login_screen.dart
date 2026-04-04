@@ -11,6 +11,7 @@ import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
 import '../../services/auth/auth_service.dart';
 import '../../utils/error_handler.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -196,7 +197,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         backgroundColor: Colors.black,
                         textColor: Colors.white,
                         borderColor: Colors.black,
-                        loadingColor: Colors.white,
                       ),
                       const SizedBox(height: 12),
                       _buildSocialLoginButton(
@@ -267,7 +267,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     Color backgroundColor = Colors.white,
     Color textColor = const Color(0xFF1F1F1F),
     Color borderColor = const Color(0xFF747775),
-    Color loadingColor = Colors.black,
   }) {
     return Semantics(
       button: true,
@@ -285,14 +284,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: loadingColor,
-                  ),
-                )
+                AppLoading.button()
               else
                 icon,
               const SizedBox(width: 10),

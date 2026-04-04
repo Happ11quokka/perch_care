@@ -17,6 +17,7 @@ import '../../services/weight/weight_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../../models/weight_record.dart';
 import '../../utils/error_handler.dart';
+import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../services/breed/breed_service.dart';
 import '../../widgets/breed_selector.dart';
@@ -414,7 +415,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,
         child: _isLoadingData
-          ? const Center(child: CircularProgressIndicator())
+          ? AppLoading.fullPage()
           : Column(
               children: [
                 Expanded(
