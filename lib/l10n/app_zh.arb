@@ -450,7 +450,7 @@
   "wciIndex_calculationMethod": "计算方法",
   "wciIndex_levelCriteria": "WCI 5级标准",
 
-  "chatbot_title": "智能助手",
+  "chatbot_title": "鹦鹉博士",
   "chatbot_clearHistory": "清除聊天记录",
   "chatbot_clearHistoryConfirm": "所有聊天记录将被删除。是否继续？",
   "chatbot_historyCleared": "聊天记录已清除。",

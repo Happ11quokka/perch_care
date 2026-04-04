@@ -908,7 +908,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wciIndex_levelCriteria => 'WCI 5级标准';
 
   @override
-  String get chatbot_title => '智能助手';
+  String get chatbot_title => '鹦鹉博士';
 
   @override
   String get chatbot_clearHistory => '清除聊天记录';
