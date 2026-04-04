@@ -374,9 +374,13 @@ async def get_ai_quota(
     vis = await check_vision_access(db, current_user.id, tier)
     return {
         "ai_encyclopedia": {
-            "daily_limit": enc["daily_limit"],
-            "daily_used": enc["daily_used"],
+            "monthly_limit": enc["monthly_limit"],
+            "monthly_used": enc["monthly_used"],
             "remaining": enc["remaining"],
         },
-        "vision_trial_remaining": vis["trial_remaining"],
+        "vision": {
+            "monthly_limit": vis["monthly_limit"],
+            "monthly_used": vis["monthly_used"],
+            "remaining": vis["remaining"],
+        },
     }

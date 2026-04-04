@@ -18,7 +18,7 @@ from app.models.ai_encyclopedia_log import AiEncyclopediaLog
 from app.models.ai_vision_log import AiVisionLog
 from app.schemas.premium import (
     PremiumCodeRequest, PremiumCodeResponse, TierResponse,
-    AiEncyclopediaQuota, QuotaInfo,
+    AiEncyclopediaQuota, VisionQuota, QuotaInfo,
     GenerateCodesRequest, GenerateCodesResponse, GeneratedCodeItem,
     PremiumCodeListItem, AdminUserPremiumInfo, RevokeResponse, DeleteCodeResponse,
     UsageSummaryResponse, DailyUsageItem, UserUsageItem, ModelUsageItem,
@@ -64,7 +64,7 @@ async def get_my_tier(
     if quota_data:
         quota = QuotaInfo(
             ai_encyclopedia=AiEncyclopediaQuota(**quota_data["ai_encyclopedia"]),
-            vision_trial_remaining=quota_data["vision_trial_remaining"],
+            vision=VisionQuota(**quota_data["vision"]),
         )
     return TierResponse(
         tier=info["tier"],

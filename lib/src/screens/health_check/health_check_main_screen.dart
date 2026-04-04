@@ -75,7 +75,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
             _visionRemaining = -1;
           } else {
             // Phase 2: Free 사용자 3단 상태
-            final remaining = status.quota?.visionTrialRemaining ?? 0;
+            final remaining = status.quota?.vision.remaining ?? 0;
             _visionRemaining = remaining;
             _isLocked = remaining <= 0; // 체험 소진 → 잠금
             _hasVisionTrial = remaining > 0; // 체험 가능 → 열림 + 배지
@@ -294,8 +294,8 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                     VisionQuotaBadge(
                       key: _trialBadgeKey,
                       quota: VisionQuota(
-                        totalLimit: 30,
-                        totalUsed: 30 - _visionRemaining,
+                        monthlyLimit: 30,
+                        monthlyUsed: 30 - _visionRemaining,
                         remaining: _visionRemaining,
                       ),
                       normalText: l10n.visionQuotaBadge_normal(_visionRemaining),

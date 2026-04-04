@@ -23,14 +23,20 @@ class PremiumCodeResponse(BaseModel):
 
 
 class AiEncyclopediaQuota(BaseModel):
-    daily_limit: int
-    daily_used: int
+    monthly_limit: int
+    monthly_used: int
+    remaining: int
+
+
+class VisionQuota(BaseModel):
+    monthly_limit: int
+    monthly_used: int
     remaining: int
 
 
 class QuotaInfo(BaseModel):
     ai_encyclopedia: AiEncyclopediaQuota
-    vision_trial_remaining: int
+    vision: VisionQuota
 
 
 class TierResponse(BaseModel):

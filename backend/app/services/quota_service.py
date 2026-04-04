@@ -1,7 +1,7 @@
 """AI 기능 사용량 쿼터 관리 서비스.
 
-Phase 2: Free 사용자의 AI 백과사전 일일 한도와 Vision 건강체크 체험 횟수를 관리한다.
-한도 값은 환경변수(FREE_ENCYCLOPEDIA_DAILY_LIMIT, FREE_VISION_TRIAL_LIMIT)로 설정 가능.
+Free 사용자의 AI 백과사전·Vision 건강체크 월간 한도를 관리한다.
+한도 값은 환경변수(FREE_ENCYCLOPEDIA_MONTHLY_LIMIT, FREE_VISION_MONTHLY_LIMIT)로 설정 가능.
 별도 quota 테이블 없이 기존 로그 테이블(AiEncyclopediaLog, AiVisionLog) 집계 방식.
 
 Quota 체크 시 pg_advisory_xact_lock으로 사용자별 직렬화하여 동시 요청에 의한
@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 def _get_encyclopedia_limit() -> int:
-    return get_settings().free_encyclopedia_daily_limit
+    return get_settings().free_encyclopedia_monthly_limit
 
 
 def _get_vision_limit() -> int:
-    return get_settings().free_vision_trial_limit
+    return get_settings().free_vision_monthly_limit
 
 # Advisory lock namespaces (pg_advisory_xact_lock 첫 번째 인자)
 _LOCK_NS_ENCYCLOPEDIA = 100
@@ -39,17 +39,17 @@ def _user_lock_key(user_id: UUID) -> int:
     return user_id.int & 0x7FFFFFFF
 
 
-async def get_encyclopedia_usage_today(db: AsyncSession, user_id: UUID) -> int:
-    """오늘(UTC 기준) AI 백과사전 사용 횟수를 반환한다."""
+async def get_encyclopedia_usage_this_month(db: AsyncSession, user_id: UUID) -> int:
+    """이번 달(UTC 기준) AI 백과사전 사용 횟수를 반환한다."""
     now = datetime.now(timezone.utc)
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     result = await db.execute(
         select(func.count())
         .select_from(AiEncyclopediaLog)
         .where(
             AiEncyclopediaLog.user_id == user_id,
-            AiEncyclopediaLog.created_at >= today_start,
+            AiEncyclopediaLog.created_at >= month_start,
         )
     )
     return result.scalar() or 0
@@ -63,26 +63,26 @@ async def check_encyclopedia_quota(
     Returns:
         {
             "allowed": bool,
-            "daily_limit": int,   # -1 = 무제한
-            "daily_used": int,
-            "remaining": int,     # -1 = 무제한
+            "monthly_limit": int,   # -1 = 무제한
+            "monthly_used": int,
+            "remaining": int,       # -1 = 무제한
         }
     """
     if tier == "premium":
         return {
             "allowed": True,
-            "daily_limit": -1,
-            "daily_used": 0,
+            "monthly_limit": -1,
+            "monthly_used": 0,
             "remaining": -1,
         }
 
-    used = await get_encyclopedia_usage_today(db, user_id)
+    used = await get_encyclopedia_usage_this_month(db, user_id)
     remaining = max(0, _get_encyclopedia_limit() - used)
 
     return {
         "allowed": used < _get_encyclopedia_limit(),
-        "daily_limit": _get_encyclopedia_limit(),
-        "daily_used": used,
+        "monthly_limit": _get_encyclopedia_limit(),
+        "monthly_used": used,
         "remaining": remaining,
     }
 
@@ -109,8 +109,8 @@ async def check_and_reserve_encyclopedia(
     if tier == "premium":
         return {
             "allowed": True,
-            "daily_limit": -1,
-            "daily_used": 0,
+            "monthly_limit": -1,
+            "monthly_used": 0,
             "remaining": -1,
         }, None
 
@@ -120,12 +120,12 @@ async def check_and_reserve_encyclopedia(
         {"ns": _LOCK_NS_ENCYCLOPEDIA, "key": _user_lock_key(user_id)},
     )
 
-    used = await get_encyclopedia_usage_today(db, user_id)
+    used = await get_encyclopedia_usage_this_month(db, user_id)
     if used >= _get_encyclopedia_limit():
         return {
             "allowed": False,
-            "daily_limit": _get_encyclopedia_limit(),
-            "daily_used": used,
+            "monthly_limit": _get_encyclopedia_limit(),
+            "monthly_used": used,
             "remaining": 0,
         }, None
 
@@ -143,21 +143,32 @@ async def check_and_reserve_encyclopedia(
 
     return {
         "allowed": True,
-        "daily_limit": _get_encyclopedia_limit(),
-        "daily_used": used + 1,
+        "monthly_limit": _get_encyclopedia_limit(),
+        "monthly_used": used + 1,
         "remaining": max(0, _get_encyclopedia_limit() - used - 1),
     }, reservation
 
 
-async def get_vision_trial_remaining(db: AsyncSession, user_id: UUID) -> int:
-    """Vision 건강체크 남은 체험 횟수를 반환한다 (계정당 1회)."""
+async def get_vision_usage_this_month(db: AsyncSession, user_id: UUID) -> int:
+    """이번 달(UTC 기준) Vision 건강체크 사용 횟수를 반환한다."""
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
     result = await db.execute(
         select(func.count())
         .select_from(AiVisionLog)
-        .where(AiVisionLog.user_id == user_id)
+        .where(
+            AiVisionLog.user_id == user_id,
+            AiVisionLog.created_at >= month_start,
+        )
     )
-    total_used = result.scalar() or 0
-    return max(0, _get_vision_limit() - total_used)
+    return result.scalar() or 0
+
+
+async def get_vision_remaining(db: AsyncSession, user_id: UUID) -> int:
+    """Vision 건강체크 이번 달 남은 횟수를 반환한다."""
+    used = await get_vision_usage_this_month(db, user_id)
+    return max(0, _get_vision_limit() - used)
 
 
 async def check_vision_access(
@@ -168,23 +179,27 @@ async def check_vision_access(
     Returns:
         {
             "allowed": bool,
-            "trial_remaining": int,  # -1 = N/A (premium)
-            "is_trial": bool,
+            "monthly_limit": int,   # -1 = 무제한
+            "monthly_used": int,
+            "remaining": int,       # -1 = 무제한
         }
     """
     if tier == "premium":
         return {
             "allowed": True,
-            "trial_remaining": -1,
-            "is_trial": False,
+            "monthly_limit": -1,
+            "monthly_used": 0,
+            "remaining": -1,
         }
 
-    remaining = await get_vision_trial_remaining(db, user_id)
+    used = await get_vision_usage_this_month(db, user_id)
+    remaining = max(0, _get_vision_limit() - used)
 
     return {
         "allowed": remaining > 0,
-        "trial_remaining": remaining,
-        "is_trial": remaining > 0,
+        "monthly_limit": _get_vision_limit(),
+        "monthly_used": used,
+        "remaining": remaining,
     }
 
 
@@ -206,8 +221,9 @@ async def check_and_reserve_vision(
     if tier == "premium":
         return {
             "allowed": True,
-            "trial_remaining": -1,
-            "is_trial": False,
+            "monthly_limit": -1,
+            "monthly_used": 0,
+            "remaining": -1,
         }, None
 
     await db.execute(
@@ -215,12 +231,13 @@ async def check_and_reserve_vision(
         {"ns": _LOCK_NS_VISION, "key": _user_lock_key(user_id)},
     )
 
-    remaining = await get_vision_trial_remaining(db, user_id)
+    remaining = await get_vision_remaining(db, user_id)
     if remaining <= 0:
         return {
             "allowed": False,
-            "trial_remaining": 0,
-            "is_trial": False,
+            "monthly_limit": _get_vision_limit(),
+            "monthly_used": _get_vision_limit(),
+            "remaining": 0,
         }, None
 
     # 슬롯 예약
@@ -237,8 +254,10 @@ async def check_and_reserve_vision(
     db.add(reservation)
     await db.flush()
 
+    used = await get_vision_usage_this_month(db, user_id)
     return {
         "allowed": True,
-        "trial_remaining": remaining - 1,
-        "is_trial": True,
+        "monthly_limit": _get_vision_limit(),
+        "monthly_used": used + 1,
+        "remaining": remaining - 1,
     }, reservation

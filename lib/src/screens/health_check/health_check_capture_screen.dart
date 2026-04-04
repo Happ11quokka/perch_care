@@ -43,7 +43,7 @@ class _HealthCheckCaptureScreenState
       final status = await ref.read(premiumStatusProvider.future);
       // Phase 2: quota 기반 접근 체크 (trial remaining > 0이면 허용)
       final hasAccess = status.isPremium ||
-          (status.quota?.visionTrialRemaining ?? 0) > 0;
+          (status.quota?.vision.remaining ?? 0) > 0;
       if (mounted && !hasAccess) {
         context.goNamed(RouteNames.healthCheck);
       }

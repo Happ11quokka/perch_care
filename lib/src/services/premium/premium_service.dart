@@ -3,24 +3,24 @@ import '../api/api_client.dart';
 
 /// AI 백과사전 쿼터 정보
 class EncyclopediaQuota {
-  final int dailyLimit; // -1 = 무제한
-  final int dailyUsed;
+  final int monthlyLimit; // -1 = 무제한
+  final int monthlyUsed;
   final int remaining; // -1 = 무제한
 
   EncyclopediaQuota({
-    required this.dailyLimit,
-    required this.dailyUsed,
+    required this.monthlyLimit,
+    required this.monthlyUsed,
     required this.remaining,
   });
 
-  bool get isUnlimited => dailyLimit == -1;
+  bool get isUnlimited => monthlyLimit == -1;
   bool get isExhausted => !isUnlimited && remaining <= 0;
-  bool get isWarning => !isUnlimited && remaining <= 1;
+  bool get isWarning => !isUnlimited && remaining <= 3;
 
   factory EncyclopediaQuota.fromJson(Map<String, dynamic> json) {
     return EncyclopediaQuota(
-      dailyLimit: json['daily_limit'] as int? ?? 0,
-      dailyUsed: json['daily_used'] as int? ?? 0,
+      monthlyLimit: json['monthly_limit'] as int? ?? 0,
+      monthlyUsed: json['monthly_used'] as int? ?? 0,
       remaining: json['remaining'] as int? ?? 0,
     );
   }
@@ -28,40 +28,49 @@ class EncyclopediaQuota {
 
 /// AI 비전 체크 쿼터 정보
 class VisionQuota {
-  final int totalLimit; // -1 = 무제한
-  final int totalUsed;
+  final int monthlyLimit; // -1 = 무제한
+  final int monthlyUsed;
   final int remaining; // -1 = 무제한
 
   VisionQuota({
-    required this.totalLimit,
-    required this.totalUsed,
+    required this.monthlyLimit,
+    required this.monthlyUsed,
     required this.remaining,
   });
 
-  bool get isUnlimited => totalLimit == -1;
+  bool get isUnlimited => monthlyLimit == -1;
   bool get isExhausted => !isUnlimited && remaining <= 0;
   bool get isWarning => !isUnlimited && remaining <= 3;
+
+  factory VisionQuota.fromJson(Map<String, dynamic> json) {
+    return VisionQuota(
+      monthlyLimit: json['monthly_limit'] as int? ?? 0,
+      monthlyUsed: json['monthly_used'] as int? ?? 0,
+      remaining: json['remaining'] as int? ?? 0,
+    );
+  }
 }
 
 /// AI 기능 쿼터 통합 정보
 class QuotaInfo {
   final EncyclopediaQuota aiEncyclopedia;
-  final int visionTrialRemaining; // -1 = N/A (premium), 0-1 = free
+  final VisionQuota vision;
 
   QuotaInfo({
     required this.aiEncyclopedia,
-    required this.visionTrialRemaining,
+    required this.vision,
   });
 
-  bool get hasVisionAccess => visionTrialRemaining != 0;
-  bool get isVisionTrial => visionTrialRemaining > 0;
+  bool get hasVisionAccess => vision.isUnlimited || vision.remaining > 0;
 
   factory QuotaInfo.fromJson(Map<String, dynamic> json) {
     return QuotaInfo(
       aiEncyclopedia: EncyclopediaQuota.fromJson(
         json['ai_encyclopedia'] as Map<String, dynamic>,
       ),
-      visionTrialRemaining: json['vision_trial_remaining'] as int? ?? 0,
+      vision: VisionQuota.fromJson(
+        json['vision'] as Map<String, dynamic>,
+      ),
     );
   }
 }

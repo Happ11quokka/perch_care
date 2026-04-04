@@ -319,7 +319,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         debugPrint('[AIEncyclopedia] Quota exceeded (429)');
         AnalyticsService.instance.logQuotaReached(
           feature: 'ai_encyclopedia',
-          usedCount: _premiumStatus?.quota?.aiEncyclopedia.dailyUsed ?? 0,
+          usedCount: _premiumStatus?.quota?.aiEncyclopedia.monthlyUsed ?? 0,
         );
         _loadQuota();
         setState(() {
@@ -515,7 +515,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         debugPrint('[AIEncyclopedia] Fallback quota exceeded (429)');
         AnalyticsService.instance.logQuotaReached(
           feature: 'ai_encyclopedia',
-          usedCount: _premiumStatus?.quota?.aiEncyclopedia.dailyUsed ?? 0,
+          usedCount: _premiumStatus?.quota?.aiEncyclopedia.monthlyUsed ?? 0,
         );
         _loadQuota();
         setState(() {
@@ -721,7 +721,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                     upgradeText: l10n.quotaBadge_upgrade,
                     onUpgradePressed: () {
                       context.push(
-                        '/home/premium?source=ai_encyclopedia&feature=daily_limit',
+                        '/home/premium?source=ai_encyclopedia&feature=monthly_limit',
                       );
                     },
                   ),
