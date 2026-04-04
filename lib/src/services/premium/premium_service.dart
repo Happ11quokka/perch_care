@@ -26,6 +26,23 @@ class EncyclopediaQuota {
   }
 }
 
+/// AI 비전 체크 쿼터 정보
+class VisionQuota {
+  final int totalLimit; // -1 = 무제한
+  final int totalUsed;
+  final int remaining; // -1 = 무제한
+
+  VisionQuota({
+    required this.totalLimit,
+    required this.totalUsed,
+    required this.remaining,
+  });
+
+  bool get isUnlimited => totalLimit == -1;
+  bool get isExhausted => !isUnlimited && remaining <= 0;
+  bool get isWarning => !isUnlimited && remaining <= 3;
+}
+
 /// AI 기능 쿼터 통합 정보
 class QuotaInfo {
   final EncyclopediaQuota aiEncyclopedia;

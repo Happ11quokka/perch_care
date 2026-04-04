@@ -882,9 +882,31 @@
   "quotaBadge_upgrade": "Upgrade",
   "aiEncyclopedia_quotaExhausted": "You've used all free queries for today. Upgrade to Premium for unlimited access.",
   "aiEncyclopedia_quotaExhaustedHint": "Daily limit reached · Upgrade to Premium",
-  "healthCheck_freeTrialBadge": "1 free trial",
+  "healthCheck_freeTrialBadge": "Free trial",
   "healthCheck_trialExhaustedTitle": "Free trial completed",
   "healthCheck_trialExhaustedMessage": "You've already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.",
+  "healthCheck_trialExhaustedMessage_v2": "You're on a free trial and have used all your trial sessions.\n\nEnter a promo code or contact us via SNS for more access.",
+  "healthCheck_trialExhaustedAction_promo": "Enter promo code",
+
+  "visionQuotaBadge_normal": "{count} left",
+  "@visionQuotaBadge_normal": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "visionQuotaBadge_exhausted": "Trial exhausted",
+  "visionQuotaBadge_upgrade": "Enter code",
+
+  "paywall_freeTrialBanner": "AI Vision Check and AI Chatbot\nare currently free to try",
+  "paywall_freeTrialSubtext": "Enter a promo code to unlock additional benefits",
+  "paywall_snsEventTitle": "SNS Event",
+  "paywall_snsEventDescription": "Follow us and send a DM to get your promo code!",
+  "sns_copied": "{label} copied",
+  "@sns_copied": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
 
   "report_shareFailed": "Failed to create share link.",
   "report_shareHealth": "Share Health Report",

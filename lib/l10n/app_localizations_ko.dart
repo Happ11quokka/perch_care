@@ -2297,7 +2297,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiEncyclopedia_quotaExhaustedHint => '일일 한도 도달 · 프리미엄으로 업그레이드하세요';
 
   @override
-  String get healthCheck_freeTrialBadge => '무료 1회 체험';
+  String get healthCheck_freeTrialBadge => '무료 체험';
 
   @override
   String get healthCheck_trialExhaustedTitle => '무료 체험 완료';
@@ -2305,6 +2305,41 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get healthCheck_trialExhaustedMessage =>
       '무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.';
+
+  @override
+  String get healthCheck_trialExhaustedMessage_v2 =>
+      '현재 무료 체험 중이며, 체험 횟수를 모두 사용하셨어요.\n\n프로모션 코드를 입력하거나 SNS로 연락하시면 추가 이용이 가능합니다.';
+
+  @override
+  String get healthCheck_trialExhaustedAction_promo => '프로모션 코드 입력';
+
+  @override
+  String visionQuotaBadge_normal(int count) {
+    return '$count회 남음';
+  }
+
+  @override
+  String get visionQuotaBadge_exhausted => '체험 소진';
+
+  @override
+  String get visionQuotaBadge_upgrade => '코드 입력';
+
+  @override
+  String get paywall_freeTrialBanner => '현재 AI 비전 체크와 AI 챗봇은\n무료 체험 중입니다';
+
+  @override
+  String get paywall_freeTrialSubtext => '프로모션 코드를 입력하면 더 많은 혜택을 받을 수 있습니다';
+
+  @override
+  String get paywall_snsEventTitle => 'SNS 이벤트';
+
+  @override
+  String get paywall_snsEventDescription => '팔로우 / 친구추가 후 DM으로 프로모션 코드를 받으세요!';
+
+  @override
+  String sns_copied(String label) {
+    return '$label 복사됨';
+  }
 
   @override
   String get report_shareFailed => '공유 링크 생성에 실패했습니다.';

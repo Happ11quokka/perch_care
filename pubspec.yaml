@@ -39,6 +39,8 @@ dependencies:
   share_plus: ^10.1.4
   flutter_riverpod: ^2.6.1
   google_fonts: ^6.3.2
+  flutter_markdown: ^0.7.6
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

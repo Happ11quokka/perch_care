@@ -108,3 +108,108 @@ class QuotaBadge extends StatelessWidget {
     );
   }
 }
+
+/// AI 비전 체크 남은 쿼터를 표시하는 배지 위젯.
+///
+/// 상태:
+/// - Normal (remaining > 3): 초록 배경, "N회 남음"
+/// - Warning (remaining <= 3): 주황 배경, "N회 남음"
+/// - Exhausted (remaining == 0): 빨간 배경, "체험 소진" + 코드 입력 CTA
+/// - Premium (unlimited): 렌더링하지 않음
+class VisionQuotaBadge extends StatelessWidget {
+  final VisionQuota quota;
+  final String normalText;
+  final String exhaustedText;
+  final String upgradeText;
+  final VoidCallback? onUpgradePressed;
+
+  const VisionQuotaBadge({
+    super.key,
+    required this.quota,
+    required this.normalText,
+    required this.exhaustedText,
+    required this.upgradeText,
+    this.onUpgradePressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (quota.isUnlimited) return const SizedBox.shrink();
+
+    final Color bgColor;
+    final Color textColor;
+    final IconData icon;
+    final String text;
+
+    if (quota.isExhausted) {
+      bgColor = AppColors.dangerLight;
+      textColor = AppColors.dangerDark;
+      icon = Icons.block;
+      text = exhaustedText;
+    } else if (quota.isWarning) {
+      bgColor = AppColors.brandLighter;
+      textColor = AppColors.warningDark;
+      icon = Icons.warning_amber;
+      text = normalText;
+    } else {
+      bgColor = AppColors.successLight;
+      textColor = AppColors.successMedium;
+      icon = Icons.check_circle_outline;
+      text = normalText;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: AppRadius.chip,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: textColor),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+          if (quota.isExhausted && onUpgradePressed != null) ...[
+            const SizedBox(width: AppSpacing.xs),
+            Semantics(
+              button: true,
+              label: upgradeText,
+              child: GestureDetector(
+                onTap: onUpgradePressed,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandPrimary,
+                    borderRadius: AppRadius.radiusSm,
+                  ),
+                  child: Text(
+                    upgradeText,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

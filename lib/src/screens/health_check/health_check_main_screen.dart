@@ -13,8 +13,11 @@ import '../../services/analytics/analytics_service.dart';
 import '../../providers/premium_provider.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
+import '../../widgets/quota_badge.dart';
+import '../../services/premium/premium_service.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
+import '../premium/promo_code_bottom_sheet.dart';
 
 /// AI 건강체크 모드 선택 화면
 class HealthCheckMainScreen extends ConsumerStatefulWidget {
@@ -29,6 +32,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
     with WidgetsBindingObserver {
   bool _isLocked = true; // 기본값: 잠금 (로딩 중 오탭 방지)
   bool _hasVisionTrial = false; // Phase 2: 무료 체험 가능 여부
+  int _visionRemaining = 0; // 남은 비전 체험 횟수
   bool _isLoading = true;
 
   // Coach mark target keys
@@ -68,9 +72,11 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
             // 프리미엄: 무제한 사용
             _isLocked = false;
             _hasVisionTrial = false;
+            _visionRemaining = -1;
           } else {
             // Phase 2: Free 사용자 3단 상태
             final remaining = status.quota?.visionTrialRemaining ?? 0;
+            _visionRemaining = remaining;
             _isLocked = remaining <= 0; // 체험 소진 → 잠금
             _hasVisionTrial = remaining > 0; // 체험 가능 → 열림 + 배지
           }
@@ -148,9 +154,10 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
     final title = isTrialExhausted
         ? l10n.healthCheck_trialExhaustedTitle
         : l10n.premium_featureLockedTitle;
+    // 사전 사업자등록: 프로모션 코드/SNS 안내 메시지 사용
     final message = isTrialExhausted
-        ? l10n.healthCheck_trialExhaustedMessage
-        : l10n.premium_featureLockedMessage;
+        ? l10n.healthCheck_trialExhaustedMessage_v2
+        : l10n.healthCheck_trialExhaustedMessage_v2;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -158,7 +165,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
         title: Row(
           children: [
             Icon(
-              isTrialExhausted ? Icons.check_circle_outline : Icons.workspace_premium,
+              Icons.card_giftcard,
               color: AppColors.brandPrimary,
               size: 24,
             ),
@@ -204,13 +211,13 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                 feature: 'vision',
                 sourceScreen: 'health_check_main',
               );
-              await _openPremiumPaywall(
-                source: 'vision_lock',
-                feature: 'vision',
-              );
+              final activated = await PromoCodeBottomSheet.show(context);
+              if (activated == true && mounted) {
+                await _loadPremiumStatus(forceRefresh: true);
+              }
             },
             child: Text(
-              l10n.premium_activateNow,
+              l10n.healthCheck_trialExhaustedAction_promo,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -269,14 +276,37 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l10n.hc_selectTarget,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.mediumGray,
-                  letterSpacing: -0.4,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.hc_selectTarget,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.mediumGray,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                  ),
+                  // 비전 쿼터 배지 — 카드 목록 상단에 한 번만 표시
+                  if (_hasVisionTrial)
+                    VisionQuotaBadge(
+                      key: _trialBadgeKey,
+                      quota: VisionQuota(
+                        totalLimit: 30,
+                        totalUsed: 30 - _visionRemaining,
+                        remaining: _visionRemaining,
+                      ),
+                      normalText: l10n.visionQuotaBadge_normal(_visionRemaining),
+                      exhaustedText: l10n.visionQuotaBadge_exhausted,
+                      upgradeText: l10n.visionQuotaBadge_upgrade,
+                      onUpgradePressed: () => _openPremiumPaywall(
+                        source: 'vision_badge',
+                        feature: 'vision',
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 20),
               Container(
@@ -411,29 +441,6 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                             letterSpacing: -0.4,
                           ),
                         ),
-                        // Phase 2: 무료 체험 가능 배지
-                        if (_hasVisionTrial) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            key: _trialBadgeKey,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.brandLighter,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              l10n.healthCheck_freeTrialBadge,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.warningDark,
-                              ),
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                     const SizedBox(height: 4),

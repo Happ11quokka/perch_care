@@ -7,6 +7,7 @@ import '../../services/iap/iap_service.dart';
 import '../../providers/premium_provider.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/sns_event_card.dart';
 import '../../../l10n/app_localizations.dart';
 import 'promo_code_bottom_sheet.dart';
 import '../../widgets/coach_mark_overlay.dart';
@@ -80,11 +81,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
     final l10n = AppLocalizations.of(context);
     final steps = <CoachMarkStep>[
-      CoachMarkStep(
-        targetKey: _planSelectorKey,
-        title: l10n.coach_premiumPlan_title,
-        body: l10n.coach_premiumPlan_body,
-      ),
+      // 사전 사업자등록: 플랜 선택 코치마크 제거, 프로모션 코드만 안내
       CoachMarkStep(
         targetKey: _promoCodeButtonKey,
         title: l10n.coach_premiumPromo_title,
@@ -249,11 +246,20 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                           _buildBenefitsSection(l10n),
                           const SizedBox(height: 28),
                           if (!_isPremium) ...[
-                            _buildPlanSelector(l10n),
+                            // 사전 사업자등록: IAP 비활성화, 무료 체험 배너 + 프로모션 + SNS
+                            _buildFreeTrialBanner(l10n),
                             const SizedBox(height: 24),
-                            _buildCtaButton(l10n),
+                            _buildPromoCodeCta(l10n),
+                            const SizedBox(height: 24),
+                            const SnsEventCard(),
                             const SizedBox(height: 16),
-                            _buildSecondaryActions(l10n),
+                            _buildRestoreOnly(l10n),
+                            // TODO(post-registration): IAP 재활성화 시 아래 코드 복원
+                            // _buildPlanSelector(l10n),
+                            // const SizedBox(height: 24),
+                            // _buildCtaButton(l10n),
+                            // const SizedBox(height: 16),
+                            // _buildSecondaryActions(l10n),
                           ] else
                             _buildAlreadyPremium(l10n),
                           const SizedBox(height: 40),
@@ -609,6 +615,109 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// 사전 사업자등록: 무료 체험 중 배너
+  Widget _buildFreeTrialBanner(AppLocalizations l10n) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.successLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.card_giftcard, size: 48, color: AppColors.success),
+          const SizedBox(height: 12),
+          Text(
+            l10n.paywall_freeTrialBanner,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: AppColors.nearBlack,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.paywall_freeTrialSubtext,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: AppColors.mediumGray,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 사전 사업자등록: 프로모션 코드 입력 CTA (메인 버튼)
+  Widget _buildPromoCodeCta(AppLocalizations l10n) {
+    return Semantics(
+      button: true,
+      label: l10n.paywall_promoCode,
+      child: GestureDetector(
+        onTap: _openPromoCode,
+        child: Container(
+          key: _promoCodeButtonKey,
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.brandPrimary, AppColors.brandDark],
+            ),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.brandPrimary.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.redeem, size: 20, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                l10n.paywall_promoCode,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 사전 사업자등록: 구매 복원 버튼만 단독 표시
+  Widget _buildRestoreOnly(AppLocalizations l10n) {
+    return Center(
+      child: TextButton(
+        onPressed: _isRestoring ? null : _restorePurchases,
+        child: Text(
+          l10n.paywall_restore,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.warmGray,
+          ),
+        ),
+      ),
     );
   }
 

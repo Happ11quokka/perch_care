@@ -2374,7 +2374,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Daily limit reached · Upgrade to Premium';
 
   @override
-  String get healthCheck_freeTrialBadge => '1 free trial';
+  String get healthCheck_freeTrialBadge => 'Free trial';
 
   @override
   String get healthCheck_trialExhaustedTitle => 'Free trial completed';
@@ -2382,6 +2382,44 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get healthCheck_trialExhaustedMessage =>
       'You\'ve already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.';
+
+  @override
+  String get healthCheck_trialExhaustedMessage_v2 =>
+      'You\'re on a free trial and have used all your trial sessions.\n\nEnter a promo code or contact us via SNS for more access.';
+
+  @override
+  String get healthCheck_trialExhaustedAction_promo => 'Enter promo code';
+
+  @override
+  String visionQuotaBadge_normal(int count) {
+    return '$count left';
+  }
+
+  @override
+  String get visionQuotaBadge_exhausted => 'Trial exhausted';
+
+  @override
+  String get visionQuotaBadge_upgrade => 'Enter code';
+
+  @override
+  String get paywall_freeTrialBanner =>
+      'AI Vision Check and AI Chatbot\nare currently free to try';
+
+  @override
+  String get paywall_freeTrialSubtext =>
+      'Enter a promo code to unlock additional benefits';
+
+  @override
+  String get paywall_snsEventTitle => 'SNS Event';
+
+  @override
+  String get paywall_snsEventDescription =>
+      'Follow us and send a DM to get your promo code!';
+
+  @override
+  String sns_copied(String label) {
+    return '$label copied';
+  }
 
   @override
   String get report_shareFailed => 'Failed to create share link.';

@@ -4339,7 +4339,7 @@ abstract class AppLocalizations {
   /// No description provided for @healthCheck_freeTrialBadge.
   ///
   /// In ko, this message translates to:
-  /// **'무료 1회 체험'**
+  /// **'무료 체험'**
   String get healthCheck_freeTrialBadge;
 
   /// No description provided for @healthCheck_trialExhaustedTitle.
@@ -4353,6 +4353,66 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.'**
   String get healthCheck_trialExhaustedMessage;
+
+  /// No description provided for @healthCheck_trialExhaustedMessage_v2.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 무료 체험 중이며, 체험 횟수를 모두 사용하셨어요.\n\n프로모션 코드를 입력하거나 SNS로 연락하시면 추가 이용이 가능합니다.'**
+  String get healthCheck_trialExhaustedMessage_v2;
+
+  /// No description provided for @healthCheck_trialExhaustedAction_promo.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로모션 코드 입력'**
+  String get healthCheck_trialExhaustedAction_promo;
+
+  /// No description provided for @visionQuotaBadge_normal.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}회 남음'**
+  String visionQuotaBadge_normal(int count);
+
+  /// No description provided for @visionQuotaBadge_exhausted.
+  ///
+  /// In ko, this message translates to:
+  /// **'체험 소진'**
+  String get visionQuotaBadge_exhausted;
+
+  /// No description provided for @visionQuotaBadge_upgrade.
+  ///
+  /// In ko, this message translates to:
+  /// **'코드 입력'**
+  String get visionQuotaBadge_upgrade;
+
+  /// No description provided for @paywall_freeTrialBanner.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 AI 비전 체크와 AI 챗봇은\n무료 체험 중입니다'**
+  String get paywall_freeTrialBanner;
+
+  /// No description provided for @paywall_freeTrialSubtext.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로모션 코드를 입력하면 더 많은 혜택을 받을 수 있습니다'**
+  String get paywall_freeTrialSubtext;
+
+  /// No description provided for @paywall_snsEventTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'SNS 이벤트'**
+  String get paywall_snsEventTitle;
+
+  /// No description provided for @paywall_snsEventDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'팔로우 / 친구추가 후 DM으로 프로모션 코드를 받으세요!'**
+  String get paywall_snsEventDescription;
+
+  /// No description provided for @sns_copied.
+  ///
+  /// In ko, this message translates to:
+  /// **'{label} 복사됨'**
+  String sns_copied(String label);
 
   /// No description provided for @report_shareFailed.
   ///

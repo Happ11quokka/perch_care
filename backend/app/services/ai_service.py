@@ -153,12 +153,10 @@ _METADATA_INSTRUCTION = (
 
 
 def _build_system_prompt(tier: str) -> str:
-    """티어에 따라 시스템 프롬프트를 구성한다."""
+    """시스템 프롬프트를 구성한다 (사전 사업자등록: 모든 티어에 프리미엄 포맷 적용)."""
     parts = [_ROLE_AND_LANGUAGE, _CATEGORY_CLASSIFICATION, _VET_POLICY]
-    if tier == "premium":
-        parts.append(_PREMIUM_FORMAT)
-    else:
-        parts.append(_FREE_FORMAT)
+    # TODO(post-registration): tier == "premium" 분기 복원
+    parts.append(_PREMIUM_FORMAT)
     parts.append(_TONE)
     parts.append(_METADATA_INSTRUCTION)
     return "".join(parts)
@@ -224,8 +222,9 @@ async def _build_rag_context(
         return None
 
     today = date.today()
-    # 티어별 RAG 범위: Free 7일, Premium 30일
-    lookback_days = 30 if tier == "premium" else 7
+    # 사전 사업자등록: 모든 티어에 프리미엄 RAG 범위 적용
+    # TODO(post-registration): tier 분기 복원 — free: 7일
+    lookback_days = 30
     since = today - timedelta(days=lookback_days)
 
     # 체중
@@ -391,7 +390,9 @@ async def prepare_system_message(
     from app.services.deepseek_service import get_chinese_supplement
 
     # 독립 I/O를 병렬 실행하여 지연시간 최소화
-    is_chinese_premium = tier == "premium" and _contains_chinese(query)
+    # 사전 사업자등록: 중국어 질문이면 무조건 DeepSeek 보충 적용
+    # TODO(post-registration): tier == "premium" and 조건 복원
+    is_chinese_premium = _contains_chinese(query)
 
     tasks = [
         search_knowledge(query),
@@ -420,10 +421,9 @@ async def prepare_system_message(
 
 
 def _select_model(tier: str) -> tuple[str, int]:
-    """티어별 모델과 최대 토큰 수를 반환한다."""
-    if tier == "premium":
-        return "gpt-4.1-nano", 2048
-    return MODEL, 1024
+    """모델과 최대 토큰 수를 반환한다 (사전 사업자등록: 모든 티어에 프리미엄 모델 적용)."""
+    # TODO(post-registration): tier 분기 복원 — free: (MODEL, 1024)
+    return "gpt-4.1-nano", 2048
 
 
 async def ask(

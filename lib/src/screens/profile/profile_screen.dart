@@ -18,6 +18,7 @@ import '../../widgets/dashed_border.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/analytics/analytics_service.dart';
+import '../../widgets/sns_event_card.dart';
 import '../../services/api/token_service.dart';
 import '../../providers/premium_provider.dart';
 import '../../widgets/app_loading.dart';
@@ -495,6 +496,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                     // 앱 지원 섹션
                     _buildAppSupportSection(l10n),
+
+                    // 구분선
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      color: AppColors.gray150,
+                    ),
+
+                    // SNS 이벤트 섹션
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: const SnsEventCard(),
+                    ),
 
                     // 구분선
                     Container(

@@ -2243,7 +2243,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiEncyclopedia_quotaExhaustedHint => '已达每日限额 · 升级到高级版';
 
   @override
-  String get healthCheck_freeTrialBadge => '免费体验1次';
+  String get healthCheck_freeTrialBadge => '免费体验';
 
   @override
   String get healthCheck_trialExhaustedTitle => '免费体验已完成';
@@ -2251,6 +2251,41 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get healthCheck_trialExhaustedMessage =>
       '您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。';
+
+  @override
+  String get healthCheck_trialExhaustedMessage_v2 =>
+      '您正在免费体验中，试用次数已用完。\n\n输入促销代码或通过社交媒体联系我们即可获得更多使用权限。';
+
+  @override
+  String get healthCheck_trialExhaustedAction_promo => '输入促销代码';
+
+  @override
+  String visionQuotaBadge_normal(int count) {
+    return '剩余$count次';
+  }
+
+  @override
+  String get visionQuotaBadge_exhausted => '体验已用完';
+
+  @override
+  String get visionQuotaBadge_upgrade => '输入代码';
+
+  @override
+  String get paywall_freeTrialBanner => 'AI视觉检查和AI聊天机器人\n目前免费体验中';
+
+  @override
+  String get paywall_freeTrialSubtext => '输入促销代码可解锁更多权益';
+
+  @override
+  String get paywall_snsEventTitle => '社交媒体活动';
+
+  @override
+  String get paywall_snsEventDescription => '关注我们并发送私信即可获取促销代码！';
+
+  @override
+  String sns_copied(String label) {
+    return '已复制$label';
+  }
 
   @override
   String get report_shareFailed => '创建分享链接失败。';
