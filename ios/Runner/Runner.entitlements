@@ -8,6 +8,8 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<key>com.apple.developer.in-app-purchases</key>
+	<true/>
 	<key>keychain-access-groups</key>
 	<array>
 		<string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>

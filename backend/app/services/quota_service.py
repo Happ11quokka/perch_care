@@ -1,6 +1,7 @@
 """AI 기능 사용량 쿼터 관리 서비스.
 
-Phase 2: Free 사용자의 AI 백과사전 일일 한도(3회)와 Vision 건강체크 체험(1회)을 관리한다.
+Phase 2: Free 사용자의 AI 백과사전 일일 한도와 Vision 건강체크 체험 횟수를 관리한다.
+한도 값은 환경변수(FREE_ENCYCLOPEDIA_DAILY_LIMIT, FREE_VISION_TRIAL_LIMIT)로 설정 가능.
 별도 quota 테이블 없이 기존 로그 테이블(AiEncyclopediaLog, AiVisionLog) 집계 방식.
 
 Quota 체크 시 pg_advisory_xact_lock으로 사용자별 직렬화하여 동시 요청에 의한
@@ -14,14 +15,19 @@ from uuid import UUID
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.models.ai_encyclopedia_log import AiEncyclopediaLog
 from app.models.ai_vision_log import AiVisionLog
 
 logger = logging.getLogger(__name__)
 
-# ── 쿼터 상수 ──
-FREE_ENCYCLOPEDIA_DAILY_LIMIT = 3
-FREE_VISION_TRIAL_LIMIT = 1
+
+def _get_encyclopedia_limit() -> int:
+    return get_settings().free_encyclopedia_daily_limit
+
+
+def _get_vision_limit() -> int:
+    return get_settings().free_vision_trial_limit
 
 # Advisory lock namespaces (pg_advisory_xact_lock 첫 번째 인자)
 _LOCK_NS_ENCYCLOPEDIA = 100
@@ -71,11 +77,11 @@ async def check_encyclopedia_quota(
         }
 
     used = await get_encyclopedia_usage_today(db, user_id)
-    remaining = max(0, FREE_ENCYCLOPEDIA_DAILY_LIMIT - used)
+    remaining = max(0, _get_encyclopedia_limit() - used)
 
     return {
-        "allowed": used < FREE_ENCYCLOPEDIA_DAILY_LIMIT,
-        "daily_limit": FREE_ENCYCLOPEDIA_DAILY_LIMIT,
+        "allowed": used < _get_encyclopedia_limit(),
+        "daily_limit": _get_encyclopedia_limit(),
         "daily_used": used,
         "remaining": remaining,
     }
@@ -115,10 +121,10 @@ async def check_and_reserve_encyclopedia(
     )
 
     used = await get_encyclopedia_usage_today(db, user_id)
-    if used >= FREE_ENCYCLOPEDIA_DAILY_LIMIT:
+    if used >= _get_encyclopedia_limit():
         return {
             "allowed": False,
-            "daily_limit": FREE_ENCYCLOPEDIA_DAILY_LIMIT,
+            "daily_limit": _get_encyclopedia_limit(),
             "daily_used": used,
             "remaining": 0,
         }, None
@@ -137,9 +143,9 @@ async def check_and_reserve_encyclopedia(
 
     return {
         "allowed": True,
-        "daily_limit": FREE_ENCYCLOPEDIA_DAILY_LIMIT,
+        "daily_limit": _get_encyclopedia_limit(),
         "daily_used": used + 1,
-        "remaining": max(0, FREE_ENCYCLOPEDIA_DAILY_LIMIT - used - 1),
+        "remaining": max(0, _get_encyclopedia_limit() - used - 1),
     }, reservation
 
 
@@ -151,7 +157,7 @@ async def get_vision_trial_remaining(db: AsyncSession, user_id: UUID) -> int:
         .where(AiVisionLog.user_id == user_id)
     )
     total_used = result.scalar() or 0
-    return max(0, FREE_VISION_TRIAL_LIMIT - total_used)
+    return max(0, _get_vision_limit() - total_used)
 
 
 async def check_vision_access(
