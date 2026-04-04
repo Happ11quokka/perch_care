@@ -20,6 +20,7 @@ import '../../theme/durations.dart';
 import '../../models/breed_standard.dart';
 import '../../services/breed/breed_service.dart';
 import '../../providers/pet_providers.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WeightRecordScreen extends ConsumerStatefulWidget {
@@ -347,6 +348,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
         }
       }
       await _loadRecords();
+      AnalyticsService.instance.logWeightRecorded(_activePetId!);
       if (mounted) {
         setState(() {
           _selectedTime = TimeOfDay.now();

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -1036,11 +1037,22 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             ),
             child: message.text.isEmpty && _isSending
                 ? _buildTypingIndicator()
-                : Text(
-                    message.text,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.nearBlack,
+                : MarkdownBody(
+                    data: message.text,
+                    styleSheet: MarkdownStyleSheet(
+                      p: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.nearBlack,
+                      ),
+                      strong: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.nearBlack,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      listBullet: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.nearBlack,
+                      ),
                     ),
+                    selectable: true,
+                    shrinkWrap: true,
                   ),
           ),
         ),

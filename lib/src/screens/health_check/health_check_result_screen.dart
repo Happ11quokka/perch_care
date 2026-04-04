@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -239,14 +240,12 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
             ? Image.memory(
                 widget.imageBytes!,
                 width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
+                fit: BoxFit.fitWidth,
               )
             : Image.network(
                 Environment.resolveImageUrl(widget.imageUrl!),
                 width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
+                fit: BoxFit.fitWidth,
                 errorBuilder: (_, __, ___) => Container(
                   width: double.infinity,
                   height: 200,
@@ -502,15 +501,25 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                               style: TextStyle(
                                   color: AppColors.mediumGray, fontSize: 14)),
                           Expanded(
-                            child: Text(
-                              c,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.mediumGray,
-                                letterSpacing: -0.3,
-                                height: 1.4,
+                            child: MarkdownBody(
+                              data: c,
+                              styleSheet: MarkdownStyleSheet(
+                                p: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.mediumGray,
+                                  letterSpacing: -0.3,
+                                  height: 1.4,
+                                ),
+                                strong: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.mediumGray,
+                                  letterSpacing: -0.3,
+                                  height: 1.4,
+                                ),
                               ),
+                              shrinkWrap: true,
                             ),
                           ),
                         ],
@@ -770,15 +779,25 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
           ),
           if (observation.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(
-              observation,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: AppColors.mediumGray,
-                letterSpacing: -0.3,
-                height: 1.4,
+            MarkdownBody(
+              data: observation,
+              styleSheet: MarkdownStyleSheet(
+                p: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.3,
+                  height: 1.4,
+                ),
+                strong: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.3,
+                  height: 1.4,
+                ),
               ),
+              shrinkWrap: true,
             ),
           ],
           if (details != null && details.isNotEmpty) ...[
