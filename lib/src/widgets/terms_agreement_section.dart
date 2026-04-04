@@ -99,6 +99,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
           label: l10n.terms_optionalMarketing,
           checked: _agreeMarketing,
           onChanged: (v) => _onItemChanged(marketing: v),
+          termsType: TermsType.marketing,
           l10n: l10n,
         ),
       ],

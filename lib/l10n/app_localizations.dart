@@ -382,6 +382,12 @@ abstract class AppLocalizations {
   /// **'개인정보처리방침'**
   String get terms_privacyPolicy;
 
+  /// No description provided for @terms_marketing.
+  ///
+  /// In ko, this message translates to:
+  /// **'마케팅 정보 수신 동의'**
+  String get terms_marketing;
+
   /// No description provided for @terms_sectionTitle.
   ///
   /// In ko, this message translates to:

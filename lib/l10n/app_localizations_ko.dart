@@ -155,6 +155,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get terms_privacyPolicy => '개인정보처리방침';
 
   @override
+  String get terms_marketing => '마케팅 정보 수신 동의';
+
+  @override
   String get terms_sectionTitle => '약관 및 정책';
 
   @override

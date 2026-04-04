@@ -156,6 +156,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get terms_privacyPolicy => 'Privacy Policy';
 
   @override
+  String get terms_marketing => 'Marketing Communications';
+
+  @override
   String get terms_sectionTitle => 'Terms & Policies';
 
   @override

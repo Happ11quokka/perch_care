@@ -35,6 +35,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _isLoading = false;
   bool _hasNavigatedAfterSignup = false;
   bool _allRequiredTermsAgreed = false;
+  bool _marketingAgreed = false;
   bool _nameHasFocus = false;
   bool _emailHasFocus = false;
   bool _passwordHasFocus = false;
@@ -224,6 +225,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           onChanged: (allRequiredAgreed, marketingAgreed) {
                             setState(() {
                               _allRequiredTermsAgreed = allRequiredAgreed;
+                              _marketingAgreed = marketingAgreed;
                             });
                           },
                           termsRouteName: RouteNames.termsDetailPublic,
@@ -516,6 +518,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
         nickname: name,
+        marketingAgreed: _marketingAgreed,
       );
       if (!mounted) return;
       // 회원가입 성공 후 소셜 계정 연동 안내

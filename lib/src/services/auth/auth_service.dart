@@ -87,11 +87,13 @@ class AuthService {
     required String email,
     required String password,
     String? nickname,
+    bool marketingAgreed = false,
   }) async {
     final body = <String, dynamic>{
       'email': email,
       'password': password,
       if (nickname != null) 'nickname': nickname,
+      'marketing_agreed': marketingAgreed,
     };
 
     final response = await _api.post('/auth/signup', body: body, auth: false);

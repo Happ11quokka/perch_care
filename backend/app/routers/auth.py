@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from slowapi import Limiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
+from app.limiter import limiter
 from app.schemas.auth import (
     SignUpRequest, LoginRequest, TokenResponse, RefreshRequest,
     OAuthRequest, OAuthLoginResponse,
@@ -9,17 +9,6 @@ from app.schemas.auth import (
 )
 from app.services import auth_service
 from app.utils.security import verify_google_id_token, verify_kakao_access_token, verify_apple_id_token, decode_token
-
-
-def _get_auth_rate_limit_key(request: Request) -> str:
-    """IP 기반 rate limit 키. 프록시 뒤에서는 X-Forwarded-For 사용."""
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return f"ip:{forwarded.split(',')[0].strip()}"
-    return f"ip:{request.client.host}"
-
-
-limiter = Limiter(key_func=_get_auth_rate_limit_key)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

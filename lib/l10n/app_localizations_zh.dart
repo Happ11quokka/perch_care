@@ -154,6 +154,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get terms_privacyPolicy => '隐私政策';
 
   @override
+  String get terms_marketing => '营销信息接收同意';
+
+  @override
   String get terms_sectionTitle => '条款与政策';
 
   @override

@@ -14,9 +14,11 @@ class TermsDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).languageCode;
-    final title = termsType == TermsType.termsOfService
-        ? l10n.terms_termsOfService
-        : l10n.terms_privacyPolicy;
+    final title = switch (termsType) {
+      TermsType.termsOfService => l10n.terms_termsOfService,
+      TermsType.privacyPolicy => l10n.terms_privacyPolicy,
+      TermsType.marketing => l10n.terms_marketing,
+    };
     final content = TermsContent.getContent(termsType, locale: locale);
 
     return Scaffold(

@@ -59,6 +59,7 @@
   "terms_optionalMarketing": "[可选] 同意接收营销信息",
   "terms_termsOfService": "服务条款",
   "terms_privacyPolicy": "隐私政策",
+  "terms_marketing": "营销信息接收同意",
   "terms_sectionTitle": "条款与政策",
 
   "forgot_title": "找回密码",
