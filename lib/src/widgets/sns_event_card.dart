@@ -47,8 +47,8 @@ class SnsEventCard extends StatelessWidget {
     final xiaohongshu = _SnsContact(
       icon: Icons.bookmark_outlined,
       label: '小红书',
-      value: '639474187',
-      url: 'https://www.xiaohongshu.com/user/profile/639474187',
+      value: 'perch_care',
+      url: 'https://www.xiaohongshu.com/user/profile/65346bb9000000000301e0da',
       emphasized: languageCode == 'zh',
     );
     final wechat = _SnsContact(
