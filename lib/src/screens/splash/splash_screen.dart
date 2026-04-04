@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../providers/pet_providers.dart';
+import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
 import '../../services/iap/iap_service.dart';
@@ -152,6 +153,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       try {
         await ref.read(activePetProvider.notifier).refresh();
         await ref.read(petListProvider.notifier).refresh();
+        await ref.read(premiumStatusProvider.notifier).refresh();
         debugPrint('[Splash] Riverpod providers seeded');
       } catch (e) {
         debugPrint('[Splash] Provider seeding error: $e');

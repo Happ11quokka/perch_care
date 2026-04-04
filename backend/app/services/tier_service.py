@@ -110,15 +110,15 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
                 "auto_renew_status": None,
                 "quota": {
                     "ai_encyclopedia": {
-                        "daily_limit": enc["daily_limit"],
-                        "daily_used": enc["daily_used"],
+                        "monthly_limit": enc["monthly_limit"],
+                        "monthly_used": enc["monthly_used"],
                         "remaining": enc["remaining"],
                     },
                     "vision": {
-                    "monthly_limit": vis["monthly_limit"],
-                    "monthly_used": vis["monthly_used"],
-                    "remaining": vis["remaining"],
-                },
+                        "monthly_limit": vis["monthly_limit"],
+                        "monthly_used": vis["monthly_used"],
+                        "remaining": vis["remaining"],
+                    },
                 },
             }
 
@@ -133,15 +133,15 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
         "auto_renew_status": tier_row.auto_renew_status,
         "quota": {
             "ai_encyclopedia": {
-                "daily_limit": enc["daily_limit"],
-                "daily_used": enc["daily_used"],
+                "monthly_limit": enc["monthly_limit"],
+                "monthly_used": enc["monthly_used"],
                 "remaining": enc["remaining"],
             },
             "vision": {
-                    "monthly_limit": vis["monthly_limit"],
-                    "monthly_used": vis["monthly_used"],
-                    "remaining": vis["remaining"],
-                },
+                "monthly_limit": vis["monthly_limit"],
+                "monthly_used": vis["monthly_used"],
+                "remaining": vis["remaining"],
+            },
         },
     }
 
