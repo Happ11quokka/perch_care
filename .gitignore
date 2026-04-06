@@ -86,6 +86,7 @@ docs/testing/manual-testing-guide.md
 
 # Android signing
 android/key.properties
+android/app/key.properties
 *.jks
 *.keystore
 
@@ -97,3 +98,7 @@ firebase.json
 **/service-account*.json
 **/firebase-adminsdk*.json
 **/firebase-credentials*.json
+
+# App Store screenshots & store assets
+perch-screenshots-*/
+store_assets/
