@@ -11,16 +11,20 @@
 
 <p align="center">
   <a href="https://perch.ai.kr/ko"><img src="https://img.shields.io/badge/Homepage-perch.ai.kr-FF9A42?style=flat-square" alt="Website" /></a>
-  <a href="https://apps.apple.com/us/app/%ED%8D%BC%EC%B9%98%EC%BC%80%EC%96%B4/id6758549078?l=ko"><img src="https://img.shields.io/badge/App%20Store-Download-0D96F6?style=flat-square&logo=apple&logoColor=white" alt="App Store" /></a>
+  <a href="https://apps.apple.com/br/app/%ED%8D%BC%EC%B9%98%EC%BC%80%EC%96%B4/id6758549078"><img src="https://img.shields.io/badge/App%20Store-Download-0D96F6?style=flat-square&logo=apple&logoColor=white" alt="App Store" /></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.8-02569B?style=flat-square&logo=flutter" alt="Flutter" /></a>
 </p>
 
 <br/>
 
 <p align="center">
-  <img src="assets/images/readme/hero.png" width="240" alt="Onboarding" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/images/readme/dashboard.png" width="240" alt="Dashboard" />
+  <img src="assets/images/readme/01-hero.png" width="180" alt="Onboarding" />
+  &nbsp;
+  <img src="assets/images/readme/02-wci.png" width="180" alt="WCI Health Score" />
+  &nbsp;
+  <img src="assets/images/readme/03-chart.png" width="180" alt="Weight Chart" />
+  &nbsp;
+  <img src="assets/images/readme/04-chat.png" width="180" alt="AI Chatbot" />
 </p>
 
 <br/>
@@ -31,6 +35,8 @@
 
 **AI 건강 상담** — OpenAI 기반 RAG 챗봇이 반려조 건강에 대한 질문에 답합니다. 한국어, 영어, 중국어를 지원합니다.
 
+**AI 건강 검진** — 사진 한 장으로 전신, 부위별, 배설물, 먹이 안전성을 분석합니다.
+
 **체중 기록 & 차트** — 하루에 여러 번 체중을 기록하고, 주간 · 월간 · 연간 추이를 차트로 확인합니다.
 
 **식사 & 음수 기록** — 급여량과 섭취량을 구분해 기록하고, 섭취율을 계산합니다.
@@ -38,6 +44,12 @@
 **푸시 알림** — 오후 5시, 오늘 기록이 없는 사용자에게 FCM 알림을 보냅니다.
 
 **다국어** — 한국어 · English · 中文, 기기 언어에 맞춰 자동 전환됩니다.
+
+<br/>
+
+<p align="center">
+  <img src="assets/images/readme/05-vision.png" width="240" alt="AI Health Check" />
+</p>
 
 <br/>
 
@@ -113,6 +125,14 @@ backend/app/
 ```
 
 <br/>
+
+## Download
+
+<p align="center">
+  <a href="https://apps.apple.com/br/app/%ED%8D%BC%EC%B9%98%EC%BC%80%EC%96%B4/id6758549078">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" width="180" alt="Download on the App Store" />
+  </a>
+</p>
 
 ---
 
