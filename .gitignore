@@ -102,3 +102,9 @@ firebase.json
 # App Store screenshots & store assets
 perch-screenshots-*/
 store_assets/
+
+# Presentation & temporary files
+*.pdf
+lelvel_1.svg
+problem/
+.impeccable.md
