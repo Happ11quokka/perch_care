@@ -1,8 +1,10 @@
 <p align="center">
-  <a href="https://perch.ai.kr/ko"><img src="assets/images/readme/feature_graphic.png" width="600" alt="Perch Care — AI 기반 반려동물 건강관리" /></a>
+  <a href="https://perch.ai.kr/ko"><img src="assets/images/p.e.r.c.h.svg" width="280" alt="p.e.r.c.h" /></a>
 </p>
 
-<h1 align="center">Perch Care</h1>
+<h3 align="center">
+  <a href="https://perch.ai.kr/ko">perch.ai.kr →</a>
+</h3>
 
 <p align="center">
   <b>우리 새의 건강을 숫자로, AI로, 매일의 기록으로.</b><br/>
