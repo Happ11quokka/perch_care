@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="store_assets/feature_graphic.png" width="600" alt="Perch Care — AI 기반 반려동물 건강관리" />
+  <a href="https://perch.ai.kr/ko"><img src="assets/images/readme/feature_graphic.png" width="600" alt="Perch Care — AI 기반 반려동물 건강관리" /></a>
 </p>
 
 <h1 align="center">Perch Care</h1>
