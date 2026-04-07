@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../config/app_config.dart';
 import '../../config/environment.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
@@ -212,7 +213,7 @@ class _HealthCheckHistoryScreenState
       await Share.share(shareUrl, sharePositionOrigin: origin);
     } on ApiException catch (e) {
       if (!mounted) return;
-      if (e.statusCode == 403) {
+      if (AppConfig.premiumEnabled && e.statusCode == 403) {
         context.pushNamed(RouteNames.premium);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import '../../config/app_config.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -94,11 +95,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     final l10n = AppLocalizations.of(context);
     final steps = <CoachMarkStep>[
-      CoachMarkStep(
-        targetKey: _premiumCardKey,
-        title: l10n.coach_profilePremium_title,
-        body: l10n.coach_profilePremium_body,
-      ),
+      if (AppConfig.premiumEnabled)
+        CoachMarkStep(
+          targetKey: _premiumCardKey,
+          title: l10n.coach_profilePremium_title,
+          body: l10n.coach_profilePremium_body,
+        ),
       CoachMarkStep(
         targetKey: _addPetButtonKey,
         title: l10n.coach_profileAddPet_title,

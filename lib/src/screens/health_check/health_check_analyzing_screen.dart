@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/ai_health_check.dart';
+import '../../config/app_config.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/health_check/health_check_service.dart';
@@ -176,7 +177,7 @@ class _HealthCheckAnalyzingScreenState
       final l10n = AppLocalizations.of(context);
       setState(() {
         _isAnalyzing = false;
-        _isPremiumError = e.statusCode == 403;
+        _isPremiumError = AppConfig.premiumEnabled && e.statusCode == 403;
         _errorMessage = e.statusCode == 403
             ? l10n.premium_healthCheckBlocked
             : (e.statusCode >= 500 ? l10n.error_server : l10n.hc_analysisError);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../config/app_config.dart';
 import '../../theme/colors.dart';
 import '../../services/iap/iap_service.dart';
 import '../../providers/premium_provider.dart';
@@ -42,6 +43,15 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   @override
   void initState() {
     super.initState();
+
+    // 프리미엄 게이팅 비활성화 시 즉시 pop
+    if (!AppConfig.premiumEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && context.canPop()) context.pop();
+      });
+      return;
+    }
+
     _checkCurrentStatus();
     _iapService.onEvent = _handleIapEvent;
 
@@ -71,6 +81,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   }
 
   Future<void> _maybeShowCoachMarks() async {
+    if (!AppConfig.premiumEnabled) return;
     if (_isPremium) return; // 프리미엄이면 플랜/프로모 위젯이 없음
     final service = CoachMarkService.instance;
     final hasSeen = await service.hasSeen(CoachMarkService.screenPremium);

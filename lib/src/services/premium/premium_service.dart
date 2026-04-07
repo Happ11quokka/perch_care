@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../config/app_config.dart';
 import '../api/api_client.dart';
 
 /// AI 백과사전 쿼터 정보
@@ -13,7 +14,7 @@ class EncyclopediaQuota {
     required this.remaining,
   });
 
-  bool get isUnlimited => monthlyLimit == -1;
+  bool get isUnlimited => !AppConfig.premiumEnabled || monthlyLimit == -1;
   bool get isExhausted => !isUnlimited && remaining <= 0;
   bool get isWarning => !isUnlimited && remaining <= 3;
 
@@ -38,7 +39,7 @@ class VisionQuota {
     required this.remaining,
   });
 
-  bool get isUnlimited => monthlyLimit == -1;
+  bool get isUnlimited => !AppConfig.premiumEnabled || monthlyLimit == -1;
   bool get isExhausted => !isUnlimited && remaining <= 0;
   bool get isWarning => !isUnlimited && remaining <= 3;
 
@@ -93,8 +94,8 @@ class PremiumStatus {
     this.quota,
   });
 
-  bool get isPremium => tier == 'premium';
-  bool get isFree => tier != 'premium';
+  bool get isPremium => !AppConfig.premiumEnabled || tier == 'premium';
+  bool get isFree => AppConfig.premiumEnabled && tier != 'premium';
   bool get isStoreSubscription =>
       source == 'app_store' || source == 'play_store';
 

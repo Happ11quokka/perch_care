@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../config/app_config.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
@@ -48,7 +49,7 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
       await Share.share(shareUrl, sharePositionOrigin: origin);
     } on ApiException catch (e) {
       if (!mounted) return;
-      if (e.statusCode == 403) {
+      if (AppConfig.premiumEnabled && e.statusCode == 403) {
         context.pushNamed(RouteNames.premium);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
