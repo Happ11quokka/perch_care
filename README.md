@@ -90,7 +90,7 @@ FastAPI Backend
           FCM Daily Reminder Cron
 ```
 
-20개 서비스가 cache-first 전략(5분 TTL, 4단계 fallback)으로 동작하며, 26개 화면이 온보딩부터 건강 분석까지 전체 사용자 여정을 커버합니다.
+21개 서비스 모듈(26 파일)이 cache-first 전략(5분 TTL, 4단계 fallback)으로 동작하며, 21개 화면 모듈(33 파일)이 온보딩부터 건강 분석까지 전체 사용자 여정을 커버합니다.
 
 <br/>
 
