@@ -1,0 +1,234 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 820" width="100%" font-family="'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <!-- Monochrome arrow marker -->
+    <marker id="arrowBlack" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000000"/>
+    </marker>
+    <marker id="arrowGrey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6B7280"/>
+    </marker>
+
+    <!-- Subtle shadow for depth -->
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="1" result="offset"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.08"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="820" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="700" y="50" text-anchor="middle" font-size="28" font-weight="700" fill="#000000" letter-spacing="-0.5">perch_care — MVVM 5-Layer Architecture</text>
+  <text x="700" y="78" text-anchor="middle" font-size="14" fill="#6B7280">Flutter · Riverpod · Repository Pattern · Offline-First</text>
+
+  <!-- Thin divider under title -->
+  <line x1="60" y1="100" x2="1340" y2="100" stroke="#E5E7EB" stroke-width="1"/>
+
+  <!-- =========================================================== -->
+  <!-- Layer 1: View -->
+  <!-- =========================================================== -->
+  <g filter="url(#soft)">
+    <rect x="60" y="130" width="220" height="260" rx="16" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+  </g>
+  <text x="80" y="158" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1.2">LAYER 1</text>
+  <text x="170" y="180" text-anchor="middle" font-size="22" font-weight="700" fill="#000000">View</text>
+  <text x="170" y="200" text-anchor="middle" font-size="12" fill="#6B7280">Screen · Presentation</text>
+  <line x1="90" y1="215" x2="250" y2="215" stroke="#000000" stroke-width="1"/>
+  <text x="170" y="240" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">ConsumerWidget</text>
+  <text x="170" y="258" text-anchor="middle" font-size="11" fill="#6B7280">ConsumerStatefulWidget</text>
+  <text x="170" y="288" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• UI 위젯만 담당</text>
+  <text x="170" y="306" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• setState 금지</text>
+  <text x="170" y="324" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• ref.watch 로 구독</text>
+  <text x="170" y="360" text-anchor="middle" font-size="11" fill="#9CA3AF">home_screen.dart</text>
+  <text x="170" y="378" text-anchor="middle" font-size="11" fill="#9CA3AF">pet_profile_screen.dart</text>
+
+  <!-- =========================================================== -->
+  <!-- Layer 2: ViewModel -->
+  <!-- =========================================================== -->
+  <g filter="url(#soft)">
+    <rect x="340" y="130" width="220" height="260" rx="16" fill="#FAFAFA" stroke="#000000" stroke-width="2"/>
+  </g>
+  <text x="360" y="158" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1.2">LAYER 2</text>
+  <text x="450" y="180" text-anchor="middle" font-size="22" font-weight="700" fill="#000000">ViewModel</text>
+  <text x="450" y="200" text-anchor="middle" font-size="12" fill="#6B7280">State + Action Owner</text>
+  <line x1="370" y1="215" x2="530" y2="215" stroke="#000000" stroke-width="1"/>
+  <text x="450" y="240" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">AsyncNotifier&lt;T&gt;</text>
+  <text x="450" y="258" text-anchor="middle" font-size="11" fill="#6B7280">extends AsyncViewModel</text>
+  <text x="450" y="288" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• 상태 소유 (AsyncValue)</text>
+  <text x="450" y="306" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• 사용자 액션 노출</text>
+  <text x="450" y="324" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• Repository만 의존</text>
+  <text x="450" y="360" text-anchor="middle" font-size="11" fill="#9CA3AF">HomeViewModel</text>
+  <text x="450" y="378" text-anchor="middle" font-size="11" fill="#9CA3AF">PetListViewModel</text>
+
+  <!-- =========================================================== -->
+  <!-- Layer 3: Repository -->
+  <!-- =========================================================== -->
+  <g filter="url(#soft)">
+    <rect x="620" y="130" width="220" height="260" rx="16" fill="#F3F4F6" stroke="#000000" stroke-width="2"/>
+  </g>
+  <text x="640" y="158" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1.2">LAYER 3</text>
+  <text x="730" y="180" text-anchor="middle" font-size="22" font-weight="700" fill="#000000">Repository</text>
+  <text x="730" y="200" text-anchor="middle" font-size="12" fill="#6B7280">Data Source 추상화</text>
+  <line x1="650" y1="215" x2="810" y2="215" stroke="#000000" stroke-width="1"/>
+  <text x="730" y="240" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">abstract class</text>
+  <text x="730" y="258" text-anchor="middle" font-size="11" fill="#6B7280">+ Impl class</text>
+  <text x="730" y="288" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• 4-tier cache 폴백</text>
+  <text x="730" y="306" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• SyncService enqueue</text>
+  <text x="730" y="324" text-anchor="middle" font-size="11" fill="#4B5563" font-style="italic">• 테스트 시 mock 지점</text>
+  <text x="730" y="360" text-anchor="middle" font-size="11" fill="#9CA3AF">PetRepository</text>
+  <text x="730" y="378" text-anchor="middle" font-size="11" fill="#9CA3AF">HomeRepository (facade)</text>
+
+  <!-- =========================================================== -->
+  <!-- Layer 4: Service + LocalDataSource -->
+  <!-- =========================================================== -->
+  <g filter="url(#soft)">
+    <rect x="900" y="130" width="220" height="260" rx="16" fill="#E5E7EB" stroke="#000000" stroke-width="2"/>
+  </g>
+  <text x="920" y="158" font-size="11" font-weight="600" fill="#6B7280" letter-spacing="1.2">LAYER 4</text>
+  <text x="1010" y="180" text-anchor="middle" font-size="22" font-weight="700" fill="#000000">Service + Local</text>
+  <text x="1010" y="200" text-anchor="middle" font-size="12" fill="#4B5563">API · Persistence</text>
+  <line x1="930" y1="215" x2="1090" y2="215" stroke="#000000" stroke-width="1"/>
+  <text x="1010" y="240" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">ApiClient · 26 Services</text>
+  <text x="1010" y="258" text-anchor="middle" font-size="11" fill="#4B5563">SharedPreferences · sqflite</text>
+  <text x="1010" y="288" text-anchor="middle" font-size="11" fill="#374151" font-style="italic">• REST API 호출</text>
+  <text x="1010" y="306" text-anchor="middle" font-size="11" fill="#374151" font-style="italic">• 로컬 영속화</text>
+  <text x="1010" y="324" text-anchor="middle" font-size="11" fill="#374151" font-style="italic">• Repository 내부에서만</text>
+  <text x="1010" y="360" text-anchor="middle" font-size="11" fill="#6B7280">PetService · WeightService</text>
+  <text x="1010" y="378" text-anchor="middle" font-size="11" fill="#6B7280">PetLocalCacheService</text>
+
+  <!-- =========================================================== -->
+  <!-- Layer 5: Model -->
+  <!-- =========================================================== -->
+  <g filter="url(#soft)">
+    <rect x="1180" y="130" width="160" height="260" rx="16" fill="#1F2937" stroke="#000000" stroke-width="2"/>
+  </g>
+  <text x="1200" y="158" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1.2">LAYER 5</text>
+  <text x="1260" y="180" text-anchor="middle" font-size="22" font-weight="700" fill="#FFFFFF">Model</text>
+  <text x="1260" y="200" text-anchor="middle" font-size="12" fill="#9CA3AF">POJO · DTO</text>
+  <line x1="1200" y1="215" x2="1320" y2="215" stroke="#FFFFFF" stroke-width="1"/>
+  <text x="1260" y="240" text-anchor="middle" font-size="13" font-weight="600" fill="#FFFFFF">Data class</text>
+  <text x="1260" y="258" text-anchor="middle" font-size="11" fill="#9CA3AF">fromJson / toJson</text>
+  <text x="1260" y="288" text-anchor="middle" font-size="11" fill="#D1D5DB" font-style="italic">• 불변 데이터</text>
+  <text x="1260" y="306" text-anchor="middle" font-size="11" fill="#D1D5DB" font-style="italic">• 직렬화 책임</text>
+  <text x="1260" y="324" text-anchor="middle" font-size="11" fill="#D1D5DB" font-style="italic">• 로직 없음</text>
+  <text x="1260" y="360" text-anchor="middle" font-size="11" fill="#9CA3AF">Pet · BhiResult</text>
+  <text x="1260" y="378" text-anchor="middle" font-size="11" fill="#9CA3AF">WeightRecord · DietEntry</text>
+
+  <!-- =========================================================== -->
+  <!-- Arrows between layers -->
+  <!-- =========================================================== -->
+
+  <!-- View → ViewModel (forward, solid) -->
+  <line x1="280" y1="230" x2="340" y2="230" stroke="#000000" stroke-width="2" marker-end="url(#arrowBlack)"/>
+  <text x="310" y="220" text-anchor="middle" font-size="11" font-weight="600" fill="#000000">ref.watch</text>
+  <text x="310" y="248" text-anchor="middle" font-size="10" fill="#4B5563">ref.read(.notifier)</text>
+
+  <!-- ViewModel → View (backward, dashed) -->
+  <line x1="340" y1="290" x2="280" y2="290" stroke="#6B7280" stroke-width="1.5" marker-end="url(#arrowGrey)" stroke-dasharray="4,3"/>
+  <text x="310" y="310" text-anchor="middle" font-size="10" fill="#6B7280">AsyncValue&lt;T&gt;</text>
+
+  <!-- ViewModel → Repository -->
+  <line x1="560" y1="230" x2="620" y2="230" stroke="#000000" stroke-width="2" marker-end="url(#arrowBlack)"/>
+  <text x="590" y="220" text-anchor="middle" font-size="11" font-weight="600" fill="#000000">ref.read(repoProvider)</text>
+
+  <line x1="620" y1="290" x2="560" y2="290" stroke="#6B7280" stroke-width="1.5" marker-end="url(#arrowGrey)" stroke-dasharray="4,3"/>
+  <text x="590" y="310" text-anchor="middle" font-size="10" fill="#6B7280">Future&lt;T&gt;</text>
+
+  <!-- Repository → Service -->
+  <line x1="840" y1="230" x2="900" y2="230" stroke="#000000" stroke-width="2" marker-end="url(#arrowBlack)"/>
+  <text x="870" y="220" text-anchor="middle" font-size="11" font-weight="600" fill="#000000">service call</text>
+
+  <line x1="900" y1="290" x2="840" y2="290" stroke="#6B7280" stroke-width="1.5" marker-end="url(#arrowGrey)" stroke-dasharray="4,3"/>
+  <text x="870" y="310" text-anchor="middle" font-size="10" fill="#6B7280">JSON → Model</text>
+
+  <!-- Service → Model -->
+  <line x1="1120" y1="260" x2="1180" y2="260" stroke="#000000" stroke-width="2" marker-end="url(#arrowBlack)"/>
+  <text x="1150" y="250" text-anchor="middle" font-size="11" font-weight="600" fill="#000000">serialize</text>
+
+  <!-- =========================================================== -->
+  <!-- Divider before bottom -->
+  <!-- =========================================================== -->
+  <line x1="60" y1="425" x2="1340" y2="425" stroke="#E5E7EB" stroke-width="1"/>
+
+  <!-- =========================================================== -->
+  <!-- Bottom Section: Conversion Status -->
+  <!-- =========================================================== -->
+  <text x="60" y="465" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1.2">CONVERSION STATUS</text>
+  <text x="60" y="490" font-size="16" font-weight="700" fill="#000000">전환 완료 도메인 — 2026-04 Phase 1-3</text>
+  <text x="60" y="510" font-size="12" fill="#6B7280">각 도메인: Repository 인터페이스 + 구현 · ViewModel · 화면 리팩터링 · 단위 테스트</text>
+
+  <!-- Domain badges: monochrome -->
+  <g font-size="13" font-weight="600">
+    <!-- pet -->
+    <rect x="60" y="530" width="170" height="50" rx="8" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="145" y="554" text-anchor="middle" fill="#000000">pet</text>
+    <text x="145" y="570" text-anchor="middle" font-size="10" font-weight="400" fill="#6B7280">PetList · ActivePet · PetAdd</text>
+
+    <!-- home -->
+    <rect x="250" y="530" width="170" height="50" rx="8" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="335" y="554" text-anchor="middle" fill="#000000">home</text>
+    <text x="335" y="570" text-anchor="middle" font-size="10" font-weight="400" fill="#6B7280">HomeVM + HomeState</text>
+
+    <!-- weight -->
+    <rect x="440" y="530" width="170" height="50" rx="8" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="525" y="554" text-anchor="middle" fill="#000000">weight</text>
+    <text x="525" y="570" text-anchor="middle" font-size="10" font-weight="400" fill="#6B7280">WeightAddViewModel</text>
+
+    <!-- food -->
+    <rect x="630" y="530" width="170" height="50" rx="8" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="715" y="554" text-anchor="middle" fill="#000000">food</text>
+    <text x="715" y="570" text-anchor="middle" font-size="10" font-weight="400" fill="#6B7280">FoodRecordViewModel</text>
+
+    <!-- water -->
+    <rect x="820" y="530" width="170" height="50" rx="8" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="905" y="554" text-anchor="middle" fill="#000000">water</text>
+    <text x="905" y="570" text-anchor="middle" font-size="10" font-weight="400" fill="#6B7280">WaterRecordViewModel</text>
+
+    <!-- not yet -->
+    <rect x="1010" y="530" width="330" height="50" rx="8" fill="#FFFFFF" stroke="#9CA3AF" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="1175" y="554" text-anchor="middle" fill="#6B7280">auth · bhi · premium · profile · 외</text>
+    <text x="1175" y="570" text-anchor="middle" font-size="10" font-weight="400" fill="#9CA3AF">점진 전환 예정</text>
+  </g>
+
+  <!-- =========================================================== -->
+  <!-- Bottom Stats (monochrome) -->
+  <!-- =========================================================== -->
+  <g font-size="12">
+    <!-- Stat 1 -->
+    <rect x="60" y="620" width="300" height="70" rx="10" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+    <text x="80" y="645" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1">신규 파일</text>
+    <text x="80" y="675" font-size="22" font-weight="700" fill="#000000">19개 · 1,799 lines</text>
+
+    <!-- Stat 2 -->
+    <rect x="380" y="620" width="300" height="70" rx="10" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+    <text x="400" y="645" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1">단위 테스트</text>
+    <text x="400" y="675" font-size="22" font-weight="700" fill="#000000">9 신규 · 178/178 pass</text>
+
+    <!-- Stat 3 -->
+    <rect x="700" y="620" width="300" height="70" rx="10" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+    <text x="720" y="645" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1">SYNCSERVICE 이관</text>
+    <text x="720" y="675" font-size="22" font-weight="700" fill="#000000">4 screens → Repo</text>
+
+    <!-- Stat 4 -->
+    <rect x="1020" y="620" width="320" height="70" rx="10" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+    <text x="1040" y="645" font-size="11" font-weight="600" fill="#9CA3AF" letter-spacing="1">LEGACY ALIAS 호환</text>
+    <text x="1040" y="675" font-size="22" font-weight="700" fill="#000000">18 caller 무변경</text>
+  </g>
+
+  <!-- =========================================================== -->
+  <!-- Key pattern banner (inverted) -->
+  <!-- =========================================================== -->
+  <g>
+    <rect x="60" y="720" width="1280" height="70" rx="10" fill="#000000"/>
+    <text x="82" y="748" font-size="11" font-weight="700" fill="#9CA3AF" letter-spacing="1.2">핵심 규약</text>
+    <text x="82" y="772" font-size="12" fill="#D1D5DB">
+      <tspan font-weight="600" fill="#FFFFFF">View</tspan> 는 ViewModel만 구독 ·
+      <tspan font-weight="600" fill="#FFFFFF">ViewModel</tspan> 은 Repository만 의존 ·
+      <tspan font-weight="600" fill="#FFFFFF">Repository</tspan> 내부에서 SyncService enqueue + 4-tier 캐시 자동 처리 ·
+      <tspan font-weight="600" fill="#FFFFFF">Service 직접 호출 금지</tspan> (ViewModel/Screen)
+    </text>
+  </g>
+</svg>
