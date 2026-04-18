@@ -18,10 +18,11 @@ class EncyclopediaQuota {
   bool get isWarning => !isUnlimited && remaining <= 3;
 
   factory EncyclopediaQuota.fromJson(Map<String, dynamic> json) {
+    final limit = json['monthly_limit'] as int? ?? 0;
     return EncyclopediaQuota(
-      monthlyLimit: json['monthly_limit'] as int? ?? 0,
+      monthlyLimit: limit,
       monthlyUsed: json['monthly_used'] as int? ?? 0,
-      remaining: json['remaining'] as int? ?? 0,
+      remaining: json['remaining'] as int? ?? (limit == -1 ? -1 : 0),
     );
   }
 }
@@ -43,10 +44,11 @@ class VisionQuota {
   bool get isWarning => !isUnlimited && remaining <= 3;
 
   factory VisionQuota.fromJson(Map<String, dynamic> json) {
+    final limit = json['monthly_limit'] as int? ?? 0;
     return VisionQuota(
-      monthlyLimit: json['monthly_limit'] as int? ?? 0,
+      monthlyLimit: limit,
       monthlyUsed: json['monthly_used'] as int? ?? 0,
-      remaining: json['remaining'] as int? ?? 0,
+      remaining: json['remaining'] as int? ?? (limit == -1 ? -1 : 0),
     );
   }
 }

@@ -123,7 +123,10 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
         AppSnackBar.success(context, message: l10n.weight_recordSuccess);
-        AnalyticsService.instance.logWeightRecorded(_activePetId!);
+        final petIdForAnalytics = _activePetId!;
+        Future.delayed(const Duration(milliseconds: 800), () {
+          AnalyticsService.instance.logWeightRecorded(petIdForAnalytics);
+        });
       }
 
       // 백엔드 저장은 fire-and-forget (오프라인 시 블로킹 방지)

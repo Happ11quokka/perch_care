@@ -1186,5 +1186,11 @@
   "schedule_endTimeAfterStart": "종료 시간은 시작 시간 이후여야 합니다.",
   "schedule_titleHint": "제목",
 
+  "bottomNav_home": "홈",
+  "bottomNav_records": "기록",
+  "bottomNav_chat": "AI 챗봇",
+
+  "hc_analysisTimeout": "분석 시간이 너무 오래 걸려요. 네트워크를 확인하고 다시 시도해주세요.",
+
   "common_defaultPetName": "사랑이"
 }

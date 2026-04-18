@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,7 +47,13 @@ class _HealthCheckCaptureScreenState
       if (mounted && !hasAccess) {
         context.goNamed(RouteNames.healthCheck);
       }
-    } catch (_) {}
+    } catch (e) {
+      // 쿼터 조회 실패 시 화면을 유지하고 서버 API의 403 응답에 위임
+      // (네트워크 오류 등 일시적 장애로 유저를 차단하지 않기 위함)
+      if (kDebugMode) {
+        debugPrint('[HealthCheckCapture] premium check failed: $e');
+      }
+    }
   }
 
   @override

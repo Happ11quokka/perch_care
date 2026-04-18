@@ -1155,5 +1155,11 @@
   "schedule_endTimeAfterStart": "结束时间必须在开始时间之后。",
   "schedule_titleHint": "标题",
 
+  "bottomNav_home": "首页",
+  "bottomNav_records": "记录",
+  "bottomNav_chat": "AI 聊天",
+
+  "hc_analysisTimeout": "分析耗时过长。请检查网络后重试。",
+
   "common_defaultPetName": "宝贝"
 }

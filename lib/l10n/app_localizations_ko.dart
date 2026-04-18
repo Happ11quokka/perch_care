@@ -2527,5 +2527,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get schedule_titleHint => '제목';
 
   @override
+  String get bottomNav_home => '홈';
+
+  @override
+  String get bottomNav_records => '기록';
+
+  @override
+  String get bottomNav_chat => 'AI 챗봇';
+
+  @override
+  String get hc_analysisTimeout => '분석 시간이 너무 오래 걸려요. 네트워크를 확인하고 다시 시도해주세요.';
+
+  @override
   String get common_defaultPetName => '사랑이';
 }

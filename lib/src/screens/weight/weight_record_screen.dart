@@ -348,13 +348,16 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
         }
       }
       await _loadRecords();
-      AnalyticsService.instance.logWeightRecorded(_activePetId!);
+      final petIdForAnalytics = _activePetId!;
       if (mounted) {
         setState(() {
           _selectedTime = TimeOfDay.now();
         });
         AppSnackBar.success(context, message: l10n.snackbar_saved);
       }
+      Future.delayed(const Duration(milliseconds: 800), () {
+        AnalyticsService.instance.logWeightRecorded(petIdForAnalytics);
+      });
     } finally {
       if (mounted) {
         setState(() {

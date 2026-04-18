@@ -2611,5 +2611,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get schedule_titleHint => 'Title';
 
   @override
+  String get bottomNav_home => 'Home';
+
+  @override
+  String get bottomNav_records => 'Records';
+
+  @override
+  String get bottomNav_chat => 'AI Chat';
+
+  @override
+  String get hc_analysisTimeout =>
+      'The analysis is taking too long. Please check your connection and try again.';
+
+  @override
   String get common_defaultPetName => 'Buddy';
 }

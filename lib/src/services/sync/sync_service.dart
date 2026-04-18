@@ -17,6 +17,7 @@ class SyncService with WidgetsBindingObserver {
   SyncService._();
 
   static const _queueKey = 'sync_queue';
+  static const _deadLetterKey = 'sync_dead_letter';
   static const _maxRetries = 5;
   static const _maxTotalRetries = 20; // 전체 세션 합산 최대 재시도
   static const defaultEntityId = 'default';
@@ -36,7 +37,11 @@ class SyncService with WidgetsBindingObserver {
   static const _defaultMigratedKey = 'sync_default_migrated';
 
   List<SyncItem> _queue = [];
+  List<SyncItem> _deadLetter = [];
   bool _isProcessing = false;
+
+  /// 진단용: dead-letter 큐에 쌓인 아이템 목록
+  List<SyncItem> get deadLetterItems => List.unmodifiable(_deadLetter);
 
   /// 앱 시작 시 호출: SharedPreferences에서 큐 로드 + 라이프사이클 옵저버 등록
   Future<void> init() async {
@@ -57,11 +62,27 @@ class SyncService with WidgetsBindingObserver {
       item.retryCount = 0;
     }
 
+    // dead-letter 큐 로드 (silent drop 방지용 보관함)
+    final deadRaw = prefs.getStringList(_deadLetterKey) ?? [];
+    _deadLetter = deadRaw
+        .map((json) {
+          try {
+            return SyncItem.fromJson(jsonDecode(json));
+          } catch (_) {
+            return null;
+          }
+        })
+        .whereType<SyncItem>()
+        .toList();
+
     // App resume 시 큐 재처리를 위해 옵저버 등록
     WidgetsBinding.instance.addObserver(this);
 
     if (kDebugMode) {
-      debugPrint('[SyncService] Loaded ${_queue.length} pending items');
+      debugPrint(
+        '[SyncService] Loaded ${_queue.length} pending items '
+        '(dead-letter: ${_deadLetter.length})',
+      );
     }
   }
 
@@ -184,13 +205,17 @@ class SyncService with WidgetsBindingObserver {
 
     final succeeded = <SyncItem>[];
 
+    bool deadLetterChanged = false;
+
     for (final item in List.of(_queue)) {
       if (item.totalRetryCount >= _maxTotalRetries) {
-        // 전체 누적 최대치 도달 — 영구 제거
+        // 전체 누적 최대치 도달 — dead-letter로 이동 (silent drop 방지)
+        _deadLetter.add(item);
+        deadLetterChanged = true;
         succeeded.add(item);
         if (kDebugMode) {
           debugPrint(
-            '[SyncService] Removing item after ${item.totalRetryCount} total retries: ${item.type} ${item.date}',
+            '[SyncService] Moved to dead-letter after ${item.totalRetryCount} total retries: ${item.type} ${item.date}',
           );
         }
         continue;
@@ -248,9 +273,14 @@ class SyncService with WidgetsBindingObserver {
 
     _queue.removeWhere(succeeded.contains);
     await _persist();
+    if (deadLetterChanged) {
+      await _persistDeadLetter();
+    }
     _isProcessing = false;
     if (kDebugMode) {
-      debugPrint('[SyncService] Queue remaining: ${_queue.length}');
+      debugPrint(
+        '[SyncService] Queue remaining: ${_queue.length} (dead-letter: ${_deadLetter.length})',
+      );
     }
   }
 
@@ -459,6 +489,12 @@ class SyncService with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     final raw = _queue.map((item) => jsonEncode(item.toJson())).toList();
     await prefs.setStringList(_queueKey, raw);
+  }
+
+  Future<void> _persistDeadLetter() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = _deadLetter.map((item) => jsonEncode(item.toJson())).toList();
+    await prefs.setStringList(_deadLetterKey, raw);
   }
 }
 

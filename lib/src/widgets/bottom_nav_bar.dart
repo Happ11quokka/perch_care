@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/colors.dart';
 
 /// 하단 네비게이션 바 위젯
@@ -75,7 +76,12 @@ class BottomNavBar extends StatelessWidget {
   }) {
     // currentIndex가 -1이면 선택된 탭 없음 (프로필 페이지 등)
     final isSelected = currentIndex >= 0 && currentIndex == index;
-    final tabLabels = ['Home', 'Records', 'Chat'];
+    final l10n = AppLocalizations.of(context);
+    final tabLabels = [
+      l10n.bottomNav_home,
+      l10n.bottomNav_records,
+      l10n.bottomNav_chat,
+    ];
     final label = index < tabLabels.length ? tabLabels[index] : 'Tab $index';
 
     return Expanded(

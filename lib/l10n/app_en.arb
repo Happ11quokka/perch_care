@@ -988,5 +988,11 @@
   "schedule_endTimeAfterStart": "End time must be after start time.",
   "schedule_titleHint": "Title",
 
+  "bottomNav_home": "Home",
+  "bottomNav_records": "Records",
+  "bottomNav_chat": "AI Chat",
+
+  "hc_analysisTimeout": "The analysis is taking too long. Please check your connection and try again.",
+
   "common_defaultPetName": "Buddy"
 }

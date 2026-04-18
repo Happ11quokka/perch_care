@@ -173,11 +173,15 @@ class ApiClient {
   /// 토큰 갱신 (동시 요청 시 Completer로 중복 방지)
   Future<bool> _refreshToken() async {
     // 이미 갱신 진행 중이면 해당 결과를 공유
-    if (_refreshCompleter != null) {
-      return _refreshCompleter!.future;
+    final existing = _refreshCompleter;
+    if (existing != null) {
+      return existing.future;
     }
 
-    _refreshCompleter = Completer<bool>();
+    // 로컬 변수로 잡아둔 completer를 사용해 예외 경로에서도 항상 complete 보장
+    final completer = Completer<bool>();
+    _refreshCompleter = completer;
+    bool result = false;
 
     try {
       final uri = Uri.parse('$_baseUrl/auth/refresh');
@@ -193,21 +197,31 @@ class ApiClient {
           accessToken: data['access_token'],
           refreshToken: data['refresh_token'],
         );
-        _refreshCompleter!.complete(true);
-        return true;
+        result = true;
+      } else {
+        if (kDebugMode) {
+          debugPrint('[ApiClient] Token refresh failed: ${response.statusCode}');
+        }
+        try {
+          await _tokenService.clearTokens();
+        } catch (_) {/* ignore cleanup errors */}
+        result = false;
       }
-      if (kDebugMode) debugPrint('[ApiClient] Token refresh failed: ${response.statusCode}');
-      await _tokenService.clearTokens();
-      _refreshCompleter!.complete(false);
-      return false;
     } catch (e) {
       if (kDebugMode) debugPrint('[ApiClient] Token refresh error: $e');
-      await _tokenService.clearTokens();
-      _refreshCompleter!.complete(false);
-      return false;
+      try {
+        await _tokenService.clearTokens();
+      } catch (_) {/* ignore cleanup errors */}
+      result = false;
     } finally {
+      // completer.complete가 try/catch 도중 실패했을 경우를 포함해 반드시 완료시킴
+      if (!completer.isCompleted) {
+        completer.complete(result);
+      }
       _refreshCompleter = null;
     }
+
+    return result;
   }
 
   static MediaType _inferMediaType(String fileName) {

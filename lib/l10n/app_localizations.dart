@@ -4774,6 +4774,30 @@ abstract class AppLocalizations {
   /// **'제목'**
   String get schedule_titleHint;
 
+  /// No description provided for @bottomNav_home.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈'**
+  String get bottomNav_home;
+
+  /// No description provided for @bottomNav_records.
+  ///
+  /// In ko, this message translates to:
+  /// **'기록'**
+  String get bottomNav_records;
+
+  /// No description provided for @bottomNav_chat.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 챗봇'**
+  String get bottomNav_chat;
+
+  /// No description provided for @hc_analysisTimeout.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 시간이 너무 오래 걸려요. 네트워크를 확인하고 다시 시도해주세요.'**
+  String get hc_analysisTimeout;
+
   /// No description provided for @common_defaultPetName.
   ///
   /// In ko, this message translates to:

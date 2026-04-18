@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -180,6 +181,14 @@ class _HealthCheckAnalyzingScreenState
         _errorMessage = e.statusCode == 403
             ? l10n.premium_healthCheckBlocked
             : (e.statusCode >= 500 ? l10n.error_server : l10n.hc_analysisError);
+      });
+    } on TimeoutException catch (e) {
+      debugPrint('[HealthCheck] Timeout: $e');
+      if (!mounted || _cancelled) return;
+      final l10n = AppLocalizations.of(context);
+      setState(() {
+        _isAnalyzing = false;
+        _errorMessage = l10n.hc_analysisTimeout;
       });
     } catch (e, st) {
       debugPrint('[HealthCheck] Error: $e');

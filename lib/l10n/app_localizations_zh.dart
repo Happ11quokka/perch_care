@@ -2472,5 +2472,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get schedule_titleHint => '标题';
 
   @override
+  String get bottomNav_home => '首页';
+
+  @override
+  String get bottomNav_records => '记录';
+
+  @override
+  String get bottomNav_chat => 'AI 聊天';
+
+  @override
+  String get hc_analysisTimeout => '分析耗时过长。请检查网络后重试。';
+
+  @override
   String get common_defaultPetName => '宝贝';
 }

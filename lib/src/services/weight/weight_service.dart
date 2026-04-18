@@ -231,14 +231,25 @@ class WeightService {
   }
 
   /// 특정 날짜의 체중 기록 삭제
+  /// 서버 삭제 실패 시 로컬 캐시는 그대로 유지 (데이터 유실 방지)
+  /// 404(이미 삭제됨)는 idempotent 성공으로 처리해 로컬도 정리
   Future<void> deleteWeightRecord(DateTime date, String petId) async {
     await _ensureInitialized();
     final normalizedDate = _normalizeDate(date);
     final dateStr = _formatDate(normalizedDate);
 
-    await _api.delete('/pets/$petId/weights/by-date/$dateStr');
+    try {
+      await _api.delete('/pets/$petId/weights/by-date/$dateStr');
+    } on ApiException catch (e) {
+      if (e.statusCode != 404) {
+        rethrow; // 404 외 에러 → 로컬 캐시 보존 + 예외 전파
+      }
+      if (kDebugMode) {
+        debugPrint('[WeightService] delete 404 → treating as already deleted');
+      }
+    }
 
-    // 로컬 캐시에서 삭제
+    // 서버 삭제 성공 or 404(이미 없음) → 로컬 캐시에서도 제거
     final records = _recordsByPet[petId];
     records?.removeWhere(
       (record) => _normalizeDate(record.date) == normalizedDate,
