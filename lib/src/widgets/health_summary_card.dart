@@ -1,22 +1,19 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../models/health_summary.dart';
 import '../theme/colors.dart';
 import '../../l10n/app_localizations.dart';
 
 /// 건강 변화 요약 카드.
-/// Free: 기본 정보 + 프리미엄 영역 블러 + 업그레이드 CTA.
-/// Premium: 전체 상세 정보 표시.
+/// Free: 기본 정보(체중/BHI)만 표시.
+/// Premium: 전체 상세 정보 표시 (이상 소견, 급여/음수 일관성, BHI 추세).
 class HealthSummaryCard extends StatelessWidget {
   final HealthSummary summary;
   final bool isPremium;
-  final VoidCallback? onUpgradePressed;
 
   const HealthSummaryCard({
     super.key,
     required this.summary,
     required this.isPremium,
-    this.onUpgradePressed,
   });
 
   @override
@@ -72,13 +69,10 @@ class HealthSummaryCard extends StatelessWidget {
               trend: null,
             ),
 
-          // Premium 전용 영역
+          // Premium 전용 상세: 프리미엄 유저에게만 노출, free 유저에게는 섹션 자체 비노출
           if (isPremium) ...[
             const Divider(height: 24, color: AppColors.gray150),
             _buildPremiumDetails(l10n),
-          ] else ...[
-            const SizedBox(height: 12),
-            _buildLockedOverlay(l10n),
           ],
         ],
       ),
@@ -241,73 +235,6 @@ class HealthSummaryCard extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildLockedOverlay(AppLocalizations l10n) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Stack(
-        children: [
-          // 블러된 프리뷰
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-            child: Opacity(
-              opacity: 0.5,
-              child: Column(
-                children: [
-                  _buildConsistencyBar(
-                    label: l10n.home_healthSummaryFoodConsistency,
-                    value: 75,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildConsistencyBar(
-                    label: l10n.home_healthSummaryWaterConsistency,
-                    value: 60,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // 잠금 오버레이
-          Positioned.fill(
-            child: Center(
-              child: Semantics(
-                button: true,
-                label: l10n.home_healthSummaryUpgrade,
-                child: GestureDetector(
-                  onTap: onUpgradePressed,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.brandPrimary,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.lock, size: 14, color: Colors.white),
-                        const SizedBox(width: 6),
-                        Text(
-                          l10n.home_healthSummaryUpgrade,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../config/app_config.dart';
-import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
 import '../../providers/premium_provider.dart';
@@ -37,7 +35,12 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
     try {
       final status = await ref.read(premiumStatusProvider.future);
       if (status.isFree) {
-        if (mounted) context.pushNamed(RouteNames.premium);
+        // App Store 3.1.1 대응: 업그레이드 CTA 제거 — 중립 실패 메시지만 표시
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.report_shareFailed)),
+          );
+        }
         return;
       }
 
@@ -47,15 +50,11 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
 
       final shareUrl = result['share_url'] as String;
       await Share.share(shareUrl, sharePositionOrigin: origin);
-    } on ApiException catch (e) {
+    } on ApiException catch (_) {
       if (!mounted) return;
-      if (AppConfig.premiumEnabled && e.statusCode == 403) {
-        context.pushNamed(RouteNames.premium);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.report_shareFailed)),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.report_shareFailed)),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

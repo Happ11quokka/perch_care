@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/ai_health_check.dart';
-import '../../config/app_config.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/health_check/health_check_service.dart';
@@ -43,7 +42,7 @@ class _HealthCheckAnalyzingScreenState
   bool _isAnalyzing = true;
   bool _cancelled = false;
   String? _errorMessage;
-  bool _isPremiumError = false;
+  bool _isQuotaExhausted = false;
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
 
@@ -92,7 +91,7 @@ class _HealthCheckAnalyzingScreenState
     setState(() {
       _isAnalyzing = true;
       _errorMessage = null;
-      _isPremiumError = false;
+      _isQuotaExhausted = false;
     });
 
     try {
@@ -177,7 +176,7 @@ class _HealthCheckAnalyzingScreenState
       final l10n = AppLocalizations.of(context);
       setState(() {
         _isAnalyzing = false;
-        _isPremiumError = AppConfig.premiumEnabled && e.statusCode == 403;
+        _isQuotaExhausted = e.statusCode == 403;
         _errorMessage = e.statusCode == 403
             ? l10n.premium_healthCheckBlocked
             : (e.statusCode >= 500 ? l10n.error_server : l10n.hc_analysisError);
@@ -192,17 +191,6 @@ class _HealthCheckAnalyzingScreenState
         _errorMessage = l10n.hc_analysisError;
       });
     }
-  }
-
-  Future<void> _openPremiumPaywallAndRetry() async {
-    await context.push('/home/premium?source=vision_403&feature=vision');
-    if (!mounted) return;
-
-    try {
-      final status = await ref.read(premiumStatusProvider.notifier).refreshAndGet();
-      if (!mounted || status.isFree) return;
-      await _startAnalysis();
-    } catch (_) {}
   }
 
   Future<bool> _onWillPop() async {
@@ -323,15 +311,15 @@ class _HealthCheckAnalyzingScreenState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              _isPremiumError ? Icons.workspace_premium : Icons.error_outline,
+              _isQuotaExhausted ? Icons.hourglass_bottom : Icons.error_outline,
               size: 64,
-              color: _isPremiumError
-                  ? AppColors.brandPrimary
+              color: _isQuotaExhausted
+                  ? AppColors.warmGray
                   : AppColors.gradientBottom,
             ),
             const SizedBox(height: 24),
             Text(
-              _isPremiumError
+              _isQuotaExhausted
                   ? l10n.premium_healthCheckBlockedTitle
                   : l10n.hc_analysisErrorTitle,
               style: const TextStyle(
@@ -354,43 +342,8 @@ class _HealthCheckAnalyzingScreenState
               ),
             ),
             const SizedBox(height: 32),
-            if (_isPremiumError) ...[
-              // 프리미엄 업그레이드 버튼 (primary)
-              Semantics(
-                button: true,
-                label: l10n.premium_upgradeToPremium,
-                child: GestureDetector(
-                onTap: () async {
-                  AnalyticsService.instance.logPremiumFeatureBlocked(
-                    feature: 'vision',
-                    sourceScreen: 'health_check_analyzing',
-                  );
-                  await _openPremiumPaywallAndRetry();
-                },
-                child: Container(
-                  width: 200,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.brandPrimary, AppColors.brandDark],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    l10n.premium_upgradeToPremium,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ),
-                ),
-              ),
-            ] else ...[
-              // 다시 시도 버튼 (primary)
+            if (!_isQuotaExhausted) ...[
+              // 다시 시도 버튼 (쿼터 소진 시에는 재시도해도 실패하므로 숨김)
               Semantics(
                 button: true,
                 label: l10n.hc_retry,
@@ -418,8 +371,8 @@ class _HealthCheckAnalyzingScreenState
                 ),
                 ),
               ),
+              const SizedBox(height: 12),
             ],
-            const SizedBox(height: 12),
             Semantics(
               button: true,
               label: l10n.hc_goBack,

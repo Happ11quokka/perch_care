@@ -672,8 +672,8 @@
   },
   "premium_activationSuccessContentNoDate": "Premium service has been activated.",
   "premium_upgradeToPremium": "Upgrade to Premium",
-  "premium_healthCheckBlocked": "This is a premium-only feature.\nPlease upgrade to Premium.",
-  "premium_healthCheckBlockedTitle": "Premium Feature",
+  "premium_healthCheckBlocked": "You've reached this month's usage limit.\nPlease try again next month.",
+  "premium_healthCheckBlockedTitle": "Monthly Limit Reached",
 
   "hc_title": "AI Health Check",
   "hc_photoSubtitle": "Check health status with just one photo",

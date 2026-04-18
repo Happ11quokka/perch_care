@@ -1816,10 +1816,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premium_healthCheckBlocked =>
-      '프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.';
+      '이번 달 사용 한도에 도달했어요.\n다음 달에 다시 이용해 주세요.';
 
   @override
-  String get premium_healthCheckBlockedTitle => '프리미엄 전용 기능';
+  String get premium_healthCheckBlockedTitle => '월간 한도 도달';
 
   @override
   String get hc_title => 'AI 건강체크';

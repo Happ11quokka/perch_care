@@ -140,6 +140,7 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
     );
   }
 
+  // ignore: unused_element — App Store 3.1.1 대응으로 호출부 제거됨, IAP 복원 시 재사용
   Future<void> _openPremiumPaywall({
     required String source,
     required String feature,
@@ -300,11 +301,6 @@ class _HealthCheckMainScreenState extends ConsumerState<HealthCheckMainScreen>
                       ),
                       normalText: l10n.visionQuotaBadge_normal(_visionRemaining),
                       exhaustedText: l10n.visionQuotaBadge_exhausted,
-                      upgradeText: l10n.visionQuotaBadge_upgrade,
-                      onUpgradePressed: () => _openPremiumPaywall(
-                        source: 'vision_badge',
-                        feature: 'vision',
-                      ),
                     ),
                 ],
               ),

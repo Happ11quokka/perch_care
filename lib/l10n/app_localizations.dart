@@ -3409,13 +3409,13 @@ abstract class AppLocalizations {
   /// No description provided for @premium_healthCheckBlocked.
   ///
   /// In ko, this message translates to:
-  /// **'프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.'**
+  /// **'이번 달 사용 한도에 도달했어요.\n다음 달에 다시 이용해 주세요.'**
   String get premium_healthCheckBlocked;
 
   /// No description provided for @premium_healthCheckBlockedTitle.
   ///
   /// In ko, this message translates to:
-  /// **'프리미엄 전용 기능'**
+  /// **'월간 한도 도달'**
   String get premium_healthCheckBlockedTitle;
 
   /// No description provided for @hc_title.

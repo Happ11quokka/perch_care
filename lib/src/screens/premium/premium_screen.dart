@@ -1,3 +1,8 @@
+// App Store 3.1.1 대응: 프리미엄 결제 진입점 차단 상태.
+// premium_screen.dart는 AppConfig.premiumEnabled=false 가드로 즉시 pop되며,
+// IAP 재활성화 시 되살릴 수 있도록 _build* 메서드와 프로모/SNS 관련 메서드는
+// 의도적으로 그대로 둔다. unused_element 린트는 파일 단위로 무시한다.
+// ignore_for_file: unused_element
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +13,6 @@ import '../../services/iap/iap_service.dart';
 import '../../providers/premium_provider.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../widgets/app_snack_bar.dart';
-import '../../widgets/sns_event_card.dart';
 import '../../../l10n/app_localizations.dart';
 import 'promo_code_bottom_sheet.dart';
 import '../../widgets/coach_mark_overlay.dart';
@@ -257,20 +261,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                           _buildBenefitsSection(l10n),
                           const SizedBox(height: 28),
                           if (!_isPremium) ...[
-                            // 사전 사업자등록: IAP 비활성화, 무료 체험 배너 + 프로모션 + SNS
-                            _buildFreeTrialBanner(l10n),
-                            const SizedBox(height: 24),
-                            _buildPromoCodeCta(l10n),
-                            const SizedBox(height: 24),
-                            const SnsEventCard(),
-                            const SizedBox(height: 16),
+                            // App Store 3.1.1 대응: 프로모션/SNS 이벤트 UI 제거 (구매 복원만 유지)
+                            // 복원 시 _buildFreeTrialBanner / _buildPromoCodeCta / SnsEventCard 재추가
                             _buildRestoreOnly(l10n),
-                            // TODO(post-registration): IAP 재활성화 시 아래 코드 복원
-                            // _buildPlanSelector(l10n),
-                            // const SizedBox(height: 24),
-                            // _buildCtaButton(l10n),
-                            // const SizedBox(height: 16),
-                            // _buildSecondaryActions(l10n),
                           ] else
                             _buildAlreadyPremium(l10n),
                           const SizedBox(height: 40),

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-import '../../config/app_config.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
@@ -19,9 +18,7 @@ import '../../widgets/dashed_border.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../widgets/sns_event_card.dart';
 import '../../services/api/token_service.dart';
-import '../../providers/premium_provider.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../providers/locale_provider.dart';
@@ -50,12 +47,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   List<LinkedSocialAccount> _socialAccounts = [];
   bool _isLoadingSocial = true;
   bool _isLinkingSocial = false;
-  String _premiumTier = 'free';
-  DateTime? _premiumExpiresAt;
-  bool _isLoadingPremium = true;
 
   // Coach mark keys
-  final GlobalKey _premiumCardKey = GlobalKey();
   final GlobalKey _addPetButtonKey = GlobalKey();
   final GlobalKey _firstPetCardKey = GlobalKey();
   final _scrollController = ScrollController();
@@ -78,7 +71,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _loadPets(),
         _loadUserProfile(),
         _loadSocialAccounts(),
-        _loadPremiumStatus(),
       ]);
     } finally {
       _maybeShowCoachMarks();
@@ -95,12 +87,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     final l10n = AppLocalizations.of(context);
     final steps = <CoachMarkStep>[
-      if (AppConfig.premiumEnabled)
-        CoachMarkStep(
-          targetKey: _premiumCardKey,
-          title: l10n.coach_profilePremium_title,
-          body: l10n.coach_profilePremium_body,
-        ),
       CoachMarkStep(
         targetKey: _addPetButtonKey,
         title: l10n.coach_profileAddPet_title,
@@ -138,21 +124,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoadingSocial = false);
-    }
-  }
-
-  Future<void> _loadPremiumStatus() async {
-    try {
-      final status = await ref.read(premiumStatusProvider.future);
-      if (!mounted) return;
-      setState(() {
-        _premiumTier = status.tier;
-        _premiumExpiresAt = status.premiumExpiresAt;
-        _isLoadingPremium = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoadingPremium = false);
     }
   }
 
@@ -412,16 +383,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       color: AppColors.gray150,
                     ),
 
-                    // 프리미엄 섹션
-                    _buildPremiumSection(l10n),
-
-                    // 구분선
-                    Container(
-                      height: 1,
-                      margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: AppColors.gray150,
-                    ),
-
                     // "나의 반려가족" 타이틀
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -506,19 +467,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       color: AppColors.gray150,
                     ),
 
-                    // SNS 이벤트 섹션
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: const SnsEventCard(),
-                    ),
-
-                    // 구분선
-                    Container(
-                      height: 1,
-                      margin: const EdgeInsets.symmetric(vertical: 20),
-                      color: AppColors.gray150,
-                    ),
-
                     // 계정 관리 섹션
                     _buildAccountManagementSection(l10n),
 
@@ -530,131 +478,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  /// 프리미엄 섹션
-  Widget _buildPremiumSection(AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.premium_sectionTitle,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.nearBlack,
-              height: 22 / 16,
-              letterSpacing: 0.08,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (_isLoadingPremium)
-            AppLoading.fullPage()
-          else
-            _buildPremiumStatusCard(l10n),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPremiumStatusCard(AppLocalizations l10n) {
-    final isPremium = _premiumTier == 'premium';
-
-    return Semantics(
-      button: !isPremium,
-      label: isPremium ? null : 'Upgrade to premium',
-      child: GestureDetector(
-      key: _premiumCardKey,
-      onTap: isPremium
-          ? null
-          : () async {
-              AnalyticsService.instance.logPremiumFeatureBlocked(
-                feature: 'premium',
-                sourceScreen: 'profile',
-              );
-              await context.push('/home/premium?source=profile_card');
-              _loadPremiumStatus();
-            },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isPremium ? AppColors.brandPrimary : AppColors.beige,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          color: isPremium ? AppColors.brandLight : AppColors.white,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isPremium
-                    ? AppColors.brandPrimary
-                    : AppColors.beige,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.workspace_premium,
-                size: 22,
-                color: isPremium ? AppColors.white : AppColors.warmGray,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isPremium
-                        ? l10n.premium_badgePremium
-                        : l10n.premium_badgeFree,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isPremium
-                          ? AppColors.brandPrimary
-                          : AppColors.mediumGray,
-                    ),
-                  ),
-                  if (isPremium && _premiumExpiresAt != null)
-                    Text(
-                      l10n.premium_expiresAt(
-                        '${_premiumExpiresAt!.year}.${_premiumExpiresAt!.month.toString().padLeft(2, '0')}.${_premiumExpiresAt!.day.toString().padLeft(2, '0')}',
-                      ),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
-                      ),
-                    )
-                  else if (!isPremium)
-                    Text(
-                      l10n.premium_enterCode,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            if (!isPremium)
-              const Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: AppColors.warmGray,
-              ),
-          ],
-        ),
-      ),
-    ),
     );
   }
 

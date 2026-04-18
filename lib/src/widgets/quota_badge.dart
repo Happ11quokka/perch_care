@@ -7,24 +7,20 @@ import '../theme/radius.dart';
 /// AI 백과사전 남은 쿼터를 표시하는 배지 위젯.
 ///
 /// 상태:
-/// - Normal (remaining > 1): 초록 배경, "오늘 N회 남음"
-/// - Warning (remaining == 1): 주황 배경, "오늘 1회 남음"
-/// - Exhausted (remaining == 0): 빨간 배경, "일일 한도 도달" + 업그레이드 CTA
-/// - Premium (unlimited): 렌더링하지 않음
+/// - Normal (remaining > 3): 초록 배경, "이번 달 N회 남음"
+/// - Warning (remaining <= 3): 주황 배경, "이번 달 N회 남음"
+/// - Exhausted (remaining == 0): 빨간 배경, "월간 한도 도달"
+/// - Unlimited (monthlyLimit == -1): 렌더링하지 않음
 class QuotaBadge extends StatelessWidget {
   final EncyclopediaQuota quota;
   final String normalText;
   final String exhaustedText;
-  final String upgradeText;
-  final VoidCallback? onUpgradePressed;
 
   const QuotaBadge({
     super.key,
     required this.quota,
     required this.normalText,
     required this.exhaustedText,
-    required this.upgradeText,
-    this.onUpgradePressed,
   });
 
   @override
@@ -75,34 +71,6 @@ class QuotaBadge extends StatelessWidget {
               color: textColor,
             ),
           ),
-          if (quota.isExhausted && onUpgradePressed != null) ...[
-            const SizedBox(width: AppSpacing.xs),
-            Semantics(
-              button: true,
-              label: upgradeText,
-              child: GestureDetector(
-                onTap: onUpgradePressed,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandPrimary,
-                    borderRadius: AppRadius.radiusSm,
-                  ),
-                  child: Text(
-                    upgradeText,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -114,22 +82,18 @@ class QuotaBadge extends StatelessWidget {
 /// 상태:
 /// - Normal (remaining > 3): 초록 배경, "N회 남음"
 /// - Warning (remaining <= 3): 주황 배경, "N회 남음"
-/// - Exhausted (remaining == 0): 빨간 배경, "체험 소진" + 코드 입력 CTA
-/// - Premium (unlimited): 렌더링하지 않음
+/// - Exhausted (remaining == 0): 빨간 배경, "월간 한도 도달"
+/// - Unlimited (monthlyLimit == -1): 렌더링하지 않음
 class VisionQuotaBadge extends StatelessWidget {
   final VisionQuota quota;
   final String normalText;
   final String exhaustedText;
-  final String upgradeText;
-  final VoidCallback? onUpgradePressed;
 
   const VisionQuotaBadge({
     super.key,
     required this.quota,
     required this.normalText,
     required this.exhaustedText,
-    required this.upgradeText,
-    this.onUpgradePressed,
   });
 
   @override
@@ -180,34 +144,6 @@ class VisionQuotaBadge extends StatelessWidget {
               color: textColor,
             ),
           ),
-          if (quota.isExhausted && onUpgradePressed != null) ...[
-            const SizedBox(width: AppSpacing.xs),
-            Semantics(
-              button: true,
-              label: upgradeText,
-              child: GestureDetector(
-                onTap: onUpgradePressed,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandPrimary,
-                    borderRadius: AppRadius.radiusSm,
-                  ),
-                  child: Text(
-                    upgradeText,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );

@@ -870,8 +870,8 @@
   },
   "premium_activationSuccessContentNoDate": "프리미엄 서비스가 활성화되었습니다.",
   "premium_upgradeToPremium": "프리미엄 업그레이드",
-  "premium_healthCheckBlocked": "프리미엄 전용 기능입니다.\n프리미엄 플랜으로 업그레이드해주세요.",
-  "premium_healthCheckBlockedTitle": "프리미엄 전용 기능",
+  "premium_healthCheckBlocked": "이번 달 사용 한도에 도달했어요.\n다음 달에 다시 이용해 주세요.",
+  "premium_healthCheckBlockedTitle": "월간 한도 도달",
 
   "hc_title": "AI 건강체크",
   "hc_photoSubtitle": "사진 한 장으로 건강 상태를 확인하세요",

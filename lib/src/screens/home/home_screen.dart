@@ -528,13 +528,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 HealthSummaryCard(
                                   summary: _healthSummary!,
                                   isPremium: _isPremium,
-                                  onUpgradePressed: () {
-                                    context.pushNamed(RouteNames.premium).then((_) {
-                                      if (_activePet != null) {
-                                        _loadHealthSummaryAndInsights(_activePet!.id);
-                                      }
-                                    });
-                                  },
                                 ),
                               if (_healthSummary != null)
                                 const SizedBox(height: 12),
@@ -1324,59 +1317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // Free 사용자 — 티저 카드
-    if (!_isPremium && _activePet != null) {
-      return Column(
-        children: [
-          Semantics(
-            button: true,
-            label: 'Upgrade to premium insights',
-            child: GestureDetector(
-            onTap: () {
-              context.pushNamed(RouteNames.premium).then((_) {
-                if (_activePet != null) {
-                  _loadHealthSummaryAndInsights(_activePet!.id);
-                }
-              });
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(17),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment(-0.7, -0.7),
-                  end: Alignment(0.7, 0.7),
-                  colors: [AppColors.white, AppColors.brandLight],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.brandSoft, width: 1),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.lock_outline, size: 20, color: AppColors.brandPrimary),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      l10n.home_insightsUpgrade,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.mediumGray,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right, size: 20, color: AppColors.warmGray),
-                ],
-              ),
-            ),
-          ),
-          ),
-          const SizedBox(height: 12),
-        ],
-      );
-    }
-
+    // Free 사용자에게는 인사이트 티저 카드 표시 안 함 (App Store 3.1.1 대응 — 업그레이드 CTA 제거)
     return const SizedBox.shrink();
   }
 

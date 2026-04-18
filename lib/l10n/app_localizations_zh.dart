@@ -1763,10 +1763,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premium_upgradeToPremium => '升级到高级版';
 
   @override
-  String get premium_healthCheckBlocked => '这是高级版专属功能。\n请升级到高级版。';
+  String get premium_healthCheckBlocked => '您已达到本月的使用上限。\n请下个月再试。';
 
   @override
-  String get premium_healthCheckBlockedTitle => '高级版专属功能';
+  String get premium_healthCheckBlockedTitle => '本月限额已达';
 
   @override
   String get hc_title => 'AI健康检查';

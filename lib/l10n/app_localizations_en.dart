@@ -1879,10 +1879,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_healthCheckBlocked =>
-      'This is a premium-only feature.\nPlease upgrade to Premium.';
+      'You\'ve reached this month\'s usage limit.\nPlease try again next month.';
 
   @override
-  String get premium_healthCheckBlockedTitle => 'Premium Feature';
+  String get premium_healthCheckBlockedTitle => 'Monthly Limit Reached';
 
   @override
   String get hc_title => 'AI Health Check';

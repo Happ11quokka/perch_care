@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../config/app_config.dart';
 import '../../models/chat_message.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
@@ -150,6 +151,8 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   }
 
   Future<void> _loadPremiumBannerState() async {
+    // App Store 3.1.1 대응: 프리미엄 게이팅 비활성화 시 배너 노출 안 함
+    if (!AppConfig.premiumEnabled) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       final dismissed = prefs.getBool(_bannerDismissKey) ?? false;
@@ -718,12 +721,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                       _premiumStatus!.quota!.aiEncyclopedia.remaining,
                     ),
                     exhaustedText: l10n.quotaBadge_exhausted,
-                    upgradeText: l10n.quotaBadge_upgrade,
-                    onUpgradePressed: () {
-                      context.push(
-                        '/home/premium?source=ai_encyclopedia&feature=monthly_limit',
-                      );
-                    },
                   ),
                 ),
               )
