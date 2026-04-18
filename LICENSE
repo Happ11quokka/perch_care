@@ -1,0 +1,49 @@
+PROPRIETARY LICENSE
+
+Copyright (c) 2025-2026 Perch. All Rights Reserved.
+
+This software and its source code (the "Software") are the proprietary and
+confidential property of Perch (the "Company"). The Software is made
+source-available for the purposes of transparency, evaluation, and reference
+only.
+
+1. GRANT OF LIMITED RIGHTS
+
+   You are permitted to:
+   (a) View and read the source code of the Software.
+   (b) Fork this repository solely for personal, non-commercial study.
+
+2. RESTRICTIONS
+
+   Except as expressly permitted above, you may NOT, without prior written
+   consent from the Company:
+   (a) Use the Software, in whole or in part, for any commercial purpose.
+   (b) Copy, modify, merge, publish, distribute, sublicense, or sell copies
+       of the Software or any derivative works thereof.
+   (c) Deploy, host, or operate the Software or any derivative work as a
+       service, whether free or paid.
+   (d) Remove or alter any copyright, trademark, or proprietary notices.
+   (e) Use the name, logo, or trademarks of Perch for any purpose.
+
+3. THIRD-PARTY COMPONENTS
+
+   The Software may include third-party open-source components, each governed
+   by its own license. Nothing in this license is intended to supersede the
+   terms of those third-party licenses.
+
+4. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+5. LIMITATION OF LIABILITY
+
+   IN NO EVENT SHALL THE COMPANY BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+   FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
+6. CONTACT
+
+   For licensing inquiries, please visit https://perch.ai.kr
