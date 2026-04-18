@@ -6,10 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/diet_entry.dart';
-import '../../services/analytics/analytics_service.dart';
-import '../../services/food/food_record_service.dart';
-import '../../services/sync/sync_service.dart';
+import '../../repositories/save_outcome.dart';
 import '../../theme/colors.dart';
+import '../../view_models/food/food_record_view_model.dart';
 import '../../widgets/dashed_border.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_loading.dart';
@@ -29,7 +28,6 @@ class FoodRecordScreen extends ConsumerStatefulWidget {
 }
 
 class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
-  final _foodService = FoodRecordService.instance;
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
   bool _isLoading = true;
@@ -111,125 +109,37 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
     );
   }
 
-  String _storageKey() {
-    final date = _formatDateKey(_selectedDate);
-    return 'food_${_activePetId ?? 'default'}_$date';
-  }
-
   Future<void> _loadEntries() async {
-    // Try to load from backend first
-    if (_activePetId != null) {
-      // pending sync 항목이 있으면 서버 데이터 대신 로컬 데이터 사용
-      final dateStr = _selectedDate.toIso8601String().split('T').first;
-      if (SyncService.instance.hasPending('food', _activePetId!, dateStr)) {
-        debugPrint('[Food] Pending sync exists for $dateStr, using local data');
-        // fall through to SharedPreferences below
-      } else {
-        try {
-          final record = await _foodService.getByDate(
-            _activePetId!,
-            _selectedDate,
-          );
-          if (record != null && record.entriesJson != null) {
-            final list = jsonDecode(record.entriesJson!) as List<dynamic>;
-            final entries = list.map((item) {
-              final map = item as Map<String, dynamic>;
-              if (map.containsKey('type')) {
-                return DietEntry.fromJson(map);
-              } else {
-                return DietEntry.fromLegacyJson(map);
-              }
-            }).toList();
-            if (!mounted) return;
-            setState(() {
-              _entries = entries;
-            });
-            await _updateFoodNameSuggestions();
-            return;
-          }
-        } catch (e) {
-          debugPrint(
-            'Failed to load from backend, falling back to local storage: $e',
-          );
-        }
-      }
-    }
-
-    // Fallback to SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_storageKey());
-    if (raw == null) {
+    if (_activePetId == null) {
       if (!mounted) return;
-      setState(() {
-        _entries = [];
-      });
+      setState(() => _entries = []);
       return;
     }
-    final list = jsonDecode(raw) as List<dynamic>;
-    final entries = list.map((item) {
-      final map = item as Map<String, dynamic>;
-      if (map.containsKey('type')) {
-        return DietEntry.fromJson(map);
-      } else {
-        return DietEntry.fromLegacyJson(map);
-      }
-    }).toList();
+    final entries =
+        await ref.read(foodRecordViewModelProvider.notifier).loadEntries(
+              petId: _activePetId!,
+              date: _selectedDate,
+            );
     if (!mounted) return;
-    setState(() {
-      _entries = entries;
-    });
+    setState(() => _entries = entries);
+    await _updateFoodNameSuggestions();
   }
 
   Future<void> _saveEntries() async {
-    // Save to SharedPreferences (for offline access)
-    final prefs = await SharedPreferences.getInstance();
-    final data = _entries.map((entry) => entry.toJson()).toList();
-    await prefs.setString(_storageKey(), jsonEncode(data));
-    final dateKey = SyncService.dateKey(_selectedDate);
-
-    // Also save to backend
-    if (_activePetId != null) {
-      try {
-        await _foodService.upsert(
+    if (_activePetId == null) return;
+    final outcome = await ref
+        .read(foodRecordViewModelProvider.notifier)
+        .saveEntries(
           petId: _activePetId!,
-          recordedDate: _selectedDate,
-          totalGrams: _totalEaten, // 취식 총량을 기존 totalGrams로 전송 (하위 호환)
-          targetGrams: _totalServed, // 배식 총량을 기존 targetGrams로 전송
-          count: _entries.length,
-          entriesJson: jsonEncode(data),
+          date: _selectedDate,
+          entries: _entries,
+          totalEaten: _totalEaten,
+          totalServed: _totalServed,
         );
-        await SyncService.instance.markMutationSynced(
-          type: 'food',
-          petId: _activePetId!,
-          date: dateKey,
-        );
-        // 서버 저장 성공 → 밀린 큐 드레인
-        await SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('Failed to save to backend, data saved locally: $e');
-        await SyncService.instance.enqueue(
-          SyncItem(
-            type: 'food',
-            petId: _activePetId!,
-            date: dateKey,
-            payload: {
-              'totalGrams': _totalEaten,
-              'targetGrams': _totalServed,
-              'count': _entries.length,
-              'entriesJson': jsonEncode(data),
-            },
-          ),
-        );
-        if (mounted) {
-          final l10n = AppLocalizations.of(context);
-          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
-        }
-      }
+    if (mounted && outcome == SaveOutcome.offline) {
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
     }
-    AnalyticsService.instance.logFoodRecorded(
-      _activePetId ?? '',
-      _entries.length,
-    );
     await _updateFoodNameSuggestions();
   }
 
@@ -781,10 +691,6 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
     ];
     final weekday = weekdays[date.weekday - 1];
     return l10n.datetime_dateFormat(date.year, date.month, date.day, weekday);
-  }
-
-  String _formatDateKey(DateTime date) {
-    return '${date.year}-${date.month}-${date.day}';
   }
 
   // ── 빌드 ──────────────────────────────────────────────────────────────────

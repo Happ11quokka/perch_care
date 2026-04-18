@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/weight_record.dart';
 import '../../services/pet/pet_local_cache_service.dart';
 import '../../services/weight/weight_service.dart';
-import '../../services/sync/sync_service.dart';
 import '../../theme/colors.dart';
+import '../../view_models/weight/weight_add_view_model.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -20,7 +20,6 @@ import '../../theme/durations.dart';
 import '../../models/breed_standard.dart';
 import '../../services/breed/breed_service.dart';
 import '../../providers/pet_providers.dart';
-import '../../services/analytics/analytics_service.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WeightRecordScreen extends ConsumerStatefulWidget {
@@ -304,11 +303,6 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
     });
 
     try {
-      final dateKey = SyncService.dateKey(_selectedDate);
-      final entityId = SyncService.weightEntityId(
-        recordedHour: _selectedTime.hour,
-        recordedMinute: _selectedTime.minute,
-      );
       final record = WeightRecord(
         petId: _activePetId!,
         date: _selectedDate,
@@ -316,48 +310,16 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
         recordedHour: _selectedTime.hour,
         recordedMinute: _selectedTime.minute,
       );
-      final localRecord = await _weightService.saveLocalWeightRecord(record);
-      try {
-        await _weightService.saveWeightRecord(localRecord);
-        await SyncService.instance.markMutationSynced(
-          type: 'weight',
-          petId: _activePetId!,
-          date: dateKey,
-          entityId: entityId,
-        );
-        // 서버 저장 성공 → 밀린 큐 드레인
-        await SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('[WeightRecord] 백엔드 저장 실패: $e');
-        await SyncService.instance.enqueue(
-          SyncItem(
-            type: 'weight',
-            petId: _activePetId!,
-            date: dateKey,
-            entityId: entityId,
-            payload: {
-              'localId': localRecord.id,
-              'weight': weight,
-              'recordedHour': _selectedTime.hour,
-              'recordedMinute': _selectedTime.minute,
-            },
-          ),
-        );
-        if (mounted) {
-          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
-        }
-      }
+      // ViewModel: 로컬 저장 + 백엔드 fire-and-forget + 실패 시 enqueue 처리
+      await ref.read(weightAddViewModelProvider.notifier).saveRecord(record);
+
       await _loadRecords();
-      final petIdForAnalytics = _activePetId!;
       if (mounted) {
         setState(() {
           _selectedTime = TimeOfDay.now();
         });
         AppSnackBar.success(context, message: l10n.snackbar_saved);
       }
-      Future.delayed(const Duration(milliseconds: 800), () {
-        AnalyticsService.instance.logWeightRecorded(petIdForAnalytics);
-      });
     } finally {
       if (mounted) {
         setState(() {

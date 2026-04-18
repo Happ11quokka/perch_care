@@ -9,17 +9,10 @@ import '../../../l10n/app_localizations.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
-import '../../services/analytics/analytics_service.dart';
-import '../../services/pet/pet_service.dart';
-import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/storage/local_image_storage_service.dart';
-import '../../services/weight/weight_service.dart';
-import '../../services/sync/sync_service.dart';
-import '../../models/weight_record.dart';
 import '../../utils/error_handler.dart';
+import '../../view_models/pet/pet_add_view_model.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
-import '../../services/breed/breed_service.dart';
 import '../../widgets/breed_selector.dart';
 
 /// 반려동물 등록/수정 화면 - Figma 디자인 기반
@@ -59,8 +52,6 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
 
   bool _isLoading = false;
   bool _isLoadingData = false;
-  final _petCache = PetLocalCacheService.instance;
-  final _petService = PetService.instance;
   Pet? _existingPet;
 
   // 필드별 검증 에러 추적
@@ -94,9 +85,12 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
   Future<void> _loadExistingPet() async {
     setState(() => _isLoadingData = true);
     try {
-      final pet = await _petService.getPetById(widget.petId!);
-      if (pet == null) throw Exception('Pet not found');
+      final data = await ref
+          .read(petAddViewModelProvider.notifier)
+          .loadExistingPet(widget.petId!);
+      if (data == null) throw Exception('Pet not found');
 
+      final pet = data.pet;
       _existingPet = pet;
       _nameController.text = pet.name;
       _selectedGender = pet.gender;
@@ -105,13 +99,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
       _selectedAdoptionDate = pet.adoptionDate;
       if (pet.breedId != null) {
         _selectedBreedId = pet.breedId;
-        // breed display name 초기화 (수정 화면에서 null 저장 방지)
-        final breed = await BreedService.instance.fetchBreedById(pet.breedId!);
-        if (breed != null) {
-          _selectedBreedDisplayName = breed.displayName;
-        } else {
-          _selectedBreedDisplayName = pet.breed;
-        }
+        _selectedBreedDisplayName = data.breedDisplayName;
       } else {
         _speciesController.text = pet.breed ?? '';
         _showOtherBreedField = pet.breed != null && pet.breed!.isNotEmpty;
@@ -119,13 +107,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
       if (pet.weight != null) {
         _weightController.text = pet.weight!.toStringAsFixed(1);
       }
-
-      // 로컬 저장된 펫 이미지 로드
-      final imageBytes = await LocalImageStorageService.instance.getImage(
-        ownerType: ImageOwnerType.petProfile,
-        ownerId: pet.id,
-      );
-      _savedImageBytes = imageBytes;
+      _savedImageBytes = data.imageBytes;
 
       if (mounted) setState(() {});
     } catch (e) {
@@ -204,137 +186,33 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
   }
 
   Future<void> _handleSave() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-
     final l10n = AppLocalizations.of(context);
 
     try {
-      final petName = _nameController.text.trim().isEmpty
-          ? l10n.pet_defaultName
-          : _nameController.text.trim();
       final species = _speciesController.text.trim();
-      final gender = _selectedGender;
-      final growthStage = _selectedGrowthStage;
       final weightText = _weightController.text.trim();
-      final double? weightValue = weightText.isNotEmpty
-          ? double.tryParse(weightText)
-          : null;
-
-      Pet savedPet;
-
-      // 품종 선택 여부에 따라 species/breed 결정
-      final effectiveSpecies = _selectedBreedId != null
-          ? 'bird'
-          : (species.isEmpty ? l10n.pet_defaultName : species);
-      final effectiveBreed = _selectedBreedId != null
-          ? _selectedBreedDisplayName
-          : (species.isEmpty ? null : species);
-
-      if (_existingPet != null) {
-        // 기존 펫 수정
-        savedPet = await _petService.updatePet(
-          petId: _existingPet!.id,
-          name: petName,
-          species: effectiveSpecies,
-          breed: effectiveBreed,
-          breedId: _selectedBreedId,
-          updateBreedFields: true,
-          birthDate: _selectedBirthDate,
-          gender: gender,
-          growthStage: growthStage,
-          weight: weightValue,
-          adoptionDate: _selectedAdoptionDate,
-        );
-      } else {
-        // 새 펫 생성
-        savedPet = await _petService.createPet(
-          name: petName,
-          species: effectiveSpecies,
-          breed: effectiveBreed,
-          breedId: _selectedBreedId,
-          birthDate: _selectedBirthDate,
-          gender: gender,
-          growthStage: growthStage,
-          weight: weightValue,
-          adoptionDate: _selectedAdoptionDate,
-        );
-      }
-
-      // 새 펫 생성 시 초기 체중을 WeightRecord로 자동 생성
-      if (weightValue != null && _existingPet == null) {
-        try {
-          final weightService = WeightService.instance;
-          final now = DateTime.now();
-          final dateKey = SyncService.dateKey(now);
-          final entityId = SyncService.weightEntityId(
-            recordedHour: now.hour,
-            recordedMinute: now.minute,
-          );
-          final record = WeightRecord(
-            petId: savedPet.id,
-            date: now,
-            weight: weightValue,
-            recordedHour: now.hour,
-            recordedMinute: now.minute,
-          );
-          final localRecord = await weightService.saveLocalWeightRecord(record);
-          try {
-            await weightService.saveWeightRecord(localRecord);
-            await SyncService.instance.markMutationSynced(
-              type: 'weight',
-              petId: savedPet.id,
-              date: dateKey,
-              entityId: entityId,
-            );
-            // 서버 저장 성공 → 밀린 큐 드레인
-            await SyncService.instance.drainAfterSuccess();
-          } catch (e) {
-            debugPrint('[PetAdd] Backend weight save failed: $e');
-            await SyncService.instance.enqueue(
-              SyncItem(
-                type: 'weight',
-                petId: savedPet.id,
-                date: dateKey,
-                entityId: entityId,
-                payload: {
-                  'localId': localRecord.id,
-                  'weight': weightValue,
-                  'recordedHour': now.hour,
-                  'recordedMinute': now.minute,
-                },
-              ),
-            );
-          }
-        } catch (e) {
-          debugPrint('[PetAdd] Initial weight record failed: $e');
-        }
-      }
-
-      // 이미지를 SQLite에 저장
-      if (_selectedImage != null) {
-        final bytes = await _selectedImage!.readAsBytes();
-        await LocalImageStorageService.instance.saveImage(
-          ownerType: ImageOwnerType.petProfile,
-          ownerId: savedPet.id,
-          imageBytes: bytes,
-        );
-      }
-
-      // 로컬 캐시도 업데이트
-      await _petCache.upsertPet(
-        PetProfileCache(
-          id: savedPet.id,
-          name: savedPet.name,
-          species: savedPet.breed ?? _selectedBreedDisplayName,
-          gender: savedPet.gender,
-          birthDate: savedPet.birthDate,
-        ),
-        setActive: true,
+      final input = PetFormInput(
+        name: _nameController.text.trim().isEmpty
+            ? l10n.pet_defaultName
+            : _nameController.text.trim(),
+        species: species.isEmpty ? null : species,
+        breedId: _selectedBreedId,
+        breedDisplayName: _selectedBreedDisplayName,
+        gender: _selectedGender,
+        growthStage: _selectedGrowthStage,
+        weight: weightText.isNotEmpty ? double.tryParse(weightText) : null,
+        birthDate: _selectedBirthDate,
+        adoptionDate: _selectedAdoptionDate,
       );
+
+      await ref.read(petAddViewModelProvider.notifier).save(
+            input: input,
+            newImage: _selectedImage,
+            existingPet: _existingPet,
+          );
 
       if (!mounted) return;
 
@@ -344,16 +222,11 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
             ? l10n.common_updated
             : l10n.common_registered,
       );
-      if (_existingPet == null) {
-        AnalyticsService.instance.logPetRegistered(
-          _speciesController.text.trim(),
-        );
-      }
 
       if (widget.isInitialSetup) {
         context.goNamed(RouteNames.home);
       } else {
-        context.pop(true); // 결과 반환하여 이전 화면에서 새로고침 가능하게
+        context.pop(true);
       }
     } catch (e) {
       if (!mounted) return;

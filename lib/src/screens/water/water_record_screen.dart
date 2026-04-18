@@ -1,14 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../services/analytics/analytics_service.dart';
-import '../../services/water/water_record_service.dart';
-import '../../services/sync/sync_service.dart';
+import '../../repositories/save_outcome.dart';
 import '../../theme/colors.dart';
+import '../../view_models/water/water_record_view_model.dart';
 import '../../router/route_names.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -26,7 +22,6 @@ class WaterRecordScreen extends ConsumerStatefulWidget {
 }
 
 class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
-  final _waterService = WaterRecordService.instance;
   DateTime _selectedDate = DateTime.now();
   String? _activePetId;
   bool _isLoading = true;
@@ -101,45 +96,8 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
     );
   }
 
-  String _storageKey() {
-    final date = _formatDateKey(_selectedDate);
-    return 'water_${_activePetId ?? 'default'}_$date';
-  }
-
   Future<void> _loadRecord() async {
-    // Try loading from backend first
-    if (_activePetId != null) {
-      // pending sync 항목이 있으면 서버 데이터 대신 로컬 데이터 사용
-      final dateStr = _selectedDate.toIso8601String().split('T').first;
-      if (SyncService.instance.hasPending('water', _activePetId!, dateStr)) {
-        debugPrint(
-          '[Water] Pending sync exists for $dateStr, using local data',
-        );
-        // fall through to SharedPreferences below
-      } else {
-        try {
-          final record = await _waterService.getByDate(
-            _activePetId!,
-            _selectedDate,
-          );
-          if (!mounted) return;
-          if (record != null) {
-            setState(() {
-              _totalMl = record.totalMl;
-              _count = record.count;
-            });
-            return;
-          }
-        } catch (_) {
-          // Fall back to SharedPreferences if backend fails
-        }
-      }
-    }
-
-    // Fallback to SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_storageKey());
-    if (raw == null) {
+    if (_activePetId == null) {
       if (!mounted) return;
       setState(() {
         _totalMl = 0;
@@ -147,61 +105,29 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
       });
       return;
     }
-    final map = jsonDecode(raw) as Map<String, dynamic>;
+    final result = await ref
+        .read(waterRecordViewModelProvider.notifier)
+        .loadByDate(petId: _activePetId!, date: _selectedDate);
     if (!mounted) return;
     setState(() {
-      _totalMl = (map['totalMl'] as num?)?.toDouble() ?? 0;
-      _count = map['count'] as int? ?? 0;
+      _totalMl = result?.totalMl ?? 0;
+      _count = result?.count ?? 0;
     });
   }
 
   Future<void> _saveRecord() async {
-    // Save to SharedPreferences first (for offline access)
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _storageKey(),
-      jsonEncode({'totalMl': _totalMl, 'count': _count}),
-    );
-    final dateKey = SyncService.dateKey(_selectedDate);
-
-    // Also save to backend
-    if (_activePetId != null) {
-      try {
-        await _waterService.upsert(
+    if (_activePetId == null) return;
+    final outcome = await ref.read(waterRecordViewModelProvider.notifier).save(
           petId: _activePetId!,
-          recordedDate: _selectedDate,
+          date: _selectedDate,
           totalMl: _totalMl,
           targetMl: _goalMl,
           count: _count,
         );
-        await SyncService.instance.markMutationSynced(
-          type: 'water',
-          petId: _activePetId!,
-          date: dateKey,
-        );
-        // 서버 저장 성공 → 밀린 큐 드레인
-        await SyncService.instance.drainAfterSuccess();
-      } catch (e) {
-        debugPrint('Failed to save water to backend: $e');
-        await SyncService.instance.enqueue(
-          SyncItem(
-            type: 'water',
-            petId: _activePetId!,
-            date: dateKey,
-            payload: {
-              'totalMl': _totalMl,
-              'targetMl': _goalMl,
-              'count': _count,
-            },
-          ),
-        );
-        if (mounted) {
-          final l10n = AppLocalizations.of(context);
-          AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
-        }
-      }
+    if (mounted && outcome == SaveOutcome.offline) {
+      final l10n = AppLocalizations.of(context);
+      AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
     }
-    AnalyticsService.instance.logWaterRecorded(_activePetId ?? '');
   }
 
   Future<void> _pickDate() async {
@@ -632,9 +558,6 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
     return l10n.datetime_dateFormat(date.year, date.month, date.day, weekday);
   }
 
-  String _formatDateKey(DateTime date) {
-    return '${date.year}-${date.month}-${date.day}';
-  }
 }
 
 class _WaterEditResult {

@@ -8,10 +8,8 @@ import '../../theme/typography.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/weight_record.dart';
-import '../../services/weight/weight_service.dart';
-import '../../services/analytics/analytics_service.dart';
-import '../../services/sync/sync_service.dart';
 import '../../utils/error_handler.dart';
+import '../../view_models/weight/weight_add_view_model.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../providers/pet_providers.dart';
@@ -29,7 +27,6 @@ class WeightAddScreen extends ConsumerStatefulWidget {
 class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
   final _weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _weightService = WeightService.instance;
   bool _isLoading = false;
   TimeOfDay _selectedTime = TimeOfDay.now();
   double _sheetHeight = 0;
@@ -103,11 +100,6 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
 
     try {
       final weight = double.parse(_weightController.text);
-      final dateKey = SyncService.dateKey(widget.date);
-      final entityId = SyncService.weightEntityId(
-        recordedHour: _selectedTime.hour,
-        recordedMinute: _selectedTime.minute,
-      );
       final record = WeightRecord(
         petId: _activePetId!,
         date: widget.date,
@@ -116,30 +108,14 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
         recordedMinute: _selectedTime.minute,
       );
 
-      // 로컬 캐시에 먼저 저장
-      final localRecord = await _weightService.saveLocalWeightRecord(record);
+      // ViewModel이 로컬 저장 + 백엔드 sync(+enqueue on failure)를 모두 처리
+      await ref.read(weightAddViewModelProvider.notifier).saveRecord(record);
 
-      // 로컬 저장 성공 → 즉시 성공 피드백
       if (mounted) {
         final l10n = AppLocalizations.of(context);
         AppSnackBar.success(context, message: l10n.weight_recordSuccess);
-        final petIdForAnalytics = _activePetId!;
-        Future.delayed(const Duration(milliseconds: 800), () {
-          AnalyticsService.instance.logWeightRecorded(petIdForAnalytics);
-        });
       }
 
-      // 백엔드 저장은 fire-and-forget (오프라인 시 블로킹 방지)
-      final petId = _activePetId!;
-      _syncToBackend(
-        localRecord: localRecord,
-        petId: petId,
-        dateKey: dateKey,
-        entityId: entityId,
-        weight: weight,
-      );
-
-      // 스낵바 확인 딜레이 후 이전 화면으로 복귀
       await Future.delayed(const Duration(milliseconds: 1200));
       if (mounted) context.pop(true);
     } catch (e) {
@@ -161,42 +137,6 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
           _isLoading = false;
         });
       }
-    }
-  }
-
-  /// 백엔드 동기화 (fire-and-forget, UI 블로킹 없음)
-  Future<void> _syncToBackend({
-    required WeightRecord localRecord,
-    required String petId,
-    required String dateKey,
-    required String entityId,
-    required double weight,
-  }) async {
-    try {
-      await _weightService.saveWeightRecord(localRecord);
-      await SyncService.instance.markMutationSynced(
-        type: 'weight',
-        petId: petId,
-        date: dateKey,
-        entityId: entityId,
-      );
-      await SyncService.instance.drainAfterSuccess();
-    } catch (e) {
-      debugPrint('[WeightAdd] 백엔드 저장 실패, 오프라인 큐에 추가: $e');
-      await SyncService.instance.enqueue(
-        SyncItem(
-          type: 'weight',
-          petId: petId,
-          date: dateKey,
-          entityId: entityId,
-          payload: {
-            'localId': localRecord.id,
-            'weight': weight,
-            'recordedHour': localRecord.recordedHour,
-            'recordedMinute': localRecord.recordedMinute,
-          },
-        ),
-      );
     }
   }
 

@@ -1,59 +1,20 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/pet.dart';
-import '../services/pet/pet_service.dart';
+// Pet 도메인 Provider 파일 — MVVM 리팩터링(2026-04) 이후 ViewModel의 re-export 레이어.
+//
+// 새 코드는 아래 이름을 직접 사용하는 것을 권장한다:
+//   - `petListViewModelProvider`, `PetListViewModel`
+//   - `activePetViewModelProvider`, `ActivePetViewModel`
+//
+// 기존 caller (screens 16개 + auth_actions + bhi_provider)가 `activePetProvider` /
+// `petListProvider`라는 이름을 사용하고 있어 일괄 교체 없이 호환성을 유지하기 위한 alias를 둔다.
 
-/// 활성 펫 SSOT — 모든 스크린이 이 provider를 watch하여 펫 데이터를 공유
-final activePetProvider = AsyncNotifierProvider<ActivePetNotifier, Pet?>(
-  ActivePetNotifier.new,
-);
+export '../view_models/pet/active_pet_view_model.dart';
+export '../view_models/pet/pet_list_view_model.dart';
 
-class ActivePetNotifier extends AsyncNotifier<Pet?> {
-  @override
-  Future<Pet?> build() async {
-    return await PetService.instance.getActivePet();
-  }
+import '../view_models/pet/active_pet_view_model.dart';
+import '../view_models/pet/pet_list_view_model.dart';
 
-  /// 펫 전환 (PetProfileScreen 등에서 호출)
-  Future<void> switchPet(String petId) async {
-    state = const AsyncLoading<Pet?>().copyWithPrevious(state);
-    state = await AsyncValue.guard(() async {
-      await PetService.instance.setActivePet(petId);
-      PetService.instance.invalidateCache();
-      final pet = await PetService.instance.getActivePet(forceRefresh: true);
-      return pet;
-    });
-  }
+/// @deprecated — `activePetViewModelProvider` 사용 권장.
+final activePetProvider = activePetViewModelProvider;
 
-  /// 강제 새로고침 (펫 정보 수정 후 등)
-  Future<void> refresh() async {
-    state = const AsyncLoading<Pet?>().copyWithPrevious(state);
-    state = await AsyncValue.guard(() async {
-      return await PetService.instance.getActivePet(forceRefresh: true);
-    });
-  }
-
-  /// 로그아웃 시 상태 초기화
-  void clear() {
-    PetService.instance.invalidateCache();
-    state = const AsyncData(null);
-  }
-}
-
-/// 펫 목록 provider
-final petListProvider = AsyncNotifierProvider<PetListNotifier, List<Pet>>(
-  PetListNotifier.new,
-);
-
-class PetListNotifier extends AsyncNotifier<List<Pet>> {
-  @override
-  Future<List<Pet>> build() async {
-    return await PetService.instance.getMyPets();
-  }
-
-  Future<void> refresh() async {
-    state = const AsyncLoading<List<Pet>>().copyWithPrevious(state);
-    state = await AsyncValue.guard(() async {
-      return await PetService.instance.getMyPets(forceRefresh: true);
-    });
-  }
-}
+/// @deprecated — `petListViewModelProvider` 사용 권장.
+final petListProvider = petListViewModelProvider;

@@ -7,13 +7,6 @@ import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../services/pet/pet_service.dart';
-import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/bhi/bhi_service.dart';
-import '../../providers/pet_providers.dart';
-import '../../services/premium/premium_service.dart';
-import '../../providers/premium_provider.dart';
-import '../../services/api/api_client.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../widgets/health_summary_card.dart';
@@ -23,11 +16,10 @@ import '../../models/health_summary.dart';
 import '../../models/pet_insight.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
-import '../../services/sync/sync_service.dart';
-import '../../services/weight/weight_service.dart';
+import '../../view_models/home/home_state.dart';
+import '../../view_models/home/home_view_model.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -39,31 +31,23 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _petService = PetService.instance;
-  final _petCache = PetLocalCacheService.instance;
-  final _bhiService = BhiService.instance;
-  Pet? _activePet;
-  BhiResult? _bhiResult;
-  bool _isLoading = true;
-  bool _isMonthlyView = true; // true: 매월 단위, false: 매주 단위
+  // UI 상태(월/주 선택, 코치마크, 스크롤)는 View가 소유. 데이터 상태는 HomeViewModel이 소유.
+  bool _isMonthlyView = true;
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
-  int _selectedWeek = 1; // 선택된 주차 (1~5)
-  int _bhiRequestId = 0; // race condition 방지용 요청 카운터
+  int _selectedWeek = 1;
+  bool _pendingCoachMark = false;
 
-  // 데이터 유무 상태 (실제로는 서버에서 가져옴)
+  // ViewModel state를 build 시점에 mirroring (기존 위젯 메서드들이 이 필드를 참조).
+  Pet? _activePet;
+  BhiResult? _bhiResult;
   bool _hasWeightData = false;
   bool _hasFoodData = false;
   bool _hasWaterData = false;
-
-  // WCI 레벨 (0: 데이터 없음, 1~5: 각 단계)
   int _wciLevel = 0;
-  bool _isBhiLoading = false; // 기간 변경 시 BHI 로딩 상태
-  bool _isBhiOffline = false; // BHI 서버 로드 실패 (오프라인)
-  bool _pendingCoachMark = false; // 코치마크 대기 플래그 (자식 라우트에서 복귀 시)
-  String? _lastUpdateText; // WCI 카드 타임스탬프 표시 텍스트
-
-  // 건강 요약 + 인사이트 (Phase 3-3, 3-4)
+  bool _isBhiLoading = false;
+  bool _isBhiOffline = false;
+  String? _lastUpdateText;
   HealthSummary? _healthSummary;
   PetInsight? _latestInsight;
   bool _isPremium = false;
@@ -93,16 +77,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     if (kDebugMode) { debugPrint('[HomeScreen] initState called'); }
-    _loadPets();
-    if (kDebugMode) { debugPrint('[HomeScreen] _loadPets() called'); }
+    // 첫 렌더 직후 오프라인 큐 처리 (fire-and-forget) + 코치마크 트리거.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(homeViewModelProvider.notifier).processOfflineQueue();
+      _maybeShowCoachMarks();
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_pendingCoachMark && !_isLoading) {
+    if (_pendingCoachMark) {
       _pendingCoachMark = false;
-      _loadPets();
+      _maybeShowCoachMarks();
     }
   }
 
@@ -110,166 +98,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  /// 특정 petId로 펫 정보 + BHI를 서버에서 병렬 로드
-  Future<void> _refreshForPet(String petId) async {
-
-    // 펫 정보 + BHI를 동시에 로드 (독립적이므로 병렬 가능)
-    late Pet? pet;
-    late BhiResult? bhi;
-
-    try {
-      final petFuture = _petService.getPetById(petId);
-      final bhiFuture = () async {
-        try {
-          return await _bhiService.getBhi(petId, targetDate: DateTime.now());
-        } catch (e) {
-          if (kDebugMode) { debugPrint('[HomeScreen] BHI 로드 실패: $e'); }
-          return null;
-        }
-      }();
-      final results = await Future.wait<dynamic>([petFuture, bhiFuture]);
-
-      if (!mounted) return;
-
-      pet = results[0] as Pet?;
-      bhi = results[1] as BhiResult?;
-    } catch (e) {
-      if (kDebugMode) { debugPrint('[HomeScreen] 펫 정보 로드 실패, 로컬 캐시 복원 시도: $e'); }
-      if (!mounted) return;
-      // 서버 실패 시 로컬 캐시에서 펫 이름만이라도 복원
-      try {
-        final cached = await _petCache.getActivePet();
-        if (!mounted) return;
-        if (cached != null && cached.id == petId) {
-          setState(() {
-            _activePet = Pet(
-              id: cached.id,
-              userId: '',
-              name: cached.name,
-              species: cached.species ?? '',
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            );
-          });
-        }
-      } catch (cacheError) {
-        if (kDebugMode) { debugPrint('[HomeScreen] 로컬 캐시 복원도 실패: $cacheError'); }
-      }
-      return;
-    }
-
-    // setState 단일 호출로 배치 처리 (불필요한 리빌드 방지)
-    if (pet != null || bhi != null) {
-      final l10n = AppLocalizations.of(context);
-      setState(() {
-        if (pet != null) {
-          _activePet = pet;
-        }
-        if (bhi != null) {
-          _isBhiOffline = false;
-          _bhiResult = bhi;
-          _wciLevel = bhi.wciLevel;
-          _hasWeightData = bhi.hasWeightData;
-          _hasFoodData = bhi.hasFoodData;
-          _hasWaterData = bhi.hasWaterData;
-        }
-        _lastUpdateText = _formatLastUpdateTime(l10n);
-      });
-    }
-
-    // BHI 실패 시 로컬 데이터로 배지 상태 복원
-    if (bhi == null && mounted) {
-      setState(() => _isBhiOffline = true);
-      await _checkLocalDataForBadges(petId);
-    }
-  }
-
-  Future<void> _loadPets() async {
-    if (kDebugMode) { debugPrint('[HomeScreen] _loadPets() started'); }
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      if (kDebugMode) { debugPrint('[HomeScreen] Calling _petService.getActivePet()...'); }
-      final activePet = await _petService.getActivePet();
-      if (kDebugMode) { debugPrint('[HomeScreen] getActivePet() returned: ${activePet?.name}'); }
-
-      if (mounted) {
-        setState(() {
-          _activePet = activePet;
-          _isLoading = false;
-        });
-      }
-
-      // BHI 데이터 로드 (펫이 있을 때만)
-      if (activePet != null) {
-        _loadBhi(activePet.id);
-      }
-
-      // provider도 최신 상태로 갱신
-      ref.read(activePetProvider.notifier).refresh();
-
-      // 오프라인 큐 동기화 (로그인 후 splash에서 실패한 항목 재처리)
-      _syncOfflineData();
-
-      // 첫 사용자 코치마크 표시
-      _maybeShowCoachMarks();
-    } catch (e) {
-      if (kDebugMode) { debugPrint('[HomeScreen] 펫 목록 로드 실패: $e'); }
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  /// 로그인 후 오프라인 큐 동기화 (fire-and-forget, UI 차단 없음)
-  void _syncOfflineData() async {
-    try {
-      await SyncService.instance.processQueue();
-      final pet = _activePet;
-      if (pet != null) {
-        await SyncService.instance.syncLocalRecordsIfNeeded(pet.id);
-      }
-    } catch (e) {
-      if (kDebugMode) { debugPrint('[HomeScreen] Offline sync error: $e'); }
-    }
-  }
-
-  /// BHI 서버 로드 실패 시 로컬 데이터 존재 여부로 배지 색상 복원
-  Future<void> _checkLocalDataForBadges(String petId) async {
-    try {
-      final today = DateTime.now();
-      final dateKey = '${today.year}-${today.month}-${today.day}';
-
-      // Weight: 인메모리 캐시 확인
-      final weightRecords =
-          WeightService.instance.getRecordsByDate(today, petId: petId);
-      final hasLocalWeight = weightRecords.isNotEmpty;
-
-      // Food / Water: SharedPreferences 키 확인
-      final prefs = await SharedPreferences.getInstance();
-      final hasLocalFood =
-          prefs.getString('food_${petId}_$dateKey') != null;
-      final hasLocalWater =
-          prefs.getString('water_${petId}_$dateKey') != null;
-
-      if (mounted) {
-        setState(() {
-          if (hasLocalWeight) _hasWeightData = true;
-          if (hasLocalFood) _hasFoodData = true;
-          if (hasLocalWater) _hasWaterData = true;
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[HomeScreen] Local badge check failed: $e');
-      }
-    }
   }
 
   Future<void> _maybeShowCoachMarks() async {
@@ -371,41 +199,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  /// 선택된 기간의 BHI 데이터를 서버에서 로드
-  Future<void> _loadBhiForSelectedPeriod() async {
-    if (_activePet == null) return;
-    final requestId = ++_bhiRequestId;
-    setState(() => _isBhiLoading = true);
-    try {
-      final targetDate = _getTargetDateForPeriod();
-      final bhi = await _bhiService.getBhi(_activePet!.id, targetDate: targetDate);
-      if (!mounted || requestId != _bhiRequestId) return;
-      final l10n = AppLocalizations.of(context);
-      setState(() {
-        _isBhiOffline = false;
-        _bhiResult = bhi;
-        _wciLevel = bhi.wciLevel;
-        _hasWeightData = bhi.hasWeightData;
-        _hasFoodData = bhi.hasFoodData;
-        _hasWaterData = bhi.hasWaterData;
-        _isBhiLoading = false;
-        _lastUpdateText = _formatLastUpdateTime(l10n);
-      });
-    } catch (e) {
-      if (kDebugMode) { debugPrint('[HomeScreen] 기간별 BHI 로드 실패: $e'); }
-      if (mounted && requestId == _bhiRequestId) {
-        setState(() {
-          _isBhiLoading = false;
-          _isBhiOffline = true;
-        });
-        await _checkLocalDataForBadges(_activePet!.id);
-      }
-    }
+  /// 선택된 기간의 BHI 데이터를 ViewModel에 요청.
+  void _loadBhiForSelectedPeriod() {
+    final targetDate = _getTargetDateForPeriod();
+    ref.read(homeViewModelProvider.notifier).loadBhiForDate(targetDate);
   }
 
-  /// BHI 서버 조회 시점 기반 타임스탬프 문자열 생성
-  String _formatLastUpdateTime(AppLocalizations l10n) {
-    final fetchTime = _bhiService.lastServerFetchTime;
+  /// BHI 서버 조회 시점 기반 타임스탬프 문자열 생성 (state 기반)
+  String _formatLastUpdateTime(AppLocalizations l10n, DateTime? fetchTime) {
     if (fetchTime == null) {
       return l10n.home_noUpdateData;
     }
@@ -419,88 +220,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _loadBhi(String petId) async {
-    try {
-      final bhi = await _bhiService.getBhi(petId, targetDate: DateTime.now());
-      if (mounted) {
-        final l10n = AppLocalizations.of(context);
-        setState(() {
-          _isBhiOffline = false;
-          _bhiResult = bhi;
-          _wciLevel = bhi.wciLevel;
-          _hasWeightData = bhi.hasWeightData;
-          _hasFoodData = bhi.hasFoodData;
-          _hasWaterData = bhi.hasWaterData;
-          _lastUpdateText = _formatLastUpdateTime(l10n);
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) { debugPrint('[HomeScreen] BHI 로드 실패: $e'); }
-      if (mounted) {
-        setState(() => _isBhiOffline = true);
-        await _checkLocalDataForBadges(petId);
-      }
-    }
-
-    // 건강 요약 + 인사이트 병렬 로드
-    _loadHealthSummaryAndInsights(petId);
-  }
-
-  Future<void> _loadHealthSummaryAndInsights(String petId) async {
-    final api = ApiClient.instance;
-
-    // Premium 상태 + 건강 요약 병렬 호출
-    try {
-      final results = await Future.wait([
-        ref.read(premiumStatusProvider.future),
-        api.get('/pets/$petId/health-summary'),
-      ]);
-
-      if (!mounted) return;
-      final status = results[0] as PremiumStatus;
-      final summaryJson = results[1] as Map<String, dynamic>;
-      final summary = HealthSummary.fromJson(summaryJson);
-
-      // Premium이면 인사이트도 로드
-      PetInsight? insight;
-      if (status.isPremium) {
-        try {
-          final insightJson = await api.get('/pets/$petId/insights?type=weekly');
-          if (insightJson != null) {
-            insight = PetInsight.fromJson(insightJson as Map<String, dynamic>);
-          }
-        } catch (e) {
-          if (kDebugMode) { debugPrint('[HomeScreen] 인사이트 로드 실패: $e'); }
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _isPremium = status.isPremium;
-          _healthSummary = summary;
-          _latestInsight = insight;
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) { debugPrint('[HomeScreen] 건강 요약 로드 실패: $e'); }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final activePetAsync = ref.watch(activePetProvider);
-    final activePet = activePetAsync.valueOrNull;
-    if (activePet != null && activePet.id != _activePet?.id) {
-      // provider에서 펫이 바뀌면 데이터 리로드
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _refreshForPet(activePet.id);
-      });
-    }
-    _activePet = activePet;
+    final l10n = AppLocalizations.of(context);
+    final homeAsync = ref.watch(homeViewModelProvider);
+
+    // HomeState를 필드에 mirroring (기존 위젯 메서드들이 참조 가능하도록).
+    final HomeState state = homeAsync.valueOrNull ?? const HomeState();
+    _activePet = state.activePet;
+    _bhiResult = state.bhi;
+    _healthSummary = state.healthSummary;
+    _latestInsight = state.insight;
+    _isPremium = state.isPremium;
+    _wciLevel = state.wciLevel;
+    _hasWeightData = state.hasWeight;
+    _hasFoodData = state.hasFood;
+    _hasWaterData = state.hasWater;
+    _isBhiLoading = state.isBhiLoading;
+    _isBhiOffline = state.isBhiOffline;
+    _lastUpdateText = _formatLastUpdateTime(l10n, state.lastBhiFetchTime);
+
+    final showFullLoading = homeAsync.isLoading && state.activePet == null;
 
     return Scaffold(
       backgroundColor: AppColors.gray150,
-      body: _isLoading
+      body: showFullLoading
           ? AppLoading.fullPage()
           : Stack(
               children: [
@@ -1339,7 +1083,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   hasData: _hasWeightData,
                   onTap: () async {
                     await context.pushNamed(RouteNames.weightRecord);
-                    if (_activePet != null) _loadBhi(_activePet!.id);
+                    ref.read(homeViewModelProvider.notifier).refreshBhi();
                   },
                 ),
               ),
@@ -1355,7 +1099,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   hasData: _hasFoodData,
                   onTap: () async {
                     await context.pushNamed(RouteNames.foodRecord);
-                    if (_activePet != null) _loadBhi(_activePet!.id);
+                    ref.read(homeViewModelProvider.notifier).refreshBhi();
                   },
                 ),
               ),
@@ -1376,7 +1120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   hasData: _hasWaterData,
                   onTap: () async {
                     await context.pushNamed(RouteNames.waterRecord);
-                    if (_activePet != null) _loadBhi(_activePet!.id);
+                    ref.read(homeViewModelProvider.notifier).refreshBhi();
                   },
                 ),
               ),
