@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../models/pet.dart';
 import '../../providers/pet_providers.dart';
 import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
@@ -16,7 +16,6 @@ import '../../services/iap/iap_service.dart';
 import '../../services/push/push_notification_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/sync/sync_service.dart';
-import '../../services/pet/pet_service.dart';
 import '../../router/route_paths.dart';
 import '../../theme/colors.dart';
 import '../../theme/durations.dart';
@@ -100,55 +99,33 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _initializeServices() async {
-    // 1. 환경 변수 로드 (다른 서비스들이 의존)
-    debugPrint('[Splash] 1. dotenv loading...');
-    try {
-      await dotenv.load(fileName: '.env');
-      debugPrint('[Splash] 1. dotenv loaded');
-    } catch (e) {
-      debugPrint('[Splash] 1. dotenv load error: $e');
-    }
-
-    // 2-4. 독립 서비스 병렬 초기화
-    debugPrint('[Splash] 2-4. Parallel initialization...');
+    // 1-3. 독립 서비스 병렬 초기화 (dotenv는 main()에서 이미 로드됨)
+    debugPrint('[Splash] 1-3. Parallel initialization...');
     await Future.wait([
       _initTokenService(),
       _initGoogleSignIn(),
       _initLocalImageStorage(),
     ]);
 
-    // 5. API 클라이언트 초기화 (TokenService 의존)
-    debugPrint('[Splash] 5. ApiClient initializing...');
+    // 4. API 클라이언트 초기화 (TokenService 의존)
+    debugPrint('[Splash] 4. ApiClient initializing...');
     try {
       ApiClient.initialize();
-      debugPrint('[Splash] 5. ApiClient initialized');
+      debugPrint('[Splash] 4. ApiClient initialized');
     } catch (e) {
-      debugPrint('[Splash] 5. ApiClient init error: $e');
+      debugPrint('[Splash] 4. ApiClient init error: $e');
     }
 
-    // 6. SyncService 초기화 + 오프라인 큐 처리
-    debugPrint('[Splash] 6. SyncService initializing...');
+    // 5. SyncService 큐 로드 (SharedPreferences만 읽음 — 빠름)
+    debugPrint('[Splash] 5. SyncService init...');
     try {
       await SyncService.instance.init();
-      debugPrint('[Splash] 6. SyncService initialized');
-
-      // 오프라인 큐에 쌓인 항목 서버로 재전송
-      await SyncService.instance.processQueue();
-      debugPrint('[Splash] 6. SyncService queue processed');
-
-      // 최초 1회: 로컬 데이터 전체를 서버로 동기화 (staging→production 마이그레이션)
-      if (TokenService.instance.isLoggedIn) {
-        final pets = await PetService.instance.getMyPets();
-        for (final pet in pets) {
-          await SyncService.instance.syncLocalRecordsIfNeeded(pet.id);
-          debugPrint('[Splash] 6. Initial sync completed for pet: ${pet.id}');
-        }
-      }
+      debugPrint('[Splash] 5. SyncService initialized');
     } catch (e) {
-      debugPrint('[Splash] 6. SyncService error: $e');
+      debugPrint('[Splash] 5. SyncService init error: $e');
     }
 
-    // Riverpod provider 사전 로드 — HomeScreen 즉시 렌더
+    // 6. Riverpod provider 사전 로드 — HomeScreen 즉시 렌더 (네트워크 1회)
     if (TokenService.instance.isLoggedIn) {
       try {
         await ref.read(activePetProvider.notifier).refresh();
@@ -160,9 +137,35 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
     }
 
+    // 백그라운드 동기화용 펫 목록 캡처 — splash dispose 이후에도 안전하게 사용
+    final pets = TokenService.instance.isLoggedIn
+        ? (ref.read(petListProvider).valueOrNull ?? const <Pet>[])
+        : const <Pet>[];
+
     debugPrint('[Splash] All services initialized, navigating...');
     _servicesInitialized = true;
     _tryNavigate();
+
+    // 오프라인 큐 처리 + 초기 동기화는 백그라운드에서 진행 (splash 블로킹 방지)
+    unawaited(_runBackgroundSync(pets));
+  }
+
+  /// 백그라운드 동기화: splash 네비게이션을 블로킹하지 않음
+  /// - processQueue: 실패했던 항목 재전송 (네트워크)
+  /// - syncLocalRecordsIfNeeded: 펫별 최초 1회 로컬 데이터 마이그레이션
+  /// pets는 caller에서 미리 read한 값을 받아 dispose 이후에도 안전
+  Future<void> _runBackgroundSync(List<Pet> pets) async {
+    try {
+      await SyncService.instance.processQueue();
+      debugPrint('[Splash/bg] SyncService queue processed');
+
+      for (final pet in pets) {
+        await SyncService.instance.syncLocalRecordsIfNeeded(pet.id);
+        debugPrint('[Splash/bg] Initial sync done: ${pet.id}');
+      }
+    } catch (e) {
+      debugPrint('[Splash/bg] Background sync error: $e');
+    }
   }
 
   Future<void> _initTokenService() async {

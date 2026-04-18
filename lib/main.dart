@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:country_picker/country_picker.dart';
@@ -17,8 +18,19 @@ void main() async {
   // iOS에서 앱 재시작 시 secure storage 초기화 문제 방지
   await Future.delayed(const Duration(milliseconds: 50));
 
-  // Firebase + LocaleProvider 병렬 초기화 (독립적)
+  // 독립 초기화 병렬화: dotenv, Firebase, Locale
+  // dotenv를 main()에서 먼저 로드 → SplashScreen 진입 시점에 이미 사용 가능
+  // dotenv 실패해도 앱은 계속 실행 (환경변수 참조 시점에 StateError)
+  Future<void> loadEnv() async {
+    try {
+      await dotenv.load(fileName: '.env');
+    } catch (e) {
+      debugPrint('[main] dotenv load error: $e');
+    }
+  }
+
   await Future.wait([
+    loadEnv(),
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
     LocaleProvider.instance.initialize(),
   ]);
@@ -26,7 +38,7 @@ void main() async {
   // FCM 백그라운드 메시지 핸들러 등록 (Firebase 의존)
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  // 모든 I/O 작업은 SplashScreen에서 수행 (UI 블로킹 최소화)
+  // 나머지 I/O 작업은 SplashScreen에서 수행 (UI 블로킹 최소화)
   runApp(const ProviderScope(child: MyApp()));
 }
 
