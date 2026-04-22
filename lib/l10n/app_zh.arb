@@ -1,6 +1,5 @@
 {
   "@@locale": "zh",
-
   "common_save": "保存",
   "common_cancel": "取消",
   "common_confirm": "确认",
@@ -19,15 +18,15 @@
   "common_showAll": "查看全部 ({count})",
   "@common_showAll": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "pet_loadError": "加载宠物信息失败。",
-
   "onboarding_title": "很高兴认识你！",
   "onboarding_description": "不仅仅是简单的记录，\n通过AI分析更深入地了解鹦鹉的状态。",
   "btn_start": "开始使用",
-
   "login_title": "登录",
   "login_google": "使用Google登录",
   "login_apple": "使用Apple登录",
@@ -37,22 +36,18 @@
   "login_signup": "注册",
   "login_saveId": "记住账号",
   "login_findIdPassword": "找回账号/密码",
-
   "input_email": "邮箱",
   "input_email_hint": "请输入邮箱",
   "input_password": "密码",
   "input_password_hint": "请输入密码",
   "input_name": "姓名",
   "input_name_hint": "请输入姓名",
-
   "dialog_goSignup": "去注册",
-
   "signup_title": "注册",
   "signup_button": "注册",
   "signup_alreadyMember": "已有账号？",
   "signup_completeTitle": "注册成功",
   "signup_completeMessage": "注册成功！\n登录后即可使用服务。",
-
   "terms_agreeAll": "全部同意",
   "terms_requiredTerms": "[必选] 同意服务条款",
   "terms_requiredPrivacy": "[必选] 同意隐私政策",
@@ -61,7 +56,6 @@
   "terms_privacyPolicy": "隐私政策",
   "terms_marketing": "营销信息接收同意",
   "terms_sectionTitle": "条款与政策",
-
   "forgot_title": "找回密码",
   "forgot_description": "请输入注册时使用的邮箱。\n我们将发送密码重置验证码。",
   "btn_sendCode": "发送验证码",
@@ -70,13 +64,17 @@
   "forgot_codeSentTo": "验证码已发送至{destination}。",
   "@forgot_codeSentTo": {
     "placeholders": {
-      "destination": {"type": "String"}
+      "destination": {
+        "type": "String"
+      }
     }
   },
   "forgot_timeRemaining": "剩余时间：{time}",
   "@forgot_timeRemaining": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "btn_resendCode": "重新发送验证码",
@@ -88,41 +86,52 @@
   "password_strength_medium": "中等",
   "password_strength_strong": "强",
   "btn_resetComplete": "完成重置",
-
   "home_monthlyUnit": "月度",
   "home_weeklyUnit": "周度",
   "home_wciHealthStatus": "WCI* 健康状态",
   "home_updatedAgo": "{minutes}分钟前更新",
   "@home_updatedAgo": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "home_updatedHoursAgo": "{hours}小时前更新",
   "@home_updatedHoursAgo": {
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "home_updatedOnDate": "{month}月{day}日更新",
   "@home_updatedOnDate": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "home_noUpdateData": "暂无数据",
   "home_enterDataPrompt": "输入数据查看{petName}的",
   "@home_enterDataPrompt": {
     "placeholders": {
-      "petName": {"type": "String"}
+      "petName": {
+        "type": "String"
+      }
     }
   },
   "home_checkStatus": "健康状态。",
   "home_level": "第{level}级",
   "@home_level": {
     "placeholders": {
-      "level": {"type": "int"}
+      "level": {
+        "type": "int"
+      }
     }
   },
   "home_weight": "体重",
@@ -136,22 +145,24 @@
   "home_monthFormat": "{month}月",
   "@home_monthFormat": {
     "placeholders": {
-      "month": {"type": "int"}
+      "month": {
+        "type": "int"
+      }
     }
   },
   "home_weekFormat": "第{week}周",
   "@home_weekFormat": {
     "placeholders": {
-      "week": {"type": "int"}
+      "week": {
+        "type": "int"
+      }
     }
   },
-
   "wci_level1": "身体较轻且偏瘦。\n建议检查一下食量和身体状况。",
   "wci_level2": "肋骨不可见，但轻触可感觉到。\n侧面看腹部略显凹陷。",
   "wci_level3": "整体体型稳定。\n保持现有习惯并继续观察。",
   "wci_level4": "身体整体看起来较圆润。\n建议检查一下食量和零食。",
   "wci_level5": "整体看起来较重。\n建议调整饮食和活动量。",
-
   "weight_title": "体重",
   "weight_wciHealthStatus": "WCI 健康状态",
   "weight_inputWeight": "输入体重",
@@ -177,29 +188,37 @@
   "weight_breedRangeIdeal": "理想：{min}克 - {max}克",
   "@weight_breedRangeIdeal": {
     "placeholders": {
-      "min": {"type": "double"},
-      "max": {"type": "double"}
+      "min": {
+        "type": "double"
+      },
+      "max": {
+        "type": "double"
+      }
     }
   },
   "weight_breedRangeFull": "范围：{min}克 - {max}克",
   "@weight_breedRangeFull": {
     "placeholders": {
-      "min": {"type": "double"},
-      "max": {"type": "double"}
+      "min": {
+        "type": "double"
+      },
+      "max": {
+        "type": "double"
+      }
     }
   },
-
   "breed_selectTitle": "选择品种",
   "breed_searchHint": "搜索品种...",
   "breed_noBreeds": "暂无品种数据",
   "breed_notFound": "未找到品种",
-
   "weightDetail_title": "记录",
   "weightDetail_headerLine1": "坚持记录",
   "weightDetail_headerLine2": "一眼查看{petName}的体重变化！",
   "@weightDetail_headerLine2": {
     "placeholders": {
-      "petName": {"type": "String"}
+      "petName": {
+        "type": "String"
+      }
     }
   },
   "weightDetail_subLine1": "立即记录，",
@@ -209,29 +228,45 @@
   "weightDetail_recordSummary": "{petName}共记录{days}天体重",
   "@weightDetail_recordSummary": {
     "placeholders": {
-      "petName": {"type": "String"},
-      "days": {"type": "int"}
+      "petName": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_yearMonth": "{year}年{month}月",
   "@weightDetail_yearMonth": {
     "placeholders": {
-      "year": {"type": "int"},
-      "month": {"type": "int"}
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_monthChartLabel": "{month}月",
   "@weightDetail_monthChartLabel": {
     "placeholders": {
-      "month": {"type": "int"}
+      "month": {
+        "type": "int"
+      }
     }
   },
   "schedule_dateDisplay": "{month}月{day}日（{weekday}）",
   "@schedule_dateDisplay": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"},
-      "weekday": {"type": "String"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
     }
   },
   "weightDetail_noPet": "暂无活跃的宠物。请先添加宠物。",
@@ -241,8 +276,12 @@
   "weightDetail_dateSchedule": "{month}月{day}日日程",
   "@weightDetail_dateSchedule": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_noScheduleOnDate": "此日暂无日程",
@@ -250,12 +289,13 @@
   "weightDetail_monthWeightRecord": "{month}月体重记录",
   "@weightDetail_monthWeightRecord": {
     "placeholders": {
-      "month": {"type": "int"}
+      "month": {
+        "type": "int"
+      }
     }
   },
   "btn_addRecord": "添加记录",
   "weightDetail_today": "今天",
-
   "profile_title": "个人中心",
   "profile_myPets": "我的宠物",
   "profile_addNewPet": "添加新宠物",
@@ -278,17 +318,24 @@
   "profile_ageFormat": "{years}年{months}月{days}天",
   "@profile_ageFormat": {
     "placeholders": {
-      "years": {"type": "int"},
-      "months": {"type": "int"},
-      "days": {"type": "int"}
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
     }
   },
-
   "dialog_unlinkTitle": "解绑社交账号",
   "dialog_unlinkContent": "确定要解绑{provider}账号吗？",
   "@dialog_unlinkContent": {
     "placeholders": {
-      "provider": {"type": "String"}
+      "provider": {
+        "type": "String"
+      }
     }
   },
   "dialog_logoutTitle": "退出登录",
@@ -298,7 +345,6 @@
   "dialog_deleteAccountFinalTitle": "确定要注销吗？",
   "dialog_deleteAccountFinalContent": "此操作无法撤消。",
   "dialog_delete": "注销",
-
   "pet_profile": "宠物资料",
   "pet_name_hint": "请输入名字",
   "pet_gender_hint": "请选择性别",
@@ -315,7 +361,6 @@
   "pet_growthAdult": "成年期",
   "dialog_selectGender": "选择性别",
   "dialog_selectGrowthStage": "选择成长阶段",
-
   "error_googleLogin": "Google登录时发生错误。",
   "error_appleLogin": "Apple登录时发生错误。",
   "error_login": "登录时发生错误。",
@@ -327,7 +372,9 @@
   "error_saveFailed": "保存时发生错误：{error}",
   "@error_saveFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "error_loadPet": "加载宠物信息失败。",
@@ -337,10 +384,11 @@
   "error_unlinkFailed": "解绑{provider}账号失败。",
   "@error_unlinkFailed": {
     "placeholders": {
-      "provider": {"type": "String"}
+      "provider": {
+        "type": "String"
+      }
     }
   },
-
   "snackbar_codeResent": "验证码已重新发送。",
   "snackbar_passwordChanged": "密码修改成功。",
   "snackbar_saved": "已保存。",
@@ -352,10 +400,11 @@
   "snackbar_unlinked": "{provider}账号已解绑。",
   "@snackbar_unlinked": {
     "placeholders": {
-      "provider": {"type": "String"}
+      "provider": {
+        "type": "String"
+      }
     }
   },
-
   "validation_enterEmail": "请输入邮箱。",
   "validation_invalidEmail": "请输入正确的邮箱格式。",
   "validation_enterPassword": "请输入密码。",
@@ -365,7 +414,6 @@
   "validation_enterNewPassword": "请输入新密码。",
   "validation_confirmPassword": "请再次输入密码。",
   "validation_passwordMismatch": "密码不一致。",
-
   "datetime_weekday_mon": "一",
   "datetime_weekday_tue": "二",
   "datetime_weekday_wed": "三",
@@ -376,24 +424,36 @@
   "datetime_dateFormat": "{year}年{month}月{day}日（周{weekday}）",
   "@datetime_dateFormat": {
     "placeholders": {
-      "year": {"type": "int"},
-      "month": {"type": "int"},
-      "day": {"type": "int"},
-      "weekday": {"type": "String"}
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
     }
   },
   "datetime_dateShort": "{month}/{day}（周{weekday}）",
   "@datetime_dateShort": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"},
-      "weekday": {"type": "String"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
     }
   },
-
   "social_google": "Google",
   "social_apple": "Apple",
-
   "profile_user": "用户",
   "profile_userSuffix": "",
   "profile_languageSettings": "语言设置",
@@ -401,7 +461,6 @@
   "profile_deviceDefault": "设备默认",
   "profile_deviceDefaultSubtitle": "跟随系统语言",
   "profile_zeroDay": "0天",
-
   "bhi_title": "健康分数",
   "bhi_noDataTitle": "暂无健康数据",
   "bhi_noDataSubtitle": "请输入体重、食物和饮水数据",
@@ -427,7 +486,6 @@
   "bhi_growthAdult": "成年期",
   "bhi_growthPostGrowth": "后续成长期",
   "bhi_growthRapidGrowth": "快速成长期",
-
   "food_title": "食物",
   "food_addTitle": "添加食物",
   "food_editTitle": "编辑食物",
@@ -442,14 +500,11 @@
   "food_dailyCount": "每日摄入次数",
   "food_perMeal": "每次: {amount}g",
   "food_timesCount": "{count}次",
-
   "pet_defaultName": "鸟",
-
   "wciIndex_title": "什么是WCI？",
   "wciIndex_description": "一个健康指标，以百分比形式显示\n饮食习惯变化对体重的影响。",
   "wciIndex_calculationMethod": "计算方法",
   "wciIndex_levelCriteria": "WCI 5级标准",
-
   "chatbot_title": "鹦鹉博士",
   "chatbot_clearHistory": "清除聊天记录",
   "chatbot_clearHistoryConfirm": "所有聊天记录将被删除。是否继续？",
@@ -466,7 +521,9 @@
   "chatbot_aiCallFailed": "AI调用失败：{error}",
   "@chatbot_aiCallFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "chatbot_multimodalHint": "就照片提问或直接发送",
@@ -477,7 +534,8 @@
   "chatbot_visionFailed": "照片分析失败，仅发送文字。",
   "chatbot_imageTooLarge": "图片过大（最大10MB）",
   "chatbot_imageOnlineOnly": "附加图片需要在线连接",
-
+  "chatbot_bannerTitle": "AI 聊天 · 照片分析",
+  "chatbot_bannerSubtitle": "提问或附加照片",
   "water_title": "饮水",
   "water_inputTitle": "饮水量输入",
   "water_totalIntake": "总饮水量(ml)",
@@ -488,25 +546,30 @@
   "water_recommendedRange": "推荐：{amount}ml/天",
   "@water_recommendedRange": {
     "placeholders": {
-      "amount": {"type": "String"}
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "water_dailyCount": "每日饮水次数",
   "water_perDrink": "每次：{amount}ml",
   "@water_perDrink": {
     "placeholders": {
-      "amount": {"type": "String"}
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "water_timesCount": "{count}次",
   "@water_timesCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "water_tapToInput": "点击输入",
   "water_tapToEdit": "点击修改",
-
   "weight_bodyWeight": "体重*",
   "weight_addStickerHint": "点击这里添加贴纸。",
   "weight_inputLabel": "输入体重 (g)",
@@ -516,17 +579,19 @@
   "weight_bcs3": "肋骨不可见但轻触可感觉到。\n侧面看腹部略显凹陷。",
   "weight_bcs4": "可以摸到肋骨但有轻微脂肪层。\n侧面看起来较圆润，体重略有增加。",
   "weight_bcs5": "肋骨难以触摸，侧面看起来圆润。\n请减少食量并增加活动量。",
-
   "validation_enterWeight": "请输入体重。",
   "validation_enterValidNumber": "请输入正确的数字。",
   "validation_weightGreaterThanZero": "体重必须大于0。",
   "error_noPetFound": "未找到活跃的宠物。",
-
   "datetime_lunar": "农历{month}月{day}日",
   "@datetime_lunar": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "datetime_weekdayFull_sun": "星期日",
@@ -539,16 +604,19 @@
   "datetime_minutes": "{minutes}分钟",
   "@datetime_minutes": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "datetime_seconds": "{seconds}秒",
   "@datetime_seconds": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
-
   "notification_title": "通知",
   "notification_markAllRead": "全部已读",
   "notification_empty": "暂无通知",
@@ -557,35 +625,40 @@
   "notification_minutesAgo": "{minutes}分钟前",
   "@notification_minutesAgo": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "notification_hoursAgo": "{hours}小时前",
   "@notification_hoursAgo": {
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "notification_daysAgo": "{days}天前",
   "@notification_daysAgo": {
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
-
   "schedule_saveError": "保存日程时发生错误。",
   "schedule_deleted": "日程已删除。",
   "schedule_deleteError": "删除日程时发生错误。",
   "schedule_reminderMinutes": "{minutes}分钟前",
   "@schedule_reminderMinutes": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
-
   "btn_save": "保存",
   "btn_saveRecord": "保存记录",
-
   "error_network": "请检查网络连接。",
   "error_server": "服务器出现临时问题，请稍后重试。",
   "error_authRequired": "需要登录。",
@@ -602,7 +675,6 @@
   "error_tooManyRequests": "请求过多，请稍后重试。",
   "error_socialAccountConflict": "该社交账号已绑定其他账号。",
   "snackbar_savedOffline": "已离线保存，联网后自动同步。",
-
   "coach_wciCard_title": "健康状态",
   "coach_wciCard_body": "在这里查看WCI健康状态。\n数据越多越准确！",
   "coach_weightCard_title": "体重记录",
@@ -617,8 +689,8 @@
   "coach_recordsTab_body": "在这里一目了然地查看\n体重变化和日程。",
   "coach_chatbotTab_title": "鹦鹉博士",
   "coach_chatbotTab_body": "对鹦鹉有疑问？\n问问AI鹦鹉博士吧！",
-  "coach_aiHealthCheck_title": "AI健康检查",
-  "coach_aiHealthCheck_body": "一张照片即可让AI分析健康状况。\n点击立即开始！",
+  "coach_aiHealthCheck_title": "AI 聊天",
+  "coach_aiHealthCheck_body": "随时提问并附上照片，AI 立即分析回复。\n点击立即开始！",
   "coach_insights_title": "每周洞察",
   "coach_insights_body": "在这里查看AI分析的健康洞察。\n数据越多越准确。",
   "coach_recordToggle_title": "周期切换",
@@ -640,19 +712,16 @@
   "coach_next": "下一步",
   "coach_gotIt": "知道了！",
   "coach_skip": "跳过",
-
   "coach_foodToggle_title": "饮食类型",
   "coach_foodToggle_body": "切换配餐和进食，同时记录提供量和摄入量。",
   "coach_foodAdd_title": "添加食物",
   "coach_foodAdd_body": "点击这里添加食物名称、数量和时间。",
   "coach_foodSave_title": "保存更改",
   "coach_foodSave_body": "别忘了保存！在线时会自动同步。",
-
   "coach_waterIcon_title": "记录饮水量",
   "coach_waterIcon_body": "点击水图标增加饮水量。长按可手动输入数量。",
   "coach_waterTarget_title": "每日目标",
   "coach_waterTarget_body": "这里显示建议的每日饮水量。保持充足的水分很重要！",
-
   "coach_weightGauge_title": "体重状况指数",
   "coach_weightGauge_body": "该仪表显示您的鸟的体重是否在健康范围内。",
   "coach_weightInput_title": "输入体重",
@@ -661,59 +730,53 @@
   "coach_weightTime_body": "选择称重的时间。每天可以记录多次。",
   "coach_weightSave_title": "保存记录",
   "coach_weightSave_body": "点击保存。数据有助于追踪成长和早期发现健康变化。",
-
   "coach_hcHistory_title": "查看历史",
   "coach_hcHistory_body": "在这里查看所有过去的健康检查。追踪随时间变化的模式。",
   "coach_hcModes_title": "选择检查类型",
   "coach_hcModes_body": "选择全身检查、部位检查、排泄物分析或食物分析。",
   "coach_hcTrial_title": "免费试用可用",
   "coach_hcTrial_body": "您有免费健康检查次数！高级版可无限使用。",
-
   "coach_hcHistoryVet_title": "兽医报告",
   "coach_hcHistoryVet_body": "获取为兽医准备的综合报告。高级版功能。",
   "coach_hcHistoryShare_title": "分享报告",
   "coach_hcHistoryShare_body": "通过邮件或消息应用分享您的鸟的健康报告。",
   "coach_hcHistorySwipe_title": "滑动删除",
   "coach_hcHistorySwipe_body": "向左滑动任何历史卡片即可删除。请注意，此操作不可撤销！",
-
   "coach_hcResultConfidence_title": "置信度分数",
   "coach_hcResultConfidence_body": "显示AI分析的置信度。越高越好，但有疑虑时请咨询兽医。",
   "coach_hcResultFindings_title": "分析结果",
   "coach_hcResultFindings_body": "AI健康检查的详细观察。点击卡片查看更多信息。",
   "coach_hcResultRecheck_title": "随时复查",
   "coach_hcResultRecheck_body": "不满意？可以拍另一张照片立即重新检查。",
-
   "coach_bhiRing_title": "鸟类健康指数",
   "coach_bhiRing_body": "基于体重、食物和饮水数据计算的100分满分健康评分。",
   "coach_bhiBreakdown_title": "分数构成",
   "coach_bhiBreakdown_body": "查看体重(60分)、食物(25分)和饮水(15分)如何贡献总分。",
-
   "coach_profilePremium_title": "升级高级版",
   "coach_profilePremium_body": "解锁无限AI健康检查、导出报告和高级洞察！",
   "coach_profileAddPet_title": "添加宠物",
   "coach_profileAddPet_body": "养多只鸟？在这里添加并轻松切换个人资料。",
   "coach_profilePetCard_title": "选择活跃宠物",
   "coach_profilePetCard_body": "点击任何宠物卡片切换。活跃宠物的数据将在整个应用中显示。",
-
   "coach_premiumPlan_title": "选择您的方案",
   "coach_premiumPlan_body": "月度灵活，年度赠送2个月。两种方案都解锁所有功能！",
   "coach_premiumPromo_title": "有促销码吗？",
   "coach_premiumPromo_body": "有合作伙伴或活动的优惠码？点击这里兑换特别优惠。",
-
   "coach_petDetailImage_title": "添加宠物照片",
   "coach_petDetailImage_body": "点击上传您的鸟的照片。有助于一目了然地识别！",
   "coach_petDetailInfo_title": "基本信息",
   "coach_petDetailInfo_body": "填写性别、出生日期和品种，获得更准确的健康建议。",
   "coach_petDetailSave_title": "保存资料",
   "coach_petDetailSave_body": "别忘了保存更改！所有设备都会同步。",
-
   "weight_selectTime": "测量时间",
   "weight_timeNotRecorded": "未记录时间",
   "weight_dailyAverage": "日均",
   "weight_multipleRecords": "{count}次测量",
   "@weight_multipleRecords": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weight_addAnother": "再次记录",
@@ -721,7 +784,6 @@
   "weight_deleteConfirm": "删除",
   "weight_amPeriod": "上午",
   "weight_pmPeriod": "下午",
-
   "diet_serving": "投喂",
   "diet_eating": "进食",
   "diet_addServing": "添加投喂记录",
@@ -735,22 +797,32 @@
   "diet_eatingRateValue": "{rate}%",
   "@diet_eatingRateValue": {
     "placeholders": {
-      "rate": {"type": "int"}
+      "rate": {
+        "type": "int"
+      }
     }
   },
   "diet_selectTime": "投喂/进食时间",
   "diet_servingSummary": "投喂 {count}次 · {grams}g",
   "@diet_servingSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "grams": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "grams": {
+        "type": "String"
+      }
     }
   },
   "diet_eatingSummary": "进食 {count}次 · {grams}g",
   "@diet_eatingSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "grams": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "grams": {
+        "type": "String"
+      }
     }
   },
   "diet_selectType": "记录类型",
@@ -761,10 +833,11 @@
   "diet_eatingExceedsServing": "进食量不能超过投喂量。(剩余投喂量：{remaining}g)",
   "@diet_eatingExceedsServing": {
     "placeholders": {
-      "remaining": {"type": "String"}
+      "remaining": {
+        "type": "String"
+      }
     }
   },
-
   "faq_title": "常见问题",
   "faq_categoryGeneral": "通用",
   "faq_categoryUsage": "功能使用",
@@ -800,22 +873,21 @@
   "faq_q14": "什么是高级版服务？",
   "faq_a14": "高级版提供 AI 视觉健康检查无限使用、基于图像的精密分析等高级功能。",
   "faq_q15": "如何使用高级版代码？",
-  "faq_a15": "在个人资料页面的\u201c高级版\u201d菜单中输入 PERCH-XXXX-XXXX 格式的代码即可立即激活。",
+  "faq_a15": "在个人资料页面的“高级版”菜单中输入 PERCH-XXXX-XXXX 格式的代码即可立即激活。",
   "faq_q16": "高级版到期后数据会怎样？",
   "faq_a16": "高级版到期后，健康检查的文字结果会保留。但健康检查图片将在到期 90 天后从服务器自动删除。",
   "faq_q17": "如何使用 AI 视觉健康检查？",
-  "faq_a17": "点击主页的\u201cAI 健康检查\u201d按钮，选择分析类型（全身外观/部位/粪便/食物），然后拍照或从相册选择。",
+  "faq_a17": "点击主页的“AI 健康检查”按钮，选择分析类型（全身外观/部位/粪便/食物），然后拍照或从相册选择。",
   "faq_q18": "可以分析哪些部位？",
   "faq_a18": "可以分别分析全身外观、眼睛、喙、羽毛和脚。也可以检查粪便状况和食物安全性。",
   "faq_q19": "在哪里可以查看健康检查记录？",
-  "faq_a19": "点击 AI 健康检查页面顶部的\u201c记录\u201d按钮即可查看健康检查结果。",
+  "faq_a19": "点击 AI 健康检查页面顶部的“记录”按钮即可查看健康检查结果。",
   "faq_q20": "如何使用 AI 百科（聊天机器人）？",
   "faq_a20": "点击主页的 AI 百科横幅，进入聊天页面，可以询问有关鸟类的问题。",
   "faq_q21": "聊天记录会保存吗？",
   "faq_a21": "是的，聊天记录安全地存储在服务器上。注销后重新登录也可以查看之前的对话。",
   "faq_q22": "在哪里可以查看品种标准体重？",
   "faq_a22": "体重记录页面的图表中会显示品种标准体重范围。请在宠物档案中设置品种。",
-
   "premium_sectionTitle": "高级版",
   "premium_title": "输入高级版代码",
   "premium_badgeFree": "Free",
@@ -823,7 +895,9 @@
   "premium_expiresAt": "有效期至 {date}",
   "@premium_expiresAt": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "premium_enterCode": "请输入高级版代码",
@@ -842,134 +916,15 @@
   "premium_activationSuccessContent": "可使用高级版服务至 {date}。",
   "@premium_activationSuccessContent": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "premium_activationSuccessContentNoDate": "高级版服务已激活。",
   "premium_upgradeToPremium": "升级到高级版",
   "premium_healthCheckBlocked": "您已达到本月的使用上限。\n请下个月再试。",
   "premium_healthCheckBlockedTitle": "本月限额已达",
-
-  "hc_title": "AI健康检查",
-  "hc_photoSubtitle": "一张照片即可确认健康状态",
-  "hc_selectTarget": "请选择分析对象",
-  "hc_analyze": "开始分析",
-
-  "hc_modeFullBody": "全身外观",
-  "hc_modeFullBodyDesc": "拍摄全身照片分析外观",
-  "hc_modePartSpecific": "部位检查",
-  "hc_modePartSpecificDesc": "分析眼睛、喙、羽毛、脚等特定部位",
-  "hc_modeDroppings": "粪便分析",
-  "hc_modeDroppingsDesc": "通过粪便照片检查健康状况",
-  "hc_modeFood": "食物安全",
-  "hc_modeFoodDesc": "通过食物照片检查喂食安全性",
-
-  "hc_partEye": "眼睛",
-  "hc_partBeak": "喙",
-  "hc_partFeather": "羽毛",
-  "hc_partFoot": "脚",
-
-  "hc_imageSizeExceeded": "图片大小超过10MB",
-  "hc_imagePickError": "选择图片时出错：{error}",
-  "@hc_imagePickError": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
-  "hc_takePhoto": "拍照",
-  "hc_selectFromAlbum": "从相册选择",
-  "hc_photoHint": "请拍照或\n从相册选择",
-
-  "hc_registerPetFirst": "请先注册您的宠物",
-  "hc_analysisError": "分析过程中出错。\n请重试。",
-  "hc_cancelAnalysis": "取消分析",
-  "hc_cancelAnalysisConfirm": "确定取消分析吗？",
-  "hc_continueAnalysis": "继续分析",
-  "hc_analyzing": "分析中...",
-  "hc_aiAnalyzing": "AI正在分析图片",
-  "hc_analysisErrorTitle": "分析过程中出错",
-  "hc_retry": "重试",
-  "hc_goBack": "返回",
-
-  "hc_resultTitle": "分析结果",
-  "hc_analysisItems": "分析项目",
-  "hc_recommendations": "建议",
-  "hc_overallStatus": "综合状态",
-  "hc_confidence": "置信度",
-  "hc_vetVisitRecommended": "建议就医",
-  "hc_possibleCauses": "可能原因",
-  "hc_possibleCausesPrefix": "可能原因：",
-  "hc_nutritionBalance": "营养均衡",
-  "hc_goHome": "返回首页",
-  "hc_recheckButton": "重新检查",
-  "hc_colorTexture": "颜色：{color}，质地：{texture}",
-  "@hc_colorTexture": {
-    "placeholders": {
-      "color": {"type": "String"},
-      "texture": {"type": "String"}
-    }
-  },
-
-  "hc_severityNormal": "正常",
-  "hc_severityCaution": "注意",
-  "hc_severityWarning": "警告",
-  "hc_severityCritical": "危险",
-  "hc_severityUnknown": "需确认",
-
-  "hc_areaFeather": "羽毛状态",
-  "hc_areaPosture": "姿势/平衡",
-  "hc_areaEye": "眼睛状态",
-  "hc_areaBeak": "喙状态",
-  "hc_areaFoot": "脚/爪",
-  "hc_areaBodyShape": "体型",
-  "hc_areaFeces": "粪便",
-  "hc_areaUrates": "尿酸盐",
-  "hc_areaUrine": "尿液",
-  "hc_areaInjuryDetected": "检测到外伤",
-
-  "hc_aspectPlantarSurface": "脚掌状态",
-  "hc_aspectNailLength": "指甲长度",
-  "hc_aspectSwelling": "肿胀",
-  "hc_aspectSkinTexture": "皮肤质地",
-  "hc_aspectGripStrength": "抓握力",
-  "hc_aspectToeAlignment": "脚趾排列",
-  "hc_aspectBurns": "烧伤",
-  "hc_aspectLacerations": "撕裂伤",
-  "hc_aspectFractures": "骨折",
-  "hc_aspectBiteWounds": "咬伤",
-  "hc_aspectBandInjuries": "脚环损伤",
-
-  "hc_aspectDischarge": "分泌物",
-  "hc_aspectPupilResponse": "瞳孔反应",
-  "hc_aspectCornealClarity": "角膜透明度",
-  "hc_aspectPeriorbitalArea": "眼周区域",
-  "hc_aspectSymmetry": "对称性",
-  "hc_aspectCornealScratches": "角膜损伤",
-  "hc_aspectForeignBody": "异物",
-
-  "hc_aspectColor": "颜色",
-  "hc_aspectTexture": "质地",
-  "hc_aspectOvergrowth": "过度生长",
-  "hc_aspectCracks": "裂纹",
-  "hc_aspectPeeling": "脱皮",
-  "hc_aspectCereCondition": "蜡膜状态",
-  "hc_aspectAlignment": "排列状态",
-
-  "hc_aspectDensity": "密度",
-  "hc_aspectLuster": "光泽",
-  "hc_aspectDiscoloration": "变色",
-  "hc_aspectDamagePatterns": "损伤模式",
-  "hc_aspectPluckingSigns": "拔羽迹象",
-  "hc_aspectPinFeathers": "针羽",
-  "hc_aspectStressBars": "应激纹",
-  "hc_aspectMoltingStatus": "换羽状态",
-
-  "hc_firstAidTitle": "应急处理",
-  "hc_notesHint": "描述伤情或事故（选填）",
-  "hc_notesHintFullBody": "描述整体健康状况或异常情况（选填）",
-  "hc_notesHintDroppings": "描述粪便颜色、形状、频率等异常情况（选填）",
-  "hc_notesHintFood": "描述食物种类、进食量、食欲变化等（选填）",
-
   "ai_petInfoPrefix": "名字",
   "ai_breedPrefix": "品种",
   "ai_agePrefix": "年龄",
@@ -982,37 +937,26 @@
   "ai_ageYears": "{years}岁",
   "@ai_ageYears": {
     "placeholders": {
-      "years": {"type": "int"}
+      "years": {
+        "type": "int"
+      }
     }
   },
   "ai_ageMonths": "{months}个月",
   "@ai_ageMonths": {
     "placeholders": {
-      "months": {"type": "int"}
+      "months": {
+        "type": "int"
+      }
     }
   },
   "ai_ageLessThanMonth": "不到1个月",
-
-  "hc_history": "记录",
-  "hc_historyTitle": "健康检查记录",
-  "hc_historyEmpty": "还没有健康检查记录",
-  "hc_historyEmptyDesc": "通过AI健康检查确认鹦鹉的健康状态",
-  "hc_savedSuccessfully": "结果已保存",
-  "hc_deleteConfirm": "要删除此记录吗？",
-  "hc_deleteSuccess": "记录已删除",
-  "hc_dateToday": "今天",
-  "hc_dateYesterday": "昨天",
-  "hc_dateLast7Days": "最近7天",
-  "hc_dateEarlier": "更早",
-
   "premium_featureLockedTitle": "高级版专属功能",
   "premium_featureLockedMessage": "AI视觉健康检查是高级版专属功能。\n\n视觉AI模型运行成本较高，感谢您的理解。\n激活高级版代码后可无限使用。",
   "premium_activateNow": "激活高级版",
   "premium_maybeLater": "稍后",
-
   "chatbot_premiumBanner": "通过高级版获得更详细、更准确的回答",
   "chatbot_premiumUpgrade": "升级",
-
   "paywall_title": "Premium",
   "paywall_headline": "通过照片和记录\n更准确地了解健康状况",
   "paywall_benefit1": "无限次AI视觉健康检查",
@@ -1024,7 +968,9 @@
   "paywall_yearlyPerMonth": "每月 {price}",
   "@paywall_yearlyPerMonth": {
     "placeholders": {
-      "price": {"type": "String"}
+      "price": {
+        "type": "String"
+      }
     }
   },
   "paywall_ctaButton": "开始Premium",
@@ -1043,35 +989,33 @@
   "paywall_alreadyPremiumExpires": "可使用至 {date}",
   "@paywall_alreadyPremiumExpires": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
-
   "quotaBadge_normal": "本月剩余{count}次",
   "@quotaBadge_normal": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "quotaBadge_exhausted": "已达每月限额",
   "quotaBadge_upgrade": "升级",
   "aiEncyclopedia_quotaExhausted": "本月免费使用次数已用完。升级到高级版可无限使用。",
   "aiEncyclopedia_quotaExhaustedHint": "已达每月限额 · 升级到高级版",
-  "healthCheck_freeTrialBadge": "免费体验",
-  "healthCheck_trialExhaustedTitle": "免费体验已完成",
-  "healthCheck_trialExhaustedMessage": "您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。",
-  "healthCheck_trialExhaustedMessage_v2": "您正在免费体验中，试用次数已用完。\n\n输入促销代码或通过社交媒体联系我们即可获得更多使用权限。",
-  "healthCheck_trialExhaustedAction_promo": "输入促销代码",
-
   "visionQuotaBadge_normal": "剩余{count}次",
   "@visionQuotaBadge_normal": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "visionQuotaBadge_exhausted": "已达每月限额",
   "visionQuotaBadge_upgrade": "输入代码",
-
   "paywall_freeTrialBanner": "AI视觉检查和AI聊天机器人\n目前免费体验中",
   "paywall_freeTrialSubtext": "输入促销代码可解锁更多权益",
   "paywall_snsEventTitle": "社交媒体活动",
@@ -1079,10 +1023,11 @@
   "sns_copied": "已复制{label}",
   "@sns_copied": {
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
-
   "report_shareFailed": "创建分享链接失败。",
   "report_shareHealth": "分享健康报告",
   "report_vetSummary": "就诊摘要",
@@ -1092,7 +1037,6 @@
   "report_vetFeatureChecks": "AI健康检查结果摘要",
   "report_vetFeatureNotes": "行为记录与日常观察",
   "report_vetShareButton": "分享摘要链接",
-
   "home_healthSummaryTitle": "健康变化摘要",
   "home_healthSummaryWeightChange": "体重变化",
   "home_healthSummaryAbnormal": "异常发现 (30天)",
@@ -1103,7 +1047,6 @@
   "home_insightsEmpty": "暂无洞察",
   "home_insightsRecommendations": "建议事项",
   "home_insightsUpgrade": "升级至Premium\n即可获取每周健康洞察",
-
   "dailyRecord_title": "每日记录",
   "dailyRecord_mood": "心情",
   "dailyRecord_activity": "活动量",
@@ -1122,8 +1065,12 @@
   "weightDetail_dateDailyRecord": "{month}月{day}日每日记录",
   "@weightDetail_dateDailyRecord": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_noDailyRecord": "暂无每日记录",
@@ -1131,7 +1078,6 @@
   "weightDetail_addDailyRecordHint": "点击下方按钮添加记录",
   "btn_addSchedule": "添加日程",
   "btn_addDailyRecord": "添加每日记录",
-
   "profileSetup_title": "个人资料设置",
   "profileSetup_phoneHint": "请输入电话号码",
   "profileSetup_complete": "完成",
@@ -1142,32 +1088,28 @@
   "profileSetup_doneTitle": "设置完成",
   "profileSetup_doneMessage": "设置已完成！",
   "profileSetup_startRecording": "开始记录！",
-
   "timePicker_title": "请选择时间",
   "timePicker_confirm": "确认选择",
-
   "country_selectTitle": "选择国家",
-
   "datetime_am": "上午",
   "datetime_pm": "下午",
   "datetime_yearMonth": "{year}年{month}月",
   "@datetime_yearMonth": {
     "placeholders": {
-      "year": {"type": "int"},
-      "month": {"type": "int"}
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
-
   "schedule_noPetInfo": "没有宠物信息。",
   "schedule_noTitle": "无标题",
   "schedule_endTimeAfterStart": "结束时间必须在开始时间之后。",
   "schedule_titleHint": "标题",
-
   "bottomNav_home": "首页",
   "bottomNav_records": "记录",
   "bottomNav_chat": "AI 聊天",
-
-  "hc_analysisTimeout": "分析耗时过长。请检查网络后重试。",
-
   "common_defaultPetName": "宝贝"
 }

@@ -8,7 +8,6 @@ import 'package:path/path.dart' as p;
 class ImageOwnerType {
   static const userProfile = 'user_profile';
   static const petProfile = 'pet_profile';
-  static const healthCheck = 'health_check';
 }
 
 /// SQLite 기반 로컬 이미지 저장 서비스 (인메모리 LRU 캐시 포함)

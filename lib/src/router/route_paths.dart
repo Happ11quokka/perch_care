@@ -40,12 +40,4 @@ class RoutePaths {
 
   // 프리미엄 (full: /home/premium)
   static const String premium = '/home/premium';
-
-  // 건강체크 하위 경로 (full: /home/health-check/...)
-  static const String healthCheck = '/home/health-check';
-  static const String healthCheckCapture = '/home/health-check/capture';
-  static const String healthCheckAnalyzing = '/home/health-check/analyzing';
-  static const String healthCheckResult = '/home/health-check/result';
-  static const String healthCheckHistory = '/home/health-check/history';
-  static const String vetSummary = '/home/health-check/vet-summary';
 }

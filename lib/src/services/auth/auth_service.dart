@@ -6,7 +6,6 @@ import '../pet/pet_local_cache_service.dart';
 import '../pet/pet_service.dart';
 import '../premium/premium_service.dart';
 import '../weight/weight_service.dart';
-import '../storage/health_check_storage_service.dart';
 import '../storage/chat_storage_service.dart';
 import '../coach_mark/coach_mark_service.dart';
 import '../analytics/analytics_service.dart';
@@ -206,7 +205,6 @@ class AuthService {
     // 로컬 스토리지 정리
     await _petCache.clearAll();
     await LocalImageStorageService.instance.clearAll();
-    await HealthCheckStorageService.instance.clearAll();
     await ChatStorageService.instance.clearAllMessages();
     await CoachMarkService.instance.clearAll();
     await PushNotificationService.instance.dispose();
@@ -307,7 +305,6 @@ class AuthService {
     // 로컬 스토리지 정리
     await _petCache.clearAll();
     await LocalImageStorageService.instance.clearAll();
-    await HealthCheckStorageService.instance.clearAll();
     await ChatStorageService.instance.clearAllMessages();
     await CoachMarkService.instance.clearAll();
     await _tokenService.clearTokens();

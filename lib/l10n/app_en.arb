@@ -1,6 +1,5 @@
 {
   "@@locale": "en",
-
   "common_save": "Save",
   "common_cancel": "Cancel",
   "common_confirm": "OK",
@@ -19,15 +18,15 @@
   "common_showAll": "Show all ({count})",
   "@common_showAll": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "pet_loadError": "Failed to load pet information.",
-
   "onboarding_title": "Nice to meet you!",
   "onboarding_description": "Beyond simple records, understand your parrot's\ncondition more deeply with AI analysis.",
   "btn_start": "Get Started",
-
   "login_title": "Login",
   "login_google": "Sign in with Google",
   "login_apple": "Sign in with Apple",
@@ -37,22 +36,18 @@
   "login_signup": "Sign Up",
   "login_saveId": "Remember ID",
   "login_findIdPassword": "Find ID/Password",
-
   "input_email": "Email",
   "input_email_hint": "Enter your email",
   "input_password": "Password",
   "input_password_hint": "Enter your password",
   "input_name": "Name",
   "input_name_hint": "Enter your name",
-
   "dialog_goSignup": "Go to Sign Up",
-
   "signup_title": "Sign Up",
   "signup_button": "Sign Up",
   "signup_alreadyMember": "Already have an account?",
   "signup_completeTitle": "Sign Up Complete",
   "signup_completeMessage": "Registration is complete!\nPlease log in to use the service.",
-
   "terms_agreeAll": "Agree to All",
   "terms_requiredTerms": "[Required] Terms of Service",
   "terms_requiredPrivacy": "[Required] Privacy Policy",
@@ -61,7 +56,6 @@
   "terms_privacyPolicy": "Privacy Policy",
   "terms_marketing": "Marketing Communications",
   "terms_sectionTitle": "Terms & Policies",
-
   "forgot_title": "Find Password",
   "forgot_description": "Enter the email you used to sign up.\nWe will send you a password reset code.",
   "btn_sendCode": "Send Code",
@@ -78,7 +72,6 @@
   "password_strength_medium": "Medium",
   "password_strength_strong": "Strong",
   "btn_resetComplete": "Reset Complete",
-
   "home_monthlyUnit": "Monthly",
   "home_weeklyUnit": "Weekly",
   "home_wciHealthStatus": "WCI* Health Status",
@@ -86,14 +79,20 @@
   "home_updatedHoursAgo": "Updated {hours}h ago",
   "@home_updatedHoursAgo": {
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "home_updatedOnDate": "Updated on {month}/{day}",
   "@home_updatedOnDate": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "home_noUpdateData": "No data",
@@ -110,13 +109,11 @@
   "home_healthSignal": "Health Signal",
   "home_monthFormat": "{month}",
   "home_weekFormat": "Week {week}",
-
   "wci_level1": "Your pet looks light and thin.\nCheck food intake and condition.",
   "wci_level2": "Ribs aren't visible but easily felt.\nA tucked waist is visible from the side.",
   "wci_level3": "Overall body shape is stable.\nMaintain current habits and observe lightly.",
   "wci_level4": "Body looks overall round.\nCheck food and treat amounts.",
   "wci_level5": "Overall heavy impression.\nAdjust diet and activity for health.",
-
   "weight_title": "Weight",
   "weight_wciHealthStatus": "WCI Health Status",
   "weight_inputWeight": "Enter Weight",
@@ -142,23 +139,29 @@
   "weight_breedRangeIdeal": "Ideal: {min}g - {max}g",
   "@weight_breedRangeIdeal": {
     "placeholders": {
-      "min": {"type": "double"},
-      "max": {"type": "double"}
+      "min": {
+        "type": "double"
+      },
+      "max": {
+        "type": "double"
+      }
     }
   },
   "weight_breedRangeFull": "Range: {min}g - {max}g",
   "@weight_breedRangeFull": {
     "placeholders": {
-      "min": {"type": "double"},
-      "max": {"type": "double"}
+      "min": {
+        "type": "double"
+      },
+      "max": {
+        "type": "double"
+      }
     }
   },
-
   "breed_selectTitle": "Select Breed",
   "breed_searchHint": "Search breeds...",
   "breed_noBreeds": "No breeds available",
   "breed_notFound": "No breeds found",
-
   "weightDetail_title": "Records",
   "weightDetail_headerLine1": "Keep recording consistently",
   "weightDetail_headerLine2": "{petName}'s weight changes at a glance!",
@@ -177,8 +180,12 @@
   "weightDetail_dateSchedule": "Schedule for {month}/{day}",
   "@weightDetail_dateSchedule": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_noScheduleOnDate": "No scheduled events for this date",
@@ -186,7 +193,6 @@
   "weightDetail_monthWeightRecord": "{month} Weight Records",
   "btn_addRecord": "Add Record",
   "weightDetail_today": "Today",
-
   "profile_title": "Profile",
   "profile_myPets": "My Pets",
   "profile_addNewPet": "Add New Pet",
@@ -207,7 +213,6 @@
   "profile_noSpecies": "No species info",
   "profile_noAge": "No age info",
   "profile_ageFormat": "{years}y {months}m {days}d",
-
   "dialog_unlinkTitle": "Unlink Social Account",
   "dialog_unlinkContent": "Unlink {provider} account?",
   "dialog_logoutTitle": "Logout",
@@ -217,7 +222,6 @@
   "dialog_deleteAccountFinalTitle": "Are you sure?",
   "dialog_deleteAccountFinalContent": "This action cannot be undone.",
   "dialog_delete": "Delete",
-
   "pet_profile": "Profile",
   "pet_name_hint": "Enter name",
   "pet_gender_hint": "Select gender",
@@ -234,7 +238,6 @@
   "pet_growthAdult": "Adult",
   "dialog_selectGender": "Select Gender",
   "dialog_selectGrowthStage": "Select Growth Stage",
-
   "error_googleLogin": "Error during Google login.",
   "error_appleLogin": "Error during Apple login.",
   "error_login": "Error during login.",
@@ -249,7 +252,6 @@
   "error_linkGoogle": "Failed to link Google account.",
   "error_linkApple": "Failed to link Apple account.",
   "error_unlinkFailed": "Failed to unlink {provider} account.",
-
   "snackbar_codeResent": "Code has been resent.",
   "snackbar_passwordChanged": "Password changed successfully.",
   "snackbar_saved": "Saved.",
@@ -259,7 +261,6 @@
   "snackbar_googleLinked": "Google account linked.",
   "snackbar_appleLinked": "Apple account linked.",
   "snackbar_unlinked": "{provider} account unlinked.",
-
   "validation_enterEmail": "Please enter your email.",
   "validation_invalidEmail": "Please enter a valid email.",
   "validation_enterPassword": "Please enter your password.",
@@ -269,7 +270,6 @@
   "validation_enterNewPassword": "Please enter a new password.",
   "validation_confirmPassword": "Please confirm your password.",
   "validation_passwordMismatch": "Passwords do not match.",
-
   "datetime_weekday_mon": "Mon",
   "datetime_weekday_tue": "Tue",
   "datetime_weekday_wed": "Wed",
@@ -279,10 +279,8 @@
   "datetime_weekday_sun": "Sun",
   "datetime_dateFormat": "{weekday}, {month}/{day}/{year}",
   "datetime_dateShort": "{month}/{day} ({weekday})",
-
   "social_google": "Google",
   "social_apple": "Apple",
-
   "profile_user": "User",
   "profile_userSuffix": "",
   "profile_languageSettings": "Language",
@@ -290,7 +288,6 @@
   "profile_deviceDefault": "Device Default",
   "profile_deviceDefaultSubtitle": "Follow system language",
   "profile_zeroDay": "0d",
-
   "bhi_title": "Health Score",
   "bhi_noDataTitle": "No health data yet",
   "bhi_noDataSubtitle": "Please enter weight, food, and water data",
@@ -316,7 +313,6 @@
   "bhi_growthAdult": "Adult",
   "bhi_growthPostGrowth": "Post Growth",
   "bhi_growthRapidGrowth": "Rapid Growth",
-
   "food_title": "Food",
   "food_addTitle": "Add Food",
   "food_editTitle": "Edit Food",
@@ -331,14 +327,11 @@
   "food_dailyCount": "Daily Intake Count",
   "food_perMeal": "Per meal: {amount}g",
   "food_timesCount": "{count} times",
-
   "pet_defaultName": "Bird",
-
   "wciIndex_title": "What is WCI?",
   "wciIndex_description": "A health index that shows how changes in eating habits\naffect weight as a percentage.",
   "wciIndex_calculationMethod": "Calculation Method",
   "wciIndex_levelCriteria": "WCI 5-Level Criteria",
-
   "chatbot_title": "Chatbot",
   "chatbot_clearHistory": "Clear Chat History",
   "chatbot_clearHistoryConfirm": "All chat history will be deleted. Continue?",
@@ -361,7 +354,8 @@
   "chatbot_visionFailed": "Photo analysis failed. Sending text only.",
   "chatbot_imageTooLarge": "Image is too large (max 10MB)",
   "chatbot_imageOnlineOnly": "Image attachments require an online connection",
-
+  "chatbot_bannerTitle": "AI Chat · Photo Analysis",
+  "chatbot_bannerSubtitle": "Ask a question or attach a photo",
   "water_title": "Water",
   "water_inputTitle": "Water Intake",
   "water_totalIntake": "Total Intake (ml)",
@@ -375,7 +369,6 @@
   "water_timesCount": "{count} times",
   "water_tapToInput": "Tap to enter",
   "water_tapToEdit": "Tap to edit",
-
   "weight_bodyWeight": "Body Weight*",
   "weight_addStickerHint": "Tap here to add a sticker.",
   "weight_inputLabel": "Enter Weight (g)",
@@ -385,12 +378,10 @@
   "weight_bcs3": "Ribs aren't visible but can be felt with slight touch.\nA tucked waist is visible from the side.",
   "weight_bcs4": "Ribs can be felt but with a slight fat layer.\nSide profile looks rounder, weight has increased slightly.",
   "weight_bcs5": "Ribs are hard to feel and side profile appears round.\nReduce food and increase activity.",
-
   "validation_enterWeight": "Please enter weight.",
   "validation_enterValidNumber": "Please enter a valid number.",
   "validation_weightGreaterThanZero": "Weight must be greater than 0.",
   "error_noPetFound": "No active pet found.",
-
   "datetime_lunar": "Lunar {month}/{day}",
   "datetime_weekdayFull_sun": "Sunday",
   "datetime_weekdayFull_mon": "Monday",
@@ -401,7 +392,6 @@
   "datetime_weekdayFull_sat": "Saturday",
   "datetime_minutes": "{minutes} min",
   "datetime_seconds": "{seconds} sec",
-
   "notification_title": "Notifications",
   "notification_markAllRead": "Mark All Read",
   "notification_empty": "No notifications",
@@ -410,15 +400,12 @@
   "notification_minutesAgo": "{minutes}m ago",
   "notification_hoursAgo": "{hours}h ago",
   "notification_daysAgo": "{days}d ago",
-
   "schedule_saveError": "Error saving schedule.",
   "schedule_deleted": "Schedule deleted.",
   "schedule_deleteError": "Failed to delete schedule.",
   "schedule_reminderMinutes": "{minutes} min before",
-
   "btn_save": "Save",
   "btn_saveRecord": "Save Record",
-
   "error_network": "Please check your network connection.",
   "error_server": "A temporary server issue occurred. Please try again later.",
   "error_authRequired": "Login is required.",
@@ -435,7 +422,6 @@
   "error_tooManyRequests": "Too many requests. Please try again later.",
   "error_socialAccountConflict": "This social account is already linked to another account.",
   "snackbar_savedOffline": "Saved offline. Will sync when connected.",
-
   "coach_wciCard_title": "Health Status",
   "coach_wciCard_body": "Check WCI health status here.\nIt gets more accurate with more data!",
   "coach_weightCard_title": "Weight Record",
@@ -450,8 +436,8 @@
   "coach_recordsTab_body": "View weight changes and schedules\nat a glance here.",
   "coach_chatbotTab_title": "Dr. Parrot",
   "coach_chatbotTab_body": "Have questions about parrots?\nAsk our AI Dr. Parrot!",
-  "coach_aiHealthCheck_title": "AI Health Check",
-  "coach_aiHealthCheck_body": "AI analyzes your bird's health from just one photo.\nTap to get started!",
+  "coach_aiHealthCheck_title": "AI Chat",
+  "coach_aiHealthCheck_body": "Ask anything and attach a photo — AI will analyze and reply right away.\nTap to get started!",
   "coach_insights_title": "Weekly Insights",
   "coach_insights_body": "View AI-analyzed health insights here.\nThey get more accurate with more data.",
   "coach_recordToggle_title": "Period Toggle",
@@ -473,19 +459,16 @@
   "coach_next": "Next",
   "coach_gotIt": "Got it!",
   "coach_skip": "Skip",
-
   "coach_foodToggle_title": "Diet Type",
   "coach_foodToggle_body": "Switch between Serving and Eating to track both provided and consumed food.",
   "coach_foodAdd_title": "Add Food Entry",
   "coach_foodAdd_body": "Tap here to add a new food record with name, amount, and time.",
   "coach_foodSave_title": "Save Changes",
   "coach_foodSave_body": "Don't forget to save! Your records sync automatically when online.",
-
   "coach_waterIcon_title": "Track Water Intake",
   "coach_waterIcon_body": "Tap the water icon to increase intake. Long press to manually enter the amount.",
   "coach_waterTarget_title": "Daily Goal",
   "coach_waterTarget_body": "Your recommended daily water intake is shown here. Keep your bird hydrated!",
-
   "coach_weightGauge_title": "Weight Condition Index",
   "coach_weightGauge_body": "This gauge shows if your bird's weight is within the healthy range for their breed.",
   "coach_weightInput_title": "Enter Weight",
@@ -494,59 +477,53 @@
   "coach_weightTime_body": "Select when the weight was measured. You can record multiple entries per day.",
   "coach_weightSave_title": "Save Record",
   "coach_weightSave_body": "Tap to save. Your data helps track growth and detect health changes early.",
-
   "coach_hcHistory_title": "View History",
   "coach_hcHistory_body": "Access all your past health checks here. Track patterns over time.",
   "coach_hcModes_title": "Choose Check Type",
   "coach_hcModes_body": "Select Full Body for overall health, Part-Specific for targeted areas, or Droppings/Food for diet analysis.",
   "coach_hcTrial_title": "Free Trials Available",
   "coach_hcTrial_body": "You have free health check trials! Premium unlocks unlimited checks.",
-
   "coach_hcHistoryVet_title": "Vet Summary",
   "coach_hcHistoryVet_body": "Get a comprehensive report formatted for veterinarians. Premium feature.",
   "coach_hcHistoryShare_title": "Share Report",
   "coach_hcHistoryShare_body": "Share your bird's health report via email or messaging apps.",
   "coach_hcHistorySwipe_title": "Swipe to Delete",
   "coach_hcHistorySwipe_body": "Swipe left on any history card to delete it. Be careful, this cannot be undone!",
-
   "coach_hcResultConfidence_title": "Confidence Score",
   "coach_hcResultConfidence_body": "This shows AI confidence in the analysis. Higher is better, but always consult a vet for concerns.",
   "coach_hcResultFindings_title": "Analysis Findings",
   "coach_hcResultFindings_body": "Detailed observations from the AI health check. Tap each card for more info.",
   "coach_hcResultRecheck_title": "Recheck Anytime",
   "coach_hcResultRecheck_body": "Not satisfied? You can take another photo and recheck immediately.",
-
   "coach_bhiRing_title": "Bird Health Index",
   "coach_bhiRing_body": "Your overall health score out of 100, calculated from weight, food, and water data.",
   "coach_bhiBreakdown_title": "Score Breakdown",
   "coach_bhiBreakdown_body": "See how weight (60pts), food (25pts), and water (15pts) contribute to the total score.",
-
   "coach_profilePremium_title": "Upgrade to Premium",
   "coach_profilePremium_body": "Unlock unlimited AI health checks, export reports, and advanced insights!",
   "coach_profileAddPet_title": "Add Another Pet",
   "coach_profileAddPet_body": "Managing multiple birds? Add them here and switch between profiles easily.",
   "coach_profilePetCard_title": "Select Active Pet",
   "coach_profilePetCard_body": "Tap any pet card to switch. The active pet's data will be shown throughout the app.",
-
   "coach_premiumPlan_title": "Choose Your Plan",
   "coach_premiumPlan_body": "Monthly offers flexibility, Yearly gives you 2 months free. Both unlock all features!",
   "coach_premiumPromo_title": "Have a Promo Code?",
   "coach_premiumPromo_body": "Got a code from a partner or event? Tap here to redeem special offers.",
-
   "coach_petDetailImage_title": "Add Pet Photo",
   "coach_petDetailImage_body": "Tap to upload a photo of your bird. It helps identify them at a glance!",
   "coach_petDetailInfo_title": "Basic Info",
   "coach_petDetailInfo_body": "Fill in gender, birthdate, and breed for more accurate health recommendations.",
   "coach_petDetailSave_title": "Save Profile",
   "coach_petDetailSave_body": "Don't forget to save your changes! They sync across all your devices.",
-
   "weight_selectTime": "Measurement Time",
   "weight_timeNotRecorded": "Time not recorded",
   "weight_dailyAverage": "Daily Avg",
   "weight_multipleRecords": "{count} measurements",
   "@weight_multipleRecords": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weight_addAnother": "Add Another",
@@ -554,7 +531,6 @@
   "weight_deleteConfirm": "Delete",
   "weight_amPeriod": "AM",
   "weight_pmPeriod": "PM",
-
   "diet_serving": "Served",
   "diet_eating": "Eaten",
   "diet_addServing": "Add Serving Record",
@@ -568,22 +544,32 @@
   "diet_eatingRateValue": "{rate}%",
   "@diet_eatingRateValue": {
     "placeholders": {
-      "rate": {"type": "int"}
+      "rate": {
+        "type": "int"
+      }
     }
   },
   "diet_selectTime": "Serving/Eating Time",
   "diet_servingSummary": "Served {count}x · {grams}g",
   "@diet_servingSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "grams": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "grams": {
+        "type": "String"
+      }
     }
   },
   "diet_eatingSummary": "Eaten {count}x · {grams}g",
   "@diet_eatingSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "grams": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "grams": {
+        "type": "String"
+      }
     }
   },
   "diet_selectType": "Record Type",
@@ -594,10 +580,11 @@
   "diet_eatingExceedsServing": "Eating amount cannot exceed served amount. (Remaining: {remaining}g)",
   "@diet_eatingExceedsServing": {
     "placeholders": {
-      "remaining": {"type": "String"}
+      "remaining": {
+        "type": "String"
+      }
     }
   },
-
   "faq_title": "FAQ",
   "faq_categoryGeneral": "General",
   "faq_categoryUsage": "How to Use",
@@ -648,7 +635,6 @@
   "faq_a21": "Yes, chat records are securely stored on the server. You can view previous conversations even after logging out and back in.",
   "faq_q22": "Where can I check breed-specific standard weight?",
   "faq_a22": "Standard weight ranges for your breed are displayed on the weight chart. Set your pet's breed in the pet profile.",
-
   "premium_sectionTitle": "Premium",
   "premium_title": "Enter Premium Code",
   "premium_badgeFree": "Free",
@@ -656,7 +642,9 @@
   "premium_expiresAt": "Until {date}",
   "@premium_expiresAt": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "premium_enterCode": "Enter your premium code",
@@ -675,134 +663,15 @@
   "premium_activationSuccessContent": "Premium service is available until {date}.",
   "@premium_activationSuccessContent": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "premium_activationSuccessContentNoDate": "Premium service has been activated.",
   "premium_upgradeToPremium": "Upgrade to Premium",
   "premium_healthCheckBlocked": "You've reached this month's usage limit.\nPlease try again next month.",
   "premium_healthCheckBlockedTitle": "Monthly Limit Reached",
-
-  "hc_title": "AI Health Check",
-  "hc_photoSubtitle": "Check health status with just one photo",
-  "hc_selectTarget": "Please select an analysis target",
-  "hc_analyze": "Analyze",
-
-  "hc_modeFullBody": "Full Body",
-  "hc_modeFullBodyDesc": "Analyze appearance by photographing the full body",
-  "hc_modePartSpecific": "Part-Specific",
-  "hc_modePartSpecificDesc": "Analyze specific parts such as eyes, beak, feathers, feet",
-  "hc_modeDroppings": "Droppings Analysis",
-  "hc_modeDroppingsDesc": "Check health status through droppings photos",
-  "hc_modeFood": "Food Safety",
-  "hc_modeFoodDesc": "Check if food is safe to feed through photos",
-
-  "hc_partEye": "Eye",
-  "hc_partBeak": "Beak",
-  "hc_partFeather": "Feather",
-  "hc_partFoot": "Foot",
-
-  "hc_imageSizeExceeded": "Image size exceeds 10MB",
-  "hc_imagePickError": "Error while selecting image: {error}",
-  "@hc_imagePickError": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
-  "hc_takePhoto": "Take Photo",
-  "hc_selectFromAlbum": "Select from Album",
-  "hc_photoHint": "Take a photo or\nselect from album",
-
-  "hc_registerPetFirst": "Please register your pet first",
-  "hc_analysisError": "An error occurred during analysis.\nPlease try again.",
-  "hc_cancelAnalysis": "Cancel Analysis",
-  "hc_cancelAnalysisConfirm": "Cancel the analysis?",
-  "hc_continueAnalysis": "Continue",
-  "hc_analyzing": "Analyzing...",
-  "hc_aiAnalyzing": "AI is analyzing the image",
-  "hc_analysisErrorTitle": "An error occurred during analysis",
-  "hc_retry": "Retry",
-  "hc_goBack": "Go Back",
-
-  "hc_resultTitle": "Analysis Results",
-  "hc_analysisItems": "Analysis Items",
-  "hc_recommendations": "Recommendations",
-  "hc_overallStatus": "Overall Status",
-  "hc_confidence": "Confidence",
-  "hc_vetVisitRecommended": "Veterinary visit recommended",
-  "hc_possibleCauses": "Possible Causes",
-  "hc_possibleCausesPrefix": "Possible causes: ",
-  "hc_nutritionBalance": "Nutrition Balance",
-  "hc_goHome": "Go Home",
-  "hc_recheckButton": "Check Again",
-  "hc_colorTexture": "Color: {color}, Texture: {texture}",
-  "@hc_colorTexture": {
-    "placeholders": {
-      "color": {"type": "String"},
-      "texture": {"type": "String"}
-    }
-  },
-
-  "hc_severityNormal": "Normal",
-  "hc_severityCaution": "Caution",
-  "hc_severityWarning": "Warning",
-  "hc_severityCritical": "Critical",
-  "hc_severityUnknown": "Check Required",
-
-  "hc_areaFeather": "Feather Condition",
-  "hc_areaPosture": "Posture/Balance",
-  "hc_areaEye": "Eye Condition",
-  "hc_areaBeak": "Beak Condition",
-  "hc_areaFoot": "Feet/Claws",
-  "hc_areaBodyShape": "Body Shape",
-  "hc_areaFeces": "Feces",
-  "hc_areaUrates": "Urates",
-  "hc_areaUrine": "Urine",
-  "hc_areaInjuryDetected": "Injury Detected",
-
-  "hc_aspectPlantarSurface": "Plantar Surface",
-  "hc_aspectNailLength": "Nail Length",
-  "hc_aspectSwelling": "Swelling",
-  "hc_aspectSkinTexture": "Skin Texture",
-  "hc_aspectGripStrength": "Grip Strength",
-  "hc_aspectToeAlignment": "Toe Alignment",
-  "hc_aspectBurns": "Burns",
-  "hc_aspectLacerations": "Lacerations",
-  "hc_aspectFractures": "Fractures",
-  "hc_aspectBiteWounds": "Bite Wounds",
-  "hc_aspectBandInjuries": "Band Injuries",
-
-  "hc_aspectDischarge": "Discharge",
-  "hc_aspectPupilResponse": "Pupil Response",
-  "hc_aspectCornealClarity": "Corneal Clarity",
-  "hc_aspectPeriorbitalArea": "Periorbital Area",
-  "hc_aspectSymmetry": "Symmetry",
-  "hc_aspectCornealScratches": "Corneal Scratches",
-  "hc_aspectForeignBody": "Foreign Body",
-
-  "hc_aspectColor": "Color",
-  "hc_aspectTexture": "Texture",
-  "hc_aspectOvergrowth": "Overgrowth",
-  "hc_aspectCracks": "Cracks",
-  "hc_aspectPeeling": "Peeling",
-  "hc_aspectCereCondition": "Cere Condition",
-  "hc_aspectAlignment": "Alignment",
-
-  "hc_aspectDensity": "Density",
-  "hc_aspectLuster": "Luster",
-  "hc_aspectDiscoloration": "Discoloration",
-  "hc_aspectDamagePatterns": "Damage Patterns",
-  "hc_aspectPluckingSigns": "Plucking Signs",
-  "hc_aspectPinFeathers": "Pin Feathers",
-  "hc_aspectStressBars": "Stress Bars",
-  "hc_aspectMoltingStatus": "Molting Status",
-
-  "hc_firstAidTitle": "Emergency First Aid",
-  "hc_notesHint": "Describe any injuries or incidents (optional)",
-  "hc_notesHintFullBody": "Describe overall health condition or any concerns (optional)",
-  "hc_notesHintDroppings": "Describe color, shape, frequency of droppings, etc. (optional)",
-  "hc_notesHintFood": "Describe food type, amount eaten, appetite changes, etc. (optional)",
-
   "ai_petInfoPrefix": "Name",
   "ai_breedPrefix": "Breed",
   "ai_agePrefix": "Age",
@@ -815,37 +684,26 @@
   "ai_ageYears": "{years} years old",
   "@ai_ageYears": {
     "placeholders": {
-      "years": {"type": "int"}
+      "years": {
+        "type": "int"
+      }
     }
   },
   "ai_ageMonths": "{months} months",
   "@ai_ageMonths": {
     "placeholders": {
-      "months": {"type": "int"}
+      "months": {
+        "type": "int"
+      }
     }
   },
   "ai_ageLessThanMonth": "Less than 1 month",
-
-  "hc_history": "History",
-  "hc_historyTitle": "Health Check History",
-  "hc_historyEmpty": "No health check records yet",
-  "hc_historyEmptyDesc": "Check your bird's health with AI Health Check",
-  "hc_savedSuccessfully": "Results saved",
-  "hc_deleteConfirm": "Delete this record?",
-  "hc_deleteSuccess": "Record deleted",
-  "hc_dateToday": "Today",
-  "hc_dateYesterday": "Yesterday",
-  "hc_dateLast7Days": "Last 7 days",
-  "hc_dateEarlier": "Earlier",
-
   "premium_featureLockedTitle": "Premium Feature",
   "premium_featureLockedMessage": "AI Vision Health Check is a premium-only feature.\n\nVision AI models are costly to run, and we appreciate your understanding.\nActivate a premium code for unlimited access.",
   "premium_activateNow": "Activate Premium",
   "premium_maybeLater": "Maybe Later",
-
   "chatbot_premiumBanner": "Get more detailed and accurate answers with Premium",
   "chatbot_premiumUpgrade": "Upgrade",
-
   "paywall_title": "Premium",
   "paywall_headline": "Get a more accurate picture of\nyour bird's health",
   "paywall_benefit1": "Unlimited AI Vision health checks",
@@ -857,7 +715,9 @@
   "paywall_yearlyPerMonth": "{price}/mo",
   "@paywall_yearlyPerMonth": {
     "placeholders": {
-      "price": {"type": "String"}
+      "price": {
+        "type": "String"
+      }
     }
   },
   "paywall_ctaButton": "Start Premium",
@@ -876,35 +736,33 @@
   "paywall_alreadyPremiumExpires": "Available until {date}",
   "@paywall_alreadyPremiumExpires": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
-
   "quotaBadge_normal": "{count} left this month",
   "@quotaBadge_normal": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "quotaBadge_exhausted": "Monthly limit reached",
   "quotaBadge_upgrade": "Upgrade",
   "aiEncyclopedia_quotaExhausted": "You've used all free queries for this month. Upgrade to Premium for unlimited access.",
   "aiEncyclopedia_quotaExhaustedHint": "Monthly limit reached · Upgrade to Premium",
-  "healthCheck_freeTrialBadge": "Free trial",
-  "healthCheck_trialExhaustedTitle": "Free trial completed",
-  "healthCheck_trialExhaustedMessage": "You've already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.",
-  "healthCheck_trialExhaustedMessage_v2": "You're on a free trial and have used all your trial sessions.\n\nEnter a promo code or contact us via SNS for more access.",
-  "healthCheck_trialExhaustedAction_promo": "Enter promo code",
-
   "visionQuotaBadge_normal": "{count} left",
   "@visionQuotaBadge_normal": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "visionQuotaBadge_exhausted": "Monthly limit reached",
   "visionQuotaBadge_upgrade": "Enter code",
-
   "paywall_freeTrialBanner": "AI Vision Check and AI Chatbot\nare currently free to try",
   "paywall_freeTrialSubtext": "Enter a promo code to unlock additional benefits",
   "paywall_snsEventTitle": "SNS Event",
@@ -912,10 +770,11 @@
   "sns_copied": "{label} copied",
   "@sns_copied": {
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
-
   "report_shareFailed": "Failed to create share link.",
   "report_shareHealth": "Share Health Report",
   "report_vetSummary": "Vet Visit Summary",
@@ -925,7 +784,6 @@
   "report_vetFeatureChecks": "AI health check summary",
   "report_vetFeatureNotes": "Behavior notes & daily records",
   "report_vetShareButton": "Share Summary Link",
-
   "home_healthSummaryTitle": "Health Change Summary",
   "home_healthSummaryWeightChange": "Weight Change",
   "home_healthSummaryAbnormal": "Abnormal Findings (30d)",
@@ -936,7 +794,6 @@
   "home_insightsEmpty": "No insights yet",
   "home_insightsRecommendations": "Recommendations",
   "home_insightsUpgrade": "Upgrade to Premium to receive\nweekly health insights",
-
   "dailyRecord_title": "Daily Record",
   "dailyRecord_mood": "Mood",
   "dailyRecord_activity": "Activity",
@@ -955,8 +812,12 @@
   "weightDetail_dateDailyRecord": "Daily Record for {month}/{day}",
   "@weightDetail_dateDailyRecord": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_noDailyRecord": "No daily records yet",
@@ -964,7 +825,6 @@
   "weightDetail_addDailyRecordHint": "Tap the button below to add a record",
   "btn_addSchedule": "Add Schedule",
   "btn_addDailyRecord": "Add Daily Record",
-
   "profileSetup_title": "Profile Setup",
   "profileSetup_phoneHint": "Enter phone number",
   "profileSetup_complete": "Complete",
@@ -975,32 +835,28 @@
   "profileSetup_doneTitle": "Setup Complete",
   "profileSetup_doneMessage": "Setup is complete!",
   "profileSetup_startRecording": "Start Recording!",
-
   "timePicker_title": "Select Time",
   "timePicker_confirm": "Confirm",
-
   "country_selectTitle": "Select Country",
-
   "datetime_am": "AM",
   "datetime_pm": "PM",
   "datetime_yearMonth": "{month}/{year}",
   "@datetime_yearMonth": {
     "placeholders": {
-      "year": {"type": "int"},
-      "month": {"type": "int"}
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
-
   "schedule_noPetInfo": "Pet information is not available.",
   "schedule_noTitle": "Untitled",
   "schedule_endTimeAfterStart": "End time must be after start time.",
   "schedule_titleHint": "Title",
-
   "bottomNav_home": "Home",
   "bottomNav_records": "Records",
   "bottomNav_chat": "AI Chat",
-
-  "hc_analysisTimeout": "The analysis is taking too long. Please check your connection and try again.",
-
   "common_defaultPetName": "Buddy"
 }

@@ -976,6 +976,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatbot_imageOnlineOnly => '附加图片需要在线连接';
 
   @override
+  String get chatbot_bannerTitle => 'AI 聊天 · 照片分析';
+
+  @override
+  String get chatbot_bannerSubtitle => '提问或附加照片';
+
+  @override
   String get water_title => '饮水';
 
   @override
@@ -1236,10 +1242,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coach_chatbotTab_body => '对鹦鹉有疑问？\n问问AI鹦鹉博士吧！';
 
   @override
-  String get coach_aiHealthCheck_title => 'AI健康检查';
+  String get coach_aiHealthCheck_title => 'AI 聊天';
 
   @override
-  String get coach_aiHealthCheck_body => '一张照片即可让AI分析健康状况。\n点击立即开始！';
+  String get coach_aiHealthCheck_body => '随时提问并附上照片，AI 立即分析回复。\n点击立即开始！';
 
   @override
   String get coach_insights_title => '每周洞察';
@@ -1793,298 +1799,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premium_healthCheckBlockedTitle => '本月限额已达';
 
   @override
-  String get hc_title => 'AI健康检查';
-
-  @override
-  String get hc_photoSubtitle => '一张照片即可确认健康状态';
-
-  @override
-  String get hc_selectTarget => '请选择分析对象';
-
-  @override
-  String get hc_analyze => '开始分析';
-
-  @override
-  String get hc_modeFullBody => '全身外观';
-
-  @override
-  String get hc_modeFullBodyDesc => '拍摄全身照片分析外观';
-
-  @override
-  String get hc_modePartSpecific => '部位检查';
-
-  @override
-  String get hc_modePartSpecificDesc => '分析眼睛、喙、羽毛、脚等特定部位';
-
-  @override
-  String get hc_modeDroppings => '粪便分析';
-
-  @override
-  String get hc_modeDroppingsDesc => '通过粪便照片检查健康状况';
-
-  @override
-  String get hc_modeFood => '食物安全';
-
-  @override
-  String get hc_modeFoodDesc => '通过食物照片检查喂食安全性';
-
-  @override
-  String get hc_partEye => '眼睛';
-
-  @override
-  String get hc_partBeak => '喙';
-
-  @override
-  String get hc_partFeather => '羽毛';
-
-  @override
-  String get hc_partFoot => '脚';
-
-  @override
-  String get hc_imageSizeExceeded => '图片大小超过10MB';
-
-  @override
-  String hc_imagePickError(String error) {
-    return '选择图片时出错：$error';
-  }
-
-  @override
-  String get hc_takePhoto => '拍照';
-
-  @override
-  String get hc_selectFromAlbum => '从相册选择';
-
-  @override
-  String get hc_photoHint => '请拍照或\n从相册选择';
-
-  @override
-  String get hc_registerPetFirst => '请先注册您的宠物';
-
-  @override
-  String get hc_analysisError => '分析过程中出错。\n请重试。';
-
-  @override
-  String get hc_cancelAnalysis => '取消分析';
-
-  @override
-  String get hc_cancelAnalysisConfirm => '确定取消分析吗？';
-
-  @override
-  String get hc_continueAnalysis => '继续分析';
-
-  @override
-  String get hc_analyzing => '分析中...';
-
-  @override
-  String get hc_aiAnalyzing => 'AI正在分析图片';
-
-  @override
-  String get hc_analysisErrorTitle => '分析过程中出错';
-
-  @override
-  String get hc_retry => '重试';
-
-  @override
-  String get hc_goBack => '返回';
-
-  @override
-  String get hc_resultTitle => '分析结果';
-
-  @override
-  String get hc_analysisItems => '分析项目';
-
-  @override
-  String get hc_recommendations => '建议';
-
-  @override
-  String get hc_overallStatus => '综合状态';
-
-  @override
-  String get hc_confidence => '置信度';
-
-  @override
-  String get hc_vetVisitRecommended => '建议就医';
-
-  @override
-  String get hc_possibleCauses => '可能原因';
-
-  @override
-  String get hc_possibleCausesPrefix => '可能原因：';
-
-  @override
-  String get hc_nutritionBalance => '营养均衡';
-
-  @override
-  String get hc_goHome => '返回首页';
-
-  @override
-  String get hc_recheckButton => '重新检查';
-
-  @override
-  String hc_colorTexture(String color, String texture) {
-    return '颜色：$color，质地：$texture';
-  }
-
-  @override
-  String get hc_severityNormal => '正常';
-
-  @override
-  String get hc_severityCaution => '注意';
-
-  @override
-  String get hc_severityWarning => '警告';
-
-  @override
-  String get hc_severityCritical => '危险';
-
-  @override
-  String get hc_severityUnknown => '需确认';
-
-  @override
-  String get hc_areaFeather => '羽毛状态';
-
-  @override
-  String get hc_areaPosture => '姿势/平衡';
-
-  @override
-  String get hc_areaEye => '眼睛状态';
-
-  @override
-  String get hc_areaBeak => '喙状态';
-
-  @override
-  String get hc_areaFoot => '脚/爪';
-
-  @override
-  String get hc_areaBodyShape => '体型';
-
-  @override
-  String get hc_areaFeces => '粪便';
-
-  @override
-  String get hc_areaUrates => '尿酸盐';
-
-  @override
-  String get hc_areaUrine => '尿液';
-
-  @override
-  String get hc_areaInjuryDetected => '检测到外伤';
-
-  @override
-  String get hc_aspectPlantarSurface => '脚掌状态';
-
-  @override
-  String get hc_aspectNailLength => '指甲长度';
-
-  @override
-  String get hc_aspectSwelling => '肿胀';
-
-  @override
-  String get hc_aspectSkinTexture => '皮肤质地';
-
-  @override
-  String get hc_aspectGripStrength => '抓握力';
-
-  @override
-  String get hc_aspectToeAlignment => '脚趾排列';
-
-  @override
-  String get hc_aspectBurns => '烧伤';
-
-  @override
-  String get hc_aspectLacerations => '撕裂伤';
-
-  @override
-  String get hc_aspectFractures => '骨折';
-
-  @override
-  String get hc_aspectBiteWounds => '咬伤';
-
-  @override
-  String get hc_aspectBandInjuries => '脚环损伤';
-
-  @override
-  String get hc_aspectDischarge => '分泌物';
-
-  @override
-  String get hc_aspectPupilResponse => '瞳孔反应';
-
-  @override
-  String get hc_aspectCornealClarity => '角膜透明度';
-
-  @override
-  String get hc_aspectPeriorbitalArea => '眼周区域';
-
-  @override
-  String get hc_aspectSymmetry => '对称性';
-
-  @override
-  String get hc_aspectCornealScratches => '角膜损伤';
-
-  @override
-  String get hc_aspectForeignBody => '异物';
-
-  @override
-  String get hc_aspectColor => '颜色';
-
-  @override
-  String get hc_aspectTexture => '质地';
-
-  @override
-  String get hc_aspectOvergrowth => '过度生长';
-
-  @override
-  String get hc_aspectCracks => '裂纹';
-
-  @override
-  String get hc_aspectPeeling => '脱皮';
-
-  @override
-  String get hc_aspectCereCondition => '蜡膜状态';
-
-  @override
-  String get hc_aspectAlignment => '排列状态';
-
-  @override
-  String get hc_aspectDensity => '密度';
-
-  @override
-  String get hc_aspectLuster => '光泽';
-
-  @override
-  String get hc_aspectDiscoloration => '变色';
-
-  @override
-  String get hc_aspectDamagePatterns => '损伤模式';
-
-  @override
-  String get hc_aspectPluckingSigns => '拔羽迹象';
-
-  @override
-  String get hc_aspectPinFeathers => '针羽';
-
-  @override
-  String get hc_aspectStressBars => '应激纹';
-
-  @override
-  String get hc_aspectMoltingStatus => '换羽状态';
-
-  @override
-  String get hc_firstAidTitle => '应急处理';
-
-  @override
-  String get hc_notesHint => '描述伤情或事故（选填）';
-
-  @override
-  String get hc_notesHintFullBody => '描述整体健康状况或异常情况（选填）';
-
-  @override
-  String get hc_notesHintDroppings => '描述粪便颜色、形状、频率等异常情况（选填）';
-
-  @override
-  String get hc_notesHintFood => '描述食物种类、进食量、食欲变化等（选填）';
-
-  @override
   String get ai_petInfoPrefix => '名字';
 
   @override
@@ -2123,39 +1837,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ai_ageLessThanMonth => '不到1个月';
-
-  @override
-  String get hc_history => '记录';
-
-  @override
-  String get hc_historyTitle => '健康检查记录';
-
-  @override
-  String get hc_historyEmpty => '还没有健康检查记录';
-
-  @override
-  String get hc_historyEmptyDesc => '通过AI健康检查确认鹦鹉的健康状态';
-
-  @override
-  String get hc_savedSuccessfully => '结果已保存';
-
-  @override
-  String get hc_deleteConfirm => '要删除此记录吗？';
-
-  @override
-  String get hc_deleteSuccess => '记录已删除';
-
-  @override
-  String get hc_dateToday => '今天';
-
-  @override
-  String get hc_dateYesterday => '昨天';
-
-  @override
-  String get hc_dateLast7Days => '最近7天';
-
-  @override
-  String get hc_dateEarlier => '更早';
 
   @override
   String get premium_featureLockedTitle => '高级版专属功能';
@@ -2265,23 +1946,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiEncyclopedia_quotaExhaustedHint => '已达每月限额 · 升级到高级版';
-
-  @override
-  String get healthCheck_freeTrialBadge => '免费体验';
-
-  @override
-  String get healthCheck_trialExhaustedTitle => '免费体验已完成';
-
-  @override
-  String get healthCheck_trialExhaustedMessage =>
-      '您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。';
-
-  @override
-  String get healthCheck_trialExhaustedMessage_v2 =>
-      '您正在免费体验中，试用次数已用完。\n\n输入促销代码或通过社交媒体联系我们即可获得更多使用权限。';
-
-  @override
-  String get healthCheck_trialExhaustedAction_promo => '输入促销代码';
 
   @override
   String visionQuotaBadge_normal(int count) {
@@ -2503,9 +2167,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bottomNav_chat => 'AI 聊天';
-
-  @override
-  String get hc_analysisTimeout => '分析耗时过长。请检查网络后重试。';
 
   @override
   String get common_defaultPetName => '宝贝';

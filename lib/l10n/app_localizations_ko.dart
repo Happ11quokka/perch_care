@@ -983,6 +983,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatbot_imageOnlineOnly => '이미지 전송은 온라인에서만 가능해요';
 
   @override
+  String get chatbot_bannerTitle => 'AI 챗봇 · 사진 분석';
+
+  @override
+  String get chatbot_bannerSubtitle => '궁금한 점을 물어보거나 사진을 첨부하세요';
+
+  @override
   String get water_title => '수분';
 
   @override
@@ -1248,11 +1254,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coach_chatbotTab_body => '앵무새에 대해 궁금한 점이 있다면\nAI 앵박사에게 물어보세요!';
 
   @override
-  String get coach_aiHealthCheck_title => 'AI 건강체크';
+  String get coach_aiHealthCheck_title => 'AI 챗봇';
 
   @override
   String get coach_aiHealthCheck_body =>
-      '사진 한 장으로 건강 상태를 AI가 분석해드려요.\n탭해서 바로 시작해보세요!';
+      '궁금한 점을 묻고 사진도 함께 첨부해 보세요.\nAI 가 바로 분석해 답해드려요!';
 
   @override
   String get coach_insights_title => '주간 인사이트';
@@ -1846,298 +1852,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premium_healthCheckBlockedTitle => '월간 한도 도달';
 
   @override
-  String get hc_title => 'AI 건강체크';
-
-  @override
-  String get hc_photoSubtitle => '사진 한 장으로 건강 상태를 확인하세요';
-
-  @override
-  String get hc_selectTarget => '분석 대상을 선택해주세요';
-
-  @override
-  String get hc_analyze => '분석하기';
-
-  @override
-  String get hc_modeFullBody => '전체 외형';
-
-  @override
-  String get hc_modeFullBodyDesc => '전체 모습을 촬영하여 외형을 분석합니다';
-
-  @override
-  String get hc_modePartSpecific => '부위별 검사';
-
-  @override
-  String get hc_modePartSpecificDesc => '눈, 부리, 깃털, 발 등 특정 부위를 분석합니다';
-
-  @override
-  String get hc_modeDroppings => '배변 분석';
-
-  @override
-  String get hc_modeDroppingsDesc => '배변 사진으로 건강 상태를 확인합니다';
-
-  @override
-  String get hc_modeFood => '먹이 안전성';
-
-  @override
-  String get hc_modeFoodDesc => '먹이 사진으로 급여 가능 여부를 확인합니다';
-
-  @override
-  String get hc_partEye => '눈';
-
-  @override
-  String get hc_partBeak => '부리';
-
-  @override
-  String get hc_partFeather => '깃털';
-
-  @override
-  String get hc_partFoot => '발';
-
-  @override
-  String get hc_imageSizeExceeded => '이미지 크기가 10MB를 초과합니다';
-
-  @override
-  String hc_imagePickError(String error) {
-    return '이미지 선택 중 오류가 발생했습니다: $error';
-  }
-
-  @override
-  String get hc_takePhoto => '촬영하기';
-
-  @override
-  String get hc_selectFromAlbum => '앨범에서 선택';
-
-  @override
-  String get hc_photoHint => '사진을 촬영하거나\n앨범에서 선택해주세요';
-
-  @override
-  String get hc_registerPetFirst => '펫을 먼저 등록해주세요';
-
-  @override
-  String get hc_analysisError => '분석 중 오류가 발생했습니다.\n다시 시도해주세요.';
-
-  @override
-  String get hc_cancelAnalysis => '분석 취소';
-
-  @override
-  String get hc_cancelAnalysisConfirm => '분석을 취소하시겠습니까?';
-
-  @override
-  String get hc_continueAnalysis => '계속 분석';
-
-  @override
-  String get hc_analyzing => '분석 중입니다...';
-
-  @override
-  String get hc_aiAnalyzing => 'AI가 이미지를 분석하고 있어요';
-
-  @override
-  String get hc_analysisErrorTitle => '분석 중 오류가 발생했습니다';
-
-  @override
-  String get hc_retry => '다시 시도';
-
-  @override
-  String get hc_goBack => '돌아가기';
-
-  @override
-  String get hc_resultTitle => '분석 결과';
-
-  @override
-  String get hc_analysisItems => '분석 항목';
-
-  @override
-  String get hc_recommendations => '권장 사항';
-
-  @override
-  String get hc_overallStatus => '종합 상태';
-
-  @override
-  String get hc_confidence => '신뢰도';
-
-  @override
-  String get hc_vetVisitRecommended => '수의사 방문을 권장합니다';
-
-  @override
-  String get hc_possibleCauses => '가능한 원인';
-
-  @override
-  String get hc_possibleCausesPrefix => '가능 원인: ';
-
-  @override
-  String get hc_nutritionBalance => '영양 균형';
-
-  @override
-  String get hc_goHome => '홈으로';
-
-  @override
-  String get hc_recheckButton => '다시 체크하기';
-
-  @override
-  String hc_colorTexture(String color, String texture) {
-    return '색상: $color, 질감: $texture';
-  }
-
-  @override
-  String get hc_severityNormal => '정상';
-
-  @override
-  String get hc_severityCaution => '주의';
-
-  @override
-  String get hc_severityWarning => '경고';
-
-  @override
-  String get hc_severityCritical => '위험';
-
-  @override
-  String get hc_severityUnknown => '확인 필요';
-
-  @override
-  String get hc_areaFeather => '깃털 상태';
-
-  @override
-  String get hc_areaPosture => '자세/균형';
-
-  @override
-  String get hc_areaEye => '눈 상태';
-
-  @override
-  String get hc_areaBeak => '부리 상태';
-
-  @override
-  String get hc_areaFoot => '발/발톱';
-
-  @override
-  String get hc_areaBodyShape => '체형';
-
-  @override
-  String get hc_areaFeces => '변';
-
-  @override
-  String get hc_areaUrates => '요산';
-
-  @override
-  String get hc_areaUrine => '소변';
-
-  @override
-  String get hc_areaInjuryDetected => '부상 감지';
-
-  @override
-  String get hc_aspectPlantarSurface => '발바닥 상태';
-
-  @override
-  String get hc_aspectNailLength => '발톱 길이';
-
-  @override
-  String get hc_aspectSwelling => '부종';
-
-  @override
-  String get hc_aspectSkinTexture => '피부 질감';
-
-  @override
-  String get hc_aspectGripStrength => '쥐는 힘';
-
-  @override
-  String get hc_aspectToeAlignment => '발가락 정렬';
-
-  @override
-  String get hc_aspectBurns => '화상';
-
-  @override
-  String get hc_aspectLacerations => '열상';
-
-  @override
-  String get hc_aspectFractures => '골절';
-
-  @override
-  String get hc_aspectBiteWounds => '교상';
-
-  @override
-  String get hc_aspectBandInjuries => '밴드 손상';
-
-  @override
-  String get hc_aspectDischarge => '분비물';
-
-  @override
-  String get hc_aspectPupilResponse => '동공 반응';
-
-  @override
-  String get hc_aspectCornealClarity => '각막 투명도';
-
-  @override
-  String get hc_aspectPeriorbitalArea => '눈 주변부';
-
-  @override
-  String get hc_aspectSymmetry => '대칭성';
-
-  @override
-  String get hc_aspectCornealScratches => '각막 손상';
-
-  @override
-  String get hc_aspectForeignBody => '이물질';
-
-  @override
-  String get hc_aspectColor => '색상';
-
-  @override
-  String get hc_aspectTexture => '질감';
-
-  @override
-  String get hc_aspectOvergrowth => '과성장';
-
-  @override
-  String get hc_aspectCracks => '갈라짐';
-
-  @override
-  String get hc_aspectPeeling => '벗겨짐';
-
-  @override
-  String get hc_aspectCereCondition => '코비늘 상태';
-
-  @override
-  String get hc_aspectAlignment => '정렬 상태';
-
-  @override
-  String get hc_aspectDensity => '밀도';
-
-  @override
-  String get hc_aspectLuster => '윤기';
-
-  @override
-  String get hc_aspectDiscoloration => '변색';
-
-  @override
-  String get hc_aspectDamagePatterns => '손상 패턴';
-
-  @override
-  String get hc_aspectPluckingSigns => '깃털 뽑기 흔적';
-
-  @override
-  String get hc_aspectPinFeathers => '솜깃털';
-
-  @override
-  String get hc_aspectStressBars => '스트레스 바';
-
-  @override
-  String get hc_aspectMoltingStatus => '환우 상태';
-
-  @override
-  String get hc_firstAidTitle => '응급 처치';
-
-  @override
-  String get hc_notesHint => '부상이나 사고 상황을 설명해 주세요 (선택사항)';
-
-  @override
-  String get hc_notesHintFullBody => '전반적인 건강 상태나 특이사항을 설명해 주세요 (선택사항)';
-
-  @override
-  String get hc_notesHintDroppings => '배변의 색상, 형태, 빈도 등 특이사항을 설명해 주세요 (선택사항)';
-
-  @override
-  String get hc_notesHintFood => '먹이 종류, 섭취량, 식욕 변화 등을 설명해 주세요 (선택사항)';
-
-  @override
   String get ai_petInfoPrefix => '이름';
 
   @override
@@ -2176,39 +1890,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ai_ageLessThanMonth => '1개월 미만';
-
-  @override
-  String get hc_history => '기록';
-
-  @override
-  String get hc_historyTitle => '건강체크 기록';
-
-  @override
-  String get hc_historyEmpty => '아직 건강체크 기록이 없어요';
-
-  @override
-  String get hc_historyEmptyDesc => 'AI 건강체크를 통해 앵무새의 건강을 확인해보세요';
-
-  @override
-  String get hc_savedSuccessfully => '결과가 저장되었습니다';
-
-  @override
-  String get hc_deleteConfirm => '이 기록을 삭제하시겠습니까?';
-
-  @override
-  String get hc_deleteSuccess => '기록이 삭제되었습니다';
-
-  @override
-  String get hc_dateToday => '오늘';
-
-  @override
-  String get hc_dateYesterday => '어제';
-
-  @override
-  String get hc_dateLast7Days => '최근 7일';
-
-  @override
-  String get hc_dateEarlier => '이전';
 
   @override
   String get premium_featureLockedTitle => '프리미엄 전용 기능';
@@ -2319,23 +2000,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiEncyclopedia_quotaExhaustedHint => '월간 한도 도달 · 프리미엄으로 업그레이드하세요';
-
-  @override
-  String get healthCheck_freeTrialBadge => '무료 체험';
-
-  @override
-  String get healthCheck_trialExhaustedTitle => '무료 체험 완료';
-
-  @override
-  String get healthCheck_trialExhaustedMessage =>
-      '무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.';
-
-  @override
-  String get healthCheck_trialExhaustedMessage_v2 =>
-      '현재 무료 체험 중이며, 체험 횟수를 모두 사용하셨어요.\n\n프로모션 코드를 입력하거나 SNS로 연락하시면 추가 이용이 가능합니다.';
-
-  @override
-  String get healthCheck_trialExhaustedAction_promo => '프로모션 코드 입력';
 
   @override
   String visionQuotaBadge_normal(int count) {
@@ -2558,9 +2222,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get bottomNav_chat => 'AI 챗봇';
-
-  @override
-  String get hc_analysisTimeout => '분석 시간이 너무 오래 걸려요. 네트워크를 확인하고 다시 시도해주세요.';
 
   @override
   String get common_defaultPetName => '사랑이';

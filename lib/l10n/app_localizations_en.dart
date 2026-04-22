@@ -1005,6 +1005,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Image attachments require an online connection';
 
   @override
+  String get chatbot_bannerTitle => 'AI Chat · Photo Analysis';
+
+  @override
+  String get chatbot_bannerSubtitle => 'Ask a question or attach a photo';
+
+  @override
   String get water_title => 'Water';
 
   @override
@@ -1287,11 +1293,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Have questions about parrots?\nAsk our AI Dr. Parrot!';
 
   @override
-  String get coach_aiHealthCheck_title => 'AI Health Check';
+  String get coach_aiHealthCheck_title => 'AI Chat';
 
   @override
   String get coach_aiHealthCheck_body =>
-      'AI analyzes your bird\'s health from just one photo.\nTap to get started!';
+      'Ask anything and attach a photo — AI will analyze and reply right away.\nTap to get started!';
 
   @override
   String get coach_insights_title => 'Weekly Insights';
@@ -1911,305 +1917,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_healthCheckBlockedTitle => 'Monthly Limit Reached';
 
   @override
-  String get hc_title => 'AI Health Check';
-
-  @override
-  String get hc_photoSubtitle => 'Check health status with just one photo';
-
-  @override
-  String get hc_selectTarget => 'Please select an analysis target';
-
-  @override
-  String get hc_analyze => 'Analyze';
-
-  @override
-  String get hc_modeFullBody => 'Full Body';
-
-  @override
-  String get hc_modeFullBodyDesc =>
-      'Analyze appearance by photographing the full body';
-
-  @override
-  String get hc_modePartSpecific => 'Part-Specific';
-
-  @override
-  String get hc_modePartSpecificDesc =>
-      'Analyze specific parts such as eyes, beak, feathers, feet';
-
-  @override
-  String get hc_modeDroppings => 'Droppings Analysis';
-
-  @override
-  String get hc_modeDroppingsDesc =>
-      'Check health status through droppings photos';
-
-  @override
-  String get hc_modeFood => 'Food Safety';
-
-  @override
-  String get hc_modeFoodDesc => 'Check if food is safe to feed through photos';
-
-  @override
-  String get hc_partEye => 'Eye';
-
-  @override
-  String get hc_partBeak => 'Beak';
-
-  @override
-  String get hc_partFeather => 'Feather';
-
-  @override
-  String get hc_partFoot => 'Foot';
-
-  @override
-  String get hc_imageSizeExceeded => 'Image size exceeds 10MB';
-
-  @override
-  String hc_imagePickError(String error) {
-    return 'Error while selecting image: $error';
-  }
-
-  @override
-  String get hc_takePhoto => 'Take Photo';
-
-  @override
-  String get hc_selectFromAlbum => 'Select from Album';
-
-  @override
-  String get hc_photoHint => 'Take a photo or\nselect from album';
-
-  @override
-  String get hc_registerPetFirst => 'Please register your pet first';
-
-  @override
-  String get hc_analysisError =>
-      'An error occurred during analysis.\nPlease try again.';
-
-  @override
-  String get hc_cancelAnalysis => 'Cancel Analysis';
-
-  @override
-  String get hc_cancelAnalysisConfirm => 'Cancel the analysis?';
-
-  @override
-  String get hc_continueAnalysis => 'Continue';
-
-  @override
-  String get hc_analyzing => 'Analyzing...';
-
-  @override
-  String get hc_aiAnalyzing => 'AI is analyzing the image';
-
-  @override
-  String get hc_analysisErrorTitle => 'An error occurred during analysis';
-
-  @override
-  String get hc_retry => 'Retry';
-
-  @override
-  String get hc_goBack => 'Go Back';
-
-  @override
-  String get hc_resultTitle => 'Analysis Results';
-
-  @override
-  String get hc_analysisItems => 'Analysis Items';
-
-  @override
-  String get hc_recommendations => 'Recommendations';
-
-  @override
-  String get hc_overallStatus => 'Overall Status';
-
-  @override
-  String get hc_confidence => 'Confidence';
-
-  @override
-  String get hc_vetVisitRecommended => 'Veterinary visit recommended';
-
-  @override
-  String get hc_possibleCauses => 'Possible Causes';
-
-  @override
-  String get hc_possibleCausesPrefix => 'Possible causes: ';
-
-  @override
-  String get hc_nutritionBalance => 'Nutrition Balance';
-
-  @override
-  String get hc_goHome => 'Go Home';
-
-  @override
-  String get hc_recheckButton => 'Check Again';
-
-  @override
-  String hc_colorTexture(String color, String texture) {
-    return 'Color: $color, Texture: $texture';
-  }
-
-  @override
-  String get hc_severityNormal => 'Normal';
-
-  @override
-  String get hc_severityCaution => 'Caution';
-
-  @override
-  String get hc_severityWarning => 'Warning';
-
-  @override
-  String get hc_severityCritical => 'Critical';
-
-  @override
-  String get hc_severityUnknown => 'Check Required';
-
-  @override
-  String get hc_areaFeather => 'Feather Condition';
-
-  @override
-  String get hc_areaPosture => 'Posture/Balance';
-
-  @override
-  String get hc_areaEye => 'Eye Condition';
-
-  @override
-  String get hc_areaBeak => 'Beak Condition';
-
-  @override
-  String get hc_areaFoot => 'Feet/Claws';
-
-  @override
-  String get hc_areaBodyShape => 'Body Shape';
-
-  @override
-  String get hc_areaFeces => 'Feces';
-
-  @override
-  String get hc_areaUrates => 'Urates';
-
-  @override
-  String get hc_areaUrine => 'Urine';
-
-  @override
-  String get hc_areaInjuryDetected => 'Injury Detected';
-
-  @override
-  String get hc_aspectPlantarSurface => 'Plantar Surface';
-
-  @override
-  String get hc_aspectNailLength => 'Nail Length';
-
-  @override
-  String get hc_aspectSwelling => 'Swelling';
-
-  @override
-  String get hc_aspectSkinTexture => 'Skin Texture';
-
-  @override
-  String get hc_aspectGripStrength => 'Grip Strength';
-
-  @override
-  String get hc_aspectToeAlignment => 'Toe Alignment';
-
-  @override
-  String get hc_aspectBurns => 'Burns';
-
-  @override
-  String get hc_aspectLacerations => 'Lacerations';
-
-  @override
-  String get hc_aspectFractures => 'Fractures';
-
-  @override
-  String get hc_aspectBiteWounds => 'Bite Wounds';
-
-  @override
-  String get hc_aspectBandInjuries => 'Band Injuries';
-
-  @override
-  String get hc_aspectDischarge => 'Discharge';
-
-  @override
-  String get hc_aspectPupilResponse => 'Pupil Response';
-
-  @override
-  String get hc_aspectCornealClarity => 'Corneal Clarity';
-
-  @override
-  String get hc_aspectPeriorbitalArea => 'Periorbital Area';
-
-  @override
-  String get hc_aspectSymmetry => 'Symmetry';
-
-  @override
-  String get hc_aspectCornealScratches => 'Corneal Scratches';
-
-  @override
-  String get hc_aspectForeignBody => 'Foreign Body';
-
-  @override
-  String get hc_aspectColor => 'Color';
-
-  @override
-  String get hc_aspectTexture => 'Texture';
-
-  @override
-  String get hc_aspectOvergrowth => 'Overgrowth';
-
-  @override
-  String get hc_aspectCracks => 'Cracks';
-
-  @override
-  String get hc_aspectPeeling => 'Peeling';
-
-  @override
-  String get hc_aspectCereCondition => 'Cere Condition';
-
-  @override
-  String get hc_aspectAlignment => 'Alignment';
-
-  @override
-  String get hc_aspectDensity => 'Density';
-
-  @override
-  String get hc_aspectLuster => 'Luster';
-
-  @override
-  String get hc_aspectDiscoloration => 'Discoloration';
-
-  @override
-  String get hc_aspectDamagePatterns => 'Damage Patterns';
-
-  @override
-  String get hc_aspectPluckingSigns => 'Plucking Signs';
-
-  @override
-  String get hc_aspectPinFeathers => 'Pin Feathers';
-
-  @override
-  String get hc_aspectStressBars => 'Stress Bars';
-
-  @override
-  String get hc_aspectMoltingStatus => 'Molting Status';
-
-  @override
-  String get hc_firstAidTitle => 'Emergency First Aid';
-
-  @override
-  String get hc_notesHint => 'Describe any injuries or incidents (optional)';
-
-  @override
-  String get hc_notesHintFullBody =>
-      'Describe overall health condition or any concerns (optional)';
-
-  @override
-  String get hc_notesHintDroppings =>
-      'Describe color, shape, frequency of droppings, etc. (optional)';
-
-  @override
-  String get hc_notesHintFood =>
-      'Describe food type, amount eaten, appetite changes, etc. (optional)';
-
-  @override
   String get ai_petInfoPrefix => 'Name';
 
   @override
@@ -2250,40 +1957,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ai_ageLessThanMonth => 'Less than 1 month';
-
-  @override
-  String get hc_history => 'History';
-
-  @override
-  String get hc_historyTitle => 'Health Check History';
-
-  @override
-  String get hc_historyEmpty => 'No health check records yet';
-
-  @override
-  String get hc_historyEmptyDesc =>
-      'Check your bird\'s health with AI Health Check';
-
-  @override
-  String get hc_savedSuccessfully => 'Results saved';
-
-  @override
-  String get hc_deleteConfirm => 'Delete this record?';
-
-  @override
-  String get hc_deleteSuccess => 'Record deleted';
-
-  @override
-  String get hc_dateToday => 'Today';
-
-  @override
-  String get hc_dateYesterday => 'Yesterday';
-
-  @override
-  String get hc_dateLast7Days => 'Last 7 days';
-
-  @override
-  String get hc_dateEarlier => 'Earlier';
 
   @override
   String get premium_featureLockedTitle => 'Premium Feature';
@@ -2398,23 +2071,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiEncyclopedia_quotaExhaustedHint =>
       'Monthly limit reached · Upgrade to Premium';
-
-  @override
-  String get healthCheck_freeTrialBadge => 'Free trial';
-
-  @override
-  String get healthCheck_trialExhaustedTitle => 'Free trial completed';
-
-  @override
-  String get healthCheck_trialExhaustedMessage =>
-      'You\'ve already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.';
-
-  @override
-  String get healthCheck_trialExhaustedMessage_v2 =>
-      'You\'re on a free trial and have used all your trial sessions.\n\nEnter a promo code or contact us via SNS for more access.';
-
-  @override
-  String get healthCheck_trialExhaustedAction_promo => 'Enter promo code';
 
   @override
   String visionQuotaBadge_normal(int count) {
@@ -2644,10 +2300,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bottomNav_chat => 'AI Chat';
-
-  @override
-  String get hc_analysisTimeout =>
-      'The analysis is taking too long. Please check your connection and try again.';
 
   @override
   String get common_defaultPetName => 'Buddy';

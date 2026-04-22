@@ -32,11 +32,4 @@ class RouteNames {
   static const String termsDetailPublic = 'terms-detail-public';
   // 프리미엄
   static const String premium = 'premium';
-  // 건강체크
-  static const String healthCheck = 'health-check';
-  static const String healthCheckCapture = 'health-check-capture';
-  static const String healthCheckAnalyzing = 'health-check-analyzing';
-  static const String healthCheckResult = 'health-check-result';
-  static const String healthCheckHistory = 'health-check-history';
-  static const String vetSummary = 'vet-summary';
 }

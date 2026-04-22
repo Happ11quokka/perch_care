@@ -928,10 +928,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final l10n = AppLocalizations.of(context);
     return Semantics(
       button: true,
-      label: l10n.hc_title,
+      label: l10n.chatbot_bannerTitle,
       child: GestureDetector(
       key: _aiHealthCheckKey,
-      onTap: () => context.pushNamed(RouteNames.healthCheck),
+      onTap: () => context.pushNamed(RouteNames.aiEncyclopedia),
       child: Container(
         width: double.infinity,
         height: 80,
@@ -950,7 +950,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.of(context).hc_title,
+                    l10n.chatbot_bannerTitle,
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -960,7 +960,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    AppLocalizations.of(context).hc_photoSubtitle,
+                    l10n.chatbot_bannerSubtitle,
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,

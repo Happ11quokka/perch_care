@@ -1,6 +1,5 @@
 {
   "@@locale": "ko",
-
   "common_save": "저장",
   "common_cancel": "취소",
   "common_confirm": "확인",
@@ -15,7 +14,9 @@
   "common_saveError": "저장 중 오류가 발생했습니다: {error}",
   "@common_saveError": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "common_updated": "수정되었습니다.",
@@ -24,15 +25,15 @@
   "common_showAll": "전체 보기 ({count}건)",
   "@common_showAll": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "pet_loadError": "펫 정보를 불러오는데 실패했습니다.",
-
   "onboarding_title": "만나서 반가워요!",
   "onboarding_description": "단순한 기록을 넘어, AI 분석으로 앵무새의\n상태를 더 깊이 이해해 보세요.",
   "btn_start": "시작하기",
-
   "login_title": "로그인",
   "login_google": "Google로 로그인",
   "login_apple": "Apple로 로그인",
@@ -42,22 +43,18 @@
   "login_signup": "회원가입",
   "login_saveId": "아이디 저장",
   "login_findIdPassword": "아이디/비밀번호 찾기",
-
   "input_email": "이메일",
   "input_email_hint": "이메일을 입력해 주세요",
   "input_password": "비밀번호",
   "input_password_hint": "비밀번호를 입력해 주세요",
   "input_name": "이름",
   "input_name_hint": "이름을 입력해 주세요",
-
   "dialog_goSignup": "회원가입하기",
-
   "signup_title": "가입하기",
   "signup_button": "회원가입",
   "signup_alreadyMember": "이미 계정이 있으신가요?",
   "signup_completeTitle": "회원가입 완료",
   "signup_completeMessage": "회원가입이 완료되었습니다!\n로그인 후 서비스를 이용할 수 있습니다.",
-
   "terms_agreeAll": "전체 동의",
   "terms_requiredTerms": "[필수] 이용약관 동의",
   "terms_requiredPrivacy": "[필수] 개인정보 수집 및 이용 동의",
@@ -66,7 +63,6 @@
   "terms_privacyPolicy": "개인정보처리방침",
   "terms_marketing": "마케팅 정보 수신 동의",
   "terms_sectionTitle": "약관 및 정책",
-
   "forgot_title": "비밀번호 찾기",
   "forgot_description": "가입 시 사용한 이메일을 입력해 주세요.\n비밀번호 재설정 코드를 보내드립니다.",
   "btn_sendCode": "코드 보내기",
@@ -75,13 +71,17 @@
   "forgot_codeSentTo": "{destination}(으)로 코드를 보냈습니다.",
   "@forgot_codeSentTo": {
     "placeholders": {
-      "destination": {"type": "String"}
+      "destination": {
+        "type": "String"
+      }
     }
   },
   "forgot_timeRemaining": "코드 입력까지 {time} 남았습니다.",
   "@forgot_timeRemaining": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "btn_resendCode": "코드 다시 보내기",
@@ -93,41 +93,52 @@
   "password_strength_medium": "보통",
   "password_strength_strong": "강함",
   "btn_resetComplete": "재설정 완료",
-
   "home_monthlyUnit": "매월 단위",
   "home_weeklyUnit": "매주 단위",
   "home_wciHealthStatus": "WCI* 건강 상태",
   "home_updatedAgo": "{minutes}분 전에 업데이트됨",
   "@home_updatedAgo": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "home_updatedHoursAgo": "{hours}시간 전에 업데이트됨",
   "@home_updatedHoursAgo": {
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "home_updatedOnDate": "{month}월 {day}일에 업데이트됨",
   "@home_updatedOnDate": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "home_noUpdateData": "데이터 없음",
   "home_enterDataPrompt": "데이터를 입력해 {petName}의",
   "@home_enterDataPrompt": {
     "placeholders": {
-      "petName": {"type": "String"}
+      "petName": {
+        "type": "String"
+      }
     }
   },
   "home_checkStatus": "상태를 확인해 보세요.",
   "home_level": "{level}단계",
   "@home_level": {
     "placeholders": {
-      "level": {"type": "int"}
+      "level": {
+        "type": "int"
+      }
     }
   },
   "home_weight": "체중",
@@ -141,22 +152,24 @@
   "home_monthFormat": "{month}월",
   "@home_monthFormat": {
     "placeholders": {
-      "month": {"type": "int"}
+      "month": {
+        "type": "int"
+      }
     }
   },
   "home_weekFormat": "{week}주",
   "@home_weekFormat": {
     "placeholders": {
-      "week": {"type": "int"}
+      "week": {
+        "type": "int"
+      }
     }
   },
-
   "wci_level1": "몸이 가볍고 마른 인상이 강해요.\n식사량이나 컨디션을 한 번 더 살펴보는 게 좋아요.",
   "wci_level2": "갈비뼈가 보이지는 않지만 살짝 만지면 쉽게 느껴져요.\n옆에서 봤을 때 배가 쏙 들어간 부분이 보여요.",
   "wci_level3": "전체적인 체형은 안정적이에요.\n지금 습관을 유지하면서 가볍게 관찰해 주세요.",
   "wci_level4": "몸이 전체적으로 둥글어 보여요.\n식사량과 간식을 한 번 점검해 보세요.",
   "wci_level5": "전체적으로 무거운 인상이 들어요.\n건강을 위해 식단과 활동을 조절하는 것이 좋아요.",
-
   "weight_title": "체중",
   "weight_wciHealthStatus": "WCI 건강 상태",
   "weight_inputWeight": "체중 입력",
@@ -182,29 +195,37 @@
   "weight_breedRangeIdeal": "이상적: {min}g - {max}g",
   "@weight_breedRangeIdeal": {
     "placeholders": {
-      "min": {"type": "double"},
-      "max": {"type": "double"}
+      "min": {
+        "type": "double"
+      },
+      "max": {
+        "type": "double"
+      }
     }
   },
   "weight_breedRangeFull": "범위: {min}g - {max}g",
   "@weight_breedRangeFull": {
     "placeholders": {
-      "min": {"type": "double"},
-      "max": {"type": "double"}
+      "min": {
+        "type": "double"
+      },
+      "max": {
+        "type": "double"
+      }
     }
   },
-
   "breed_selectTitle": "품종 선택",
   "breed_searchHint": "품종 검색...",
   "breed_noBreeds": "등록된 품종이 없습니다",
   "breed_notFound": "검색 결과가 없습니다",
-
   "weightDetail_title": "기록",
   "weightDetail_headerLine1": "꾸준히 기록을 남기며",
   "weightDetail_headerLine2": "{petName} 체중 변화를 한 눈에!",
   "@weightDetail_headerLine2": {
     "placeholders": {
-      "petName": {"type": "String"}
+      "petName": {
+        "type": "String"
+      }
     }
   },
   "weightDetail_subLine1": "지금 바로 기록하고 우리 아이 건강 상태를",
@@ -214,29 +235,45 @@
   "weightDetail_recordSummary": "{petName}의 몸무게 총 {days}일 기록 중",
   "@weightDetail_recordSummary": {
     "placeholders": {
-      "petName": {"type": "String"},
-      "days": {"type": "int"}
+      "petName": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_yearMonth": "{year}년 {month}월",
   "@weightDetail_yearMonth": {
     "placeholders": {
-      "year": {"type": "int"},
-      "month": {"type": "int"}
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_monthChartLabel": "{month}월",
   "@weightDetail_monthChartLabel": {
     "placeholders": {
-      "month": {"type": "int"}
+      "month": {
+        "type": "int"
+      }
     }
   },
   "schedule_dateDisplay": "{month}월 {day}일 ({weekday})",
   "@schedule_dateDisplay": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"},
-      "weekday": {"type": "String"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
     }
   },
   "weightDetail_noPet": "활성화된 펫이 없습니다. 펫을 먼저 추가해주세요.",
@@ -246,8 +283,12 @@
   "weightDetail_dateSchedule": "{month}월 {day}일 일정",
   "@weightDetail_dateSchedule": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_noScheduleOnDate": "이 날에 등록된 일정이 없습니다",
@@ -255,12 +296,13 @@
   "weightDetail_monthWeightRecord": "{month}월 체중 기록",
   "@weightDetail_monthWeightRecord": {
     "placeholders": {
-      "month": {"type": "int"}
+      "month": {
+        "type": "int"
+      }
     }
   },
   "btn_addRecord": "기록 추가",
   "weightDetail_today": "오늘",
-
   "profile_title": "프로필",
   "profile_myPets": "나의 반려가족",
   "profile_addNewPet": "새로운 아이 등록하기",
@@ -283,17 +325,24 @@
   "profile_ageFormat": "{years}년 {months}개월 {days}일",
   "@profile_ageFormat": {
     "placeholders": {
-      "years": {"type": "int"},
-      "months": {"type": "int"},
-      "days": {"type": "int"}
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
     }
   },
-
   "dialog_unlinkTitle": "소셜 계정 연동 해제",
   "dialog_unlinkContent": "{provider} 계정 연동을 해제하시겠습니까?",
   "@dialog_unlinkContent": {
     "placeholders": {
-      "provider": {"type": "String"}
+      "provider": {
+        "type": "String"
+      }
     }
   },
   "dialog_logoutTitle": "로그아웃",
@@ -303,7 +352,6 @@
   "dialog_deleteAccountFinalTitle": "정말 탈퇴하시겠습니까?",
   "dialog_deleteAccountFinalContent": "이 작업은 되돌릴 수 없습니다.",
   "dialog_delete": "탈퇴",
-
   "pet_profile": "프로필",
   "pet_name_hint": "이름을 입력해 주세요",
   "pet_gender_hint": "성별을 선택해 주세요",
@@ -320,7 +368,6 @@
   "pet_growthAdult": "청년",
   "dialog_selectGender": "성별 선택",
   "dialog_selectGrowthStage": "성장 단계 선택",
-
   "error_googleLogin": "Google 로그인 중 오류가 발생했습니다.",
   "error_appleLogin": "Apple 로그인 중 오류가 발생했습니다.",
   "error_login": "로그인 중 오류가 발생했습니다.",
@@ -332,7 +379,9 @@
   "error_saveFailed": "저장 중 오류가 발생했습니다: {error}",
   "@error_saveFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "error_loadPet": "펫 정보를 불러오는데 실패했습니다.",
@@ -342,10 +391,11 @@
   "error_unlinkFailed": "{provider} 계정 연동 해제에 실패했습니다.",
   "@error_unlinkFailed": {
     "placeholders": {
-      "provider": {"type": "String"}
+      "provider": {
+        "type": "String"
+      }
     }
   },
-
   "snackbar_codeResent": "코드가 다시 전송되었습니다.",
   "snackbar_passwordChanged": "비밀번호가 성공적으로 변경되었습니다.",
   "snackbar_saved": "저장되었습니다.",
@@ -357,10 +407,11 @@
   "snackbar_unlinked": "{provider} 계정 연동이 해제되었습니다.",
   "@snackbar_unlinked": {
     "placeholders": {
-      "provider": {"type": "String"}
+      "provider": {
+        "type": "String"
+      }
     }
   },
-
   "validation_enterEmail": "이메일을 입력해 주세요.",
   "validation_invalidEmail": "올바른 이메일 형식을 입력해 주세요.",
   "validation_enterPassword": "비밀번호를 입력해 주세요.",
@@ -370,7 +421,6 @@
   "validation_enterNewPassword": "새로운 비밀번호를 입력해 주세요.",
   "validation_confirmPassword": "비밀번호를 다시 입력해 주세요.",
   "validation_passwordMismatch": "비밀번호가 일치하지 않습니다.",
-
   "datetime_weekday_mon": "월",
   "datetime_weekday_tue": "화",
   "datetime_weekday_wed": "수",
@@ -381,24 +431,36 @@
   "datetime_dateFormat": "{year}년 {month}월 {day}일 ({weekday})",
   "@datetime_dateFormat": {
     "placeholders": {
-      "year": {"type": "int"},
-      "month": {"type": "int"},
-      "day": {"type": "int"},
-      "weekday": {"type": "String"}
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
     }
   },
   "datetime_dateShort": "{month}/{day} ({weekday})",
   "@datetime_dateShort": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"},
-      "weekday": {"type": "String"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
     }
   },
-
   "social_google": "Google",
   "social_apple": "Apple",
-
   "profile_user": "사용자",
   "profile_userSuffix": "님",
   "profile_languageSettings": "언어 설정",
@@ -406,7 +468,6 @@
   "profile_deviceDefault": "기기 설정",
   "profile_deviceDefaultSubtitle": "시스템 언어를 따릅니다",
   "profile_zeroDay": "0일",
-
   "bhi_title": "건강 점수",
   "bhi_noDataTitle": "건강 데이터가 아직 없습니다",
   "bhi_noDataSubtitle": "체중, 사료, 수분 데이터를 입력해주세요",
@@ -419,14 +480,18 @@
   "bhi_stageNumber": "{stage}단계",
   "@bhi_stageNumber": {
     "placeholders": {
-      "stage": {"type": "int"}
+      "stage": {
+        "type": "int"
+      }
     }
   },
   "bhi_accuracyHint": "기록을 오래 할수록 더 정확한 건강 점수를 확인할 수 있어요.",
   "bhi_baseDate": "기준 날짜: {date}",
   "@bhi_baseDate": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "bhi_statusHealthy": "건강한 상태",
@@ -442,7 +507,6 @@
   "bhi_growthAdult": "성체 (청년기)",
   "bhi_growthPostGrowth": "후속 성장기",
   "bhi_growthRapidGrowth": "빠른 성장기",
-
   "food_title": "사료",
   "food_addTitle": "사료 추가",
   "food_editTitle": "사료 수정",
@@ -456,31 +520,36 @@
   "food_recommendedRange": "권장 사료량: {min}~{max}g/일",
   "@food_recommendedRange": {
     "placeholders": {
-      "min": {"type": "int"},
-      "max": {"type": "int"}
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
     }
   },
   "food_dailyCount": "1일 섭취 횟수",
   "food_perMeal": "1회 당: {amount}g씩",
   "@food_perMeal": {
     "placeholders": {
-      "amount": {"type": "int"}
+      "amount": {
+        "type": "int"
+      }
     }
   },
   "food_timesCount": "{count}회",
   "@food_timesCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "pet_defaultName": "새",
-
   "wciIndex_title": "WCI 지수란?",
   "wciIndex_description": "섭취 습관의 변화가 체중에 어떤 영향을 주고 있는지를\n백분율로 보여주는 건강 지표입니다.",
   "wciIndex_calculationMethod": "계산 방법",
   "wciIndex_levelCriteria": "WCI 5단계 기준",
-
   "chatbot_title": "챗봇",
   "chatbot_clearHistory": "대화 내역 삭제",
   "chatbot_clearHistoryConfirm": "모든 대화 내역이 삭제됩니다. 계속하시겠습니까?",
@@ -497,7 +566,9 @@
   "chatbot_aiCallFailed": "AI 호출 실패: {error}",
   "@chatbot_aiCallFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "chatbot_multimodalHint": "사진에 대해 질문하거나 그냥 보내세요",
@@ -508,7 +579,8 @@
   "chatbot_visionFailed": "사진 분석에 실패했어요. 텍스트만 전송됩니다.",
   "chatbot_imageTooLarge": "사진이 너무 커요 (최대 10MB)",
   "chatbot_imageOnlineOnly": "이미지 전송은 온라인에서만 가능해요",
-
+  "chatbot_bannerTitle": "AI 챗봇 · 사진 분석",
+  "chatbot_bannerSubtitle": "궁금한 점을 물어보거나 사진을 첨부하세요",
   "water_title": "수분",
   "water_inputTitle": "음수량 입력",
   "water_totalIntake": "총 음수량(ml)",
@@ -519,25 +591,30 @@
   "water_recommendedRange": "권장 음수량: {amount}ml/일",
   "@water_recommendedRange": {
     "placeholders": {
-      "amount": {"type": "String"}
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "water_dailyCount": "1일 섭취 횟수",
   "water_perDrink": "1회 당: {amount}ml씩",
   "@water_perDrink": {
     "placeholders": {
-      "amount": {"type": "String"}
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "water_timesCount": "{count}회",
   "@water_timesCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "water_tapToInput": "탭하여 입력",
   "water_tapToEdit": "탭하여 수정",
-
   "weight_bodyWeight": "몸무게*",
   "weight_addStickerHint": "여기를 눌러 스티커를 추가해 보세요.",
   "weight_inputLabel": "체중 입력 (g)",
@@ -547,17 +624,19 @@
   "weight_bcs3": "갈비뼈가 보이진 않지만 살짝 만지면 쉽게 느껴져요.\n옆에서 봤을 때 배가 쑥 들어간 부분이 보여요.",
   "weight_bcs4": "갈비뼈가 만져지지만 살짝 지방층이 느껴져요.\n옆모습이 둥글게 보이고 체중이 살짝 늘었어요.",
   "weight_bcs5": "갈비뼈가 잘 만져지지 않고 옆모습이 동그랗게 보입니다.\n먹이량을 줄이고 활동량을 늘려 주세요.",
-
   "validation_enterWeight": "체중을 입력해주세요.",
   "validation_enterValidNumber": "올바른 숫자를 입력해주세요.",
   "validation_weightGreaterThanZero": "체중은 0보다 커야 합니다.",
   "error_noPetFound": "활성 펫을 찾을 수 없습니다.",
-
   "datetime_lunar": "음력 {month}월 {day}일",
   "@datetime_lunar": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "datetime_weekdayFull_sun": "일요일",
@@ -570,16 +649,19 @@
   "datetime_minutes": "{minutes}분",
   "@datetime_minutes": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "datetime_seconds": "{seconds}초",
   "@datetime_seconds": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
-
   "notification_title": "알림",
   "notification_markAllRead": "모두 읽음",
   "notification_empty": "알림이 없습니다",
@@ -588,35 +670,40 @@
   "notification_minutesAgo": "{minutes}분 전",
   "@notification_minutesAgo": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "notification_hoursAgo": "{hours}시간 전",
   "@notification_hoursAgo": {
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "notification_daysAgo": "{days}일 전",
   "@notification_daysAgo": {
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
-
   "schedule_saveError": "일정 저장 중 오류가 발생했습니다.",
   "schedule_deleted": "일정이 삭제되었습니다.",
   "schedule_deleteError": "일정 삭제 중 오류가 발생했습니다.",
   "schedule_reminderMinutes": "{minutes}분 전",
   "@schedule_reminderMinutes": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
-
   "btn_save": "저장",
   "btn_saveRecord": "저장하기",
-
   "error_network": "네트워크 연결을 확인해 주세요.",
   "error_server": "서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
   "error_authRequired": "로그인이 필요합니다.",
@@ -633,7 +720,6 @@
   "error_tooManyRequests": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
   "error_socialAccountConflict": "이미 다른 계정에 연동된 소셜 계정입니다.",
   "snackbar_savedOffline": "오프라인으로 저장되었습니다. 연결 시 자동 동기화됩니다.",
-
   "coach_wciCard_title": "건강 상태",
   "coach_wciCard_body": "WCI 건강 상태를 확인하세요.\n데이터가 쌓일수록 더 정확해져요!",
   "coach_weightCard_title": "체중 기록",
@@ -648,8 +734,8 @@
   "coach_recordsTab_body": "여기서 체중 변화와 일정을\n한눈에 확인할 수 있어요.",
   "coach_chatbotTab_title": "앵박사",
   "coach_chatbotTab_body": "앵무새에 대해 궁금한 점이 있다면\nAI 앵박사에게 물어보세요!",
-  "coach_aiHealthCheck_title": "AI 건강체크",
-  "coach_aiHealthCheck_body": "사진 한 장으로 건강 상태를 AI가 분석해드려요.\n탭해서 바로 시작해보세요!",
+  "coach_aiHealthCheck_title": "AI 챗봇",
+  "coach_aiHealthCheck_body": "궁금한 점을 묻고 사진도 함께 첨부해 보세요.\nAI 가 바로 분석해 답해드려요!",
   "coach_insights_title": "주간 인사이트",
   "coach_insights_body": "AI가 분석한 건강 인사이트를 확인하세요.\n기록이 쌓일수록 더 정확해져요.",
   "coach_recordToggle_title": "기간 전환",
@@ -671,19 +757,16 @@
   "coach_next": "다음",
   "coach_gotIt": "알겠어요!",
   "coach_skip": "건너뛰기",
-
   "coach_foodToggle_title": "식단 유형",
   "coach_foodToggle_body": "배식과 취식을 전환해서 제공량과 섭취량을 모두 기록하세요.",
   "coach_foodAdd_title": "사료 추가",
   "coach_foodAdd_body": "여기를 탭해서 사료 이름, 양, 시간을 기록하세요.",
   "coach_foodSave_title": "변경사항 저장",
   "coach_foodSave_body": "저장을 잊지 마세요! 온라인 시 자동으로 동기화됩니다.",
-
   "coach_waterIcon_title": "음수량 기록",
   "coach_waterIcon_body": "물 아이콘을 탭해서 섭취량을 늘리세요. 길게 눌러 직접 입력할 수도 있어요.",
   "coach_waterTarget_title": "일일 목표",
   "coach_waterTarget_body": "권장 일일 음수량이 표시됩니다. 충분한 수분 섭취가 중요해요!",
-
   "coach_weightGauge_title": "체중 컨디션 지수",
   "coach_weightGauge_body": "품종별 건강 체중 범위를 확인할 수 있어요.",
   "coach_weightInput_title": "체중 입력",
@@ -692,59 +775,53 @@
   "coach_weightTime_body": "체중을 측정한 시간을 선택하세요. 하루에 여러 번 기록할 수 있어요.",
   "coach_weightSave_title": "기록 저장",
   "coach_weightSave_body": "탭해서 저장하세요. 데이터가 성장 추이와 건강 변화를 감지하는 데 도움이 돼요.",
-
   "coach_hcHistory_title": "기록 보기",
   "coach_hcHistory_body": "과거 건강 체크 기록을 확인하세요. 시간에 따른 패턴을 추적할 수 있어요.",
   "coach_hcModes_title": "체크 유형 선택",
   "coach_hcModes_body": "전체 건강은 Full Body, 특정 부위는 Part-Specific, 배설물/사료는 해당 모드를 선택하세요.",
   "coach_hcTrial_title": "무료 체험 가능",
   "coach_hcTrial_body": "무료 건강 체크 횟수가 남아있어요! 프리미엄은 무제한으로 사용할 수 있습니다.",
-
   "coach_hcHistoryVet_title": "수의사 리포트",
   "coach_hcHistoryVet_body": "수의사용 종합 리포트를 받아보세요. 프리미엄 기능입니다.",
   "coach_hcHistoryShare_title": "리포트 공유",
   "coach_hcHistoryShare_body": "이메일이나 메시징 앱으로 건강 리포트를 공유하세요.",
   "coach_hcHistorySwipe_title": "스와이프 삭제",
   "coach_hcHistorySwipe_body": "기록 카드를 왼쪽으로 밀어 삭제하세요. 삭제는 되돌릴 수 없으니 주의하세요!",
-
   "coach_hcResultConfidence_title": "신뢰도 점수",
   "coach_hcResultConfidence_body": "AI 분석의 신뢰도를 나타냅니다. 높을수록 좋지만, 우려 사항은 항상 수의사와 상담하세요.",
   "coach_hcResultFindings_title": "분석 결과",
   "coach_hcResultFindings_body": "AI 건강 체크의 세부 관찰 내용입니다. 카드를 탭해 자세히 보세요.",
   "coach_hcResultRecheck_title": "재검사 가능",
   "coach_hcResultRecheck_body": "만족스럽지 않으세요? 다른 사진을 찍어 즉시 재검사할 수 있어요.",
-
   "coach_bhiRing_title": "건강 지수",
   "coach_bhiRing_body": "체중, 사료, 수분 데이터로 계산된 100점 만점 건강 점수입니다.",
   "coach_bhiBreakdown_title": "점수 구성",
   "coach_bhiBreakdown_body": "체중(60점), 사료(25점), 수분(15점)이 총점에 어떻게 기여하는지 확인하세요.",
-
   "coach_profilePremium_title": "프리미엄 업그레이드",
   "coach_profilePremium_body": "무제한 AI 건강 체크, 리포트 내보내기, 고급 인사이트를 잠금 해제하세요!",
   "coach_profileAddPet_title": "반려동물 추가",
   "coach_profileAddPet_body": "여러 마리를 키우시나요? 여기서 추가하고 프로필을 쉽게 전환하세요.",
   "coach_profilePetCard_title": "활성 반려동물 선택",
   "coach_profilePetCard_body": "펫 카드를 탭해 전환하세요. 활성 펫의 데이터가 앱 전체에 표시됩니다.",
-
   "coach_premiumPlan_title": "플랜 선택",
   "coach_premiumPlan_body": "월간은 유연성을, 연간은 2개월 무료 혜택을 드려요. 둘 다 모든 기능을 잠금 해제합니다!",
   "coach_premiumPromo_title": "프로모 코드가 있으신가요?",
   "coach_premiumPromo_body": "파트너사나 이벤트 코드가 있으세요? 여기를 탭해 특별 혜택을 받으세요.",
-
   "coach_petDetailImage_title": "펫 사진 추가",
   "coach_petDetailImage_body": "탭해서 반려조의 사진을 업로드하세요. 한눈에 식별하는 데 도움이 돼요!",
   "coach_petDetailInfo_title": "기본 정보",
   "coach_petDetailInfo_body": "성별, 생년월일, 품종을 입력하면 더 정확한 건강 권장사항을 받을 수 있어요.",
   "coach_petDetailSave_title": "프로필 저장",
   "coach_petDetailSave_body": "변경사항을 저장하세요! 모든 기기에서 동기화됩니다.",
-
   "weight_selectTime": "측정 시간",
   "weight_timeNotRecorded": "시간 미기록",
   "weight_dailyAverage": "일평균",
   "weight_multipleRecords": "{count}회 측정",
   "@weight_multipleRecords": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weight_addAnother": "추가 기록",
@@ -752,7 +829,6 @@
   "weight_deleteConfirm": "삭제",
   "weight_amPeriod": "오전",
   "weight_pmPeriod": "오후",
-
   "diet_serving": "배식",
   "diet_eating": "취식",
   "diet_addServing": "배식 기록 추가",
@@ -766,22 +842,32 @@
   "diet_eatingRateValue": "{rate}%",
   "@diet_eatingRateValue": {
     "placeholders": {
-      "rate": {"type": "int"}
+      "rate": {
+        "type": "int"
+      }
     }
   },
   "diet_selectTime": "급여/섭취 시간",
   "diet_servingSummary": "배식 {count}회 · {grams}g",
   "@diet_servingSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "grams": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "grams": {
+        "type": "String"
+      }
     }
   },
   "diet_eatingSummary": "취식 {count}회 · {grams}g",
   "@diet_eatingSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "grams": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "grams": {
+        "type": "String"
+      }
     }
   },
   "diet_selectType": "기록 유형",
@@ -792,10 +878,11 @@
   "diet_eatingExceedsServing": "취식량이 배식량을 초과할 수 없습니다. (남은 배식량: {remaining}g)",
   "@diet_eatingExceedsServing": {
     "placeholders": {
-      "remaining": {"type": "String"}
+      "remaining": {
+        "type": "String"
+      }
     }
   },
-
   "faq_title": "자주 묻는 질문",
   "faq_categoryGeneral": "일반",
   "faq_categoryUsage": "기능 사용법",
@@ -846,7 +933,6 @@
   "faq_a21": "네, 채팅 기록은 서버에 안전하게 저장됩니다. 로그아웃 후 다시 로그인해도 이전 대화를 확인할 수 있습니다.",
   "faq_q22": "품종별 표준 체중 정보는 어디서 확인하나요?",
   "faq_a22": "체중 기록 화면에서 품종별 표준 체중 범위가 차트에 표시됩니다. 반려동물 프로필에서 품종을 설정하세요.",
-
   "premium_sectionTitle": "프리미엄",
   "premium_title": "프리미엄 코드 입력",
   "premium_badgeFree": "Free",
@@ -854,7 +940,9 @@
   "premium_expiresAt": "{date}까지",
   "@premium_expiresAt": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "premium_enterCode": "프리미엄 코드를 입력해 보세요",
@@ -873,134 +961,15 @@
   "premium_activationSuccessContent": "{date}까지 프리미엄 서비스를 이용할 수 있습니다.",
   "@premium_activationSuccessContent": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "premium_activationSuccessContentNoDate": "프리미엄 서비스가 활성화되었습니다.",
   "premium_upgradeToPremium": "프리미엄 업그레이드",
   "premium_healthCheckBlocked": "이번 달 사용 한도에 도달했어요.\n다음 달에 다시 이용해 주세요.",
   "premium_healthCheckBlockedTitle": "월간 한도 도달",
-
-  "hc_title": "AI 건강체크",
-  "hc_photoSubtitle": "사진 한 장으로 건강 상태를 확인하세요",
-  "hc_selectTarget": "분석 대상을 선택해주세요",
-  "hc_analyze": "분석하기",
-
-  "hc_modeFullBody": "전체 외형",
-  "hc_modeFullBodyDesc": "전체 모습을 촬영하여 외형을 분석합니다",
-  "hc_modePartSpecific": "부위별 검사",
-  "hc_modePartSpecificDesc": "눈, 부리, 깃털, 발 등 특정 부위를 분석합니다",
-  "hc_modeDroppings": "배변 분석",
-  "hc_modeDroppingsDesc": "배변 사진으로 건강 상태를 확인합니다",
-  "hc_modeFood": "먹이 안전성",
-  "hc_modeFoodDesc": "먹이 사진으로 급여 가능 여부를 확인합니다",
-
-  "hc_partEye": "눈",
-  "hc_partBeak": "부리",
-  "hc_partFeather": "깃털",
-  "hc_partFoot": "발",
-
-  "hc_imageSizeExceeded": "이미지 크기가 10MB를 초과합니다",
-  "hc_imagePickError": "이미지 선택 중 오류가 발생했습니다: {error}",
-  "@hc_imagePickError": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
-  "hc_takePhoto": "촬영하기",
-  "hc_selectFromAlbum": "앨범에서 선택",
-  "hc_photoHint": "사진을 촬영하거나\n앨범에서 선택해주세요",
-
-  "hc_registerPetFirst": "펫을 먼저 등록해주세요",
-  "hc_analysisError": "분석 중 오류가 발생했습니다.\n다시 시도해주세요.",
-  "hc_cancelAnalysis": "분석 취소",
-  "hc_cancelAnalysisConfirm": "분석을 취소하시겠습니까?",
-  "hc_continueAnalysis": "계속 분석",
-  "hc_analyzing": "분석 중입니다...",
-  "hc_aiAnalyzing": "AI가 이미지를 분석하고 있어요",
-  "hc_analysisErrorTitle": "분석 중 오류가 발생했습니다",
-  "hc_retry": "다시 시도",
-  "hc_goBack": "돌아가기",
-
-  "hc_resultTitle": "분석 결과",
-  "hc_analysisItems": "분석 항목",
-  "hc_recommendations": "권장 사항",
-  "hc_overallStatus": "종합 상태",
-  "hc_confidence": "신뢰도",
-  "hc_vetVisitRecommended": "수의사 방문을 권장합니다",
-  "hc_possibleCauses": "가능한 원인",
-  "hc_possibleCausesPrefix": "가능 원인: ",
-  "hc_nutritionBalance": "영양 균형",
-  "hc_goHome": "홈으로",
-  "hc_recheckButton": "다시 체크하기",
-  "hc_colorTexture": "색상: {color}, 질감: {texture}",
-  "@hc_colorTexture": {
-    "placeholders": {
-      "color": {"type": "String"},
-      "texture": {"type": "String"}
-    }
-  },
-
-  "hc_severityNormal": "정상",
-  "hc_severityCaution": "주의",
-  "hc_severityWarning": "경고",
-  "hc_severityCritical": "위험",
-  "hc_severityUnknown": "확인 필요",
-
-  "hc_areaFeather": "깃털 상태",
-  "hc_areaPosture": "자세/균형",
-  "hc_areaEye": "눈 상태",
-  "hc_areaBeak": "부리 상태",
-  "hc_areaFoot": "발/발톱",
-  "hc_areaBodyShape": "체형",
-  "hc_areaFeces": "변",
-  "hc_areaUrates": "요산",
-  "hc_areaUrine": "소변",
-  "hc_areaInjuryDetected": "부상 감지",
-
-  "hc_aspectPlantarSurface": "발바닥 상태",
-  "hc_aspectNailLength": "발톱 길이",
-  "hc_aspectSwelling": "부종",
-  "hc_aspectSkinTexture": "피부 질감",
-  "hc_aspectGripStrength": "쥐는 힘",
-  "hc_aspectToeAlignment": "발가락 정렬",
-  "hc_aspectBurns": "화상",
-  "hc_aspectLacerations": "열상",
-  "hc_aspectFractures": "골절",
-  "hc_aspectBiteWounds": "교상",
-  "hc_aspectBandInjuries": "밴드 손상",
-
-  "hc_aspectDischarge": "분비물",
-  "hc_aspectPupilResponse": "동공 반응",
-  "hc_aspectCornealClarity": "각막 투명도",
-  "hc_aspectPeriorbitalArea": "눈 주변부",
-  "hc_aspectSymmetry": "대칭성",
-  "hc_aspectCornealScratches": "각막 손상",
-  "hc_aspectForeignBody": "이물질",
-
-  "hc_aspectColor": "색상",
-  "hc_aspectTexture": "질감",
-  "hc_aspectOvergrowth": "과성장",
-  "hc_aspectCracks": "갈라짐",
-  "hc_aspectPeeling": "벗겨짐",
-  "hc_aspectCereCondition": "코비늘 상태",
-  "hc_aspectAlignment": "정렬 상태",
-
-  "hc_aspectDensity": "밀도",
-  "hc_aspectLuster": "윤기",
-  "hc_aspectDiscoloration": "변색",
-  "hc_aspectDamagePatterns": "손상 패턴",
-  "hc_aspectPluckingSigns": "깃털 뽑기 흔적",
-  "hc_aspectPinFeathers": "솜깃털",
-  "hc_aspectStressBars": "스트레스 바",
-  "hc_aspectMoltingStatus": "환우 상태",
-
-  "hc_firstAidTitle": "응급 처치",
-  "hc_notesHint": "부상이나 사고 상황을 설명해 주세요 (선택사항)",
-  "hc_notesHintFullBody": "전반적인 건강 상태나 특이사항을 설명해 주세요 (선택사항)",
-  "hc_notesHintDroppings": "배변의 색상, 형태, 빈도 등 특이사항을 설명해 주세요 (선택사항)",
-  "hc_notesHintFood": "먹이 종류, 섭취량, 식욕 변화 등을 설명해 주세요 (선택사항)",
-
   "ai_petInfoPrefix": "이름",
   "ai_breedPrefix": "품종",
   "ai_agePrefix": "나이",
@@ -1013,37 +982,26 @@
   "ai_ageYears": "{years}세",
   "@ai_ageYears": {
     "placeholders": {
-      "years": {"type": "int"}
+      "years": {
+        "type": "int"
+      }
     }
   },
   "ai_ageMonths": "{months}개월",
   "@ai_ageMonths": {
     "placeholders": {
-      "months": {"type": "int"}
+      "months": {
+        "type": "int"
+      }
     }
   },
   "ai_ageLessThanMonth": "1개월 미만",
-
-  "hc_history": "기록",
-  "hc_historyTitle": "건강체크 기록",
-  "hc_historyEmpty": "아직 건강체크 기록이 없어요",
-  "hc_historyEmptyDesc": "AI 건강체크를 통해 앵무새의 건강을 확인해보세요",
-  "hc_savedSuccessfully": "결과가 저장되었습니다",
-  "hc_deleteConfirm": "이 기록을 삭제하시겠습니까?",
-  "hc_deleteSuccess": "기록이 삭제되었습니다",
-  "hc_dateToday": "오늘",
-  "hc_dateYesterday": "어제",
-  "hc_dateLast7Days": "최근 7일",
-  "hc_dateEarlier": "이전",
-
   "premium_featureLockedTitle": "프리미엄 전용 기능",
   "premium_featureLockedMessage": "AI 비전 건강체크는 프리미엄 전용 기능입니다.\n\n비전 AI 모델 비용이 높아 무료로 제공하기 어려운 점 양해 부탁드립니다.\n프리미엄 코드를 활성화하면 무제한으로 이용하실 수 있습니다.",
   "premium_activateNow": "프리미엄 활성화",
   "premium_maybeLater": "나중에",
-
   "chatbot_premiumBanner": "프리미엄 버전으로 더 상세하고 정확한 답변을 받을 수 있어요",
   "chatbot_premiumUpgrade": "업그레이드",
-
   "paywall_title": "Premium",
   "paywall_headline": "사진과 기록으로 더 정확하게\n건강 상태를 파악하세요",
   "paywall_benefit1": "무제한 AI Vision 건강체크",
@@ -1055,7 +1013,9 @@
   "paywall_yearlyPerMonth": "월 {price}",
   "@paywall_yearlyPerMonth": {
     "placeholders": {
-      "price": {"type": "String"}
+      "price": {
+        "type": "String"
+      }
     }
   },
   "paywall_ctaButton": "Premium 시작하기",
@@ -1074,35 +1034,33 @@
   "paywall_alreadyPremiumExpires": "{date}까지 이용 가능",
   "@paywall_alreadyPremiumExpires": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
-
   "quotaBadge_normal": "이번 달 {count}회 남음",
   "@quotaBadge_normal": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "quotaBadge_exhausted": "월간 한도 도달",
   "quotaBadge_upgrade": "업그레이드",
   "aiEncyclopedia_quotaExhausted": "이번 달 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.",
   "aiEncyclopedia_quotaExhaustedHint": "월간 한도 도달 · 프리미엄으로 업그레이드하세요",
-  "healthCheck_freeTrialBadge": "무료 체험",
-  "healthCheck_trialExhaustedTitle": "무료 체험 완료",
-  "healthCheck_trialExhaustedMessage": "무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.",
-  "healthCheck_trialExhaustedMessage_v2": "현재 무료 체험 중이며, 체험 횟수를 모두 사용하셨어요.\n\n프로모션 코드를 입력하거나 SNS로 연락하시면 추가 이용이 가능합니다.",
-  "healthCheck_trialExhaustedAction_promo": "프로모션 코드 입력",
-
   "visionQuotaBadge_normal": "{count}회 남음",
   "@visionQuotaBadge_normal": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "visionQuotaBadge_exhausted": "월간 한도 도달",
   "visionQuotaBadge_upgrade": "코드 입력",
-
   "paywall_freeTrialBanner": "현재 AI 비전 체크와 AI 챗봇은\n무료 체험 중입니다",
   "paywall_freeTrialSubtext": "프로모션 코드를 입력하면 더 많은 혜택을 받을 수 있습니다",
   "paywall_snsEventTitle": "SNS 이벤트",
@@ -1110,10 +1068,11 @@
   "sns_copied": "{label} 복사됨",
   "@sns_copied": {
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
-
   "report_shareFailed": "공유 링크 생성에 실패했습니다.",
   "report_shareHealth": "건강 리포트 공유",
   "report_vetSummary": "병원 방문 요약",
@@ -1123,7 +1082,6 @@
   "report_vetFeatureChecks": "AI 건강 체크 결과 요약",
   "report_vetFeatureNotes": "행동 메모 및 일상 기록",
   "report_vetShareButton": "요약 링크 공유하기",
-
   "home_healthSummaryTitle": "건강 변화 요약",
   "home_healthSummaryWeightChange": "체중 변화",
   "home_healthSummaryAbnormal": "이상 소견 (30일)",
@@ -1134,7 +1092,6 @@
   "home_insightsEmpty": "아직 인사이트가 없습니다",
   "home_insightsRecommendations": "추천 사항",
   "home_insightsUpgrade": "Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요",
-
   "dailyRecord_title": "일일 기록",
   "dailyRecord_mood": "기분",
   "dailyRecord_activity": "활동량",
@@ -1153,8 +1110,12 @@
   "weightDetail_dateDailyRecord": "{month}월 {day}일 일일 기록",
   "@weightDetail_dateDailyRecord": {
     "placeholders": {
-      "month": {"type": "int"},
-      "day": {"type": "int"}
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
     }
   },
   "weightDetail_noDailyRecord": "등록된 일일 기록이 없습니다",
@@ -1162,7 +1123,6 @@
   "weightDetail_addDailyRecordHint": "아래 버튼을 눌러 기록을 추가해보세요",
   "btn_addSchedule": "일정 추가",
   "btn_addDailyRecord": "일일 기록 추가",
-
   "profileSetup_title": "프로필 설정",
   "profileSetup_phoneHint": "전화번호를 입력해 주세요",
   "profileSetup_complete": "입력완료",
@@ -1173,32 +1133,28 @@
   "profileSetup_doneTitle": "설정 완료",
   "profileSetup_doneMessage": "설정이 완료되었습니다!",
   "profileSetup_startRecording": "기록 시작!",
-
   "timePicker_title": "시간을 선택해주세요",
   "timePicker_confirm": "선택 완료",
-
   "country_selectTitle": "국가를 선택하세요",
-
   "datetime_am": "오전",
   "datetime_pm": "오후",
   "datetime_yearMonth": "{year}년 {month}월",
   "@datetime_yearMonth": {
     "placeholders": {
-      "year": {"type": "int"},
-      "month": {"type": "int"}
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
     }
   },
-
   "schedule_noPetInfo": "펫 정보가 없습니다.",
   "schedule_noTitle": "제목 없음",
   "schedule_endTimeAfterStart": "종료 시간은 시작 시간 이후여야 합니다.",
   "schedule_titleHint": "제목",
-
   "bottomNav_home": "홈",
   "bottomNav_records": "기록",
   "bottomNav_chat": "AI 챗봇",
-
-  "hc_analysisTimeout": "분석 시간이 너무 오래 걸려요. 네트워크를 확인하고 다시 시도해주세요.",
-
   "common_defaultPetName": "사랑이"
 }

@@ -13,9 +13,6 @@ class CoachMarkService {
   static const String screenFoodRecord = 'food_record';
   static const String screenWaterRecord = 'water_record';
   static const String screenWeightRecord = 'weight_record';
-  static const String screenHealthCheckMain = 'health_check_main';
-  static const String screenHealthCheckHistory = 'health_check_history';
-  static const String screenHealthCheckResult = 'health_check_result';
   static const String screenBhiDetail = 'bhi_detail';
   static const String screenProfile = 'profile';
   static const String screenPremium = 'premium';
