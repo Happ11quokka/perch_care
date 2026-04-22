@@ -952,6 +952,30 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get chatbot_multimodalHint => '就照片提问或直接发送';
+
+  @override
+  String get chatbot_attachPhoto => '附加照片';
+
+  @override
+  String get chatbot_pickFromCamera => '拍照';
+
+  @override
+  String get chatbot_pickFromGallery => '从相册选择';
+
+  @override
+  String get chatbot_removeAttachment => '移除附件';
+
+  @override
+  String get chatbot_visionFailed => '照片分析失败，仅发送文字。';
+
+  @override
+  String get chatbot_imageTooLarge => '图片过大（最大10MB）';
+
+  @override
+  String get chatbot_imageOnlineOnly => '附加图片需要在线连接';
+
+  @override
   String get water_title => '饮水';
 
   @override

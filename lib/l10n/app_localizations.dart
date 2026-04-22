@@ -1852,6 +1852,54 @@ abstract class AppLocalizations {
   /// **'AI 호출 실패: {error}'**
   String chatbot_aiCallFailed(String error);
 
+  /// No description provided for @chatbot_multimodalHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진에 대해 질문하거나 그냥 보내세요'**
+  String get chatbot_multimodalHint;
+
+  /// No description provided for @chatbot_attachPhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 첨부'**
+  String get chatbot_attachPhoto;
+
+  /// No description provided for @chatbot_pickFromCamera.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 촬영'**
+  String get chatbot_pickFromCamera;
+
+  /// No description provided for @chatbot_pickFromGallery.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 선택'**
+  String get chatbot_pickFromGallery;
+
+  /// No description provided for @chatbot_removeAttachment.
+  ///
+  /// In ko, this message translates to:
+  /// **'첨부 이미지 제거'**
+  String get chatbot_removeAttachment;
+
+  /// No description provided for @chatbot_visionFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 분석에 실패했어요. 텍스트만 전송됩니다.'**
+  String get chatbot_visionFailed;
+
+  /// No description provided for @chatbot_imageTooLarge.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진이 너무 커요 (최대 10MB)'**
+  String get chatbot_imageTooLarge;
+
+  /// No description provided for @chatbot_imageOnlineOnly.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지 전송은 온라인에서만 가능해요'**
+  String get chatbot_imageOnlineOnly;
+
   /// No description provided for @water_title.
   ///
   /// In ko, this message translates to:

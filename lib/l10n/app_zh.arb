@@ -469,6 +469,14 @@
       "error": {"type": "String"}
     }
   },
+  "chatbot_multimodalHint": "就照片提问或直接发送",
+  "chatbot_attachPhoto": "附加照片",
+  "chatbot_pickFromCamera": "拍照",
+  "chatbot_pickFromGallery": "从相册选择",
+  "chatbot_removeAttachment": "移除附件",
+  "chatbot_visionFailed": "照片分析失败，仅发送文字。",
+  "chatbot_imageTooLarge": "图片过大（最大10MB）",
+  "chatbot_imageOnlineOnly": "附加图片需要在线连接",
 
   "water_title": "饮水",
   "water_inputTitle": "饮水量输入",

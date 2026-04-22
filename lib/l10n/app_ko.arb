@@ -500,6 +500,14 @@
       "error": {"type": "String"}
     }
   },
+  "chatbot_multimodalHint": "사진에 대해 질문하거나 그냥 보내세요",
+  "chatbot_attachPhoto": "사진 첨부",
+  "chatbot_pickFromCamera": "사진 촬영",
+  "chatbot_pickFromGallery": "사진 선택",
+  "chatbot_removeAttachment": "첨부 이미지 제거",
+  "chatbot_visionFailed": "사진 분석에 실패했어요. 텍스트만 전송됩니다.",
+  "chatbot_imageTooLarge": "사진이 너무 커요 (최대 10MB)",
+  "chatbot_imageOnlineOnly": "이미지 전송은 온라인에서만 가능해요",
 
   "water_title": "수분",
   "water_inputTitle": "음수량 입력",

@@ -959,6 +959,30 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get chatbot_multimodalHint => '사진에 대해 질문하거나 그냥 보내세요';
+
+  @override
+  String get chatbot_attachPhoto => '사진 첨부';
+
+  @override
+  String get chatbot_pickFromCamera => '사진 촬영';
+
+  @override
+  String get chatbot_pickFromGallery => '사진 선택';
+
+  @override
+  String get chatbot_removeAttachment => '첨부 이미지 제거';
+
+  @override
+  String get chatbot_visionFailed => '사진 분석에 실패했어요. 텍스트만 전송됩니다.';
+
+  @override
+  String get chatbot_imageTooLarge => '사진이 너무 커요 (최대 10MB)';
+
+  @override
+  String get chatbot_imageOnlineOnly => '이미지 전송은 온라인에서만 가능해요';
+
+  @override
   String get water_title => '수분';
 
   @override

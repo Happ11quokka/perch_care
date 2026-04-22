@@ -979,6 +979,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get chatbot_multimodalHint => 'Ask about the photo or just send it';
+
+  @override
+  String get chatbot_attachPhoto => 'Attach photo';
+
+  @override
+  String get chatbot_pickFromCamera => 'Take a photo';
+
+  @override
+  String get chatbot_pickFromGallery => 'Choose from gallery';
+
+  @override
+  String get chatbot_removeAttachment => 'Remove attachment';
+
+  @override
+  String get chatbot_visionFailed =>
+      'Photo analysis failed. Sending text only.';
+
+  @override
+  String get chatbot_imageTooLarge => 'Image is too large (max 10MB)';
+
+  @override
+  String get chatbot_imageOnlineOnly =>
+      'Image attachments require an online connection';
+
+  @override
   String get water_title => 'Water';
 
   @override

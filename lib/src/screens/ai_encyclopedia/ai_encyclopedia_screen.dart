@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -35,6 +36,8 @@ import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
 import '../../providers/pet_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'widgets/attachment_bottom_sheet.dart';
+import 'widgets/chat_input_multimodal.dart';
 
 class AIEncyclopediaScreen extends ConsumerStatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -69,6 +72,9 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   bool _showPremiumBanner = false;
   PremiumStatus? _premiumStatus;
   bool _isQuotaExhausted = false;
+
+  // 멀티모달 첨부 상태 (Phase 2: UI 만, 실제 전송은 Phase 3)
+  Uint8List? _attachedImageBytes;
 
   // 둥둥 떠다니는 breathing 애니메이션
   late final AnimationController _floatController;
@@ -238,8 +244,13 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
 
   void _handleSend() async {
     if (_isSending) return;
-    final text = _inputController.text.trim();
-    if (text.isEmpty) return;
+    final rawText = _inputController.text.trim();
+    final hasImage = _attachedImageBytes != null;
+    if (rawText.isEmpty && !hasImage) return;
+
+    // Phase 2: 이미지는 UI 데모만. 실제 Vision 전송은 Phase 3 에서 붙인다.
+    // 텍스트가 비어 있고 이미지만 있는 경우 임시 프롬프트로 대체한다.
+    final text = rawText.isNotEmpty ? rawText : '이 사진에 대해 알려주세요';
 
     // Phase 2: 쿼터 소진 시 전송 차단
     if (_isQuotaExhausted) {
@@ -280,6 +291,8 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
 
     setState(() {
       _inputController.clear();
+      // Phase 2: 이미지는 전송 후 함께 초기화 (Phase 3 에서 실제로 Vision 호출 연결)
+      _attachedImageBytes = null;
     });
 
     _scrollToBottom();
@@ -380,6 +393,40 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       _loadQuota(); // Phase 2: 전송 완료 후 quota 배지 갱신
     }
     _assistantPlaceholderIndex = null;
+  }
+
+  /// 첨부 버튼 탭 → 카메라/갤러리 바텀 시트 → 이미지 상태에 저장
+  Future<void> _pickAttachment() async {
+    if (_isQuotaExhausted) return;
+    try {
+      final picked = await AttachmentBottomSheet.show(context);
+      if (picked == null || !mounted) return;
+
+      final bytes = Uint8List.fromList(picked.bytes);
+      if (bytes.length > 10 * 1024 * 1024) {
+        AppSnackBar.error(
+          context,
+          message: AppLocalizations.of(context).chatbot_imageTooLarge,
+        );
+        return;
+      }
+
+      setState(() {
+        _attachedImageBytes = bytes;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.error(
+        context,
+        message: AppLocalizations.of(context).chatbot_visionFailed,
+      );
+    }
+  }
+
+  void _removeAttachment() {
+    setState(() {
+      _attachedImageBytes = null;
+    });
   }
 
   /// assistant 메시지를 서버에 저장 (fire-and-forget)
@@ -739,7 +786,18 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             if (!_hasUserMessages && !_isLoadingMessages)
               _buildSuggestionChips(),
             if (_showPremiumBanner) _buildPremiumBanner(),
-            _buildInputArea(),
+            KeyedSubtree(
+              key: _inputKey,
+              child: ChatInputMultimodal(
+                controller: _inputController,
+                isSending: _isSending,
+                isQuotaExhausted: _isQuotaExhausted,
+                onSend: _handleSend,
+                onAttachPressed: _pickAttachment,
+                onRemoveAttachment: _removeAttachment,
+                attachedImageBytes: _attachedImageBytes,
+              ),
+            ),
           ],
         ),
       ),
@@ -1177,78 +1235,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             child: const Padding(
               padding: EdgeInsets.all(2),
               child: Icon(Icons.close, size: 18, color: AppColors.warmGray),
-            ),
-          ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputArea() {
-    final l10n = AppLocalizations.of(context);
-
-    return Container(
-      key: _inputKey,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.sm,
-        AppSpacing.lg,
-        AppSpacing.lg,
-      ),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.gray100,
-                borderRadius: BorderRadius.circular(AppRadius.full),
-              ),
-              child: TextField(
-                controller: _inputController,
-                enabled: !_isQuotaExhausted,
-                onTapOutside: (event) => FocusScope.of(context).unfocus(),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: _isQuotaExhausted
-                      ? l10n.aiEncyclopedia_quotaExhaustedHint
-                      : l10n.chatbot_inputHint,
-                ),
-                style: AppTypography.bodyMedium,
-                minLines: 1,
-                maxLines: 3,
-                onSubmitted: (_) => _handleSend(),
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Semantics(
-            button: true,
-            label: 'Send message',
-            child: GestureDetector(
-            onTap: _isSending ? null : _handleSend,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.brandPrimary,
-                shape: BoxShape.circle,
-              ),
-              child: _isSending
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Icon(
-                      Icons.arrow_upward_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
             ),
           ),
           ),
