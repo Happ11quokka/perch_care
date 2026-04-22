@@ -8,10 +8,18 @@ import '../../../theme/spacing.dart';
 import '../../../theme/typography.dart';
 
 class PickedImage {
-  const PickedImage({required this.bytes, required this.fileName});
+  const PickedImage({
+    required this.bytes,
+    required this.fileName,
+    required this.path,
+  });
 
   final List<int> bytes;
   final String fileName;
+
+  /// ImagePicker 가 제공한 로컬 경로 — 세션 동안만 유효.
+  /// 말풍선 썸네일 (`Image.file`) 렌더링에 사용.
+  final String path;
 }
 
 class AttachmentBottomSheet {
@@ -49,7 +57,7 @@ class AttachmentBottomSheet {
       name = '${name.substring(0, name.length - ext.length)}jpg';
     }
 
-    return PickedImage(bytes: bytes, fileName: name);
+    return PickedImage(bytes: bytes, fileName: name, path: photo.path);
   }
 }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -15,6 +16,7 @@ import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/chat/chat_api_service.dart';
+import '../../services/chat/vision_bridge_service.dart';
 import '../../services/ai/ai_encyclopedia_service.dart';
 import '../../services/ai/ai_stream_service.dart';
 import '../../services/storage/chat_storage_service.dart';
@@ -73,8 +75,10 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   PremiumStatus? _premiumStatus;
   bool _isQuotaExhausted = false;
 
-  // 멀티모달 첨부 상태 (Phase 2: UI 만, 실제 전송은 Phase 3)
+  // 멀티모달 첨부 상태
   Uint8List? _attachedImageBytes;
+  String? _attachedFileName;
+  String? _attachedImagePath;
 
   // 둥둥 떠다니는 breathing 애니메이션
   late final AnimationController _floatController;
@@ -245,20 +249,36 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   void _handleSend() async {
     if (_isSending) return;
     final rawText = _inputController.text.trim();
-    final hasImage = _attachedImageBytes != null;
+    final imageBytes = _attachedImageBytes;
+    final imageFileName = _attachedFileName;
+    final imagePath = _attachedImagePath;
+    final hasImage = imageBytes != null;
     if (rawText.isEmpty && !hasImage) return;
 
-    // Phase 2: 이미지는 UI 데모만. 실제 Vision 전송은 Phase 3 에서 붙인다.
-    // 텍스트가 비어 있고 이미지만 있는 경우 임시 프롬프트로 대체한다.
-    final text = rawText.isNotEmpty ? rawText : '이 사진에 대해 알려주세요';
+    // 사용자 말풍선에 표시할 원본 텍스트. 이미지만 있을 땐 기본 프롬프트.
+    final displayText =
+        rawText.isNotEmpty ? rawText : '이 사진에 대해 알려주세요';
 
-    // Phase 2: 쿼터 소진 시 전송 차단
+    // Encyclopedia 쿼터 소진 시 전송 차단
     if (_isQuotaExhausted) {
       AppSnackBar.error(
         context,
         message: AppLocalizations.of(context).aiEncyclopedia_quotaExhausted,
       );
       return;
+    }
+
+    // Vision 쿼터 pre-check — 이미지 첨부 시에만 (Phase 3)
+    if (hasImage) {
+      final canUseVision = await _canUseVisionQuota();
+      if (!mounted) return;
+      if (!canUseVision) {
+        AppSnackBar.error(
+          context,
+          message: AppLocalizations.of(context).premium_healthCheckBlocked,
+        );
+        return;
+      }
     }
 
     AnalyticsService.instance.logAiChatSent();
@@ -273,8 +293,9 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       _messages.add(
         ChatMessage(
           role: MessageRole.user,
-          text: text,
+          text: displayText,
           timestamp: DateTime.now(),
+          imagePath: imagePath,
         ),
       );
       // 스트리밍 시작: 빈 placeholder로 시작
@@ -291,18 +312,42 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
 
     setState(() {
       _inputController.clear();
-      // Phase 2: 이미지는 전송 후 함께 초기화 (Phase 3 에서 실제로 Vision 호출 연결)
       _attachedImageBytes = null;
+      _attachedFileName = null;
+      _attachedImagePath = null;
     });
 
     _scrollToBottom();
+
+    // Phase 3: Vision 브릿지 호출 — 이미지가 있으면 /ai/vision/analyze 결과를
+    // 프롬프트에 합성한다. 실패 시 텍스트만 전송(warn).
+    String serverText = displayText;
+    if (hasImage) {
+      try {
+        final bridge = await VisionBridgeService.instance.analyze(
+          imageBytes: imageBytes,
+          fileName: imageFileName ?? 'attachment.jpg',
+          userText: rawText,
+        );
+        serverText = bridge.augmentedPrompt;
+      } catch (e) {
+        debugPrint('[AIEncyclopedia] Vision bridge failed: $e');
+        if (mounted) {
+          AppSnackBar.warning(
+            context,
+            message: AppLocalizations.of(context).chatbot_visionFailed,
+          );
+        }
+        // 텍스트만 전송하여 계속 진행
+      }
+    }
 
     // 서버 세션 생성 또는 메시지 저장
     if (_currentSessionId == null) {
       try {
         final session = await _chatApi.createSession(
           petId: petId,
-          firstMessage: text,
+          firstMessage: serverText,
         );
         _currentSessionId = session.id;
       } catch (e) {
@@ -313,7 +358,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         await _chatApi.addMessage(
           sessionId: _currentSessionId!,
           role: 'user',
-          content: text,
+          content: serverText,
         );
       } catch (e) {
         debugPrint('[AIEncyclopedia] User message save failed: $e');
@@ -323,7 +368,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     try {
       // SSE 스트리밍 시도
       await _handleStreamResponse(
-        query: text,
+        query: serverText,
         history: history,
         petId: petId,
         petProfileContext: petProfileContext,
@@ -352,7 +397,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       if (_receivedTokenCount == 0) {
         debugPrint('[AIEncyclopedia] SSE failed (0 tokens), falling back: $e');
         await _handleFallbackResponse(
-          query: text,
+          query: serverText,
           history: history,
           petId: petId,
           petProfileContext: petProfileContext,
@@ -413,6 +458,8 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
 
       setState(() {
         _attachedImageBytes = bytes;
+        _attachedFileName = picked.fileName;
+        _attachedImagePath = picked.path;
       });
     } catch (e) {
       if (!mounted) return;
@@ -426,7 +473,22 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   void _removeAttachment() {
     setState(() {
       _attachedImageBytes = null;
+      _attachedFileName = null;
+      _attachedImagePath = null;
     });
+  }
+
+  /// Vision 쿼터 pre-check — 이미지 첨부 시 Send 전에 호출.
+  /// 네트워크 실패 등으로 상태 조회 못하면 true 반환 (서버 403 에 위임).
+  Future<bool> _canUseVisionQuota() async {
+    try {
+      final status = await ref.read(premiumStatusProvider.future);
+      return status.isPremium ||
+          (status.quota?.vision.remaining ?? 0) > 0;
+    } catch (e) {
+      debugPrint('[AIEncyclopedia] Vision quota check failed: $e');
+      return true;
+    }
   }
 
   /// assistant 메시지를 서버에 저장 (fire-and-forget)
@@ -1035,7 +1097,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
 
   Widget _buildMessageBubble(ChatMessage message, bool isUser) {
     if (isUser) {
-      // 사용자 메시지: 오른쪽 정렬 + 프로필 사진
+      // 사용자 메시지: 오른쪽 정렬 + (이미지) + 텍스트 + 프로필 사진
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1055,11 +1117,21 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
                   bottomRight: Radius.circular(AppRadius.xs),
                 ),
               ),
-              child: Text(
-                message.text,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.nearBlack,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (message.imagePath != null) ...[
+                    _UserMessageImage(path: message.imagePath!),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
+                  Text(
+                    message.text,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.nearBlack,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1354,5 +1426,39 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
           },
         )
         .toList();
+  }
+}
+
+/// 사용자 말풍선 내부에 표시되는 첨부 이미지 썸네일.
+/// 로컬 파일 경로 기반 — 파일이 유실되면 placeholder 렌더.
+class _UserMessageImage extends StatelessWidget {
+  const _UserMessageImage({required this.path});
+
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: AppRadius.radiusMd,
+      child: Image.file(
+        File(path),
+        width: 200,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, _, __) => Container(
+          width: 200,
+          height: 140,
+          decoration: BoxDecoration(
+            color: AppColors.gray200,
+            borderRadius: AppRadius.radiusMd,
+          ),
+          child: const Icon(
+            Icons.broken_image_outlined,
+            size: 32,
+            color: AppColors.gray500,
+          ),
+        ),
+      ),
+    );
   }
 }
