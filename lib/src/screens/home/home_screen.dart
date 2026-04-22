@@ -54,7 +54,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // 코치마크 타겟 키
   final _wciCardKey = GlobalKey();
-  final _aiHealthCheckKey = GlobalKey();
   final _insightsSectionKey = GlobalKey();
   final _weightCardKey = GlobalKey();
   final _waterCardKey = GlobalKey();
@@ -127,13 +126,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           title: l10n.coach_wciCard_title,
           body: l10n.coach_wciCard_body,
         ),
-        // 2. AI 건강체크 배너
-        CoachMarkStep(
-          targetKey: _aiHealthCheckKey,
-          title: l10n.coach_aiHealthCheck_title,
-          body: l10n.coach_aiHealthCheck_body,
-        ),
-        // 3. 주간 인사이트 (펫이 있을 때만 표시됨)
+        // 주간 인사이트 (펫이 있을 때만 표시됨)
         if (_activePet != null)
           CoachMarkStep(
             targetKey: _insightsSectionKey,
@@ -263,9 +256,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               const SizedBox(height: 24),
                               // WCI 건강 상태 카드
                               Container(key: _wciCardKey, child: _buildWCICard()),
-                              const SizedBox(height: 12),
-                              // AI 건강체크 배너
-                              _buildAiHealthCheckBanner(),
                               const SizedBox(height: 12),
                               // 건강 변화 요약 카드 (Phase 3-3)
                               if (_healthSummary != null)
@@ -921,61 +911,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           width: 1,
         ),
       ),
-    );
-  }
-
-  Widget _buildAiHealthCheckBanner() {
-    final l10n = AppLocalizations.of(context);
-    return Semantics(
-      button: true,
-      label: l10n.chatbot_bannerTitle,
-      child: GestureDetector(
-      key: _aiHealthCheckKey,
-      onTap: () => context.pushNamed(RouteNames.aiEncyclopedia),
-      child: Container(
-        width: double.infinity,
-        height: 80,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.brandPrimary, AppColors.brandDark],
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.chatbot_bannerTitle,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.white,
-                      letterSpacing: -0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.chatbot_bannerSubtitle,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.white,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.camera_alt_outlined, color: AppColors.white, size: 32),
-          ],
-        ),
-      ),
-    ),
     );
   }
 
