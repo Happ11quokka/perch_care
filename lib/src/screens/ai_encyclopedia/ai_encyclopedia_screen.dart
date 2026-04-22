@@ -282,6 +282,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     }
 
     AnalyticsService.instance.logAiChatSent();
+    final sendStartedAt = DateTime.now();
 
     final history = _buildCleanHistory();
     final petId = _activePet?.id;
@@ -322,6 +323,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     // Phase 3: Vision 브릿지 호출 — 이미지가 있으면 /ai/vision/analyze 결과를
     // 프롬프트에 합성한다. 실패 시 텍스트만 전송(warn).
     String serverText = displayText;
+    bool visionSuccess = false;
     if (hasImage) {
       try {
         final bridge = await VisionBridgeService.instance.analyze(
@@ -330,6 +332,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
           userText: rawText,
         );
         serverText = bridge.augmentedPrompt;
+        visionSuccess = true;
       } catch (e) {
         debugPrint('[AIEncyclopedia] Vision bridge failed: $e');
         if (mounted) {
@@ -341,6 +344,13 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         // 텍스트만 전송하여 계속 진행
       }
     }
+
+    // 멀티모달 전송 지표 — Vision 완료 후 챗 서버 호출 직전 시점에 기록
+    AnalyticsService.instance.logChatMultimodalSent(
+      withImage: hasImage,
+      visionSuccess: hasImage && visionSuccess,
+      durationMs: DateTime.now().difference(sendStartedAt).inMilliseconds,
+    );
 
     // 서버 세션 생성 또는 메시지 저장
     if (_currentSessionId == null) {

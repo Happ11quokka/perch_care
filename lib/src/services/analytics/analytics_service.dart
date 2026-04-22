@@ -40,6 +40,18 @@ class AnalyticsService {
   Future<void> logAiChatSent() =>
       _analytics.logEvent(name: 'ai_chat_sent');
 
+  /// 멀티모달 챗봇 전송 이벤트 — 이미지 첨부 여부, Vision 성공 여부, 총 소요 시간 기록
+  Future<void> logChatMultimodalSent({
+    required bool withImage,
+    required bool visionSuccess,
+    required int durationMs,
+  }) =>
+      _analytics.logEvent(name: 'chat_multimodal_sent', parameters: {
+        'with_image': withImage,
+        'vision_success': visionSuccess,
+        'duration_ms': durationMs,
+      });
+
   Future<void> logBhiViewed(String petId) =>
       _analytics.logEvent(name: 'bhi_viewed', parameters: {'pet_id': petId});
 
