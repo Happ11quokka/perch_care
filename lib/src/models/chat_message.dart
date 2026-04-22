@@ -9,6 +9,7 @@ class ChatMessage {
     required this.timestamp,
     this.id,
     this.sessionId,
+    this.imagePath,
   });
 
   final String? id;
@@ -16,6 +17,9 @@ class ChatMessage {
   final MessageRole role;
   final String text;
   final DateTime timestamp;
+
+  /// 첨부 이미지의 로컬 파일 경로 (멀티모달 입력). 세션 동안만 유효.
+  final String? imagePath;
 
   /// JSON에서 ChatMessage 생성
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,7 @@ class ChatMessage {
       role: json['role'] == 'user' ? MessageRole.user : MessageRole.assistant,
       text: json['text'] as String,
       timestamp: DateTime.parse(json['timestamp'] as String),
+      imagePath: json['image_path'] as String?,
     );
   }
 
@@ -36,6 +41,7 @@ class ChatMessage {
       'role': role == MessageRole.user ? 'user' : 'assistant',
       'text': text,
       'timestamp': timestamp.toIso8601String(),
+      if (imagePath != null) 'image_path': imagePath,
     };
   }
 
@@ -46,6 +52,7 @@ class ChatMessage {
     MessageRole? role,
     String? text,
     DateTime? timestamp,
+    String? imagePath,
   }) {
     return ChatMessage(
       id: id ?? this.id,
@@ -53,6 +60,7 @@ class ChatMessage {
       role: role ?? this.role,
       text: text ?? this.text,
       timestamp: timestamp ?? this.timestamp,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 }

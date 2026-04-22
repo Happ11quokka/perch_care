@@ -8,6 +8,7 @@ import 'package:perch_care/src/models/daily_record.dart';
 import 'package:perch_care/src/models/schedule_record.dart';
 import 'package:perch_care/src/models/breed_standard.dart';
 import 'package:perch_care/src/models/health_summary.dart';
+import 'package:perch_care/src/models/chat_message.dart';
 
 void main() {
   // ---------------------------------------------------------------------------
@@ -1170,6 +1171,138 @@ void main() {
         final summary = HealthSummary.fromJson(json);
         expect(summary.bhiTrend, trend);
       }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // ChatMessage (멀티모달 imagePath 지원)
+  // ---------------------------------------------------------------------------
+  group('ChatMessage', () {
+    Map<String, dynamic> fullUserJson() => {
+          'id': 'msg-001',
+          'session_id': 'sess-abc',
+          'role': 'user',
+          'text': '우리 앵무새 똥 좀 봐줘',
+          'timestamp': '2026-04-22T10:30:00.000Z',
+          'image_path': '/tmp/photo.jpg',
+        };
+
+    test('fromJson 전체 필드 정상 파싱 (user + image)', () {
+      final msg = ChatMessage.fromJson(fullUserJson());
+
+      expect(msg.id, 'msg-001');
+      expect(msg.sessionId, 'sess-abc');
+      expect(msg.role, MessageRole.user);
+      expect(msg.text, '우리 앵무새 똥 좀 봐줘');
+      expect(msg.timestamp, DateTime.parse('2026-04-22T10:30:00.000Z'));
+      expect(msg.imagePath, '/tmp/photo.jpg');
+    });
+
+    test('fromJson assistant 역할 파싱', () {
+      final json = {
+        ...fullUserJson(),
+        'role': 'assistant',
+        'text': '사진 분석 결과...',
+      };
+
+      final msg = ChatMessage.fromJson(json);
+
+      expect(msg.role, MessageRole.assistant);
+      expect(msg.text, '사진 분석 결과...');
+    });
+
+    test('fromJson 알 수 없는 role 값은 assistant 로 폴백', () {
+      final json = {...fullUserJson(), 'role': 'system'};
+      final msg = ChatMessage.fromJson(json);
+      expect(msg.role, MessageRole.assistant);
+    });
+
+    test('fromJson image_path 없으면 null (레거시 히스토리 호환)', () {
+      final json = {
+        'role': 'user',
+        'text': '안녕',
+        'timestamp': '2026-04-22T10:30:00.000Z',
+      };
+
+      final msg = ChatMessage.fromJson(json);
+
+      expect(msg.imagePath, isNull);
+      expect(msg.id, isNull);
+      expect(msg.sessionId, isNull);
+    });
+
+    test('toJson image_path 있을 때 키 포함', () {
+      final msg = ChatMessage.fromJson(fullUserJson());
+      final json = msg.toJson();
+
+      expect(json['image_path'], '/tmp/photo.jpg');
+      expect(json['role'], 'user');
+      expect(json['text'], '우리 앵무새 똥 좀 봐줘');
+    });
+
+    test('toJson image_path null 이면 키 자체 미포함 (기존 패턴)', () {
+      final msg = ChatMessage(
+        role: MessageRole.user,
+        text: '안녕',
+        timestamp: DateTime.parse('2026-04-22T10:30:00.000Z'),
+      );
+
+      final json = msg.toJson();
+
+      expect(json.containsKey('image_path'), isFalse);
+      expect(json.containsKey('id'), isFalse);
+      expect(json.containsKey('session_id'), isFalse);
+    });
+
+    test('toJson → fromJson 왕복 변환 (이미지 포함)', () {
+      final original = ChatMessage.fromJson(fullUserJson());
+      final restored = ChatMessage.fromJson(original.toJson());
+
+      expect(restored.id, original.id);
+      expect(restored.sessionId, original.sessionId);
+      expect(restored.role, original.role);
+      expect(restored.text, original.text);
+      expect(restored.timestamp, original.timestamp);
+      expect(restored.imagePath, original.imagePath);
+    });
+
+    test('toJson → fromJson 왕복 변환 (이미지 없음, 레거시 메시지)', () {
+      final original = ChatMessage(
+        role: MessageRole.assistant,
+        text: '답변입니다',
+        timestamp: DateTime.parse('2026-04-22T10:30:00.000Z'),
+      );
+
+      final restored = ChatMessage.fromJson(original.toJson());
+
+      expect(restored.role, MessageRole.assistant);
+      expect(restored.text, '답변입니다');
+      expect(restored.imagePath, isNull);
+    });
+
+    test('copyWith imagePath 변경', () {
+      final original = ChatMessage.fromJson(fullUserJson());
+      final modified = original.copyWith(imagePath: '/tmp/new_photo.jpg');
+
+      expect(modified.imagePath, '/tmp/new_photo.jpg');
+      expect(modified.text, original.text);
+      expect(modified.role, original.role);
+    });
+
+    test('copyWith 인수 없이 호출하면 imagePath 유지', () {
+      final original = ChatMessage.fromJson(fullUserJson());
+      final copy = original.copyWith();
+
+      expect(copy.imagePath, '/tmp/photo.jpg');
+    });
+
+    test('copyWith 는 imagePath 를 명시적으로 null 로 만들 수 없다 (의도된 동작)', () {
+      // 현재 copyWith 는 null coalescing 패턴이므로 imagePath=null 전달 시 기존 값 유지.
+      // 이미지 제거는 새 ChatMessage 인스턴스 생성으로 처리한다.
+      final original = ChatMessage.fromJson(fullUserJson());
+      final copy = original.copyWith(imagePath: null);
+
+      expect(copy.imagePath, '/tmp/photo.jpg'); // 기존 값 유지
     });
   });
 }
