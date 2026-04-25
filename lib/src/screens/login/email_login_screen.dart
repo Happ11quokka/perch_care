@@ -82,14 +82,14 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     if (!mounted || _hasNavigatedAfterLogin) return;
     _hasNavigatedAfterLogin = true;
 
-    // 펫 유무 확인 — 없으면 첫 로그인으로 간주하여 프로필 설정으로
+    // 펫 유무 확인 — 확정 false일 때만 onboarding. null(확인 실패)은 home으로 안전하게 보낸다.
     final hasPets = await _authService.hasPets();
     if (!mounted) return;
 
-    if (hasPets) {
-      context.goNamed(RouteNames.home);
-    } else {
+    if (hasPets == false) {
       context.goNamed(RouteNames.profileSetup);
+    } else {
+      context.goNamed(RouteNames.home);
     }
   }
 

@@ -21,6 +21,8 @@ class SocialLoginResult {
   final String? provider;
   final String? providerId;
   final String? providerEmail;
+  /// 서버가 알려준 펫 보유 여부. 인증 성공 시에만 의미 있음.
+  final bool hasPets;
 
   const SocialLoginResult._({
     required this.success,
@@ -28,10 +30,11 @@ class SocialLoginResult {
     this.provider,
     this.providerId,
     this.providerEmail,
+    this.hasPets = false,
   });
 
-  factory SocialLoginResult.authenticated() =>
-      const SocialLoginResult._(success: true);
+  factory SocialLoginResult.authenticated({bool hasPets = false}) =>
+      SocialLoginResult._(success: true, hasPets: hasPets);
 
   factory SocialLoginResult.signupNeeded({
     required String provider,
@@ -76,6 +79,12 @@ class AuthService {
   final _tokenService = TokenService.instance;
   final _petCache = PetLocalCacheService.instance;
 
+  /// 가장 최근 인증 응답에서 서버가 알려준 펫 보유 여부.
+  /// 신규 가입은 false, 기존 계정 로그인은 서버 DB 기준.
+  /// null = 응답에 필드가 없거나 아직 로그인 전.
+  bool? _lastHasPets;
+  bool? get lastHasPets => _lastHasPets;
+
   /// 현재 로그인 여부
   bool get isLoggedIn => _tokenService.isLoggedIn;
 
@@ -101,6 +110,7 @@ class AuthService {
       accessToken: response['access_token'],
       refreshToken: response['refresh_token'],
     );
+    _lastHasPets = response['has_pets'] as bool? ?? false;
     await _initializeAuthenticatedServices();
     AnalyticsService.instance.logSignUp('email');
   }
@@ -120,6 +130,7 @@ class AuthService {
       accessToken: response['access_token'],
       refreshToken: response['refresh_token'],
     );
+    _lastHasPets = response['has_pets'] as bool?;
     await _initializeAuthenticatedServices();
     AnalyticsService.instance.logLogin('email');
   }
@@ -178,8 +189,10 @@ class AuthService {
       accessToken: map['access_token'] as String,
       refreshToken: map['refresh_token'] as String,
     );
+    final hasPets = map['has_pets'] as bool? ?? false;
+    _lastHasPets = map['has_pets'] as bool?;
     await _initializeAuthenticatedServices();
-    return SocialLoginResult.authenticated();
+    return SocialLoginResult.authenticated(hasPets: hasPets);
   }
 
   Future<void> _initializeAuthenticatedServices() async {
@@ -212,6 +225,7 @@ class AuthService {
     await PushNotificationService.instance.dispose();
     IapService.instance.dispose();
     await _tokenService.clearTokens();
+    _lastHasPets = null;
   }
 
   /// 비밀번호 재설정 코드 전송 (이메일)
@@ -281,14 +295,24 @@ class AuthService {
     }
   }
 
-  /// 펫 보유 여부 확인 (첫 로그인 판별용)
-  Future<bool> hasPets() async {
+  /// 펫 보유 여부 확인 (첫 로그인 판별용).
+  ///
+  /// 반환값 의미:
+  /// - true  : 확실히 펫이 있음
+  /// - false : 확실히 펫이 없음 (서버에서 빈 리스트 / has_pets=false 명시)
+  /// - null  : 확인 실패 (네트워크/타임아웃/서버 에러 등) — 호출자는 안전한 기본 분기로 가야 함
+  ///
+  /// 라우팅에서 false와 null을 같이 처리하면 기존 사용자가 잘못 onboarding으로 빠진다.
+  Future<bool?> hasPets() async {
+    // 직전 인증 응답에 서버가 has_pets를 실어줬다면 그 값을 신뢰 (네트워크 1회 절약 + race 방지)
+    final cached = _lastHasPets;
+    if (cached != null) return cached;
     try {
       final response = await _api.get('/pets/');
-      final list = response as List<dynamic>;
-      return list.isNotEmpty;
+      if (response is! List) return null;
+      return response.isNotEmpty;
     } catch (_) {
-      return false;
+      return null;
     }
   }
 
