@@ -23,6 +23,34 @@ class PremiumActivationError(Exception):
         super().__init__(detail)
 
 
+async def _get_free_quotas_combined(db: AsyncSession, user_id: UUID) -> tuple[dict, dict]:
+    """Free 사용자의 encyclopedia + vision quota dict를 단일 SQL로 조회.
+
+    `get_user_tier_info` 응답 시간 단축용. 두 count 쿼리를 한 번의 round-trip으로 통합.
+    Premium 분기에서는 사용 안 함 (즉시 무제한 dict 반환).
+    """
+    from app.services.quota_service import (
+        get_combined_free_usage_this_month,
+        _get_encyclopedia_limit,
+        _get_vision_limit,
+    )
+
+    enc_used, vis_used = await get_combined_free_usage_this_month(db, user_id)
+    enc_limit = _get_encyclopedia_limit()
+    vis_limit = _get_vision_limit()
+    enc = {
+        "monthly_limit": enc_limit,
+        "monthly_used": enc_used,
+        "remaining": max(0, enc_limit - enc_used),
+    }
+    vis = {
+        "monthly_limit": vis_limit,
+        "monthly_used": vis_used,
+        "remaining": max(0, vis_limit - vis_used),
+    }
+    return enc, vis
+
+
 async def get_user_tier(db: AsyncSession, user_id: UUID) -> Literal["free", "premium"]:
     """사용자 티어 조회. 없으면 'free' 반환. 만료된 프리미엄은 DB도 갱신 후 'free' 반환.
 
@@ -65,8 +93,7 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
     )
     tier_row = result.scalar_one_or_none()
     if not tier_row:
-        enc = await check_encyclopedia_quota(db, user_id, "free")
-        vis = await check_vision_access(db, user_id, "free")
+        enc, vis = await _get_free_quotas_combined(db, user_id)
         return {
             "tier": "free",
             "premium_expires_at": None,
@@ -100,8 +127,7 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
                 .values(tier="free", updated_at=now)
             )
             await db.flush()
-            enc = await check_encyclopedia_quota(db, user_id, "free")
-            vis = await check_vision_access(db, user_id, "free")
+            enc, vis = await _get_free_quotas_combined(db, user_id)
             return {
                 "tier": "free",
                 "premium_expires_at": None,
@@ -123,8 +149,11 @@ async def get_user_tier_info(db: AsyncSession, user_id: UUID) -> dict:
             }
 
     tier = tier_row.tier
-    enc = await check_encyclopedia_quota(db, user_id, tier)
-    vis = await check_vision_access(db, user_id, tier)
+    if tier == "premium":
+        enc = await check_encyclopedia_quota(db, user_id, tier)
+        vis = await check_vision_access(db, user_id, tier)
+    else:
+        enc, vis = await _get_free_quotas_combined(db, user_id)
     return {
         "tier": tier,
         "premium_expires_at": tier_row.premium_expires_at,

@@ -62,7 +62,7 @@ class Settings(BaseSettings):
 
     # AI Quota (환경변수로 재배포 없이 조정 가능)
     free_encyclopedia_monthly_limit: int = 50  # 월간 한도, 안정화 후 축소
-    free_vision_monthly_limit: int = 30        # 월간 한도, 안정화 후 축소
+    free_vision_monthly_limit: int = 10        # 월간 한도 (2026-04-25: 30 → 10 축소)
 
     # Admin
     admin_api_key: str = ""  # 관리자 API 키 (코드 생성 등)

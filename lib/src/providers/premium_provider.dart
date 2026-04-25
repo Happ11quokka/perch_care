@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/premium/premium_service.dart';
+import '../view_models/home/home_view_model.dart';
 
 /// 프리미엄 상태 SSOT
 final premiumStatusProvider =
@@ -27,7 +28,10 @@ class PremiumStatusNotifier extends AsyncNotifier<PremiumStatus> {
 
   Future<PremiumActivationResult> activateCode(String code) async {
     final result = await PremiumService.instance.activateCode(code);
-    if (result.success) await refresh();
+    if (result.success) {
+      await refresh();
+      ref.invalidate(homeViewModelProvider);
+    }
     return result;
   }
 }

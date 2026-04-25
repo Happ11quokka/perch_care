@@ -232,6 +232,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     _analytics.logPromoCodeEntryOpened(source: widget.source ?? 'direct');
     final activated = await PromoCodeBottomSheet.show(context);
     if (activated == true && mounted) {
+      await _checkCurrentStatus();
+      if (!mounted) return;
       _showSuccessDialog();
     }
   }

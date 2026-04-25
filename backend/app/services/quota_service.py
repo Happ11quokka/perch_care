@@ -149,6 +149,41 @@ async def check_and_reserve_encyclopedia(
     }, reservation
 
 
+async def get_combined_free_usage_this_month(
+    db: AsyncSession, user_id: UUID
+) -> tuple[int, int]:
+    """이번 달 (encyclopedia 사용량, vision 사용량)을 단일 SQL round-trip으로 반환.
+
+    GET /premium/tier 응답 시간 단축을 위해 두 count 쿼리를 하나의 SELECT로 통합.
+    AsyncSession 동시성 제약으로 asyncio.gather를 쓰면 InvalidRequestError 위험이 있어
+    SQL 레벨에서 통합한다.
+    """
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    enc_subq = (
+        select(func.count())
+        .select_from(AiEncyclopediaLog)
+        .where(
+            AiEncyclopediaLog.user_id == user_id,
+            AiEncyclopediaLog.created_at >= month_start,
+        )
+        .scalar_subquery()
+    )
+    vis_subq = (
+        select(func.count())
+        .select_from(AiVisionLog)
+        .where(
+            AiVisionLog.user_id == user_id,
+            AiVisionLog.created_at >= month_start,
+        )
+        .scalar_subquery()
+    )
+    result = await db.execute(select(enc_subq, vis_subq))
+    enc_used, vis_used = result.one()
+    return int(enc_used or 0), int(vis_used or 0)
+
+
 async def get_vision_usage_this_month(db: AsyncSession, user_id: UUID) -> int:
     """이번 달(UTC 기준) Vision 건강체크 사용 횟수를 반환한다."""
     now = datetime.now(timezone.utc)

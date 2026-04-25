@@ -1,18 +1,58 @@
+import asyncio
+import logging
 from uuid import UUID
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
+from app.database import async_session_factory, get_db
 from app.dependencies import get_current_user, get_current_tier
+from app.models.device_token import DeviceToken
 from app.models.user import User
 from app.schemas.pet import PetCreate, PetUpdate, PetResponse
 from app.schemas.health_summary import HealthSummaryResponse
 from app.schemas.pet_insight import PetInsightResponse
 from app.services import pet_service
 from app.services.health_summary_service import get_health_summary
-from app.services.insights_service import get_latest_insight
+from app.services.insights_service import generate_weekly_insight, get_latest_insight
+
+logger = logging.getLogger(__name__)
+
+_INSIGHT_DEFAULT_LANG = "zh"
+_INSIGHT_SUPPORTED_LANGS = ("ko", "en", "zh")
+_pending_insight_keys: set[tuple[UUID, str]] = set()
+
+
+async def _resolve_user_insight_language(db: AsyncSession, user_id: UUID) -> str:
+    result = await db.execute(
+        select(DeviceToken.language).where(DeviceToken.user_id == user_id).limit(1)
+    )
+    lang = result.scalar_one_or_none() or _INSIGHT_DEFAULT_LANG
+    return lang if lang in _INSIGHT_SUPPORTED_LANGS else _INSIGHT_DEFAULT_LANG
+
+
+async def _generate_insight_in_background(
+    pet_id: UUID, user_id: UUID, language: str, insight_type: str,
+) -> None:
+    """백그라운드로 인사이트 생성. 새 DB 세션을 사용 (요청 세션은 이미 닫힘)."""
+    key = (pet_id, insight_type)
+    try:
+        async with async_session_factory() as db:
+            await generate_weekly_insight(db, pet_id, user_id, language)
+            await db.commit()
+            logger.info(
+                "Lazy insight generated: pet=%s, type=%s, lang=%s",
+                pet_id, insight_type, language,
+            )
+    except Exception as e:
+        logger.warning(
+            "Lazy insight generation failed: pet=%s, type=%s, error=%s",
+            pet_id, insight_type, e,
+        )
+    finally:
+        _pending_insight_keys.discard(key)
 
 router = APIRouter(prefix="/pets", tags=["pets"])
 
@@ -105,11 +145,28 @@ async def get_pet_insights(
     tier: str = Depends(get_current_tier),
     db: AsyncSession = Depends(get_db),
 ):
-    """주간 건강 인사이트. Premium 전용."""
+    """주간 건강 인사이트. Premium 전용.
+
+    Lazy generation: DB에 인사이트가 없으면 백그라운드로 생성을 트리거하고 즉시 None 반환.
+    다음 호출 시 결과 반환됨. cron(`weekly_insights.py`)을 기다리지 않아도 됨.
+    """
     if tier != "premium":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="프리미엄 전용 기능입니다",
         )
     await pet_service.get_pet_by_id(db, pet_id, current_user.id)
-    return await get_latest_insight(db, pet_id, type)
+
+    insight = await get_latest_insight(db, pet_id, type)
+    if insight:
+        return insight
+
+    # 백그라운드 생성 트리거 (in-memory dedup으로 동일 펫 중복 호출 방지)
+    key = (pet_id, type)
+    if key not in _pending_insight_keys:
+        _pending_insight_keys.add(key)
+        language = await _resolve_user_insight_language(db, current_user.id)
+        asyncio.create_task(
+            _generate_insight_in_background(pet_id, current_user.id, language, type)
+        )
+    return None
