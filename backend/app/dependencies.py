@@ -14,6 +14,29 @@ from app.config import get_settings
 security = HTTPBearer()
 
 
+async def get_current_user_id(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> UUID:
+    """JWT 서명 + payload만 검증해서 user_id를 반환. DB 조회 없음.
+
+    User row 자체가 필요한 엔드포인트는 get_current_user를 쓰고, user_id만으로
+    충분한 핫패스(/pets/, /pets/active 등)는 이걸 사용해 SELECT users 1회 RTT를
+    절약한다. JWT는 서명+만료 검증을 통과한 것이므로 user_id 자체는 신뢰 가능
+    (사용자가 삭제됐다면 펫이 CASCADE로 함께 사라져 빈 결과로 안전).
+    """
+    token = credentials.credentials
+    payload = decode_token(token)
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+    sub = payload.get("sub")
+    if not sub:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    try:
+        return UUID(sub)
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db),

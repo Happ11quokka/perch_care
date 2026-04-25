@@ -32,6 +32,9 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    # 클라이언트가 로그인 직후 별도 /pets/ 호출 없이 라우팅 분기에 사용.
+    # 신규 가입(signup) 시 항상 false. 로그인 시 펫 보유 여부 반영.
+    has_pets: bool = False
 
 
 class RefreshRequest(BaseModel):
@@ -56,6 +59,7 @@ class OAuthLoginResponse(BaseModel):
     provider: str | None = None
     provider_id: str | None = None
     provider_email: str | None = None
+    has_pets: bool = False
 
 
 class ResetPasswordRequest(BaseModel):

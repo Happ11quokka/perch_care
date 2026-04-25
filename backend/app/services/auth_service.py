@@ -1,16 +1,25 @@
 import secrets
 from uuid import UUID
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from app.models.user import User
+from app.models.pet import Pet
 from app.models.social_account import SocialAccount
 from app.models.password_reset_code import PasswordResetCode
 from app.utils.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 
 _MAX_RESET_ATTEMPTS = 5
+
+
+async def _user_has_pets(db: AsyncSession, user_id: UUID) -> bool:
+    """단일 EXISTS 쿼리로 펫 보유 여부만 빠르게 조회."""
+    result = await db.execute(
+        select(exists().where(Pet.user_id == user_id))
+    )
+    return bool(result.scalar())
 
 
 async def signup(db: AsyncSession, email: str, password: str, nickname: str | None = None) -> dict:
@@ -26,6 +35,7 @@ async def signup(db: AsyncSession, email: str, password: str, nickname: str | No
         "access_token": create_access_token(str(user.id)),
         "refresh_token": create_refresh_token(str(user.id)),
         "token_type": "bearer",
+        "has_pets": False,
     }
 
 
@@ -36,10 +46,13 @@ async def login(db: AsyncSession, email: str, password: str) -> dict:
     if not user or not user.hashed_password or not verify_password(password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
+    has_pets = await _user_has_pets(db, user.id)
+
     return {
         "access_token": create_access_token(str(user.id)),
         "refresh_token": create_refresh_token(str(user.id)),
         "token_type": "bearer",
+        "has_pets": has_pets,
     }
 
 
@@ -54,10 +67,13 @@ async def refresh_tokens(db: AsyncSession, refresh_token: str) -> dict:
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
+    has_pets = await _user_has_pets(db, user.id)
+
     return {
         "access_token": create_access_token(str(user.id)),
         "refresh_token": create_refresh_token(str(user.id)),
         "token_type": "bearer",
+        "has_pets": has_pets,
     }
 
 
@@ -78,11 +94,14 @@ async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: 
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
+        has_pets = await _user_has_pets(db, user.id)
+
         return {
             "status": "authenticated",
             "access_token": create_access_token(str(user.id)),
             "refresh_token": create_refresh_token(str(user.id)),
             "token_type": "bearer",
+            "has_pets": has_pets,
         }
 
     # === Auto-create user for new OAuth users ===
@@ -115,11 +134,14 @@ async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: 
         db.add(new_social)
         await db.flush()
 
+        has_pets = await _user_has_pets(db, existing_user.id)
+
         return {
             "status": "authenticated",
             "access_token": create_access_token(str(existing_user.id)),
             "refresh_token": create_refresh_token(str(existing_user.id)),
             "token_type": "bearer",
+            "has_pets": has_pets,
         }
 
     # Create new user + social account
@@ -146,6 +168,7 @@ async def oauth_login(db: AsyncSession, provider: str, provider_id: str, email: 
         "access_token": create_access_token(str(new_user.id)),
         "refresh_token": create_refresh_token(str(new_user.id)),
         "token_type": "bearer",
+        "has_pets": False,
     }
 
 

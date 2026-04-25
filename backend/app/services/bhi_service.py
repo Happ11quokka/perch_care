@@ -17,6 +17,8 @@ FoodScore: Δf = (f_t - f0) / f0
 WaterScore: Δd = (d_t - d0) / d0
             WaterScore = 15 * (1 - clamp(|Δd| / 0.40, 0, 1))
 """
+import logging
+from typing import NamedTuple
 from uuid import UUID
 from datetime import date, timedelta
 from sqlalchemy import select, union_all
@@ -26,6 +28,16 @@ from app.models.weight_record import WeightRecord
 from app.models.food_record import FoodRecord
 from app.models.water_record import WaterRecord
 from app.schemas.bhi import BHIResponse
+
+logger = logging.getLogger(__name__)
+
+
+class BhiContext(NamedTuple):
+    """Internal callers (health_summary, insights) reuse these to avoid re-querying."""
+    response: BHIResponse
+    w_t: float | None  # weight on the effective_date BHI was computed for (grams)
+    w_t_minus_7d: float | None  # weight 7d before target (only set for adult/post_growth)
+    effective_date: date  # the date BHI actually evaluated (may differ from target if fallback)
 
 
 def _clamp(value: float, min_val: float, max_val: float) -> float:
@@ -100,21 +112,17 @@ async def _get_previous_weight(db: AsyncSession, pet_id: UUID, before_date: date
     return float(row) if row is not None else None
 
 
-async def _calc_relative_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, w_t: float, growth_stage: str) -> float:
-    """기존 WCI 상대 변화 기반 WeightScore 계산 (0-60)."""
-    import logging
-    logger = logging.getLogger(__name__)
-
+async def _calc_relative_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, w_t: float, growth_stage: str) -> tuple[float, float | None]:
+    """WCI 상대 변화 기반 WeightScore 계산 (0-60). (score, w_t_prev) 반환."""
     if growth_stage in ('adult', 'post_growth'):
         w_t7 = await _get_weight_near_date(db, pet_id, target_date - timedelta(days=7), window_days=3)
         if w_t7 is None:
             w_t7 = await _get_previous_weight(db, pet_id, target_date)
 
-        logger.info(f"[BHI DEBUG] weight comparison: w_t={w_t}, w_t7={w_t7}")
+        logger.debug("[BHI] weight comparison: w_t=%s, w_t7=%s", w_t, w_t7)
 
         if w_t7 is None or w_t7 == 0:
-            logger.info(f"[BHI DEBUG] weight: first record, giving full score")
-            return 60.0
+            return 60.0, w_t7
 
         wci_7 = (w_t - w_t7) / w_t7
 
@@ -123,8 +131,8 @@ async def _calc_relative_weight_score(db: AsyncSession, pet_id: UUID, target_dat
         else:
             score = 60 * (1 - _clamp(abs(min(wci_7, 0)) / 0.10, 0, 1))
 
-        logger.info(f"[BHI DEBUG] weight: wci_7={wci_7:.4f}, relative_score={score:.2f}")
-        return score
+        logger.debug("[BHI] weight: wci_7=%.4f, relative_score=%.2f", wci_7, score)
+        return score, w_t7
 
     elif growth_stage == 'rapid_growth':
         w_t1 = await _get_weight_near_date(db, pet_id, target_date - timedelta(days=1), window_days=1)
@@ -132,56 +140,50 @@ async def _calc_relative_weight_score(db: AsyncSession, pet_id: UUID, target_dat
             w_t1 = await _get_previous_weight(db, pet_id, target_date)
 
         if w_t1 is None or w_t1 == 0:
-            return 60.0
+            return 60.0, None
 
         wci_1 = (w_t - w_t1) / w_t1
         score = 60 * _clamp(min(wci_1, 0.1) / 0.10, 0, 1)
-        return score
+        return score, None
 
-    return 0.0
+    return 0.0, None
 
 
-async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, growth_stage: str | None, pet: "Pet | None" = None) -> tuple[float, bool, float | None, float | None, float | None]:
-    """WeightScore 계산 (가중 결합). (score, has_data, relative_score, absolute_score, w_t) 반환."""
-    import logging
-    logger = logging.getLogger(__name__)
-
+async def _calc_weight_score(db: AsyncSession, pet_id: UUID, target_date: date, growth_stage: str | None, pet: "Pet | None" = None) -> tuple[float, bool, float | None, float | None, float | None, float | None]:
+    """WeightScore 계산 (가중 결합). (score, has_data, relative_score, absolute_score, w_t, w_t7) 반환."""
     if not growth_stage:
-        return 0.0, False, None, None, None
+        return 0.0, False, None, None, None, None
 
     w_t = await _get_weight_on_date(db, pet_id, target_date)
-    logger.info(f"[BHI DEBUG] weight for {pet_id} on {target_date}: w_t={w_t}")
+    logger.debug("[BHI] weight for %s on %s: w_t=%s", pet_id, target_date, w_t)
 
     if w_t is None:
-        return 0.0, False, None, None, None
+        return 0.0, False, None, None, None, None
 
     # 1. 상대 점수 (기존 WCI 로직)
-    relative_score = await _calc_relative_weight_score(db, pet_id, target_date, w_t, growth_stage)
+    relative_score, w_t7 = await _calc_relative_weight_score(db, pet_id, target_date, w_t, growth_stage)
 
     # 2. 절대 점수 (품종 기반) — breed_id가 있는 경우만
     absolute_score: float | None = None
     if pet and pet.breed_id and pet.breed_standard:
         from app.services.breed_standard_service import calculate_absolute_weight_score
         absolute_score = calculate_absolute_weight_score(w_t, pet.breed_standard)
-        logger.info(f"[BHI DEBUG] absolute score from breed standard: {absolute_score:.2f}")
+        logger.debug("[BHI] absolute score from breed standard: %.2f", absolute_score)
 
     # 3. 가중 결합
     if absolute_score is not None:
         alpha = 0.5  # 상대 가중치
         beta = 0.5   # 절대 가중치
         combined = alpha * relative_score + beta * absolute_score
-        logger.info(f"[BHI DEBUG] combined: relative={relative_score:.2f}*{alpha} + absolute={absolute_score:.2f}*{beta} = {combined:.2f}")
-        return combined, True, relative_score, absolute_score, w_t
+        logger.debug("[BHI] combined: relative=%.2f*%s + absolute=%.2f*%s = %.2f", relative_score, alpha, absolute_score, beta, combined)
+        return combined, True, relative_score, absolute_score, w_t, w_t7
     else:
-        logger.info(f"[BHI DEBUG] no breed standard, using relative score only: {relative_score:.2f}")
-        return relative_score, True, relative_score, None, w_t
+        logger.debug("[BHI] no breed standard, using relative score only: %.2f", relative_score)
+        return relative_score, True, relative_score, None, w_t, w_t7
 
 
 async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool, float | None, float | None]:
     """FoodScore 계산. (score, has_data, total, target) 반환."""
-    import logging
-    logger = logging.getLogger(__name__)
-
     result = await db.execute(
         select(FoodRecord).where(
             FoodRecord.pet_id == pet_id,
@@ -189,24 +191,19 @@ async def _calc_food_score(db: AsyncSession, pet_id: UUID, target_date: date) ->
         )
     )
     record = result.scalar_one_or_none()
-    logger.info(f"[BHI DEBUG] food_record for {pet_id} on {target_date}: exists={record is not None}")
 
     if record is None or record.target_grams == 0:
-        logger.info(f"[BHI DEBUG] food: no record or target_grams=0")
         return 0.0, False, None, None
 
     delta_f = (record.total_grams - record.target_grams) / record.target_grams
     # 허용 범위를 0.30 → 0.50으로 완화 (50% 이상 섭취 시 점수 획득)
     score = 25 * (1 - _clamp(abs(min(delta_f, 0)) / 0.50, 0, 1))
-    logger.info(f"[BHI DEBUG] food: total={record.total_grams}, target={record.target_grams}, delta_f={delta_f:.3f}, score={score:.2f}")
+    logger.debug("[BHI] food: total=%s, target=%s, delta=%.3f, score=%.2f", record.total_grams, record.target_grams, delta_f, score)
     return score, True, float(record.total_grams), float(record.target_grams)
 
 
 async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -> tuple[float, bool, float | None, float | None]:
     """WaterScore 계산. (score, has_data, total, target) 반환."""
-    import logging
-    logger = logging.getLogger(__name__)
-
     result = await db.execute(
         select(WaterRecord).where(
             WaterRecord.pet_id == pet_id,
@@ -214,16 +211,14 @@ async def _calc_water_score(db: AsyncSession, pet_id: UUID, target_date: date) -
         )
     )
     record = result.scalar_one_or_none()
-    logger.info(f"[BHI DEBUG] water_record for {pet_id} on {target_date}: exists={record is not None}")
 
     if record is None or record.target_ml == 0:
-        logger.info(f"[BHI DEBUG] water: no record or target_ml=0")
         return 0.0, False, None, None
 
     delta_d = (record.total_ml - record.target_ml) / record.target_ml
     # 허용 범위를 0.40 → 0.60으로 완화 (40-160% 범위 내 점수 획득)
     score = 15 * (1 - _clamp(abs(delta_d) / 0.60, 0, 1))
-    logger.info(f"[BHI DEBUG] water: total={record.total_ml}, target={record.target_ml}, delta_d={delta_d:.3f}, score={score:.2f}")
+    logger.debug("[BHI] water: total=%s, target=%s, delta=%.3f, score=%.2f", record.total_ml, record.target_ml, delta_d, score)
     return score, True, float(record.total_ml), float(record.target_ml)
 
 
@@ -247,7 +242,17 @@ async def _find_latest_record_date(db: AsyncSession, pet_id: UUID, up_to: date) 
 
 
 async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BHIResponse:
-    """주어진 날짜의 BHI 점수를 계산. 해당 날짜에 데이터가 없으면 가장 최근 기록 날짜로 폴백."""
+    """공개 API용 BHI 계산. 내부 호출자는 calculate_bhi_with_context 사용."""
+    ctx = await calculate_bhi_with_context(db, pet_id, target_date)
+    return ctx.response
+
+
+async def calculate_bhi_with_context(db: AsyncSession, pet_id: UUID, target_date: date) -> BhiContext:
+    """BHI + 내부에서 조회한 weight 값들을 함께 반환.
+
+    health_summary, insights 등 같은 트랜잭션에서 weight 정보를 또 필요로 하는 호출자가
+    중복 SELECT를 피할 수 있도록 한다.
+    """
     from sqlalchemy.orm import joinedload as _joinedload
 
     # 펫 정보 조회 (breed_standard eager load)
@@ -261,7 +266,7 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
 
     growth_stage = pet.growth_stage or 'adult'
 
-    weight_score, has_weight, w_rel, w_abs, w_t = await _calc_weight_score(db, pet_id, target_date, growth_stage, pet)
+    weight_score, has_weight, w_rel, w_abs, w_t, w_t7 = await _calc_weight_score(db, pet_id, target_date, growth_stage, pet)
     food_score, has_food, food_total, food_target = await _calc_food_score(db, pet_id, target_date)
     water_score, has_water, water_total, water_target = await _calc_water_score(db, pet_id, target_date)
 
@@ -272,7 +277,7 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
         latest = await _find_latest_record_date(db, pet_id, target_date)
         if latest is not None and latest != target_date:
             effective_date = latest
-            weight_score, has_weight, w_rel, w_abs, w_t = await _calc_weight_score(db, pet_id, effective_date, growth_stage, pet)
+            weight_score, has_weight, w_rel, w_abs, w_t, w_t7 = await _calc_weight_score(db, pet_id, effective_date, growth_stage, pet)
             food_score, has_food, food_total, food_target = await _calc_food_score(db, pet_id, effective_date)
             water_score, has_water, water_total, water_target = await _calc_water_score(db, pet_id, effective_date)
 
@@ -285,7 +290,7 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
         from app.services.breed_standard_service import get_weight_position
         breed_weight_info = get_weight_position(w_t, pet.breed_standard)
 
-    return BHIResponse(
+    response = BHIResponse(
         bhi_score=round(bhi_score, 2),
         weight_score=round(weight_score, 2),
         food_score=round(food_score, 2),
@@ -303,4 +308,10 @@ async def calculate_bhi(db: AsyncSession, pet_id: UUID, target_date: date) -> BH
         debug_food_target=food_target,
         debug_water_total=water_total,
         debug_water_target=water_target,
+    )
+    return BhiContext(
+        response=response,
+        w_t=w_t,
+        w_t_minus_7d=w_t7,
+        effective_date=effective_date,
     )

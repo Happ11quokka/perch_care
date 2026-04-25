@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session_factory, get_db
-from app.dependencies import get_current_user, get_current_tier
+from app.dependencies import get_current_user, get_current_user_id, get_current_tier
 from app.models.device_token import DeviceToken
 from app.models.user import User
 from app.schemas.pet import PetCreate, PetUpdate, PetResponse
@@ -59,18 +59,19 @@ router = APIRouter(prefix="/pets", tags=["pets"])
 
 @router.get("/", response_model=list[PetResponse])
 async def list_pets(
-    current_user: User = Depends(get_current_user),
+    user_id: UUID = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    return await pet_service.get_my_pets(db, current_user.id)
+    # 핫패스: 배포된 클라가 로그인 직후 hasPets()로 호출. SELECT users 생략하고 단일 SELECT pets만.
+    return await pet_service.get_my_pets(db, user_id)
 
 
 @router.get("/active", response_model=PetResponse | None)
 async def get_active_pet(
-    current_user: User = Depends(get_current_user),
+    user_id: UUID = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    return await pet_service.get_active_pet(db, current_user.id)
+    return await pet_service.get_active_pet(db, user_id)
 
 
 @router.get("/{pet_id}", response_model=PetResponse)

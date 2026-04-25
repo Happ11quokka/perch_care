@@ -9,7 +9,7 @@ from app.models.weight_record import WeightRecord
 from app.models.food_record import FoodRecord
 from app.models.water_record import WaterRecord
 from app.models.ai_health_check import AiHealthCheck
-from app.services.bhi_service import calculate_bhi, _get_weight_near_date
+from app.services.bhi_service import calculate_bhi_with_context, _get_weight_near_date
 from app.schemas.health_summary import HealthSummaryResponse
 
 
@@ -66,16 +66,21 @@ async def _calc_consistency(
 async def get_health_summary(
     db: AsyncSession, pet_id: UUID, tier: str, target_date: date,
 ) -> HealthSummaryResponse:
-    # 현재 BHI 계산
-    bhi = await calculate_bhi(db, pet_id, target_date)
+    # 현재 BHI 계산 — 내부에서 조회한 w_t, w_t-7 값까지 함께 받아 재사용
+    bhi_ctx = await calculate_bhi_with_context(db, pet_id, target_date)
+    bhi = bhi_ctx.response
 
-    # 현재 체중
-    weight_current = await _get_weight_near_date(db, pet_id, target_date)
+    # 현재 체중: BHI가 이미 조회한 w_t 우선 사용. (target_date에 없으면 ±3d 폴백 1회)
+    weight_current = bhi_ctx.w_t
+    if weight_current is None:
+        weight_current = await _get_weight_near_date(db, pet_id, target_date)
 
-    # 7일 전 체중 비교
-    weight_prev = await _get_weight_near_date(
-        db, pet_id, target_date - timedelta(days=7),
-    )
+    # 7일 전 체중: BHI 상대점수 계산 시 이미 ±3d 윈도우로 조회한 값 재사용 (adult/post_growth만)
+    weight_prev = bhi_ctx.w_t_minus_7d
+    if weight_prev is None:
+        weight_prev = await _get_weight_near_date(
+            db, pet_id, target_date - timedelta(days=7),
+        )
     weight_change_pct: float | None = None
     if weight_current and weight_prev and weight_prev > 0:
         weight_change_pct = round(
@@ -107,8 +112,9 @@ async def get_health_summary(
             db, pet_id, WaterRecord, WaterRecord.recorded_date, since_30d, target_date,
         )
 
-        # 7일 전 BHI로 추세 계산
-        bhi_prev = await calculate_bhi(db, pet_id, target_date - timedelta(days=7))
+        # 7일 전 BHI로 추세 계산 (이건 다른 날짜 BHI라 별도 계산 불가피)
+        bhi_prev_ctx = await calculate_bhi_with_context(db, pet_id, target_date - timedelta(days=7))
+        bhi_prev = bhi_prev_ctx.response
         prev_has = bhi_prev.has_weight_data or bhi_prev.has_food_data or bhi_prev.has_water_data
         resp.bhi_previous = bhi_prev.bhi_score if prev_has else None
         resp.bhi_trend = _bhi_trend_label(
