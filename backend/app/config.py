@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     google_service_account_json: str = ""  # Base64-encoded service account JSON
 
     # AI Quota (환경변수로 재배포 없이 조정 가능)
-    free_encyclopedia_monthly_limit: int = 50  # 월간 한도, 안정화 후 축소
+    free_encyclopedia_monthly_limit: int = 30  # 월간 한도 (2026-04-25: 50 → 30 축소, 챗봇 공통)
     free_vision_monthly_limit: int = 10        # 월간 한도 (2026-04-25: 30 → 10 축소)
 
     # Admin
