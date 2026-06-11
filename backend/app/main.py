@@ -11,7 +11,7 @@ import os
 
 from sqlalchemy import text
 from app.config import get_settings
-from app.routers import auth, users, pets, weights, daily_records, food_records, water_records, health_checks, schedules, notifications, bhi, ai, premium, breed_standards, chat, reports
+from app.routers import auth, users, pets, weights, daily_records, food_records, water_records, health_checks, schedules, notifications, bhi, ai, premium, breed_standards, chat, reports, demo
 
 settings = get_settings()
 
@@ -102,6 +102,7 @@ app.include_router(premium.router, prefix=settings.api_v1_prefix)
 app.include_router(breed_standards.router, prefix=settings.api_v1_prefix)
 app.include_router(chat.router, prefix=settings.api_v1_prefix)
 app.include_router(reports.router, prefix=settings.api_v1_prefix)
+app.include_router(demo.router, prefix=settings.api_v1_prefix)
 
 # Rate limiting
 app.state.limiter = limiter

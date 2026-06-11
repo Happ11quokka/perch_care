@@ -67,6 +67,14 @@ class Settings(BaseSettings):
     # Admin
     admin_api_key: str = ""  # 관리자 API 키 (코드 생성 등)
 
+    # Web Demo (perch.ai.kr 라이브 데모 — 미설정 시 데모 라우터 503)
+    demo_api_key: str = ""
+    demo_chat_daily_limit: int = 5
+    demo_vision_daily_limit: int = 3
+    demo_bhi_daily_limit: int = 60
+    demo_chat_global_daily_limit: int = 500
+    demo_vision_global_daily_limit: int = 200
+
     # Server
     api_v1_prefix: str = "/api/v1"
     cors_origins: list[str] = []
