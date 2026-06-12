@@ -24,11 +24,13 @@ def upgrade() -> None:
         sa.Column('kind', sa.String(10), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
     )
-    op.create_index('ix_demo_usage_logs_ip_hash', 'demo_usage_logs', ['ip_hash'])
+    op.create_index(
+        'ix_demo_usage_logs_ip_kind_created', 'demo_usage_logs', ['ip_hash', 'kind', 'created_at'],
+    )
     op.create_index('ix_demo_usage_logs_created_at', 'demo_usage_logs', ['created_at'])
 
 
 def downgrade() -> None:
     op.drop_index('ix_demo_usage_logs_created_at', table_name='demo_usage_logs')
-    op.drop_index('ix_demo_usage_logs_ip_hash', table_name='demo_usage_logs')
+    op.drop_index('ix_demo_usage_logs_ip_kind_created', table_name='demo_usage_logs')
     op.drop_table('demo_usage_logs')

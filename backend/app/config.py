@@ -69,6 +69,7 @@ class Settings(BaseSettings):
 
     # Web Demo (perch.ai.kr 라이브 데모 — 미설정 시 데모 라우터 503)
     demo_api_key: str = ""
+    demo_ip_hash_salt: str = ""  # IP 해시 전용 솔트 (미설정 시 demo_api_key fallback)
     demo_chat_daily_limit: int = 5
     demo_vision_daily_limit: int = 3
     demo_bhi_daily_limit: int = 60
