@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repositories/food_repository.dart';
 import '../repositories/home_repository.dart';
 import '../repositories/pet_repository.dart';
+import '../repositories/schedule_repository.dart';
 import '../repositories/water_repository.dart';
 import '../repositories/weight_repository.dart';
 
@@ -29,4 +30,8 @@ final foodRepositoryProvider = Provider<FoodRepository>(
 
 final waterRepositoryProvider = Provider<WaterRepository>(
   (ref) => WaterRepositoryImpl(),
+);
+
+final scheduleRepositoryProvider = Provider<ScheduleRepository>(
+  (ref) => ScheduleRepositoryImpl(),
 );
