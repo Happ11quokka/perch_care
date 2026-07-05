@@ -18,7 +18,6 @@ class CoachMarkService {
   static const String screenHealthCheckResult = 'health_check_result';
   static const String screenBhiDetail = 'bhi_detail';
   static const String screenProfile = 'profile';
-  static const String screenPremium = 'premium';
   static const String screenPetProfileDetail = 'pet_profile_detail';
 
   /// 해당 화면의 코치마크를 이미 봤는지 확인
