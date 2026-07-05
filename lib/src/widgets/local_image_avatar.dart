@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import '../services/storage/local_image_storage_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/service_providers.dart';
 import '../theme/colors.dart';
 
 /// SQLite에서 이미지를 로드하여 원형으로 표시하는 재사용 위젯
-class LocalImageAvatar extends StatefulWidget {
+class LocalImageAvatar extends ConsumerStatefulWidget {
   final String ownerType;
   final String ownerId;
   final double size;
@@ -19,10 +20,10 @@ class LocalImageAvatar extends StatefulWidget {
   });
 
   @override
-  State<LocalImageAvatar> createState() => _LocalImageAvatarState();
+  ConsumerState<LocalImageAvatar> createState() => _LocalImageAvatarState();
 }
 
-class _LocalImageAvatarState extends State<LocalImageAvatar> {
+class _LocalImageAvatarState extends ConsumerState<LocalImageAvatar> {
   Uint8List? _imageBytes;
 
   @override
@@ -41,7 +42,7 @@ class _LocalImageAvatarState extends State<LocalImageAvatar> {
   }
 
   Future<void> _loadImage() async {
-    final bytes = await LocalImageStorageService.instance.getImage(
+    final bytes = await ref.read(localImageStorageServiceProvider).getImage(
       ownerType: widget.ownerType,
       ownerId: widget.ownerId,
     );
