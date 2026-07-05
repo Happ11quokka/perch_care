@@ -1,6 +1,6 @@
 """AI 기능 사용량 쿼터 관리 서비스.
 
-Free 사용자의 AI 백과사전·Vision 건강체크 월간 한도를 관리한다.
+전체 사용자 공통으로 AI 백과사전·Vision 건강체크 월간 한도를 관리한다.
 한도 값은 환경변수(FREE_ENCYCLOPEDIA_MONTHLY_LIMIT, FREE_VISION_MONTHLY_LIMIT)로 설정 가능.
 별도 quota 테이블 없이 기존 로그 테이블(AiEncyclopediaLog, AiVisionLog) 집계 방식.
 
@@ -55,27 +55,17 @@ async def get_encyclopedia_usage_this_month(db: AsyncSession, user_id: UUID) -> 
     return result.scalar() or 0
 
 
-async def check_encyclopedia_quota(
-    db: AsyncSession, user_id: UUID, tier: str
-) -> dict:
-    """AI 백과사전 쿼터를 확인한다 (읽기 전용 — GET /premium/tier, GET /ai/quota 등에서 사용).
+async def check_encyclopedia_quota(db: AsyncSession, user_id: UUID) -> dict:
+    """AI 백과사전 쿼터를 확인한다 (읽기 전용 — GET /ai/quota 등에서 사용).
 
     Returns:
         {
             "allowed": bool,
-            "monthly_limit": int,   # -1 = 무제한
+            "monthly_limit": int,
             "monthly_used": int,
-            "remaining": int,       # -1 = 무제한
+            "remaining": int,
         }
     """
-    if tier == "premium":
-        return {
-            "allowed": True,
-            "monthly_limit": -1,
-            "monthly_used": 0,
-            "remaining": -1,
-        }
-
     used = await get_encyclopedia_usage_this_month(db, user_id)
     remaining = max(0, _get_encyclopedia_limit() - used)
 
@@ -90,7 +80,6 @@ async def check_encyclopedia_quota(
 async def check_and_reserve_encyclopedia(
     db: AsyncSession,
     user_id: UUID,
-    tier: str,
     pet_id: UUID | None,
     query_length: int,
     model: str,
@@ -98,22 +87,14 @@ async def check_and_reserve_encyclopedia(
     """쿼터 체크 + 슬롯 예약을 원자적으로 수행한다.
 
     pg_advisory_xact_lock으로 사용자별 직렬화하여 동시 요청에 의한 한도 초과를 방지.
-    Premium 사용자는 잠금/예약 없이 통과.
 
     Returns:
         (quota_info, reservation_or_None)
-        - reservation이 반환되면, 호출자가 AI 완료 후 response_length/response_time_ms를 업데이트.
+        - allowed=True면 reservation이 반환되고, 호출자가 AI 완료 후
+          response_length/response_time_ms를 업데이트.
         - AI 실패 시 트랜잭션 rollback으로 예약 자동 삭제 (Depends(get_db) 패턴).
           별도 세션에서 사용할 경우 호출자가 명시적으로 삭제해야 한다.
     """
-    if tier == "premium":
-        return {
-            "allowed": True,
-            "monthly_limit": -1,
-            "monthly_used": 0,
-            "remaining": -1,
-        }, None
-
     # 사용자별 advisory lock 획득 (트랜잭션 종료 시 자동 해제)
     await db.execute(
         text("SELECT pg_advisory_xact_lock(:ns, :key)"),
@@ -206,27 +187,17 @@ async def get_vision_remaining(db: AsyncSession, user_id: UUID) -> int:
     return max(0, _get_vision_limit() - used)
 
 
-async def check_vision_access(
-    db: AsyncSession, user_id: UUID, tier: str
-) -> dict:
+async def check_vision_access(db: AsyncSession, user_id: UUID) -> dict:
     """Vision 건강체크 접근 권한을 확인한다 (읽기 전용).
 
     Returns:
         {
             "allowed": bool,
-            "monthly_limit": int,   # -1 = 무제한
+            "monthly_limit": int,
             "monthly_used": int,
-            "remaining": int,       # -1 = 무제한
+            "remaining": int,
         }
     """
-    if tier == "premium":
-        return {
-            "allowed": True,
-            "monthly_limit": -1,
-            "monthly_used": 0,
-            "remaining": -1,
-        }
-
     used = await get_vision_usage_this_month(db, user_id)
     remaining = max(0, _get_vision_limit() - used)
 
@@ -241,7 +212,6 @@ async def check_vision_access(
 async def check_and_reserve_vision(
     db: AsyncSession,
     user_id: UUID,
-    tier: str,
     pet_id: UUID | None,
     mode: str,
     part: str | None,
@@ -251,16 +221,8 @@ async def check_and_reserve_vision(
 
     Returns:
         (access_info, reservation_or_None)
-        - reservation이 반환되면, 호출자가 AI 완료 후 response_time_ms 등을 업데이트.
+        - allowed=True면 reservation이 반환되고, 호출자가 AI 완료 후 response_time_ms 등을 업데이트.
     """
-    if tier == "premium":
-        return {
-            "allowed": True,
-            "monthly_limit": -1,
-            "monthly_used": 0,
-            "remaining": -1,
-        }, None
-
     await db.execute(
         text("SELECT pg_advisory_xact_lock(:ns, :key)"),
         {"ns": _LOCK_NS_VISION, "key": _user_lock_key(user_id)},
@@ -284,7 +246,7 @@ async def check_and_reserve_vision(
         image_size_bytes=image_size_bytes,
         response_time_ms=0,
         model="gpt-4o",
-        tier=tier,
+        tier="free",  # 레거시 컬럼 — DB 스키마 보존을 위해 고정값 기록
     )
     db.add(reservation)
     await db.flush()

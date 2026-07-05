@@ -13,8 +13,7 @@ from sqlalchemy import select
 
 from app.config import get_settings
 from app.database import get_db
-from app.dependencies import get_current_user, get_current_tier, verify_pet_ownership
-from app.models.ai_vision_log import AiVisionLog
+from app.dependencies import get_current_user, verify_pet_ownership
 from app.models.pet import Pet
 from app.models.user import User
 from app.services.quota_service import check_and_reserve_vision
@@ -163,10 +162,9 @@ async def analyze_health_check_vision(
     language: str | None = Form(None),
     image: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
-    tier: str = Depends(get_current_tier),
     db: AsyncSession = Depends(get_db),
 ):
-    """GPT-4o Vision으로 이미지를 분석하여 건강 상태를 반환한다. 프리미엄 전용."""
+    """GPT-4o Vision으로 이미지를 분석하여 건강 상태를 반환한다."""
     # 1. Pet 소유권 검증 (IDOR 방지) — 쿼터 체크 전에 수행
     pet_result = await db.execute(
         select(Pet).where(Pet.id == pet_id, Pet.user_id == current_user.id)
@@ -215,14 +213,14 @@ async def analyze_health_check_vision(
             detail="빈 이미지 파일입니다",
         )
 
-    # 5. 티어 검증 + 슬롯 예약 (advisory lock으로 동시 요청 방지)
+    # 5. 쿼터 체크 + 슬롯 예약 (advisory lock으로 동시 요청 방지)
     vis, reservation = await check_and_reserve_vision(
-        db, current_user.id, tier, pet_id, mode, part, len(image_bytes),
+        db, current_user.id, pet_id, mode, part, len(image_bytes),
     )
     if not vis["allowed"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="프리미엄 전용 기능입니다",
+            detail="이번 달 사용 한도에 도달했어요. 다음 달에 다시 이용할 수 있어요.",
         )
 
     # 6. Base64 인코딩 (메모리에서 — 디스크 저장 없음)
@@ -240,7 +238,6 @@ async def analyze_health_check_vision(
             mode=mode,
             part=part,
             notes=notes,
-            tier=tier,
             language=language,
         )
     except Exception as e:
@@ -279,23 +276,9 @@ async def analyze_health_check_vision(
     # 10. Vision 사용 로그 업데이트/생성
     elapsed_ms = int((time.monotonic() - start_time) * 1000)
     if reservation:
-        # Free 사용자: 예약 로그 업데이트
+        # 예약 로그 업데이트 (allowed=True면 항상 존재)
         reservation.response_time_ms = elapsed_ms
         reservation.confidence_score = confidence
         reservation.overall_status = overall_status
-    else:
-        # Premium 사용자: 새 로그 생성
-        db.add(AiVisionLog(
-            user_id=current_user.id,
-            pet_id=pet_id,
-            mode=mode,
-            part=part,
-            image_size_bytes=len(image_bytes),
-            response_time_ms=elapsed_ms,
-            model="gpt-4o",
-            tier=tier,
-            confidence_score=confidence,
-            overall_status=overall_status,
-        ))
 
     return saved_check
