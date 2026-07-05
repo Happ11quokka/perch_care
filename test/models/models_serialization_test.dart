@@ -1072,7 +1072,7 @@ void main() {
       expect(summary.bhiPrevious, 79.0);
     });
 
-    test('fromJson nullable Premium 필드 null 처리', () {
+    test('fromJson nullable 상세 필드 null 처리', () {
       final json = {
         'wci_level': 1,
         'weight_trend': 'stable',
