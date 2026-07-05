@@ -64,7 +64,7 @@ async def _calc_consistency(
 
 
 async def get_health_summary(
-    db: AsyncSession, pet_id: UUID, tier: str, target_date: date,
+    db: AsyncSession, pet_id: UUID, target_date: date,
 ) -> HealthSummaryResponse:
     # 현재 BHI 계산 — 내부에서 조회한 w_t, w_t-7 값까지 함께 받아 재사용
     bhi_ctx = await calculate_bhi_with_context(db, pet_id, target_date)
@@ -89,7 +89,7 @@ async def get_health_summary(
 
     has_data = bhi.has_weight_data or bhi.has_food_data or bhi.has_water_data
 
-    # 기본 응답 (Free + Premium 공통)
+    # 기본 응답
     resp = HealthSummaryResponse(
         bhi_score=bhi.bhi_score if has_data else None,
         wci_level=bhi.wci_level,
@@ -100,26 +100,25 @@ async def get_health_summary(
         target_date=bhi.target_date,
     )
 
-    # Premium 전용 상세 필드
-    if tier == "premium":
-        since_30d = target_date - timedelta(days=30)
+    # 상세 필드 (전체 사용자 제공)
+    since_30d = target_date - timedelta(days=30)
 
-        resp.abnormal_count = await _count_abnormals(db, pet_id, since_30d)
-        resp.food_consistency = await _calc_consistency(
-            db, pet_id, FoodRecord, FoodRecord.recorded_date, since_30d, target_date,
-        )
-        resp.water_consistency = await _calc_consistency(
-            db, pet_id, WaterRecord, WaterRecord.recorded_date, since_30d, target_date,
-        )
+    resp.abnormal_count = await _count_abnormals(db, pet_id, since_30d)
+    resp.food_consistency = await _calc_consistency(
+        db, pet_id, FoodRecord, FoodRecord.recorded_date, since_30d, target_date,
+    )
+    resp.water_consistency = await _calc_consistency(
+        db, pet_id, WaterRecord, WaterRecord.recorded_date, since_30d, target_date,
+    )
 
-        # 7일 전 BHI로 추세 계산 (이건 다른 날짜 BHI라 별도 계산 불가피)
-        bhi_prev_ctx = await calculate_bhi_with_context(db, pet_id, target_date - timedelta(days=7))
-        bhi_prev = bhi_prev_ctx.response
-        prev_has = bhi_prev.has_weight_data or bhi_prev.has_food_data or bhi_prev.has_water_data
-        resp.bhi_previous = bhi_prev.bhi_score if prev_has else None
-        resp.bhi_trend = _bhi_trend_label(
-            bhi.bhi_score if has_data else None,
-            resp.bhi_previous,
-        )
+    # 7일 전 BHI로 추세 계산 (이건 다른 날짜 BHI라 별도 계산 불가피)
+    bhi_prev_ctx = await calculate_bhi_with_context(db, pet_id, target_date - timedelta(days=7))
+    bhi_prev = bhi_prev_ctx.response
+    prev_has = bhi_prev.has_weight_data or bhi_prev.has_food_data or bhi_prev.has_water_data
+    resp.bhi_previous = bhi_prev.bhi_score if prev_has else None
+    resp.bhi_trend = _bhi_trend_label(
+        bhi.bhi_score if has_data else None,
+        resp.bhi_previous,
+    )
 
     return resp

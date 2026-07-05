@@ -3,12 +3,12 @@ import logging
 from uuid import UUID
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session_factory, get_db
-from app.dependencies import get_current_user, get_current_user_id, get_current_tier
+from app.dependencies import get_current_user, get_current_user_id
 from app.models.device_token import DeviceToken
 from app.models.user import User
 from app.schemas.pet import PetCreate, PetUpdate, PetResponse
@@ -125,37 +125,29 @@ async def get_pet_health_summary(
     pet_id: UUID,
     target_date: date = Query(default_factory=date.today),
     current_user: User = Depends(get_current_user),
-    tier: str = Depends(get_current_tier),
     db: AsyncSession = Depends(get_db),
 ):
-    """건강 변화 요약 카드 데이터. Free: 기본 요약, Premium: 상세 카드."""
+    """건강 변화 요약 카드 데이터 (상세 필드 포함)."""
     # 소유권 확인
     await pet_service.get_pet_by_id(db, pet_id, current_user.id)
-    return await get_health_summary(db, pet_id, tier, target_date)
+    return await get_health_summary(db, pet_id, target_date)
 
 
 @router.get(
     "/{pet_id}/insights",
     response_model=PetInsightResponse | None,
-    responses={403: {"description": "Premium only"}},
 )
 async def get_pet_insights(
     pet_id: UUID,
     type: str = Query(default="weekly", pattern="^(weekly)$"),
     current_user: User = Depends(get_current_user),
-    tier: str = Depends(get_current_tier),
     db: AsyncSession = Depends(get_db),
 ):
-    """주간 건강 인사이트. Premium 전용.
+    """주간 건강 인사이트.
 
     Lazy generation: DB에 인사이트가 없으면 백그라운드로 생성을 트리거하고 즉시 None 반환.
     다음 호출 시 결과 반환됨. cron(`weekly_insights.py`)을 기다리지 않아도 됨.
     """
-    if tier != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="프리미엄 전용 기능입니다",
-        )
     await pet_service.get_pet_by_id(db, pet_id, current_user.id)
 
     insight = await get_latest_insight(db, pet_id, type)
