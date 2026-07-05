@@ -107,8 +107,7 @@ class AppIcons {
   static const IconData chat = Icons.chat;
   static const IconData call = Icons.call;
 
-  // ── Premium & Account ───────────────────────────────────────
-  static const IconData workspacePremium = Icons.workspace_premium;
+  // ── Account ─────────────────────────────────────────────────
   static const IconData lockOutline = Icons.lock_outline;
   static const IconData lock = Icons.lock;
   static const IconData language = Icons.language;
