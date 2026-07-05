@@ -8,13 +8,12 @@ import '../services/api/api_client.dart';
 import '../services/bhi/bhi_service.dart';
 import '../services/pet/pet_local_cache_service.dart';
 import '../services/pet/pet_service.dart';
-import '../services/premium/premium_service.dart';
 import '../services/sync/sync_service.dart';
 import '../services/weight/weight_service.dart';
 
 /// 홈 화면 전용 aggregated data fetcher.
 ///
-/// 홈 화면은 Pet + BHI + HealthSummary + Insight + Premium 상태 + 오프라인 로컬 데이터
+/// 홈 화면은 Pet + BHI + HealthSummary + Insight + 오프라인 로컬 데이터
 /// 유무까지 한 화면에서 필요로 한다. 이를 각각 다른 ViewModel에서 구독시키지 않고
 /// HomeRepository가 묶어서 제공하여 HomeViewModel이 단일 의존으로 처리하도록 한다.
 abstract class HomeRepository {
@@ -37,7 +36,7 @@ abstract class HomeRepository {
     DateTime date,
   );
 
-  /// 건강 요약 + (Premium인 경우) 주간 인사이트 + Premium 상태 병렬 로드.
+  /// 건강 요약 + 주간 인사이트 로드.
   Future<HomeDerivedData> loadHealthDerivedData(String petId);
 
   /// 오프라인 큐 처리 (fire-and-forget 용도; 실패는 내부 로깅).
@@ -63,16 +62,14 @@ class LocalDataAvailability {
   });
 }
 
-/// 건강 요약/인사이트/프리미엄 상태의 한 번에 묶인 응답.
+/// 건강 요약/인사이트의 한 번에 묶인 응답.
 class HomeDerivedData {
   final HealthSummary? healthSummary;
   final PetInsight? insight;
-  final bool isPremium;
 
   const HomeDerivedData({
     this.healthSummary,
     this.insight,
-    this.isPremium = false,
   });
 }
 
@@ -81,14 +78,12 @@ class HomeRepositoryImpl implements HomeRepository {
     PetService? petService,
     PetLocalCacheService? petCache,
     BhiService? bhiService,
-    PremiumService? premiumService,
     ApiClient? apiClient,
     WeightService? weightService,
     SyncService? syncService,
   })  : _petService = petService ?? PetService.instance,
         _petCache = petCache ?? PetLocalCacheService.instance,
         _bhiService = bhiService ?? BhiService.instance,
-        _premiumService = premiumService ?? PremiumService.instance,
         _api = apiClient ?? ApiClient.instance,
         _weightService = weightService ?? WeightService.instance,
         _syncService = syncService ?? SyncService.instance;
@@ -96,7 +91,6 @@ class HomeRepositoryImpl implements HomeRepository {
   final PetService _petService;
   final PetLocalCacheService _petCache;
   final BhiService _bhiService;
-  final PremiumService _premiumService;
   final ApiClient _api;
   final WeightService _weightService;
   final SyncService _syncService;
@@ -157,31 +151,25 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<HomeDerivedData> loadHealthDerivedData(String petId) async {
-    final tierFuture = _premiumService.getTier();
-    final summaryFuture = _api.get('/pets/$petId/health-summary');
-    final results = await Future.wait<dynamic>([tierFuture, summaryFuture]);
-
-    final status = results[0] as PremiumStatus;
-    final summaryJson = results[1] as Map<String, dynamic>;
+    final summaryJson =
+        await _api.get('/pets/$petId/health-summary') as Map<String, dynamic>;
     final summary = HealthSummary.fromJson(summaryJson);
 
+    // 주간 인사이트는 항상 조회 (프리미엄 게이트 제거)
     PetInsight? insight;
-    if (status.isPremium) {
-      try {
-        final insightJson =
-            await _api.get('/pets/$petId/insights?type=weekly');
-        if (insightJson != null) {
-          insight = PetInsight.fromJson(insightJson as Map<String, dynamic>);
-        }
-      } catch (_) {
-        // 인사이트 실패는 무시 (홈 화면의 다른 데이터는 유효)
+    try {
+      final insightJson =
+          await _api.get('/pets/$petId/insights?type=weekly');
+      if (insightJson != null) {
+        insight = PetInsight.fromJson(insightJson as Map<String, dynamic>);
       }
+    } catch (_) {
+      // 인사이트 실패는 무시 (홈 화면의 다른 데이터는 유효)
     }
 
     return HomeDerivedData(
       healthSummary: summary,
       insight: insight,
-      isPremium: status.isPremium,
     );
   }
 

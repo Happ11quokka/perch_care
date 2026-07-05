@@ -88,7 +88,7 @@ void main() {
       when(() => repo.loadPetWithBhi(any(), any()))
           .thenAnswer((_) async => (pet: pet, bhi: bhi));
       when(() => repo.loadHealthDerivedData(any()))
-          .thenAnswer((_) async => const HomeDerivedData(isPremium: true));
+          .thenAnswer((_) async => const HomeDerivedData());
       when(() => repo.lastBhiFetchTime).thenReturn(DateTime(2026, 4, 18, 10));
 
       final container = _container(repo: repo, activePet: pet);
