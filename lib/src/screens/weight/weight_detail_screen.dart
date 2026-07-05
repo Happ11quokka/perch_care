@@ -194,7 +194,14 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     }
   }
 
-  Future<void> _switchPet(Pet pet) async {
+  /// 활성 펫 변경에 따른 로컬 상태 리로드 전용 메서드.
+  ///
+  /// 영속화(서버 `PUT /pets/{id}/activate` + provider 갱신)는
+  /// `ActivePetViewModel.switchPet()`이 담당한다. 이 메서드는 build()의
+  /// provider → 로컬 단방향 동기화 가드에서만 호출되며, 여기서 다시
+  /// 영속화하면 stale provider 값으로 서버 활성 펫을 원복시키는
+  /// 중복 발사가 되므로 절대 서버/캐시 쓰기를 하지 않는다.
+  Future<void> _onActivePetChanged(Pet pet) async {
     if (pet.id == _activePetId) return;
     setState(() {
       _activePetId = pet.id;
@@ -205,10 +212,6 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       _cachedWeeklyData = null;
       _cachedWeeklyStart = null;
     });
-    _petCache.setActivePetId(pet.id);
-    try {
-      await _petService.setActivePet(pet.id);
-    } catch (_) {}
     try {
       await Future.wait([_loadWeightData(), _loadScheduleData(), _loadDailyRecordData()]);
     } catch (_) {
@@ -357,12 +360,12 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final activePetAsync = ref.watch(activePetProvider);
+    final activePetAsync = ref.watch(activePetViewModelProvider);
     final activePet = activePetAsync.valueOrNull;
-    // 펫 변경 감지 → _switchPet 호출
+    // provider(SSOT) → 로컬 단방향 동기화: 활성 펫 변경 감지 시 로컬 상태 리로드
     if (activePet != null && activePet.id != _activePetId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _switchPet(activePet);
+        _onActivePetChanged(activePet);
       });
     }
 
@@ -2129,7 +2132,9 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
             button: true,
             label: 'Select pet ${pet.name}',
             child: GestureDetector(
-            onTap: () => _switchPet(pet),
+            onTap: () => ref
+                .read(activePetViewModelProvider.notifier)
+                .switchPet(pet.id),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
