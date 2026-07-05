@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/weight_record.dart';
-import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/weight/weight_service.dart';
 import '../../theme/colors.dart';
 import '../../view_models/weight/weight_add_view_model.dart';
 import '../../router/route_names.dart';
@@ -18,8 +16,9 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
 import '../../models/breed_standard.dart';
-import '../../services/breed/breed_service.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/repository_providers.dart';
+import '../../providers/service_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
 class WeightRecordScreen extends ConsumerStatefulWidget {
@@ -30,8 +29,6 @@ class WeightRecordScreen extends ConsumerStatefulWidget {
 }
 
 class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
-  final _weightService = WeightService.instance;
-  final _petCache = PetLocalCacheService.instance;
   final _weightController = TextEditingController();
   final _weightFocusNode = FocusNode();
 
@@ -74,9 +71,9 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
         // 품종 정보 로드
         if (apiPet.breedId != null) {
           try {
-            final breed = await BreedService.instance.fetchBreedById(
-              apiPet.breedId!,
-            );
+            final breed = await ref
+                .read(breedServiceProvider)
+                .fetchBreedById(apiPet.breedId!);
             if (mounted && breed != null) {
               setState(() => _breedStandard = breed);
             }
@@ -84,7 +81,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
         }
       } else {
         // 로컬 캐시 폴백
-        final cachedPet = await _petCache.getActivePet();
+        final cachedPet = await ref.read(petRepositoryProvider).getActivePet();
         if (!mounted) return;
         setState(() {
           _activePetId = cachedPet?.id;
@@ -96,7 +93,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
     } catch (_) {
       // 로컬 캐시 폴백
       try {
-        final cachedPet = await _petCache.getActivePet();
+        final cachedPet = await ref.read(petRepositoryProvider).getActivePet();
         if (!mounted) return;
         setState(() {
           _activePetId = cachedPet?.id;
@@ -156,7 +153,9 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
 
   Future<void> _loadRecords() async {
     if (_activePetId == null) return;
-    final records = await _weightService.fetchLocalRecords(petId: _activePetId);
+    final records = await ref
+        .read(weightRepositoryProvider)
+        .fetchLocal(petId: _activePetId!);
     if (!mounted) return;
     setState(() {
       _records = records;
