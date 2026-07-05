@@ -4,13 +4,11 @@ import '../api/api_client.dart';
 import '../api/token_service.dart';
 import '../pet/pet_local_cache_service.dart';
 import '../pet/pet_service.dart';
-import '../premium/premium_service.dart';
 import '../weight/weight_service.dart';
 import '../storage/health_check_storage_service.dart';
 import '../storage/chat_storage_service.dart';
 import '../coach_mark/coach_mark_service.dart';
 import '../analytics/analytics_service.dart';
-import '../iap/iap_service.dart';
 import '../push/push_notification_service.dart';
 import '../storage/local_image_storage_service.dart';
 
@@ -197,7 +195,6 @@ class AuthService {
 
   Future<void> _initializeAuthenticatedServices() async {
     unawaited(PushNotificationService.instance.initialize());
-    await IapService.instance.initialize();
   }
 
   /// 로그아웃
@@ -213,7 +210,6 @@ class AuthService {
     }
     // 인메모리 캐시 무효화
     PetService.instance.invalidateCache();
-    PremiumService.instance.invalidateCache();
     WeightService.instance.clearAllRecords();
 
     // 로컬 스토리지 정리
@@ -223,7 +219,6 @@ class AuthService {
     await ChatStorageService.instance.clearAllMessages();
     await CoachMarkService.instance.clearAll();
     await PushNotificationService.instance.dispose();
-    IapService.instance.dispose();
     await _tokenService.clearTokens();
     _lastHasPets = null;
   }
@@ -325,7 +320,6 @@ class AuthService {
 
     // 인메모리 캐시 무효화
     PetService.instance.invalidateCache();
-    PremiumService.instance.invalidateCache();
     WeightService.instance.clearAllRecords();
 
     // 로컬 스토리지 정리
