@@ -1,0 +1,92 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+import 'package:perch_care/src/models/pet.dart';
+import 'package:perch_care/src/providers/repository_providers.dart';
+import 'package:perch_care/src/repositories/pet_repository.dart';
+import 'package:perch_care/src/view_models/pet/active_pet_view_model.dart';
+
+class MockPetRepository extends Mock implements PetRepository {}
+
+Pet _pet(String id, {String name = 'Test'}) => Pet(
+      id: id,
+      userId: 'user-1',
+      name: name,
+      species: 'bird',
+      createdAt: DateTime(2026, 1, 1),
+      updatedAt: DateTime(2026, 1, 1),
+    );
+
+/// Mock Repository를 주입한 ProviderContainer를 반환 (테스트 종료 시 자동 dispose).
+ProviderContainer _container(PetRepository repo) {
+  final container = ProviderContainer(overrides: [
+    petRepositoryProvider.overrideWithValue(repo),
+  ]);
+  addTearDown(container.dispose);
+  return container;
+}
+
+void main() {
+  late MockPetRepository repo;
+
+  setUp(() {
+    repo = MockPetRepository();
+  });
+
+  group('ActivePetViewModel', () {
+    test('build()는 Repository.getActivePet()을 호출하고 결과를 노출한다', () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+
+      final container = _container(repo);
+      final pet = await container.read(activePetViewModelProvider.future);
+
+      expect(pet?.id, 'p1');
+      verify(() => repo.getActivePet(forceRefresh: false)).called(1);
+    });
+
+    // 기록 탭 펫 전환 버그(2026-07) 회귀 테스트:
+    // 선택기 탭 경로는 반드시 이 switchPet을 경유해야 하며,
+    // 영속화(setActivePet) → forceRefresh 재조회 → provider 상태 갱신 순서를 보장한다.
+    test('switchPet()은 setActivePet 영속화 후 forceRefresh 재조회로 상태를 갱신한다',
+        () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.setActivePet('p2')).thenAnswer((_) async {});
+      when(() => repo.getActivePet(forceRefresh: true))
+          .thenAnswer((_) async => _pet('p2', name: 'Second'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future); // 초기 로드 p1
+
+      await container
+          .read(activePetViewModelProvider.notifier)
+          .switchPet('p2');
+
+      final pet = container.read(activePetViewModelProvider).valueOrNull;
+      expect(pet?.id, 'p2');
+      verifyInOrder([
+        () => repo.setActivePet('p2'),
+        () => repo.getActivePet(forceRefresh: true),
+      ]);
+    });
+
+    test('switchPet() 실패 시 AsyncError 상태로 전파된다', () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.setActivePet('p2'))
+          .thenThrow(Exception('network error'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future);
+
+      await container
+          .read(activePetViewModelProvider.notifier)
+          .switchPet('p2');
+
+      final state = container.read(activePetViewModelProvider);
+      expect(state.hasError, isTrue);
+    });
+  });
+}
