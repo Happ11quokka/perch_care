@@ -8,6 +8,9 @@ agent/.env
 # Agent local data
 agent/chroma_data/
 
+# Node.js
+node_modules/
+
 # Miscellaneous
 *.class
 *.log
@@ -80,6 +83,13 @@ docs/development-logs/
 
 # Business documents
 사업계획서_2026_한양대_창업동아리.md
+사업계획서_2026_학생창업유망팀_300+.md
+사업계획서_2026_학생창업유망팀_300+.docx
+
+# Planning working files (planning-with-files)
+/task_plan.md
+/findings.md
+/progress.md
 
 # Testing guide (contains Sandbox credentials)
 docs/testing/manual-testing-guide.md
