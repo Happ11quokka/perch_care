@@ -9,7 +9,6 @@ import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
-import '../../providers/premium_provider.dart';
 import '../../services/storage/health_check_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../providers/pet_providers.dart';
@@ -193,17 +192,6 @@ class _HealthCheckHistoryScreenState
         : null;
 
     try {
-      final status = await ref.read(premiumStatusProvider.future);
-      if (status.isFree) {
-        // App Store 3.1.1 대응: 업그레이드 CTA 제거 — 중립 실패 메시지만 표시
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.report_shareFailed)),
-          );
-        }
-        return;
-      }
-
       final now = DateTime.now();
       final from = now.subtract(const Duration(days: 30));
       String fmt(DateTime d) =>
