@@ -50,7 +50,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _lastUpdateText;
   HealthSummary? _healthSummary;
   PetInsight? _latestInsight;
-  bool _isPremium = false;
 
   // 코치마크 타겟 키
   final _wciCardKey = GlobalKey();
@@ -231,7 +230,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _bhiResult = state.bhi;
     _healthSummary = state.healthSummary;
     _latestInsight = state.insight;
-    _isPremium = state.isPremium;
     _wciLevel = state.wciLevel;
     _hasWeightData = state.hasWeight;
     _hasFoodData = state.hasFood;
@@ -271,7 +269,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               if (_healthSummary != null)
                                 HealthSummaryCard(
                                   summary: _healthSummary!,
-                                  isPremium: _isPremium,
                                 ),
                               if (_healthSummary != null)
                                 const SizedBox(height: 12),
@@ -982,8 +979,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildInsightsSection() {
     final l10n = AppLocalizations.of(context);
 
-    // Premium 사용자 + 인사이트 있음
-    if (_isPremium && _latestInsight != null) {
+    // 인사이트가 있으면 전원 노출
+    if (_latestInsight != null) {
       return Column(
         children: [
           Container(
@@ -1061,7 +1058,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // Free 사용자에게는 인사이트 티저 카드 표시 안 함 (App Store 3.1.1 대응 — 업그레이드 CTA 제거)
+    // 인사이트가 아직 없으면 섹션 미표시
     return const SizedBox.shrink();
   }
 

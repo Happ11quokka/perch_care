@@ -4,16 +4,13 @@ import '../theme/colors.dart';
 import '../../l10n/app_localizations.dart';
 
 /// 건강 변화 요약 카드.
-/// Free: 기본 정보(체중/BHI)만 표시.
-/// Premium: 전체 상세 정보 표시 (이상 소견, 급여/음수 일관성, BHI 추세).
+/// 기본 정보(체중/BHI)와 상세 정보(이상 소견, 급여/음수 일관성, BHI 추세)를 모두 표시.
 class HealthSummaryCard extends StatelessWidget {
   final HealthSummary summary;
-  final bool isPremium;
 
   const HealthSummaryCard({
     super.key,
     required this.summary,
-    required this.isPremium,
   });
 
   @override
@@ -69,11 +66,9 @@ class HealthSummaryCard extends StatelessWidget {
               trend: null,
             ),
 
-          // Premium 전용 상세: 프리미엄 유저에게만 노출, free 유저에게는 섹션 자체 비노출
-          if (isPremium) ...[
-            const Divider(height: 24, color: AppColors.gray150),
-            _buildPremiumDetails(l10n),
-          ],
+          // 상세 정보 (이상 소견, 급여/음수 일관성, BHI 추세) — 전원 노출
+          const Divider(height: 24, color: AppColors.gray150),
+          _buildDetailedMetrics(l10n),
         ],
       ),
     );
@@ -145,7 +140,7 @@ class HealthSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPremiumDetails(AppLocalizations l10n) {
+  Widget _buildDetailedMetrics(AppLocalizations l10n) {
     return Column(
       children: [
         // 이상 소견
