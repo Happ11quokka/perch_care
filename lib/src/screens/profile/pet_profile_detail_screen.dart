@@ -9,10 +9,9 @@ import '../../utils/image_crop_helper.dart';
 import '../../theme/colors.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
-import '../../services/pet/pet_service.dart';
-import '../../services/pet/pet_local_cache_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/pet_providers.dart';
+import '../../view_models/pet/pet_add_view_model.dart';
 import '../../services/analytics/analytics_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../utils/error_handler.dart';
@@ -32,8 +31,6 @@ class PetProfileDetailScreen extends ConsumerStatefulWidget {
 
 class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _petCache = PetLocalCacheService.instance;
-  final _petService = PetService.instance;
 
   File? _selectedImage;
   Uint8List? _savedImageBytes;
@@ -45,6 +42,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
   DateTime? _birthday;
   DateTime? _adoptionDate;
   String? _existingPetId;
+  Pet? _existingPet;
   bool _isLoading = false;
   bool _isLoadingData = true;
 
@@ -75,11 +73,12 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
 
   Future<void> _loadExistingPet() async {
     try {
-      // API에서 활성 펫 조회 (UUID 형식 보장)
+      // 활성 펫은 provider(SSOT)에서 조회
       final apiPet = ref.read(activePetProvider).valueOrNull;
       if (!mounted) return;
 
       if (apiPet != null) {
+        _existingPet = apiPet;
         _existingPetId = apiPet.id;
 
         // 로컬 저장된 펫 이미지 로드
@@ -88,18 +87,6 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
           ownerId: apiPet.id,
         );
         _savedImageBytes = imageBytes;
-
-        // 로컬 캐시도 동기화
-        await _petCache.upsertPet(
-          PetProfileCache(
-            id: apiPet.id,
-            name: apiPet.name,
-            species: apiPet.breed,
-            gender: apiPet.gender,
-            birthDate: apiPet.birthDate,
-          ),
-          setActive: true,
-        );
 
         setState(() {
           _nameController.text = apiPet.name;
@@ -113,29 +100,11 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
           _isLoadingData = false;
         });
       } else {
-        // API에 활성 펫 없으면 신규 등록 모드
+        // 활성 펫 없으면 신규 등록 모드
         if (mounted) setState(() => _isLoadingData = false);
       }
     } catch (_) {
-      // API 실패 시 로컬 캐시 폴백
-      try {
-        final activePet = await _petCache.getActivePet();
-        if (!mounted) return;
-        if (activePet != null) {
-          _existingPetId = activePet.id;
-          setState(() {
-            _nameController.text = activePet.name;
-            _speciesController.text = activePet.species ?? '';
-            _selectedGender = activePet.gender;
-            _birthday = activePet.birthDate;
-            _isLoadingData = false;
-          });
-        } else {
-          setState(() => _isLoadingData = false);
-        }
-      } catch (_) {
-        if (mounted) setState(() => _isLoadingData = false);
-      }
+      if (mounted) setState(() => _isLoadingData = false);
     }
 
     _maybeShowCoachMarks();
@@ -744,6 +713,8 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
 
   Future<void> _handleDelete() async {
     final l10n = AppLocalizations.of(context);
+    // 신규 등록 모드에는 삭제할 펫이 없음 — null 단언 크래시 방지
+    if (_existingPetId == null) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -765,14 +736,10 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
     if (confirmed != true || !mounted) return;
 
     try {
-      await _petService.deletePet(_existingPetId!);
+      await ref
+          .read(activePetViewModelProvider.notifier)
+          .deletePet(_existingPetId!);
       AnalyticsService.instance.logPetDeleted();
-      await _petCache.removePet(_existingPetId!);
-      if (!mounted) return;
-      final remainingPets = await _petCache.getPets();
-      if (remainingPets.isNotEmpty) {
-        ref.read(activePetProvider.notifier).switchPet(remainingPets.first.id);
-      }
       if (!mounted) return;
       AppSnackBar.success(context, message: l10n.snackbar_deleted);
       context.pop(true);
@@ -797,58 +764,28 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
           ? l10n.pet_defaultName
           : _nameController.text.trim();
       final species = _speciesController.text.trim();
-      final gender = _selectedGender;
       final weightText = _weightController.text.trim();
-      final double? weightValue = weightText.isNotEmpty ? double.tryParse(weightText) : null;
+      final double? weightValue =
+          weightText.isNotEmpty ? double.tryParse(weightText) : null;
 
-      Pet savedPet;
-
-      if (_existingPetId != null) {
-        // 서버에 수정
-        savedPet = await _petService.updatePet(
-          petId: _existingPetId!,
-          name: petName,
-          species: species.isEmpty ? null : species,
-          breed: species.isEmpty ? null : species,
-          birthDate: _birthday,
-          gender: gender,
-          weight: weightValue,
-          adoptionDate: _adoptionDate,
-        );
-      } else {
-        // 서버에 생성
-        savedPet = await _petService.createPet(
-          name: petName,
-          species: species.isEmpty ? l10n.pet_defaultName : species,
-          breed: species.isEmpty ? null : species,
-          birthDate: _birthday,
-          gender: gender,
-          weight: weightValue,
-          adoptionDate: _adoptionDate,
-        );
-      }
-
-      // 이미지를 SQLite에 저장
-      if (_selectedImage != null) {
-        final bytes = await _selectedImage!.readAsBytes();
-        await LocalImageStorageService.instance.saveImage(
-          ownerType: ImageOwnerType.petProfile,
-          ownerId: savedPet.id,
-          imageBytes: bytes,
-        );
-      }
-
-      // 로컬 캐시도 동기화
-      await _petCache.upsertPet(
-        PetProfileCache(
-          id: savedPet.id,
-          name: savedPet.name,
-          species: savedPet.breed,
-          gender: savedPet.gender,
-          birthDate: savedPet.birthDate,
-        ),
-        setActive: true,
-      );
+      // 저장/수정 분기 + 이미지 저장 + 로컬 캐시 upsert + (신규)초기 체중/analytics +
+      // petList/activePet invalidate는 모두 PetAddViewModel.save가 담당.
+      // 이 화면은 품종(breedId/growthStage)을 편집하지 않으므로 기존 펫 값을 그대로 유지.
+      await ref.read(petAddViewModelProvider.notifier).save(
+            input: PetFormInput(
+              name: petName,
+              species: species.isEmpty ? null : species,
+              breedId: _existingPet?.breedId,
+              breedDisplayName: _existingPet?.breed,
+              gender: _selectedGender,
+              growthStage: _existingPet?.growthStage,
+              weight: weightValue,
+              birthDate: _birthday,
+              adoptionDate: _adoptionDate,
+            ),
+            newImage: _selectedImage,
+            existingPet: _existingPet,
+          );
 
       if (!mounted) return;
       AppSnackBar.success(context, message: l10n.common_saveSuccess);
