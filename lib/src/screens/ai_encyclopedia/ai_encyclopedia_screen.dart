@@ -8,7 +8,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../config/app_config.dart';
 import '../../models/chat_message.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
@@ -28,11 +27,8 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../widgets/local_image_avatar.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
-import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
-import '../../services/api/token_service.dart';
 import '../../providers/pet_providers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AIEncyclopediaScreen extends ConsumerStatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -64,7 +60,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   bool _isSending = false;
   bool _isTyping = false;
   bool _isLoadingMessages = true;
-  bool _showPremiumBanner = false;
 
   // 둥둥 떠다니는 breathing 애니메이션
   late final AnimationController _floatController;
@@ -109,41 +104,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     await _loadActivePet();
     await _loadMessages();
     _maybeShowCoachMarks();
-    _loadPremiumBannerState();
-  }
-
-  String get _bannerDismissKey {
-    final userId = TokenService.instance.userId ?? 'anonymous';
-    return 'encyclopedia_banner_dismissed_$userId';
-  }
-
-  Future<void> _loadPremiumBannerState() async {
-    // App Store 3.1.1 대응: 프리미엄 게이팅 비활성화 시 배너 노출 안 함
-    if (!AppConfig.premiumEnabled) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final dismissed = prefs.getBool(_bannerDismissKey) ?? false;
-      if (dismissed) return;
-
-      final status = await ref.read(premiumStatusProvider.future);
-      if (mounted && status.isFree) {
-        setState(() {
-          _showPremiumBanner = true;
-        });
-      }
-    } catch (_) {
-      // 실패 시 배너 미표시
-    }
-  }
-
-  Future<void> _dismissPremiumBanner() async {
-    setState(() {
-      _showPremiumBanner = false;
-    });
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_bannerDismissKey, true);
-    } catch (_) {}
   }
 
   Future<void> _maybeShowCoachMarks() async {
@@ -669,7 +629,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             ),
             if (!_hasUserMessages && !_isLoadingMessages)
               _buildSuggestionChips(),
-            if (_showPremiumBanner) _buildPremiumBanner(),
             _buildInputArea(),
           ],
         ),
@@ -1025,96 +984,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   }
 
   // ── Input area ────────────────────────────────────────────────────
-
-  Widget _buildPremiumBanner() {
-    final l10n = AppLocalizations.of(context);
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.sm,
-        AppSpacing.lg,
-        0,
-      ),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.brandLight,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.auto_awesome,
-            color: AppColors.brandPrimary,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.chatbot_premiumBanner,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.nearBlack,
-                    height: 1.4,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Semantics(
-                  button: true,
-                  label: l10n.chatbot_premiumUpgrade,
-                  child: GestureDetector(
-                  onTap: () async {
-                    AnalyticsService.instance.logPremiumFeatureBlocked(
-                      feature: 'ai',
-                      sourceScreen: 'ai_encyclopedia',
-                    );
-                    await context.push(
-                      '/home/premium?source=ai_banner&feature=ai',
-                    );
-                    if (!mounted) return;
-                    try {
-                      final status = await ref.read(premiumStatusProvider.notifier).refreshAndGet();
-                      if (!mounted || status.isFree) return;
-                      setState(() {
-                        _showPremiumBanner = false;
-                      });
-                    } catch (_) {}
-                  },
-                  child: Text(
-                    l10n.chatbot_premiumUpgrade,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.brandPrimary,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ),
-                ),
-              ],
-            ),
-          ),
-          Semantics(
-            button: true,
-            label: 'Close',
-            child: GestureDetector(
-            onTap: _dismissPremiumBanner,
-            child: const Padding(
-              padding: EdgeInsets.all(2),
-              child: Icon(Icons.close, size: 18, color: AppColors.warmGray),
-            ),
-          ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildInputArea() {
     final l10n = AppLocalizations.of(context);
