@@ -1,4 +1,4 @@
-"""건강 리포트 웹 링크 공유 엔드포인트 (프리미엄 전용)."""
+"""건강 리포트 웹 링크 공유 엔드포인트."""
 import logging
 from datetime import date, datetime, timedelta, timezone
 from uuid import UUID
@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.database import get_db
-from app.dependencies import get_current_user, get_current_tier
+from app.dependencies import get_current_user
 from app.models.user import User
 from app.services.report_service import generate_health_html, generate_vet_summary_html
 from app.utils.security import decode_token
@@ -90,15 +90,8 @@ async def share_health_report(
     date_from: date = Query(...),
     date_to: date = Query(...),
     current_user: User = Depends(get_current_user),
-    tier: str = Depends(get_current_tier),
 ):
-    """건강 리포트 공유 링크 생성 (프리미엄 전용)."""
-    if tier != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="프리미엄 전용 기능입니다",
-        )
-
+    """건강 리포트 공유 링크 생성."""
     if date_to < date_from:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -133,15 +126,8 @@ async def share_vet_summary(
     pet_id: UUID,
     request: Request,
     current_user: User = Depends(get_current_user),
-    tier: str = Depends(get_current_tier),
 ):
-    """병원 방문 요약 공유 링크 생성 (프리미엄 전용)."""
-    if tier != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="프리미엄 전용 기능입니다",
-        )
-
+    """병원 방문 요약 공유 링크 생성."""
     language = request.headers.get("Accept-Language", "ko").split(",")[0].split("-")[0]
 
     # 공유 시점의 날짜 범위를 토큰에 스냅샷으로 저장
