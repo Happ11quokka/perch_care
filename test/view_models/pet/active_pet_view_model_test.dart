@@ -137,5 +137,35 @@ void main() {
       final pet = container.read(activePetViewModelProvider).valueOrNull;
       expect(pet, isNull);
     });
+
+    test('deletePet: getMyPets 실패 시 getLocalPets()로 폴백하여 남은 펫으로 전환',
+        () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.deletePet(any())).thenAnswer((_) async {});
+      when(() => repo.removeLocalCache(any())).thenAnswer((_) async {});
+      when(() => repo.getMyPets(forceRefresh: any(named: 'forceRefresh')))
+          .thenThrow(Exception('network error'));
+      when(() => repo.getLocalPets()).thenAnswer((_) async => [_pet('p3')]);
+      when(() => repo.setActivePet(any())).thenAnswer((_) async {});
+      when(() => repo.getActivePet(forceRefresh: true))
+          .thenAnswer((_) async => _pet('p3'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future); // 초기 로드 p1
+
+      await container
+          .read(activePetViewModelProvider.notifier)
+          .deletePet('p1');
+
+      verify(() => repo.deletePet('p1')).called(1);
+      verify(() => repo.removeLocalCache('p1')).called(1);
+      verify(() => repo.getMyPets(forceRefresh: true)).called(1);
+      verify(() => repo.getLocalPets()).called(1);
+      verify(() => repo.setActivePet('p3')).called(1);
+
+      final pet = container.read(activePetViewModelProvider).valueOrNull;
+      expect(pet?.id, 'p3');
+    });
   });
 }
