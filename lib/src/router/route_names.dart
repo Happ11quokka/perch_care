@@ -30,8 +30,6 @@ class RouteNames {
   static const String termsDetail = 'terms-detail';
   static const String faq = 'faq';
   static const String termsDetailPublic = 'terms-detail-public';
-  // 프리미엄
-  static const String premium = 'premium';
   // 건강체크
   static const String healthCheck = 'health-check';
   static const String healthCheckCapture = 'health-check-capture';
