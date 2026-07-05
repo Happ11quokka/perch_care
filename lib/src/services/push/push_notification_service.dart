@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../api/api_client.dart';
-import '../../providers/locale_provider.dart';
 
 /// FCM 푸시 알림 서비스
 class PushNotificationService {
@@ -13,6 +12,10 @@ class PushNotificationService {
       _instance ??= PushNotificationService._();
 
   PushNotificationService._();
+
+  /// 앱 언어 코드 resolver (composition root에서 주입, main.dart 참고)
+  /// null 반환 시 플랫폼 로케일로 폴백
+  static String? Function()? languageCodeResolver;
 
   final _messaging = FirebaseMessaging.instance;
   final _api = ApiClient.instance;
@@ -71,7 +74,7 @@ class PushNotificationService {
   Future<void> _registerToken(String token) async {
     try {
       final platform = Platform.isIOS ? 'ios' : 'android';
-      final lang = LocaleProvider.instance.currentLanguageCode
+      final lang = languageCodeResolver?.call()
           ?? WidgetsBinding.instance.platformDispatcher.locale.languageCode;
       // Normalize to supported languages
       final language = const ['ko', 'en', 'zh'].contains(lang) ? lang : 'zh';

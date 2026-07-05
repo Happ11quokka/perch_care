@@ -10,6 +10,7 @@ import 'l10n/app_localizations.dart';
 import 'src/router/app_router.dart';
 import 'src/theme/app_theme.dart';
 import 'src/providers/locale_provider.dart';
+import 'src/services/api/api_client.dart';
 import 'src/services/push/push_notification_service.dart';
 
 void main() async {
@@ -34,6 +35,11 @@ void main() async {
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
     LocaleProvider.instance.initialize(),
   ]);
+
+  // 서비스 레이어에 언어 코드 resolver 주입 (MVVM: 서비스→provider 역참조 제거)
+  // static 필드이므로 ApiClient.initialize() 등 인스턴스 재생성과 무관하게 유지됨
+  ApiClient.languageCodeResolver = () => LocaleProvider.instance.currentLanguageCode;
+  PushNotificationService.languageCodeResolver = () => LocaleProvider.instance.currentLanguageCode;
 
   // FCM 백그라운드 메시지 핸들러 등록 (Firebase 의존)
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../../config/environment.dart';
-import '../../providers/locale_provider.dart';
 import 'token_service.dart';
 
 /// FastAPI 백엔드와 통신하는 HTTP 클라이언트
@@ -18,6 +17,10 @@ class ApiClient {
   static void initialize() {
     _instance = ApiClient._();
   }
+
+  /// 앱 언어 코드 resolver (composition root에서 주입, main.dart 참고)
+  /// null 반환 시 플랫폼 로케일로 폴백
+  static String? Function()? languageCodeResolver;
 
   static const _requestTimeout = Duration(seconds: 10);
   static const _refreshTimeout = Duration(seconds: 5);
@@ -35,7 +38,7 @@ class ApiClient {
   }
 
   String get _acceptLanguage {
-    final appLang = LocaleProvider.instance.currentLanguageCode;
+    final appLang = languageCodeResolver?.call();
     if (appLang != null) return appLang;
     final locale = ui.PlatformDispatcher.instance.locale;
     return locale.toLanguageTag();
