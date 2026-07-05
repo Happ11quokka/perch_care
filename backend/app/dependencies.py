@@ -1,4 +1,3 @@
-from typing import Literal
 from uuid import UUID
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -7,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.user import User
 from app.utils.security import decode_token
-from app.services.tier_service import get_user_tier
 from app.models.pet import Pet
 from app.config import get_settings
 
@@ -85,9 +83,3 @@ async def verify_admin_api_key(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid admin API key")
 
 
-async def get_current_tier(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> Literal["free", "premium"]:
-    """현재 사용자의 티어 반환 ('free' 또는 'premium')."""
-    return await get_user_tier(db, current_user.id)
