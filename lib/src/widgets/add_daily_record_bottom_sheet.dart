@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/colors.dart';
 import '../models/daily_record.dart';
-import '../services/daily_record/daily_record_service.dart';
+import '../providers/repository_providers.dart';
 import '../../l10n/app_localizations.dart';
 
-class AddDailyRecordBottomSheet extends StatefulWidget {
+class AddDailyRecordBottomSheet extends ConsumerStatefulWidget {
   final DateTime initialDate;
   final String? petId;
   final Function(DailyRecord) onSave;
@@ -17,11 +18,12 @@ class AddDailyRecordBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<AddDailyRecordBottomSheet> createState() =>
+  ConsumerState<AddDailyRecordBottomSheet> createState() =>
       _AddDailyRecordBottomSheetState();
 }
 
-class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
+class _AddDailyRecordBottomSheetState
+    extends ConsumerState<AddDailyRecordBottomSheet> {
   late DateTime _selectedDate;
   String? _selectedMood;
   int? _activityLevel;
@@ -30,7 +32,6 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
 
   final _notesController = TextEditingController();
   final _notesFocusNode = FocusNode();
-  final _dailyRecordService = DailyRecordService.instance;
 
   static const _moodOptions = [
     ('great', '😊'),
@@ -58,10 +59,9 @@ class _AddDailyRecordBottomSheetState extends State<AddDailyRecordBottomSheet> {
     if (widget.petId == null) return;
     setState(() => _isLoading = true);
     try {
-      final existing = await _dailyRecordService.getRecordByDate(
-        widget.petId!,
-        _selectedDate,
-      );
+      final existing = await ref
+          .read(dailyRecordRepositoryProvider)
+          .getByDate(widget.petId!, _selectedDate);
       if (existing != null && mounted) {
         setState(() {
           _selectedMood = existing.mood;
