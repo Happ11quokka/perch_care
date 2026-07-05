@@ -8,13 +8,10 @@ import '../../models/pet.dart';
 import '../../models/weight_record.dart';
 import '../../models/schedule_record.dart';
 import '../../models/daily_record.dart';
-import '../../services/weight/weight_service.dart';
-import '../../services/schedule/schedule_service.dart';
-import '../../services/daily_record/daily_record_service.dart';
-import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/pet/pet_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/pet_providers.dart';
+import '../../view_models/weight/weight_detail_view_model.dart';
+import '../../view_models/weight/weight_detail_state.dart';
 import '../../router/route_names.dart';
 import '../../widgets/add_schedule_bottom_sheet.dart';
 import '../../widgets/add_daily_record_bottom_sheet.dart';
@@ -32,11 +29,6 @@ class WeightDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
-  final _weightService = WeightService.instance;
-  final _scheduleService = ScheduleService.instance;
-  final _dailyRecordService = DailyRecordService.instance;
-  final _petCache = PetLocalCacheService.instance;
-  final _petService = PetService.instance;
   final _scrollController = ScrollController();
 
   // Coach mark target keys
@@ -53,29 +45,17 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     DateTime.now().month,
     DateTime.now().day,
   );
-  List<WeightRecord> _weightRecords = [];
-  List<ScheduleRecord> _scheduleRecords = [];
-  List<DailyRecord> _dailyRecords = [];
-  String _petName = '';
-  String? _activePetId;
-  bool _isLoading = true;
-  List<Pet> _petList = [];
   bool _isRecordsExpanded = false;
-
-  // Cached calculation results
-  Map<DateTime, double>? _cachedMonthlyAverages;
-  Map<int, double>? _cachedWeeklyData;
-  DateTime? _cachedWeeklyStart;
+  bool _coachMarkShown = false;
 
   int get _selectedYear => _focusedDate.year;
   int get _selectedMonth => _focusedDate.month;
   int get _selectedDay => _focusedDate.day;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadActivePet();
-  }
+  /// VM 상태 읽기 헬퍼. build()가 provider를 watch하므로 helper/이벤트 핸들러에서는
+  /// read로 현재 값만 참조하면 된다(구독은 build 1회로 충분).
+  WeightDetailState? get _vm =>
+      ref.read(weightDetailViewModelProvider).valueOrNull;
 
   @override
   void dispose() {
@@ -108,8 +88,9 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     });
 
     if (isMonthChanged) {
-      _loadScheduleData();
-      _loadDailyRecordData();
+      ref
+          .read(weightDetailViewModelProvider.notifier)
+          .loadForMonth(normalizedDate.year, normalizedDate.month);
     }
   }
 
@@ -122,168 +103,6 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     ).day;
     final clampedDay = math.min(_selectedDay, lastDayOfTargetMonth);
     _setFocusedDate(DateTime(targetMonth.year, targetMonth.month, clampedDay));
-  }
-
-  Future<void> _loadActivePet() async {
-    try {
-      // 펫 목록 + 활성 펫 동시 로드
-      final results = await Future.wait([
-        _petService.getMyPets(),
-        _petService.getActivePet(),
-      ]);
-      if (!mounted) return;
-
-      final pets = results[0] as List<Pet>;
-      final apiPet = results[1] as Pet?;
-
-      setState(() {
-        _petList = pets;
-      });
-
-      if (apiPet != null) {
-        // 로컬 캐시도 동기화
-        await _petCache.upsertPet(
-          PetProfileCache(
-            id: apiPet.id,
-            name: apiPet.name,
-            species: apiPet.breed,
-            gender: apiPet.gender,
-            birthDate: apiPet.birthDate,
-          ),
-          setActive: true,
-        );
-        setState(() {
-          _activePetId = apiPet.id;
-          _petName = apiPet.name;
-        });
-      } else {
-        // API 실패 시 로컬 캐시 폴백
-        final cachedPet = await _petCache.getActivePet();
-        if (!mounted) return;
-        setState(() {
-          _activePetId = cachedPet?.id;
-          _petName = cachedPet?.name ?? _petName;
-        });
-      }
-
-      if (_activePetId != null) {
-        await Future.wait([_loadWeightData(), _loadScheduleData(), _loadDailyRecordData()]);
-        _maybeShowCoachMarks();
-      }
-    } catch (_) {
-      // API 실패 시 로컬 캐시 폴백
-      try {
-        final cachedPet = await _petCache.getActivePet();
-        if (!mounted) return;
-        setState(() {
-          _activePetId = cachedPet?.id;
-          _petName = cachedPet?.name ?? _petName;
-        });
-        if (_activePetId != null) {
-          await Future.wait([_loadWeightData(), _loadScheduleData(), _loadDailyRecordData()]);
-        }
-      } catch (_) {
-        // Handle error
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  /// 활성 펫 변경에 따른 로컬 상태 리로드 전용 메서드.
-  ///
-  /// 영속화(서버 `PUT /pets/{id}/activate` + provider 갱신)는
-  /// `ActivePetViewModel.switchPet()`이 담당한다. 이 메서드는 build()의
-  /// provider → 로컬 단방향 동기화 가드에서만 호출되며, 여기서 다시
-  /// 영속화하면 stale provider 값으로 서버 활성 펫을 원복시키는
-  /// 중복 발사가 되므로 절대 서버/캐시 쓰기를 하지 않는다.
-  Future<void> _onActivePetChanged(Pet pet) async {
-    if (pet.id == _activePetId) return;
-    setState(() {
-      _activePetId = pet.id;
-      _petName = pet.name;
-      _weightRecords = [];
-      _scheduleRecords = [];
-      _cachedMonthlyAverages = null;
-      _cachedWeeklyData = null;
-      _cachedWeeklyStart = null;
-    });
-    try {
-      await Future.wait([_loadWeightData(), _loadScheduleData(), _loadDailyRecordData()]);
-    } catch (_) {
-      // 개별 로드 함수 내부에서 에러 처리
-    }
-  }
-
-  Future<void> _loadScheduleData() async {
-    if (_activePetId == null) return;
-    try {
-      final schedules = await _scheduleService.fetchSchedulesByMonth(
-        petId: _activePetId!,
-        year: _selectedYear,
-        month: _selectedMonth,
-      );
-      if (mounted) {
-        setState(() {
-          _scheduleRecords = schedules;
-        });
-      }
-    } catch (_) {
-      // Handle error
-    }
-  }
-
-  Future<void> _loadDailyRecordData() async {
-    if (_activePetId == null) return;
-    try {
-      final records = await _dailyRecordService.getRecordsByMonth(
-        _activePetId!,
-        _selectedYear,
-        _selectedMonth,
-      );
-      if (mounted) {
-        setState(() {
-          _dailyRecords = records;
-        });
-      }
-    } catch (_) {
-      // Handle error
-    }
-  }
-
-  Future<void> _loadWeightData() async {
-    if (_activePetId == null) return;
-    try {
-      // 서버에서 전체 기록 로드 (로컬 캐시도 자동 업데이트됨)
-      final records = await _weightService.fetchAllRecords(petId: _activePetId);
-      if (mounted) {
-        setState(() {
-          _weightRecords = records;
-          _cachedMonthlyAverages = null;
-          _cachedWeeklyData = null;
-          _cachedWeeklyStart = null;
-        });
-      }
-    } catch (_) {
-      // 서버 실패 시 로컬 캐시 폴백
-      try {
-        final records = await _weightService.fetchLocalRecords(
-          petId: _activePetId,
-        );
-        if (mounted) {
-          setState(() {
-            _weightRecords = records;
-            _cachedMonthlyAverages = null;
-            _cachedWeeklyData = null;
-            _cachedWeeklyStart = null;
-          });
-        }
-      } catch (_) {}
-    }
   }
 
   Future<void> _maybeShowCoachMarks() async {
@@ -350,7 +169,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
 
   int get _totalRecordDays {
     final uniqueDays = <String>{};
-    for (final record in _weightRecords) {
+    for (final record in (_vm?.weightRecords ?? const <WeightRecord>[])) {
       uniqueDays.add(
         '${record.date.year}-${record.date.month}-${record.date.day}',
       );
@@ -360,16 +179,19 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final activePetAsync = ref.watch(activePetViewModelProvider);
-    final activePet = activePetAsync.valueOrNull;
-    // provider(SSOT) → 로컬 단방향 동기화: 활성 펫 변경 감지 시 로컬 상태 리로드
-    if (activePet != null && activePet.id != _activePetId) {
+    // 활성 펫 전환 시 자동 재로드는 VM(build가 activePetViewModelProvider watch)이 담당.
+    final vmAsync = ref.watch(weightDetailViewModelProvider);
+    final vm = vmAsync.valueOrNull;
+
+    // 초기 로드 완료(값 존재 + 활성 펫 확인) 후 코치마크 1회 노출.
+    if (vmAsync.hasValue && vm?.activePetId != null && !_coachMarkShown) {
+      _coachMarkShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _onActivePetChanged(activePet);
+        _maybeShowCoachMarks();
       });
     }
 
-    if (_isLoading) {
+    if (vmAsync.isLoading && !vmAsync.hasValue) {
       return Scaffold(
         backgroundColor: AppColors.white,
         appBar: _buildAppBar(),
@@ -377,7 +199,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       );
     }
 
-    if (_activePetId == null) {
+    if (vm?.activePetId == null) {
       final l10n = AppLocalizations.of(context);
       return Scaffold(
         backgroundColor: AppColors.white,
@@ -396,7 +218,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
               controller: _scrollController,
               child: Column(
                 children: [
-                  if (_petList.length > 1) ...[
+                  if ((vm?.petList ?? const <Pet>[]).length > 1) ...[
                     const SizedBox(height: 12),
                     _buildPetSelector(),
                   ],
@@ -473,7 +295,9 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
           ),
           Text(
             l10n.weightDetail_headerLine2(
-              _petName.isNotEmpty ? _petName : l10n.pet_defaultName,
+              (_vm?.petName ?? '').isNotEmpty
+                  ? _vm!.petName
+                  : l10n.pet_defaultName,
             ),
             textAlign: TextAlign.center,
             style: const TextStyle(
@@ -1102,13 +926,9 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
   }
 
   Map<DateTime, double> _calculateMonthlyAverages() {
-    // Return cached result if available
-    if (_cachedMonthlyAverages != null) {
-      return _cachedMonthlyAverages!;
-    }
-
+    // 캐시 없이 매 build 계산 (기록 수가 작아 O(n) 무해).
     final Map<DateTime, List<double>> monthlyData = {};
-    for (final record in _weightRecords) {
+    for (final record in (_vm?.weightRecords ?? const <WeightRecord>[])) {
       final monthKey = DateTime(record.date.year, record.date.month);
       monthlyData.putIfAbsent(monthKey, () => []);
       monthlyData[monthKey]!.add(record.weight);
@@ -1117,23 +937,15 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     monthlyData.forEach((month, weights) {
       averages[month] = weights.reduce((a, b) => a + b) / weights.length;
     });
-
-    // Cache the result
-    _cachedMonthlyAverages = averages;
     return averages;
   }
 
   Map<int, double> _calculateWeeklyData() {
     final startOfWeek = _startOfWeek(_focusedDate);
 
-    // Return cached result if available
-    if (_cachedWeeklyData != null && _cachedWeeklyStart == startOfWeek) {
-      return _cachedWeeklyData!;
-    }
-
     final Map<int, List<double>> weeklyData = {};
 
-    for (final record in _weightRecords) {
+    for (final record in (_vm?.weightRecords ?? const <WeightRecord>[])) {
       final daysDiff = _normalizeDate(
         record.date,
       ).difference(startOfWeek).inDays;
@@ -1151,9 +963,6 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       }
     }
 
-    // Cache the result
-    _cachedWeeklyData = averages;
-    _cachedWeeklyStart = startOfWeek;
     return averages;
   }
 
@@ -1198,7 +1007,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Text(
-        l10n.weightDetail_recordSummary(_petName, _totalRecordDays),
+        l10n.weightDetail_recordSummary(_vm?.petName ?? '', _totalRecordDays),
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
@@ -1383,7 +1192,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
   }
 
   bool _hasRecordOnDay(int day) {
-    return _weightRecords.any(
+    return (_vm?.weightRecords ?? const <WeightRecord>[]).any(
       (record) =>
           record.date.day == day &&
           record.date.month == _selectedMonth &&
@@ -1471,14 +1280,13 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     final result = await showAddScheduleBottomSheet(
       context: context,
       initialDate: selectedDate,
-      petId: _activePetId,
+      petId: _vm?.activePetId,
     );
     if (result != null) {
       try {
-        // 서버에 저장
-        await _scheduleService.createSchedule(result);
-        // 목록 새로고침
-        await _loadScheduleData();
+        await ref
+            .read(weightDetailViewModelProvider.notifier)
+            .createSchedule(result, year: _selectedYear, month: _selectedMonth);
       } catch (e) {
         if (mounted) {
           final l10n = AppLocalizations.of(context);
@@ -1493,12 +1301,14 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
     final result = await showAddDailyRecordBottomSheet(
       context: context,
       initialDate: selectedDate,
-      petId: _activePetId,
+      petId: _vm?.activePetId,
     );
     if (result != null) {
       try {
-        await _dailyRecordService.saveDailyRecord(result);
-        await _loadDailyRecordData();
+        await ref
+            .read(weightDetailViewModelProvider.notifier)
+            .saveDailyRecord(result,
+                year: _selectedYear, month: _selectedMonth);
         if (mounted) {
           final l10n = AppLocalizations.of(context);
           AppSnackBar.success(context, message: l10n.dailyRecord_saved);
@@ -1607,7 +1417,8 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
   Widget _buildDailyRecordList() {
     final l10n = AppLocalizations.of(context);
     // Filter daily records for the selected date
-    final dayRecords = _dailyRecords.where((record) {
+    final dayRecords = (_vm?.dailyRecords ?? const <DailyRecord>[])
+        .where((record) {
       return record.recordedDate.year == _selectedYear &&
           record.recordedDate.month == _selectedMonth &&
           record.recordedDate.day == _selectedDay;
@@ -1723,16 +1534,14 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       ),
       onDismissed: (_) async {
         try {
-          await _dailyRecordService.deleteDailyRecordByDate(
-            _activePetId!,
-            record.recordedDate,
-          );
-          await _loadDailyRecordData();
+          await ref
+              .read(weightDetailViewModelProvider.notifier)
+              .deleteDailyRecordByDate(record.recordedDate,
+                  year: _selectedYear, month: _selectedMonth);
           if (mounted) {
             AppSnackBar.success(context, message: l10n.dailyRecord_deleted);
           }
         } catch (e) {
-          await _loadDailyRecordData();
           if (mounted) {
             AppSnackBar.error(context, message: l10n.dailyRecord_deleteError);
           }
@@ -1844,7 +1653,8 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
   Widget _buildScheduleList() {
     final l10n = AppLocalizations.of(context);
     // Filter schedules for the selected date
-    final daySchedules = _scheduleRecords.where((record) {
+    final daySchedules = (_vm?.scheduleRecords ?? const <ScheduleRecord>[])
+        .where((record) {
       return record.startTime.year == _selectedYear &&
           record.startTime.month == _selectedMonth &&
           record.startTime.day == _selectedDay;
@@ -1999,21 +1809,17 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
 
   Future<void> _deleteSchedule(ScheduleRecord schedule) async {
     final l10n = AppLocalizations.of(context);
-    setState(() {
-      _scheduleRecords.removeWhere((r) => r.id == schedule.id);
-    });
-
+    // 낙관적 제거 + 실패 시 롤백(loadForMonth)은 VM이 담당.
     try {
-      await _scheduleService.deleteSchedule(schedule.id, petId: schedule.petId);
+      await ref
+          .read(weightDetailViewModelProvider.notifier)
+          .deleteSchedule(schedule, year: _selectedYear, month: _selectedMonth);
       if (mounted) {
         AppSnackBar.success(context, message: l10n.schedule_deleted);
       }
     } catch (e) {
       if (mounted) {
-        await _loadScheduleData();
-        if (mounted) {
-          AppSnackBar.error(context, message: l10n.schedule_deleteError);
-        }
+        AppSnackBar.error(context, message: l10n.schedule_deleteError);
       }
     }
   }
@@ -2118,16 +1924,18 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
   }
 
   Widget _buildPetSelector() {
+    final petList = _vm?.petList ?? const <Pet>[];
+    final activePetId = _vm?.activePetId;
     return SizedBox(
       height: 40,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 32),
-        itemCount: _petList.length,
+        itemCount: petList.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final pet = _petList[index];
-          final isSelected = pet.id == _activePetId;
+          final pet = petList[index];
+          final isSelected = pet.id == activePetId;
           return Semantics(
             button: true,
             label: 'Select pet ${pet.name}',
@@ -2179,7 +1987,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
   Widget _buildWeightRecordsList() {
     final l10n = AppLocalizations.of(context);
     final monthRecords =
-        _weightRecords
+        (_vm?.weightRecords ?? const <WeightRecord>[])
             .where(
               (record) =>
                   record.date.year == _selectedYear &&
