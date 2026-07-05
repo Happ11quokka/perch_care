@@ -30,9 +30,17 @@ class _DailyRecordFake extends Fake implements DailyRecord {}
 
 class _FakeActivePetVM extends ActivePetViewModel {
   _FakeActivePetVM(this._pet);
-  final Pet? _pet;
+  Pet? _pet;
   @override
   Future<Pet?> build() => SynchronousFuture(_pet);
+
+  /// 테스트 전용 — 펫 전환 시뮬레이션. state를 직접 갱신해
+  /// activePetViewModelProvider를 watch하는 WeightDetailViewModel의
+  /// build()를 (같은 인스턴스 위에서) 재실행시킨다.
+  void simulateSwitchTo(Pet? pet) {
+    _pet = pet;
+    state = AsyncData(pet);
+  }
 }
 
 Pet _pet(String id) => Pet(
@@ -321,5 +329,59 @@ void main() {
         year: any(named: 'year'),
         month: any(named: 'month'))).called(2);
     verify(() => daily.getByMonth('p1', any(), any())).called(2);
+  });
+
+  test(
+      'build after a simulated pet switch reuses the focused month recorded '
+      'by loadForMonth, not DateTime.now()', () async {
+    final container = _container(
+        weight: weight, schedule: schedule, daily: daily, pet: pet,
+        activePet: _pet('p1'));
+    await container.read(weightDetailViewModelProvider.future);
+    final vm = container.read(weightDetailViewModelProvider.notifier);
+
+    // View is focused on a past month (2026-05) before the pet switch.
+    await vm.loadForMonth(2026, 5);
+
+    // Record which month subsequent fetches request, to prove the rebuild
+    // below targets the recorded focused month (5) rather than
+    // DateTime.now()'s month.
+    final scheduleMonths = <int>[];
+    when(() => schedule.fetchByMonth(
+        petId: any(named: 'petId'),
+        year: any(named: 'year'),
+        month: any(named: 'month'))).thenAnswer((invocation) async {
+      scheduleMonths.add(invocation.namedArguments[#month] as int);
+      return [_schedule()];
+    });
+    final dailyMonths = <int>[];
+    when(() => daily.getByMonth(any(), any(), any()))
+        .thenAnswer((invocation) async {
+      dailyMonths.add(invocation.positionalArguments[2] as int);
+      return [_daily()];
+    });
+
+    // Simulate a pet switch by updating the watched activePetViewModelProvider's
+    // state directly. WeightDetailViewModel watches this provider, so its
+    // build() re-runs on the SAME notifier instance (Riverpod does not
+    // recreate a notifier just because a provider it watches changed) —
+    // this is exactly the scenario the bug fix relies on: instance fields
+    // (_focusedYear/_focusedMonth) survive the rebuild.
+    final activePetNotifier =
+        container.read(activePetViewModelProvider.notifier)
+            as _FakeActivePetVM;
+    activePetNotifier.simulateSwitchTo(_pet('p2'));
+
+    final state = await container.read(weightDetailViewModelProvider.future);
+
+    expect(state.activePetId, 'p2');
+    expect(scheduleMonths, isNotEmpty);
+    expect(scheduleMonths.every((m) => m == 5), isTrue,
+        reason: 'schedule reload after pet switch must target the focused '
+            'month (5), not DateTime.now().month');
+    expect(dailyMonths, isNotEmpty);
+    expect(dailyMonths.every((m) => m == 5), isTrue,
+        reason: 'daily reload after pet switch must target the focused '
+            'month (5), not DateTime.now().month');
   });
 }

@@ -14,6 +14,12 @@ import 'weight_detail_state.dart';
 /// (기존 화면의 provider→로컬 단방향 동기화 가드를 이 watch가 대체한다.)
 /// 선택 월은 View 소유이므로 월 스코프 메서드는 year/month를 인자로 받는다.
 class WeightDetailViewModel extends AsyncNotifier<WeightDetailState> {
+  // build()가 재실행(펫 전환 등)되어도 AsyncNotifier 인스턴스는 유지되므로,
+  // 마지막으로 loadForMonth()가 기록한 포커스 월을 인스턴스 필드로 기억해
+  // build() 재조회 시 now()가 아닌 "View가 보고 있던 월"을 다시 로드한다.
+  int? _focusedYear;
+  int? _focusedMonth;
+
   @override
   Future<WeightDetailState> build() async {
     final activePet = ref.watch(activePetViewModelProvider).valueOrNull;
@@ -38,10 +44,12 @@ class WeightDetailViewModel extends AsyncNotifier<WeightDetailState> {
     }
 
     final now = DateTime.now();
+    final year = _focusedYear ?? now.year;
+    final month = _focusedMonth ?? now.month;
     final results = await Future.wait([
       _loadWeight(pet.id),
-      _loadSchedules(pet.id, now.year, now.month),
-      _loadDailies(pet.id, now.year, now.month),
+      _loadSchedules(pet.id, year, month),
+      _loadDailies(pet.id, year, month),
     ]);
 
     return WeightDetailState(
@@ -92,6 +100,8 @@ class WeightDetailViewModel extends AsyncNotifier<WeightDetailState> {
 
   /// 월 변경 시 schedule+daily만 재조회(weight는 전체이므로 불변).
   Future<void> loadForMonth(int year, int month) async {
+    _focusedYear = year;
+    _focusedMonth = month;
     final petId = _petId;
     final current = state.valueOrNull;
     if (petId == null || current == null) return;
