@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
-import '../../providers/premium_provider.dart';
 import '../../theme/colors.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/dashed_border.dart';
@@ -31,30 +30,6 @@ class _HealthCheckCaptureScreenState
   BodyPart _selectedPart = BodyPart.eye;
   bool _isPickingImage = false;
   final _notesController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _checkPremium();
-  }
-
-  Future<void> _checkPremium() async {
-    try {
-      final status = await ref.read(premiumStatusProvider.future);
-      // Phase 2: quota 기반 접근 체크 (trial remaining > 0이면 허용)
-      final hasAccess = status.isPremium ||
-          (status.quota?.vision.remaining ?? 0) > 0;
-      if (mounted && !hasAccess) {
-        context.goNamed(RouteNames.healthCheck);
-      }
-    } catch (e) {
-      // 쿼터 조회 실패 시 화면을 유지하고 서버 API의 403 응답에 위임
-      // (네트워크 오류 등 일시적 장애로 유저를 차단하지 않기 위함)
-      if (kDebugMode) {
-        debugPrint('[HealthCheckCapture] premium check failed: $e');
-      }
-    }
-  }
 
   @override
   void dispose() {
