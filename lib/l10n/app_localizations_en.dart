@@ -1417,13 +1417,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Select Full Body for overall health, Part-Specific for targeted areas, or Droppings/Food for diet analysis.';
 
   @override
-  String get coach_hcTrial_title => 'Free Trials Available';
-
-  @override
-  String get coach_hcTrial_body =>
-      'You have free health check trials! Premium unlocks unlimited checks.';
-
-  @override
   String get coach_hcHistoryVet_title => 'Vet Summary';
 
   @override
@@ -1480,13 +1473,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'See how weight (60pts), food (25pts), and water (15pts) contribute to the total score.';
 
   @override
-  String get coach_profilePremium_title => 'Upgrade to Premium';
-
-  @override
-  String get coach_profilePremium_body =>
-      'Unlock unlimited AI health checks, export reports, and advanced insights!';
-
-  @override
   String get coach_profileAddPet_title => 'Add Another Pet';
 
   @override
@@ -1499,20 +1485,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get coach_profilePetCard_body =>
       'Tap any pet card to switch. The active pet\'s data will be shown throughout the app.';
-
-  @override
-  String get coach_premiumPlan_title => 'Choose Your Plan';
-
-  @override
-  String get coach_premiumPlan_body =>
-      'Monthly offers flexibility, Yearly gives you 2 months free. Both unlock all features!';
-
-  @override
-  String get coach_premiumPromo_title => 'Have a Promo Code?';
-
-  @override
-  String get coach_premiumPromo_body =>
-      'Got a code from a partner or event? Tap here to redeem special offers.';
 
   @override
   String get coach_petDetailImage_title => 'Add Pet Photo';
@@ -1740,30 +1712,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Currently only iOS is supported. Android and HarmonyOS versions are in development and will be released in the future.';
 
   @override
-  String get faq_categoryPremium => 'Premium';
-
-  @override
-  String get faq_q14 => 'What is Premium?';
-
-  @override
-  String get faq_a14 =>
-      'Premium provides advanced features including unlimited AI Vision Health Check and image-based detailed analysis.';
-
-  @override
-  String get faq_q15 => 'How do I use a Premium code?';
-
-  @override
-  String get faq_a15 =>
-      'Go to Profile > Premium and enter your code in the format PERCH-XXXX-XXXX to activate immediately.';
-
-  @override
-  String get faq_q16 => 'What happens to my data when Premium expires?';
-
-  @override
-  String get faq_a16 =>
-      'Your health check text results are retained after expiration. However, health check images are automatically deleted from the server 90 days after expiration.';
-
-  @override
   String get faq_q17 => 'How do I use AI Vision Health Check?';
 
   @override
@@ -1804,85 +1752,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get faq_a22 =>
       'Standard weight ranges for your breed are displayed on the weight chart. Set your pet\'s breed in the pet profile.';
-
-  @override
-  String get premium_sectionTitle => 'Premium';
-
-  @override
-  String get premium_title => 'Enter Premium Code';
-
-  @override
-  String get premium_badgeFree => 'Free';
-
-  @override
-  String get premium_badgePremium => 'Premium';
-
-  @override
-  String premium_expiresAt(String date) {
-    return 'Until $date';
-  }
-
-  @override
-  String get premium_enterCode => 'Enter your premium code';
-
-  @override
-  String get premium_benefitsTitle => 'Premium Benefits';
-
-  @override
-  String get premium_benefit1 => 'Unlimited AI vision health checks';
-
-  @override
-  String get premium_benefit2 => 'Image-based health analysis';
-
-  @override
-  String get premium_benefit3 => 'Early health abnormality detection';
-
-  @override
-  String get premium_codeInputTitle => 'Premium Code';
-
-  @override
-  String get premium_codeInputHint => 'PERCH-XXXX-XXXX';
-
-  @override
-  String get premium_activateButton => 'Activate Code';
-
-  @override
-  String get premium_invalidCodeFormat =>
-      'Invalid code format. (PERCH-XXXX-XXXX)';
-
-  @override
-  String get premium_activationFailed =>
-      'Code activation failed. Please check your code.';
-
-  @override
-  String get premium_activationError =>
-      'An error occurred during activation. Please try again.';
-
-  @override
-  String get premium_rateLimitExceeded =>
-      'Too many requests. Please try again later.';
-
-  @override
-  String get premium_activationSuccessTitle => 'Premium Activated!';
-
-  @override
-  String premium_activationSuccessContent(String date) {
-    return 'Premium service is available until $date.';
-  }
-
-  @override
-  String get premium_activationSuccessContentNoDate =>
-      'Premium service has been activated.';
-
-  @override
-  String get premium_upgradeToPremium => 'Upgrade to Premium';
-
-  @override
-  String get premium_healthCheckBlocked =>
-      'You\'ve reached this month\'s usage limit.\nPlease try again next month.';
-
-  @override
-  String get premium_healthCheckBlockedTitle => 'Monthly Limit Reached';
 
   @override
   String get hc_title => 'AI Health Check';
@@ -2260,168 +2129,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hc_dateEarlier => 'Earlier';
 
   @override
-  String get premium_featureLockedTitle => 'Premium Feature';
-
-  @override
-  String get premium_featureLockedMessage =>
-      'AI Vision Health Check is a premium-only feature.\n\nVision AI models are costly to run, and we appreciate your understanding.\nActivate a premium code for unlimited access.';
-
-  @override
-  String get premium_activateNow => 'Activate Premium';
-
-  @override
-  String get premium_maybeLater => 'Maybe Later';
-
-  @override
-  String get chatbot_premiumBanner =>
-      'Get more detailed and accurate answers with Premium';
-
-  @override
-  String get chatbot_premiumUpgrade => 'Upgrade';
-
-  @override
-  String get paywall_title => 'Premium';
-
-  @override
-  String get paywall_headline =>
-      'Get a more accurate picture of\nyour bird\'s health';
-
-  @override
-  String get paywall_benefit1 => 'Unlimited AI Vision health checks';
-
-  @override
-  String get paywall_benefit2 => 'Record-based personalized AI insights';
-
-  @override
-  String get paywall_benefit3 => 'Early detection of health anomalies';
-
-  @override
-  String get paywall_planMonthly => 'Monthly';
-
-  @override
-  String get paywall_planYearly => 'Yearly';
-
-  @override
-  String get paywall_yearlyDiscount => 'Best value';
-
-  @override
-  String paywall_yearlyPerMonth(String price) {
-    return '$price/mo';
-  }
-
-  @override
-  String get paywall_ctaButton => 'Start Premium';
-
-  @override
-  String get paywall_restore => 'Restore Purchases';
-
-  @override
-  String get paywall_promoCode => 'Enter promo code';
-
-  @override
-  String get paywall_purchaseSuccessTitle => 'Premium Activated!';
-
-  @override
-  String get paywall_purchaseSuccessContent =>
-      'You now have access to all premium features.';
-
-  @override
-  String get paywall_purchaseFailed => 'Purchase failed. Please try again.';
-
-  @override
-  String get paywall_restoreSuccess => 'Purchases restored successfully.';
-
-  @override
-  String get paywall_restoreNoSubscription => 'No subscription to restore.';
-
-  @override
-  String get paywall_restoreFailed => 'Failed to restore purchases.';
-
-  @override
-  String get paywall_loading => 'Processing...';
-
-  @override
-  String get paywall_storeUnavailable => 'Store is not available.';
-
-  @override
-  String get paywall_productsNotFound => 'Unable to load product information.';
-
-  @override
-  String get paywall_alreadyPremium => 'You are already a Premium user.';
-
-  @override
-  String paywall_alreadyPremiumExpires(String date) {
-    return 'Available until $date';
-  }
-
-  @override
-  String quotaBadge_normal(int count) {
-    return '$count left this month';
-  }
-
-  @override
-  String get quotaBadge_exhausted => 'Monthly limit reached';
-
-  @override
-  String get quotaBadge_upgrade => 'Upgrade';
-
-  @override
-  String get aiEncyclopedia_quotaExhausted =>
-      'You\'ve used all free queries for this month. Upgrade to Premium for unlimited access.';
-
-  @override
-  String get aiEncyclopedia_quotaExhaustedHint =>
-      'Monthly limit reached · Upgrade to Premium';
-
-  @override
-  String get healthCheck_freeTrialBadge => 'Free trial';
-
-  @override
-  String get healthCheck_trialExhaustedTitle => 'Free trial completed';
-
-  @override
-  String get healthCheck_trialExhaustedMessage =>
-      'You\'ve already used your free trial.\n\nSubscribe to Premium for unlimited AI Vision health checks.';
-
-  @override
-  String get healthCheck_trialExhaustedMessage_v2 =>
-      'You\'re on a free trial and have used all your trial sessions.\n\nEnter a promo code or contact us via SNS for more access.';
-
-  @override
-  String get healthCheck_trialExhaustedAction_promo => 'Enter promo code';
-
-  @override
-  String visionQuotaBadge_normal(int count) {
-    return '$count left';
-  }
-
-  @override
-  String get visionQuotaBadge_exhausted => 'Monthly limit reached';
-
-  @override
-  String get visionQuotaBadge_upgrade => 'Enter code';
-
-  @override
-  String get paywall_freeTrialBanner =>
-      'AI Vision Check and AI Chatbot\nare currently free to try';
-
-  @override
-  String get paywall_freeTrialSubtext =>
-      'Enter a promo code to unlock additional benefits';
-
-  @override
-  String get paywall_snsEventTitle => 'SNS Event';
-
-  @override
-  String get paywall_snsEventDescription =>
-      'Follow us and send a DM to get your promo code!';
-
-  @override
-  String sns_copied(String label) {
-    return '$label copied';
-  }
-
-  @override
   String get report_shareFailed => 'Failed to create share link.';
 
   @override
@@ -2465,9 +2172,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home_healthSummaryWaterConsistency => 'Water Consistency';
 
   @override
-  String get home_healthSummaryUpgrade => 'Upgrade to Premium';
-
-  @override
   String get home_insightsTitle => 'Weekly Insights';
 
   @override
@@ -2475,10 +2179,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get home_insightsRecommendations => 'Recommendations';
-
-  @override
-  String get home_insightsUpgrade =>
-      'Upgrade to Premium to receive\nweekly health insights';
 
   @override
   String get dailyRecord_title => 'Daily Record';

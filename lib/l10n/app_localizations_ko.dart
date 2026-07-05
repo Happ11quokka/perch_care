@@ -1368,13 +1368,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '전체 건강은 Full Body, 특정 부위는 Part-Specific, 배설물/사료는 해당 모드를 선택하세요.';
 
   @override
-  String get coach_hcTrial_title => '무료 체험 가능';
-
-  @override
-  String get coach_hcTrial_body =>
-      '무료 건강 체크 횟수가 남아있어요! 프리미엄은 무제한으로 사용할 수 있습니다.';
-
-  @override
   String get coach_hcHistoryVet_title => '수의사 리포트';
 
   @override
@@ -1428,13 +1421,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '체중(60점), 사료(25점), 수분(15점)이 총점에 어떻게 기여하는지 확인하세요.';
 
   @override
-  String get coach_profilePremium_title => '프리미엄 업그레이드';
-
-  @override
-  String get coach_profilePremium_body =>
-      '무제한 AI 건강 체크, 리포트 내보내기, 고급 인사이트를 잠금 해제하세요!';
-
-  @override
   String get coach_profileAddPet_title => '반려동물 추가';
 
   @override
@@ -1447,20 +1433,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get coach_profilePetCard_body =>
       '펫 카드를 탭해 전환하세요. 활성 펫의 데이터가 앱 전체에 표시됩니다.';
-
-  @override
-  String get coach_premiumPlan_title => '플랜 선택';
-
-  @override
-  String get coach_premiumPlan_body =>
-      '월간은 유연성을, 연간은 2개월 무료 혜택을 드려요. 둘 다 모든 기능을 잠금 해제합니다!';
-
-  @override
-  String get coach_premiumPromo_title => '프로모 코드가 있으신가요?';
-
-  @override
-  String get coach_premiumPromo_body =>
-      '파트너사나 이벤트 코드가 있으세요? 여기를 탭해 특별 혜택을 받으세요.';
 
   @override
   String get coach_petDetailImage_title => '펫 사진 추가';
@@ -1683,30 +1655,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '현재는 iOS만 지원하고 있습니다. Android 및 HarmonyOS 버전은 개발 중이며, 추후 출시 예정입니다.';
 
   @override
-  String get faq_categoryPremium => '프리미엄';
-
-  @override
-  String get faq_q14 => '프리미엄 서비스는 무엇인가요?';
-
-  @override
-  String get faq_a14 =>
-      '프리미엄 서비스는 AI 비전 건강체크 무제한 이용, 이미지 기반 정밀 분석 등의 고급 기능을 제공합니다.';
-
-  @override
-  String get faq_q15 => '프리미엄 코드는 어떻게 사용하나요?';
-
-  @override
-  String get faq_a15 =>
-      '프로필 화면의 \'프리미엄\' 메뉴에서 PERCH-XXXX-XXXX 형식의 코드를 입력하면 즉시 활성화됩니다.';
-
-  @override
-  String get faq_q16 => '프리미엄 만료 시 데이터는 어떻게 되나요?';
-
-  @override
-  String get faq_a16 =>
-      '프리미엄 만료 후에도 기존 건강체크 텍스트 결과는 유지됩니다. 단, 건강체크 이미지는 만료 후 90일 경과 시 서버에서 자동 삭제됩니다.';
-
-  @override
   String get faq_q17 => 'AI 비전 건강체크는 어떻게 사용하나요?';
 
   @override
@@ -1746,80 +1694,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get faq_a22 =>
       '체중 기록 화면에서 품종별 표준 체중 범위가 차트에 표시됩니다. 반려동물 프로필에서 품종을 설정하세요.';
-
-  @override
-  String get premium_sectionTitle => '프리미엄';
-
-  @override
-  String get premium_title => '프리미엄 코드 입력';
-
-  @override
-  String get premium_badgeFree => 'Free';
-
-  @override
-  String get premium_badgePremium => 'Premium';
-
-  @override
-  String premium_expiresAt(String date) {
-    return '$date까지';
-  }
-
-  @override
-  String get premium_enterCode => '프리미엄 코드를 입력해 보세요';
-
-  @override
-  String get premium_benefitsTitle => '프리미엄 혜택';
-
-  @override
-  String get premium_benefit1 => 'AI 비전 건강 체크 무제한 이용';
-
-  @override
-  String get premium_benefit2 => '이미지 기반 건강 상태 정밀 분석';
-
-  @override
-  String get premium_benefit3 => '조기 건강 이상 징후 감지';
-
-  @override
-  String get premium_codeInputTitle => '프리미엄 코드';
-
-  @override
-  String get premium_codeInputHint => 'PERCH-XXXX-XXXX';
-
-  @override
-  String get premium_activateButton => '코드 활성화';
-
-  @override
-  String get premium_invalidCodeFormat => '올바른 코드 형식이 아닙니다. (PERCH-XXXX-XXXX)';
-
-  @override
-  String get premium_activationFailed => '코드 활성화에 실패했습니다. 코드를 다시 확인해주세요.';
-
-  @override
-  String get premium_activationError => '코드 활성화 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-
-  @override
-  String get premium_rateLimitExceeded => '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
-
-  @override
-  String get premium_activationSuccessTitle => '프리미엄 활성화 완료!';
-
-  @override
-  String premium_activationSuccessContent(String date) {
-    return '$date까지 프리미엄 서비스를 이용할 수 있습니다.';
-  }
-
-  @override
-  String get premium_activationSuccessContentNoDate => '프리미엄 서비스가 활성화되었습니다.';
-
-  @override
-  String get premium_upgradeToPremium => '프리미엄 업그레이드';
-
-  @override
-  String get premium_healthCheckBlocked =>
-      '이번 달 사용 한도에 도달했어요.\n다음 달에 다시 이용해 주세요.';
-
-  @override
-  String get premium_healthCheckBlockedTitle => '월간 한도 도달';
 
   @override
   String get hc_title => 'AI 건강체크';
@@ -2187,161 +2061,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get hc_dateEarlier => '이전';
 
   @override
-  String get premium_featureLockedTitle => '프리미엄 전용 기능';
-
-  @override
-  String get premium_featureLockedMessage =>
-      'AI 비전 건강체크는 프리미엄 전용 기능입니다.\n\n비전 AI 모델 비용이 높아 무료로 제공하기 어려운 점 양해 부탁드립니다.\n프리미엄 코드를 활성화하면 무제한으로 이용하실 수 있습니다.';
-
-  @override
-  String get premium_activateNow => '프리미엄 활성화';
-
-  @override
-  String get premium_maybeLater => '나중에';
-
-  @override
-  String get chatbot_premiumBanner => '프리미엄 버전으로 더 상세하고 정확한 답변을 받을 수 있어요';
-
-  @override
-  String get chatbot_premiumUpgrade => '업그레이드';
-
-  @override
-  String get paywall_title => 'Premium';
-
-  @override
-  String get paywall_headline => '사진과 기록으로 더 정확하게\n건강 상태를 파악하세요';
-
-  @override
-  String get paywall_benefit1 => '무제한 AI Vision 건강체크';
-
-  @override
-  String get paywall_benefit2 => '기록 기반 맞춤형 AI 해석';
-
-  @override
-  String get paywall_benefit3 => '이상 징후 조기 발견 분석';
-
-  @override
-  String get paywall_planMonthly => '월간';
-
-  @override
-  String get paywall_planYearly => '연간';
-
-  @override
-  String get paywall_yearlyDiscount => '연간 플랜 추천';
-
-  @override
-  String paywall_yearlyPerMonth(String price) {
-    return '월 $price';
-  }
-
-  @override
-  String get paywall_ctaButton => 'Premium 시작하기';
-
-  @override
-  String get paywall_restore => '구매 복원';
-
-  @override
-  String get paywall_promoCode => '프로모션 코드 입력';
-
-  @override
-  String get paywall_purchaseSuccessTitle => 'Premium 활성화 완료!';
-
-  @override
-  String get paywall_purchaseSuccessContent => '이제 모든 프리미엄 기능을 이용할 수 있습니다.';
-
-  @override
-  String get paywall_purchaseFailed => '구매 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
-
-  @override
-  String get paywall_restoreSuccess => '구매가 복원되었습니다.';
-
-  @override
-  String get paywall_restoreNoSubscription => '복원할 구독이 없습니다.';
-
-  @override
-  String get paywall_restoreFailed => '구매 복원에 실패했습니다.';
-
-  @override
-  String get paywall_loading => '처리 중...';
-
-  @override
-  String get paywall_storeUnavailable => '스토어를 사용할 수 없습니다.';
-
-  @override
-  String get paywall_productsNotFound => '상품 정보를 불러올 수 없습니다.';
-
-  @override
-  String get paywall_alreadyPremium => '이미 Premium 사용자입니다.';
-
-  @override
-  String paywall_alreadyPremiumExpires(String date) {
-    return '$date까지 이용 가능';
-  }
-
-  @override
-  String quotaBadge_normal(int count) {
-    return '이번 달 $count회 남음';
-  }
-
-  @override
-  String get quotaBadge_exhausted => '월간 한도 도달';
-
-  @override
-  String get quotaBadge_upgrade => '업그레이드';
-
-  @override
-  String get aiEncyclopedia_quotaExhausted =>
-      '이번 달 무료 사용 횟수를 모두 사용했어요. 프리미엄으로 업그레이드하면 무제한으로 이용할 수 있어요.';
-
-  @override
-  String get aiEncyclopedia_quotaExhaustedHint => '월간 한도 도달 · 프리미엄으로 업그레이드하세요';
-
-  @override
-  String get healthCheck_freeTrialBadge => '무료 체험';
-
-  @override
-  String get healthCheck_trialExhaustedTitle => '무료 체험 완료';
-
-  @override
-  String get healthCheck_trialExhaustedMessage =>
-      '무료 체험을 이미 사용하셨어요.\n\n프리미엄을 구독하시면 AI 비전 건강체크를 무제한으로 이용할 수 있습니다.';
-
-  @override
-  String get healthCheck_trialExhaustedMessage_v2 =>
-      '현재 무료 체험 중이며, 체험 횟수를 모두 사용하셨어요.\n\n프로모션 코드를 입력하거나 SNS로 연락하시면 추가 이용이 가능합니다.';
-
-  @override
-  String get healthCheck_trialExhaustedAction_promo => '프로모션 코드 입력';
-
-  @override
-  String visionQuotaBadge_normal(int count) {
-    return '$count회 남음';
-  }
-
-  @override
-  String get visionQuotaBadge_exhausted => '월간 한도 도달';
-
-  @override
-  String get visionQuotaBadge_upgrade => '코드 입력';
-
-  @override
-  String get paywall_freeTrialBanner => '현재 AI 비전 체크와 AI 챗봇은\n무료 체험 중입니다';
-
-  @override
-  String get paywall_freeTrialSubtext => '프로모션 코드를 입력하면 더 많은 혜택을 받을 수 있습니다';
-
-  @override
-  String get paywall_snsEventTitle => 'SNS 이벤트';
-
-  @override
-  String get paywall_snsEventDescription => '팔로우 / 친구추가 후 DM으로 프로모션 코드를 받으세요!';
-
-  @override
-  String sns_copied(String label) {
-    return '$label 복사됨';
-  }
-
-  @override
   String get report_shareFailed => '공유 링크 생성에 실패했습니다.';
 
   @override
@@ -2385,9 +2104,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get home_healthSummaryWaterConsistency => '음수 일관성';
 
   @override
-  String get home_healthSummaryUpgrade => 'Premium 업그레이드';
-
-  @override
   String get home_insightsTitle => '이번 주 인사이트';
 
   @override
@@ -2395,9 +2111,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get home_insightsRecommendations => '추천 사항';
-
-  @override
-  String get home_insightsUpgrade => 'Premium으로 업그레이드하면\n주간 인사이트를 받을 수 있어요';
 
   @override
   String get dailyRecord_title => '일일 기록';

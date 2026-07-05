@@ -658,8 +658,6 @@
   "coach_hcHistory_body": "在这里查看所有过去的健康检查。追踪随时间变化的模式。",
   "coach_hcModes_title": "选择检查类型",
   "coach_hcModes_body": "选择全身检查、部位检查、排泄物分析或食物分析。",
-  "coach_hcTrial_title": "免费试用可用",
-  "coach_hcTrial_body": "您有免费健康检查次数！高级版可无限使用。",
 
   "coach_hcHistoryVet_title": "兽医报告",
   "coach_hcHistoryVet_body": "获取为兽医准备的综合报告。高级版功能。",
@@ -680,17 +678,10 @@
   "coach_bhiBreakdown_title": "分数构成",
   "coach_bhiBreakdown_body": "查看体重(60分)、食物(25分)和饮水(15分)如何贡献总分。",
 
-  "coach_profilePremium_title": "升级高级版",
-  "coach_profilePremium_body": "解锁无限AI健康检查、导出报告和高级洞察！",
   "coach_profileAddPet_title": "添加宠物",
   "coach_profileAddPet_body": "养多只鸟？在这里添加并轻松切换个人资料。",
   "coach_profilePetCard_title": "选择活跃宠物",
   "coach_profilePetCard_body": "点击任何宠物卡片切换。活跃宠物的数据将在整个应用中显示。",
-
-  "coach_premiumPlan_title": "选择您的方案",
-  "coach_premiumPlan_body": "月度灵活，年度赠送2个月。两种方案都解锁所有功能！",
-  "coach_premiumPromo_title": "有促销码吗？",
-  "coach_premiumPromo_body": "有合作伙伴或活动的优惠码？点击这里兑换特别优惠。",
 
   "coach_petDetailImage_title": "添加宠物照片",
   "coach_petDetailImage_body": "点击上传您的鸟的照片。有助于一目了然地识别！",
@@ -788,13 +779,6 @@
   "faq_a12": "目前支持鹦鹉类（虎皮鹦鹉、玄凤鹦鹉等），其他鸟类将在未来支持。",
   "faq_q13": "支持 Android 或 HarmonyOS 吗？",
   "faq_a13": "目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。",
-  "faq_categoryPremium": "高级版",
-  "faq_q14": "什么是高级版服务？",
-  "faq_a14": "高级版提供 AI 视觉健康检查无限使用、基于图像的精密分析等高级功能。",
-  "faq_q15": "如何使用高级版代码？",
-  "faq_a15": "在个人资料页面的\u201c高级版\u201d菜单中输入 PERCH-XXXX-XXXX 格式的代码即可立即激活。",
-  "faq_q16": "高级版到期后数据会怎样？",
-  "faq_a16": "高级版到期后，健康检查的文字结果会保留。但健康检查图片将在到期 90 天后从服务器自动删除。",
   "faq_q17": "如何使用 AI 视觉健康检查？",
   "faq_a17": "点击主页的\u201cAI 健康检查\u201d按钮，选择分析类型（全身外观/部位/粪便/食物），然后拍照或从相册选择。",
   "faq_q18": "可以分析哪些部位？",
@@ -807,40 +791,6 @@
   "faq_a21": "是的，聊天记录安全地存储在服务器上。注销后重新登录也可以查看之前的对话。",
   "faq_q22": "在哪里可以查看品种标准体重？",
   "faq_a22": "体重记录页面的图表中会显示品种标准体重范围。请在宠物档案中设置品种。",
-
-  "premium_sectionTitle": "高级版",
-  "premium_title": "输入高级版代码",
-  "premium_badgeFree": "Free",
-  "premium_badgePremium": "Premium",
-  "premium_expiresAt": "有效期至 {date}",
-  "@premium_expiresAt": {
-    "placeholders": {
-      "date": {"type": "String"}
-    }
-  },
-  "premium_enterCode": "请输入高级版代码",
-  "premium_benefitsTitle": "高级版权益",
-  "premium_benefit1": "无限使用AI视觉健康检查",
-  "premium_benefit2": "基于图像的健康状态精密分析",
-  "premium_benefit3": "及早发现健康异常征兆",
-  "premium_codeInputTitle": "高级版代码",
-  "premium_codeInputHint": "PERCH-XXXX-XXXX",
-  "premium_activateButton": "激活代码",
-  "premium_invalidCodeFormat": "代码格式不正确。(PERCH-XXXX-XXXX)",
-  "premium_activationFailed": "代码激活失败，请检查代码。",
-  "premium_activationError": "激活过程中出错，请稍后重试。",
-  "premium_rateLimitExceeded": "请求过多，请稍后重试。",
-  "premium_activationSuccessTitle": "高级版已激活！",
-  "premium_activationSuccessContent": "可使用高级版服务至 {date}。",
-  "@premium_activationSuccessContent": {
-    "placeholders": {
-      "date": {"type": "String"}
-    }
-  },
-  "premium_activationSuccessContentNoDate": "高级版服务已激活。",
-  "premium_upgradeToPremium": "升级到高级版",
-  "premium_healthCheckBlocked": "您已达到本月的使用上限。\n请下个月再试。",
-  "premium_healthCheckBlockedTitle": "本月限额已达",
 
   "hc_title": "AI健康检查",
   "hc_photoSubtitle": "一张照片即可确认健康状态",
@@ -997,84 +947,6 @@
   "hc_dateLast7Days": "最近7天",
   "hc_dateEarlier": "更早",
 
-  "premium_featureLockedTitle": "高级版专属功能",
-  "premium_featureLockedMessage": "AI视觉健康检查是高级版专属功能。\n\n视觉AI模型运行成本较高，感谢您的理解。\n激活高级版代码后可无限使用。",
-  "premium_activateNow": "激活高级版",
-  "premium_maybeLater": "稍后",
-
-  "chatbot_premiumBanner": "通过高级版获得更详细、更准确的回答",
-  "chatbot_premiumUpgrade": "升级",
-
-  "paywall_title": "Premium",
-  "paywall_headline": "通过照片和记录\n更准确地了解健康状况",
-  "paywall_benefit1": "无限次AI视觉健康检查",
-  "paywall_benefit2": "基于记录的个性化AI分析",
-  "paywall_benefit3": "异常征兆早期发现分析",
-  "paywall_planMonthly": "月度",
-  "paywall_planYearly": "年度",
-  "paywall_yearlyDiscount": "推荐年度计划",
-  "paywall_yearlyPerMonth": "每月 {price}",
-  "@paywall_yearlyPerMonth": {
-    "placeholders": {
-      "price": {"type": "String"}
-    }
-  },
-  "paywall_ctaButton": "开始Premium",
-  "paywall_restore": "恢复购买",
-  "paywall_promoCode": "输入促销代码",
-  "paywall_purchaseSuccessTitle": "Premium已激活！",
-  "paywall_purchaseSuccessContent": "现在您可以使用所有高级功能。",
-  "paywall_purchaseFailed": "购买处理出错，请重试。",
-  "paywall_restoreSuccess": "购买已恢复。",
-  "paywall_restoreNoSubscription": "没有可恢复的订阅。",
-  "paywall_restoreFailed": "恢复购买失败。",
-  "paywall_loading": "处理中...",
-  "paywall_storeUnavailable": "商店不可用。",
-  "paywall_productsNotFound": "无法加载产品信息。",
-  "paywall_alreadyPremium": "您已经是Premium用户。",
-  "paywall_alreadyPremiumExpires": "可使用至 {date}",
-  "@paywall_alreadyPremiumExpires": {
-    "placeholders": {
-      "date": {"type": "String"}
-    }
-  },
-
-  "quotaBadge_normal": "本月剩余{count}次",
-  "@quotaBadge_normal": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "quotaBadge_exhausted": "已达每月限额",
-  "quotaBadge_upgrade": "升级",
-  "aiEncyclopedia_quotaExhausted": "本月免费使用次数已用完。升级到高级版可无限使用。",
-  "aiEncyclopedia_quotaExhaustedHint": "已达每月限额 · 升级到高级版",
-  "healthCheck_freeTrialBadge": "免费体验",
-  "healthCheck_trialExhaustedTitle": "免费体验已完成",
-  "healthCheck_trialExhaustedMessage": "您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。",
-  "healthCheck_trialExhaustedMessage_v2": "您正在免费体验中，试用次数已用完。\n\n输入促销代码或通过社交媒体联系我们即可获得更多使用权限。",
-  "healthCheck_trialExhaustedAction_promo": "输入促销代码",
-
-  "visionQuotaBadge_normal": "剩余{count}次",
-  "@visionQuotaBadge_normal": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "visionQuotaBadge_exhausted": "已达每月限额",
-  "visionQuotaBadge_upgrade": "输入代码",
-
-  "paywall_freeTrialBanner": "AI视觉检查和AI聊天机器人\n目前免费体验中",
-  "paywall_freeTrialSubtext": "输入促销代码可解锁更多权益",
-  "paywall_snsEventTitle": "社交媒体活动",
-  "paywall_snsEventDescription": "关注我们并发送私信即可获取促销代码！",
-  "sns_copied": "已复制{label}",
-  "@sns_copied": {
-    "placeholders": {
-      "label": {"type": "String"}
-    }
-  },
-
   "report_shareFailed": "创建分享链接失败。",
   "report_shareHealth": "分享健康报告",
   "report_vetSummary": "就诊摘要",
@@ -1090,11 +962,9 @@
   "home_healthSummaryAbnormal": "异常发现 (30天)",
   "home_healthSummaryFoodConsistency": "喂食一致性",
   "home_healthSummaryWaterConsistency": "饮水一致性",
-  "home_healthSummaryUpgrade": "升级至Premium",
   "home_insightsTitle": "本周洞察",
   "home_insightsEmpty": "暂无洞察",
   "home_insightsRecommendations": "建议事项",
-  "home_insightsUpgrade": "升级至Premium\n即可获取每周健康洞察",
 
   "dailyRecord_title": "每日记录",
   "dailyRecord_mood": "心情",

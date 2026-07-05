@@ -1347,12 +1347,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coach_hcModes_body => '选择全身检查、部位检查、排泄物分析或食物分析。';
 
   @override
-  String get coach_hcTrial_title => '免费试用可用';
-
-  @override
-  String get coach_hcTrial_body => '您有免费健康检查次数！高级版可无限使用。';
-
-  @override
   String get coach_hcHistoryVet_title => '兽医报告';
 
   @override
@@ -1401,12 +1395,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coach_bhiBreakdown_body => '查看体重(60分)、食物(25分)和饮水(15分)如何贡献总分。';
 
   @override
-  String get coach_profilePremium_title => '升级高级版';
-
-  @override
-  String get coach_profilePremium_body => '解锁无限AI健康检查、导出报告和高级洞察！';
-
-  @override
   String get coach_profileAddPet_title => '添加宠物';
 
   @override
@@ -1417,18 +1405,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get coach_profilePetCard_body => '点击任何宠物卡片切换。活跃宠物的数据将在整个应用中显示。';
-
-  @override
-  String get coach_premiumPlan_title => '选择您的方案';
-
-  @override
-  String get coach_premiumPlan_body => '月度灵活，年度赠送2个月。两种方案都解锁所有功能！';
-
-  @override
-  String get coach_premiumPromo_title => '有促销码吗？';
-
-  @override
-  String get coach_premiumPromo_body => '有合作伙伴或活动的优惠码？点击这里兑换特别优惠。';
 
   @override
   String get coach_petDetailImage_title => '添加宠物照片';
@@ -1639,27 +1615,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get faq_a13 => '目前仅支持 iOS。Android 和 HarmonyOS 版本正在开发中，将在未来发布。';
 
   @override
-  String get faq_categoryPremium => '高级版';
-
-  @override
-  String get faq_q14 => '什么是高级版服务？';
-
-  @override
-  String get faq_a14 => '高级版提供 AI 视觉健康检查无限使用、基于图像的精密分析等高级功能。';
-
-  @override
-  String get faq_q15 => '如何使用高级版代码？';
-
-  @override
-  String get faq_a15 => '在个人资料页面的“高级版”菜单中输入 PERCH-XXXX-XXXX 格式的代码即可立即激活。';
-
-  @override
-  String get faq_q16 => '高级版到期后数据会怎样？';
-
-  @override
-  String get faq_a16 => '高级版到期后，健康检查的文字结果会保留。但健康检查图片将在到期 90 天后从服务器自动删除。';
-
-  @override
   String get faq_q17 => '如何使用 AI 视觉健康检查？';
 
   @override
@@ -1694,79 +1649,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get faq_a22 => '体重记录页面的图表中会显示品种标准体重范围。请在宠物档案中设置品种。';
-
-  @override
-  String get premium_sectionTitle => '高级版';
-
-  @override
-  String get premium_title => '输入高级版代码';
-
-  @override
-  String get premium_badgeFree => 'Free';
-
-  @override
-  String get premium_badgePremium => 'Premium';
-
-  @override
-  String premium_expiresAt(String date) {
-    return '有效期至 $date';
-  }
-
-  @override
-  String get premium_enterCode => '请输入高级版代码';
-
-  @override
-  String get premium_benefitsTitle => '高级版权益';
-
-  @override
-  String get premium_benefit1 => '无限使用AI视觉健康检查';
-
-  @override
-  String get premium_benefit2 => '基于图像的健康状态精密分析';
-
-  @override
-  String get premium_benefit3 => '及早发现健康异常征兆';
-
-  @override
-  String get premium_codeInputTitle => '高级版代码';
-
-  @override
-  String get premium_codeInputHint => 'PERCH-XXXX-XXXX';
-
-  @override
-  String get premium_activateButton => '激活代码';
-
-  @override
-  String get premium_invalidCodeFormat => '代码格式不正确。(PERCH-XXXX-XXXX)';
-
-  @override
-  String get premium_activationFailed => '代码激活失败，请检查代码。';
-
-  @override
-  String get premium_activationError => '激活过程中出错，请稍后重试。';
-
-  @override
-  String get premium_rateLimitExceeded => '请求过多，请稍后重试。';
-
-  @override
-  String get premium_activationSuccessTitle => '高级版已激活！';
-
-  @override
-  String premium_activationSuccessContent(String date) {
-    return '可使用高级版服务至 $date。';
-  }
-
-  @override
-  String get premium_activationSuccessContentNoDate => '高级版服务已激活。';
-
-  @override
-  String get premium_upgradeToPremium => '升级到高级版';
-
-  @override
-  String get premium_healthCheckBlocked => '您已达到本月的使用上限。\n请下个月再试。';
-
-  @override
-  String get premium_healthCheckBlockedTitle => '本月限额已达';
 
   @override
   String get hc_title => 'AI健康检查';
@@ -2134,160 +2016,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hc_dateEarlier => '更早';
 
   @override
-  String get premium_featureLockedTitle => '高级版专属功能';
-
-  @override
-  String get premium_featureLockedMessage =>
-      'AI视觉健康检查是高级版专属功能。\n\n视觉AI模型运行成本较高，感谢您的理解。\n激活高级版代码后可无限使用。';
-
-  @override
-  String get premium_activateNow => '激活高级版';
-
-  @override
-  String get premium_maybeLater => '稍后';
-
-  @override
-  String get chatbot_premiumBanner => '通过高级版获得更详细、更准确的回答';
-
-  @override
-  String get chatbot_premiumUpgrade => '升级';
-
-  @override
-  String get paywall_title => 'Premium';
-
-  @override
-  String get paywall_headline => '通过照片和记录\n更准确地了解健康状况';
-
-  @override
-  String get paywall_benefit1 => '无限次AI视觉健康检查';
-
-  @override
-  String get paywall_benefit2 => '基于记录的个性化AI分析';
-
-  @override
-  String get paywall_benefit3 => '异常征兆早期发现分析';
-
-  @override
-  String get paywall_planMonthly => '月度';
-
-  @override
-  String get paywall_planYearly => '年度';
-
-  @override
-  String get paywall_yearlyDiscount => '推荐年度计划';
-
-  @override
-  String paywall_yearlyPerMonth(String price) {
-    return '每月 $price';
-  }
-
-  @override
-  String get paywall_ctaButton => '开始Premium';
-
-  @override
-  String get paywall_restore => '恢复购买';
-
-  @override
-  String get paywall_promoCode => '输入促销代码';
-
-  @override
-  String get paywall_purchaseSuccessTitle => 'Premium已激活！';
-
-  @override
-  String get paywall_purchaseSuccessContent => '现在您可以使用所有高级功能。';
-
-  @override
-  String get paywall_purchaseFailed => '购买处理出错，请重试。';
-
-  @override
-  String get paywall_restoreSuccess => '购买已恢复。';
-
-  @override
-  String get paywall_restoreNoSubscription => '没有可恢复的订阅。';
-
-  @override
-  String get paywall_restoreFailed => '恢复购买失败。';
-
-  @override
-  String get paywall_loading => '处理中...';
-
-  @override
-  String get paywall_storeUnavailable => '商店不可用。';
-
-  @override
-  String get paywall_productsNotFound => '无法加载产品信息。';
-
-  @override
-  String get paywall_alreadyPremium => '您已经是Premium用户。';
-
-  @override
-  String paywall_alreadyPremiumExpires(String date) {
-    return '可使用至 $date';
-  }
-
-  @override
-  String quotaBadge_normal(int count) {
-    return '本月剩余$count次';
-  }
-
-  @override
-  String get quotaBadge_exhausted => '已达每月限额';
-
-  @override
-  String get quotaBadge_upgrade => '升级';
-
-  @override
-  String get aiEncyclopedia_quotaExhausted => '本月免费使用次数已用完。升级到高级版可无限使用。';
-
-  @override
-  String get aiEncyclopedia_quotaExhaustedHint => '已达每月限额 · 升级到高级版';
-
-  @override
-  String get healthCheck_freeTrialBadge => '免费体验';
-
-  @override
-  String get healthCheck_trialExhaustedTitle => '免费体验已完成';
-
-  @override
-  String get healthCheck_trialExhaustedMessage =>
-      '您已使用过免费体验。\n\n订阅高级版可无限使用AI视觉健康检查。';
-
-  @override
-  String get healthCheck_trialExhaustedMessage_v2 =>
-      '您正在免费体验中，试用次数已用完。\n\n输入促销代码或通过社交媒体联系我们即可获得更多使用权限。';
-
-  @override
-  String get healthCheck_trialExhaustedAction_promo => '输入促销代码';
-
-  @override
-  String visionQuotaBadge_normal(int count) {
-    return '剩余$count次';
-  }
-
-  @override
-  String get visionQuotaBadge_exhausted => '已达每月限额';
-
-  @override
-  String get visionQuotaBadge_upgrade => '输入代码';
-
-  @override
-  String get paywall_freeTrialBanner => 'AI视觉检查和AI聊天机器人\n目前免费体验中';
-
-  @override
-  String get paywall_freeTrialSubtext => '输入促销代码可解锁更多权益';
-
-  @override
-  String get paywall_snsEventTitle => '社交媒体活动';
-
-  @override
-  String get paywall_snsEventDescription => '关注我们并发送私信即可获取促销代码！';
-
-  @override
-  String sns_copied(String label) {
-    return '已复制$label';
-  }
-
-  @override
   String get report_shareFailed => '创建分享链接失败。';
 
   @override
@@ -2330,9 +2058,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get home_healthSummaryWaterConsistency => '饮水一致性';
 
   @override
-  String get home_healthSummaryUpgrade => '升级至Premium';
-
-  @override
   String get home_insightsTitle => '本周洞察';
 
   @override
@@ -2340,9 +2065,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get home_insightsRecommendations => '建议事项';
-
-  @override
-  String get home_insightsUpgrade => '升级至Premium\n即可获取每周健康洞察';
 
   @override
   String get dailyRecord_title => '每日记录';
