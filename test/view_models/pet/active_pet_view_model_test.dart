@@ -88,5 +88,54 @@ void main() {
       final state = container.read(activePetViewModelProvider);
       expect(state.hasError, isTrue);
     });
+
+    test('deletePet: 서버+캐시 삭제 후 남은 펫으로 전환', () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.deletePet(any())).thenAnswer((_) async {});
+      when(() => repo.removeLocalCache(any())).thenAnswer((_) async {});
+      when(() => repo.getMyPets(forceRefresh: any(named: 'forceRefresh')))
+          .thenAnswer((_) async => [_pet('p2')]);
+      when(() => repo.setActivePet(any())).thenAnswer((_) async {});
+      when(() => repo.getActivePet(forceRefresh: true))
+          .thenAnswer((_) async => _pet('p2'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future); // 초기 로드 p1
+
+      await container
+          .read(activePetViewModelProvider.notifier)
+          .deletePet('p1');
+
+      verify(() => repo.deletePet('p1')).called(1);
+      verify(() => repo.removeLocalCache('p1')).called(1);
+      verify(() => repo.setActivePet('p2')).called(1);
+
+      final pet = container.read(activePetViewModelProvider).valueOrNull;
+      expect(pet?.id, 'p2');
+    });
+
+    test('deletePet: 남은 펫이 없으면 clear()로 상태를 비운다', () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.deletePet(any())).thenAnswer((_) async {});
+      when(() => repo.removeLocalCache(any())).thenAnswer((_) async {});
+      when(() => repo.getMyPets(forceRefresh: any(named: 'forceRefresh')))
+          .thenAnswer((_) async => <Pet>[]);
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future); // 초기 로드 p1
+
+      await container
+          .read(activePetViewModelProvider.notifier)
+          .deletePet('p1');
+
+      verify(() => repo.deletePet('p1')).called(1);
+      verify(() => repo.removeLocalCache('p1')).called(1);
+      verifyNever(() => repo.setActivePet(any()));
+
+      final pet = container.read(activePetViewModelProvider).valueOrNull;
+      expect(pet, isNull);
+    });
   });
 }

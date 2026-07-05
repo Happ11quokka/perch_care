@@ -81,7 +81,8 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
         }
       } else {
         // 로컬 캐시 폴백
-        final cachedPet = await ref.read(petRepositoryProvider).getActivePet();
+        final cachedPet =
+            await ref.read(petRepositoryProvider).getActivePetFromLocalCache();
         if (!mounted) return;
         setState(() {
           _activePetId = cachedPet?.id;
@@ -93,7 +94,8 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
     } catch (_) {
       // 로컬 캐시 폴백
       try {
-        final cachedPet = await ref.read(petRepositoryProvider).getActivePet();
+        final cachedPet =
+            await ref.read(petRepositoryProvider).getActivePetFromLocalCache();
         if (!mounted) return;
         setState(() {
           _activePetId = cachedPet?.id;

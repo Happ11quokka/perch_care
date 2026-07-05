@@ -45,6 +45,15 @@ abstract class PetRepository {
 
   /// 로컬 캐시(영속)에 upsert — 활성 펫 지정 포함.
   Future<void> upsertLocalCache(Pet pet, {bool setActive = true});
+
+  /// 로컬 캐시에서 펫 제거.
+  Future<void> removeLocalCache(String petId);
+
+  /// 로컬 캐시 펫 목록(삭제 후 남은 펫 판단 등에 사용).
+  Future<List<Pet>> getLocalPets();
+
+  /// 로컬 캐시의 활성 펫 — 네트워크를 타지 않는 오프라인 폴백 전용.
+  Future<Pet?> getActivePetFromLocalCache();
 }
 
 /// 기본 구현 — 기존 `PetService` + `PetLocalCacheService`를 래핑한다.
@@ -144,6 +153,41 @@ class PetRepositoryImpl implements PetRepository {
         birthDate: pet.birthDate,
       ),
       setActive: setActive,
+    );
+  }
+
+  @override
+  Future<void> removeLocalCache(String petId) => _cache.removePet(petId);
+
+  @override
+  Future<List<Pet>> getLocalPets() async {
+    final cached = await _cache.getPets();
+    return cached.map(_petFromCache).toList();
+  }
+
+  @override
+  Future<Pet?> getActivePetFromLocalCache() async {
+    final cached = await _cache.getActivePet();
+    if (cached == null) return null;
+    return _petFromCache(cached);
+  }
+
+  /// `PetProfileCache` → `Pet` 최소 매핑.
+  ///
+  /// 로컬 캐시에는 id/name/species/gender/birthDate만 저장되므로 나머지 필드는
+  /// 더미 값(userId='', createdAt/updatedAt=now)으로 채운다. 남은 펫 판단이나
+  /// 오프라인 폴백 표시용으로만 쓰이고 서버에 재전송되지 않는다.
+  Pet _petFromCache(PetProfileCache c) {
+    final now = DateTime.now();
+    return Pet(
+      id: c.id,
+      userId: '',
+      name: c.name,
+      species: c.species ?? '',
+      gender: c.gender,
+      birthDate: c.birthDate,
+      createdAt: now,
+      updatedAt: now,
     );
   }
 }
