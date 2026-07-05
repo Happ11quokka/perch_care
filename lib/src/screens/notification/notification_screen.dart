@@ -1,11 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/colors.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
 import '../../models/notification.dart';
-import '../../services/notification/notification_service.dart';
+import '../../view_models/notification/notification_view_model.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/app_loading.dart';
@@ -20,79 +19,13 @@ class NotificationScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationScreenState extends ConsumerState<NotificationScreen> {
-  final _notificationService = NotificationService.instance;
-  List<AppNotification> _notifications = [];
-  StreamSubscription<List<AppNotification>>? _subscription;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotifications();
-    _subscribeToNotifications();
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _loadNotifications() async {
-    setState(() => _isLoading = true);
-    try {
-      final notifications = await _notificationService.fetchNotifications();
-      if (mounted) {
-        setState(() {
-          _notifications = notifications;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        final l10n = AppLocalizations.of(context);
-        AppSnackBar.error(context, message: l10n.error_network);
-      }
-    }
-  }
-
-  void _subscribeToNotifications() {
-    _subscription = _notificationService.subscribeToNotifications().listen(
-      (notifications) {
-        if (mounted) {
-          setState(() => _notifications = notifications);
-        }
-      },
-    );
-  }
-
-  Future<void> _markAsRead(String id) async {
-    // 로컬 상태 먼저 업데이트 (빠른 UI 반응)
-    setState(() {
-      final index = _notifications.indexWhere((n) => n.id == id);
-      if (index != -1) {
-        _notifications[index] = _notifications[index].copyWith(isRead: true);
-      }
-    });
-
-    // 서버에 반영
-    try {
-      await _notificationService.markAsRead(id);
-    } catch (e) {
-      // 에러 발생 시 다시 로드
-      _loadNotifications();
-    }
+  Future<void> _markAsRead(String id) {
+    return ref.read(notificationViewModelProvider.notifier).markAsRead(id);
   }
 
   Future<void> _markAllAsRead() async {
     try {
-      await _notificationService.markAllAsRead();
-      setState(() {
-        _notifications = _notifications
-            .map((n) => n.copyWith(isRead: true))
-            .toList();
-      });
+      await ref.read(notificationViewModelProvider.notifier).markAllAsRead();
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
@@ -103,10 +36,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   Future<void> _deleteNotification(String id) async {
     try {
-      await _notificationService.deleteNotification(id);
-      setState(() {
-        _notifications.removeWhere((n) => n.id == id);
-      });
+      await ref.read(notificationViewModelProvider.notifier).delete(id);
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
@@ -118,6 +48,23 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    // 기존 화면의 초기 로드 실패 시 error_network 스낵바를 보존한다.
+    // build() 중 직접 스낵바를 띄우면 안 되므로 ref.listen으로 상태 전이를 감지한다.
+    ref.listen<AsyncValue<List<AppNotification>>>(
+      notificationViewModelProvider,
+      (previous, next) {
+        final becameError = next.hasError && (previous == null || !previous.hasError);
+        if (becameError && mounted) {
+          AppSnackBar.error(context, message: l10n.error_network);
+        }
+      },
+    );
+
+    final notificationsAsync = ref.watch(notificationViewModelProvider);
+    final notifications = notificationsAsync.valueOrNull ?? const [];
+    final isLoading = notificationsAsync.isLoading && !notificationsAsync.hasValue;
+
     return Scaffold(
       backgroundColor: AppColors.gray50,
       appBar: AppBar(
@@ -139,7 +86,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         ),
         centerTitle: true,
         actions: [
-          if (_notifications.any((n) => !n.isRead))
+          if (notifications.any((n) => !n.isRead))
             TextButton(
               onPressed: _markAllAsRead,
               child: Text(
@@ -152,17 +99,17 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             ),
         ],
       ),
-      body: _isLoading
+      body: isLoading
           ? AppLoading.fullPage()
-          : _notifications.isEmpty
+          : notifications.isEmpty
               ? _buildEmptyState()
               : ListView.separated(
                   padding: const EdgeInsets.all(AppSpacing.lg),
-                  itemCount: _notifications.length,
+                  itemCount: notifications.length,
                   separatorBuilder: (context, index) =>
                       const SizedBox(height: AppSpacing.md),
                   itemBuilder: (context, index) {
-                    final notification = _notifications[index];
+                    final notification = notifications[index];
                     return Dismissible(
                       key: Key(notification.id),
                       direction: DismissDirection.endToStart,
