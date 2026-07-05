@@ -26,10 +26,8 @@ import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../widgets/local_image_avatar.dart';
-import '../../widgets/quota_badge.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
-import '../../services/premium/premium_service.dart';
 import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
@@ -67,8 +65,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   bool _isTyping = false;
   bool _isLoadingMessages = true;
   bool _showPremiumBanner = false;
-  PremiumStatus? _premiumStatus;
-  bool _isQuotaExhausted = false;
 
   // 둥둥 떠다니는 breathing 애니메이션
   late final AnimationController _floatController;
@@ -114,35 +110,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     await _loadMessages();
     _maybeShowCoachMarks();
     _loadPremiumBannerState();
-    _loadQuota(logView: true);
-  }
-
-  /// Phase 2: 쿼터 정보 로드 (forceRefresh로 최신 데이터 조회)
-  /// [logView] true일 때만 ai_quota_viewed analytics 이벤트를 발화 (화면 진입 시만).
-  Future<void> _loadQuota({bool logView = false}) async {
-    try {
-      final status =
-          await ref.read(premiumStatusProvider.notifier).refreshAndGet();
-      if (mounted) {
-        setState(() {
-          _premiumStatus = status;
-          _isQuotaExhausted =
-              status.quota?.aiEncyclopedia.isExhausted ?? false;
-        });
-        // 쿼터 조회 analytics (화면 진입 시에만)
-        if (logView) {
-          final quota = status.quota;
-          if (quota != null && !quota.aiEncyclopedia.isUnlimited) {
-            AnalyticsService.instance.logQuotaViewed(
-              remaining: quota.aiEncyclopedia.remaining,
-              tier: status.tier,
-            );
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('[AIEncyclopedia] Failed to load quota: $e');
-    }
   }
 
   String get _bannerDismissKey {
@@ -241,15 +208,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     final text = _inputController.text.trim();
     if (text.isEmpty) return;
 
-    // Phase 2: 쿼터 소진 시 전송 차단
-    if (_isQuotaExhausted) {
-      AppSnackBar.error(
-        context,
-        message: AppLocalizations.of(context).aiEncyclopedia_quotaExhausted,
-      );
-      return;
-    }
-
     AnalyticsService.instance.logAiChatSent();
 
     final history = _buildCleanHistory();
@@ -317,17 +275,12 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       );
     } catch (e) {
       if (!mounted) return;
-      // Phase 2: 429 quota exceeded → quota 새로고침 + 에러 표시
+      // 서버 쿼터 초과(429) → 중립 한도 안내 메시지 표시
       if (e is ApiException && e.statusCode == 429) {
         debugPrint('[AIEncyclopedia] Quota exceeded (429)');
-        AnalyticsService.instance.logQuotaReached(
-          feature: 'ai_encyclopedia',
-          usedCount: _premiumStatus?.quota?.aiEncyclopedia.monthlyUsed ?? 0,
-        );
-        _loadQuota();
         setState(() {
           _updateAssistantMessage(
-            text: AppLocalizations.of(context).aiEncyclopedia_quotaExhausted,
+            text: AppLocalizations.of(context).quota_limitReachedMessage,
             timestamp: DateTime.now(),
           );
           _isSending = false;
@@ -377,7 +330,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       _saveMessages();
       _saveAssistantMessageToServer(); // placeholder 인덱스 초기화 전에 호출
       _scrollToBottom();
-      _loadQuota(); // Phase 2: 전송 완료 후 quota 배지 갱신
     }
     _assistantPlaceholderIndex = null;
   }
@@ -513,17 +465,12 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     } catch (e) {
       if (!mounted) return;
       final l10nErr = AppLocalizations.of(context);
-      // Phase 2: 429 quota exceeded → quota 새로고침 + 에러 표시
+      // 서버 쿼터 초과(429) → 중립 한도 안내 메시지 표시
       if (e is ApiException && e.statusCode == 429) {
         debugPrint('[AIEncyclopedia] Fallback quota exceeded (429)');
-        AnalyticsService.instance.logQuotaReached(
-          feature: 'ai_encyclopedia',
-          usedCount: _premiumStatus?.quota?.aiEncyclopedia.monthlyUsed ?? 0,
-        );
-        _loadQuota();
         setState(() {
           _updateAssistantMessage(
-            text: l10nErr.aiEncyclopedia_quotaExhausted,
+            text: l10nErr.quota_limitReachedMessage,
             timestamp: DateTime.now(),
           );
         });
@@ -709,22 +656,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             ],
           ),
         ],
-        bottom: _premiumStatus?.quota != null &&
-                !_premiumStatus!.quota!.aiEncyclopedia.isUnlimited
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(40),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: QuotaBadge(
-                    quota: _premiumStatus!.quota!.aiEncyclopedia,
-                    normalText: l10n.quotaBadge_normal(
-                      _premiumStatus!.quota!.aiEncyclopedia.remaining,
-                    ),
-                    exhaustedText: l10n.quotaBadge_exhausted,
-                  ),
-                ),
-              )
-            : null,
       ),
       body: SafeArea(
         child: Column(
@@ -1208,13 +1139,10 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
               ),
               child: TextField(
                 controller: _inputController,
-                enabled: !_isQuotaExhausted,
                 onTapOutside: (event) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: _isQuotaExhausted
-                      ? l10n.aiEncyclopedia_quotaExhaustedHint
-                      : l10n.chatbot_inputHint,
+                  hintText: l10n.chatbot_inputHint,
                 ),
                 style: AppTypography.bodyMedium,
                 minLines: 1,
