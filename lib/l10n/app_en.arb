@@ -493,7 +493,7 @@
   "coach_hcModes_body": "Select Full Body for overall health, Part-Specific for targeted areas, or Droppings/Food for diet analysis.",
 
   "coach_hcHistoryVet_title": "Vet Summary",
-  "coach_hcHistoryVet_body": "Get a comprehensive report formatted for veterinarians. Premium feature.",
+  "coach_hcHistoryVet_body": "Get a comprehensive report formatted for veterinarians.",
   "coach_hcHistoryShare_title": "Share Report",
   "coach_hcHistoryShare_body": "Share your bird's health report via email or messaging apps.",
   "coach_hcHistorySwipe_title": "Swipe to Delete",
@@ -587,7 +587,7 @@
   "faq_categoryAccount": "Account",
   "faq_categoryPet": "Pet Management",
   "faq_q1": "Is this app free?",
-  "faq_a1": "Basic features of Perch Care are free. Subscribe to Premium for additional features like AI Vision Health Check.",
+  "faq_a1": "Yes — Perch Care is free to use. AI features like the AI Encyclopedia (30 uses/month) and AI Vision Health Check (10 uses/month) are also free, and your usage limit resets every month.",
   "faq_q2": "How accurate is the AI health analysis?",
   "faq_a2": "AI analysis is for reference only and does not replace professional diagnosis. If your pet has health concerns, please consult a veterinarian.",
   "faq_q3": "Is my data stored safely?",

@@ -1421,7 +1421,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coach_hcHistoryVet_body =>
-      'Get a comprehensive report formatted for veterinarians. Premium feature.';
+      'Get a comprehensive report formatted for veterinarians.';
 
   @override
   String get coach_hcHistoryShare_title => 'Share Report';
@@ -1625,7 +1625,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get faq_a1 =>
-      'Basic features of Perch Care are free. Subscribe to Premium for additional features like AI Vision Health Check.';
+      'Yes — Perch Care is free to use. AI features like the AI Encyclopedia (30 uses/month) and AI Vision Health Check (10 uses/month) are also free, and your usage limit resets every month.';
 
   @override
   String get faq_q2 => 'How accurate is the AI health analysis?';

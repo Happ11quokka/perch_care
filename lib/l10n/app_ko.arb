@@ -691,7 +691,7 @@
   "coach_hcModes_body": "전체 건강은 Full Body, 특정 부위는 Part-Specific, 배설물/사료는 해당 모드를 선택하세요.",
 
   "coach_hcHistoryVet_title": "수의사 리포트",
-  "coach_hcHistoryVet_body": "수의사용 종합 리포트를 받아보세요. 프리미엄 기능입니다.",
+  "coach_hcHistoryVet_body": "수의사용 종합 리포트를 받아보세요.",
   "coach_hcHistoryShare_title": "리포트 공유",
   "coach_hcHistoryShare_body": "이메일이나 메시징 앱으로 건강 리포트를 공유하세요.",
   "coach_hcHistorySwipe_title": "스와이프 삭제",
@@ -785,7 +785,7 @@
   "faq_categoryAccount": "계정 관리",
   "faq_categoryPet": "반려동물 관리",
   "faq_q1": "이 앱은 무료인가요?",
-  "faq_a1": "Perch Care의 기본 기능은 무료입니다. 프리미엄 서비스 가입 시 AI 비전 건강체크 등 추가 기능을 이용할 수 있습니다.",
+  "faq_a1": "네, Perch Care는 무료로 이용할 수 있어요. AI 백과사전(월 30회)과 AI 비전 건강체크(월 10회) 등 AI 기능도 무료로 제공되며, 이용 한도는 매월 초기화됩니다.",
   "faq_q2": "AI 건강 분석은 얼마나 정확한가요?",
   "faq_a2": "AI 분석은 참고용이며, 정확한 진단을 대체하지 않습니다. 반려동물의 건강에 이상이 있다면 반드시 수의사와 상담해 주세요.",
   "faq_q3": "데이터는 안전하게 보존되나요?",

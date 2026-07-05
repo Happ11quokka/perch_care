@@ -1371,7 +1371,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coach_hcHistoryVet_title => '수의사 리포트';
 
   @override
-  String get coach_hcHistoryVet_body => '수의사용 종합 리포트를 받아보세요. 프리미엄 기능입니다.';
+  String get coach_hcHistoryVet_body => '수의사용 종합 리포트를 받아보세요.';
 
   @override
   String get coach_hcHistoryShare_title => '리포트 공유';
@@ -1572,7 +1572,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get faq_a1 =>
-      'Perch Care의 기본 기능은 무료입니다. 프리미엄 서비스 가입 시 AI 비전 건강체크 등 추가 기능을 이용할 수 있습니다.';
+      '네, Perch Care는 무료로 이용할 수 있어요. AI 백과사전(월 30회)과 AI 비전 건강체크(월 10회) 등 AI 기능도 무료로 제공되며, 이용 한도는 매월 초기화됩니다.';
 
   @override
   String get faq_q2 => 'AI 건강 분석은 얼마나 정확한가요?';

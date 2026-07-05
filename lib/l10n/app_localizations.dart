@@ -2611,7 +2611,7 @@ abstract class AppLocalizations {
   /// No description provided for @coach_hcHistoryVet_body.
   ///
   /// In ko, this message translates to:
-  /// **'수의사용 종합 리포트를 받아보세요. 프리미엄 기능입니다.'**
+  /// **'수의사용 종합 리포트를 받아보세요.'**
   String get coach_hcHistoryVet_body;
 
   /// No description provided for @coach_hcHistoryShare_title.
@@ -2971,7 +2971,7 @@ abstract class AppLocalizations {
   /// No description provided for @faq_a1.
   ///
   /// In ko, this message translates to:
-  /// **'Perch Care의 기본 기능은 무료입니다. 프리미엄 서비스 가입 시 AI 비전 건강체크 등 추가 기능을 이용할 수 있습니다.'**
+  /// **'네, Perch Care는 무료로 이용할 수 있어요. AI 백과사전(월 30회)과 AI 비전 건강체크(월 10회) 등 AI 기능도 무료로 제공되며, 이용 한도는 매월 초기화됩니다.'**
   String get faq_a1;
 
   /// No description provided for @faq_q2.

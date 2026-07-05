@@ -1350,7 +1350,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coach_hcHistoryVet_title => '兽医报告';
 
   @override
-  String get coach_hcHistoryVet_body => '获取为兽医准备的综合报告。高级版功能。';
+  String get coach_hcHistoryVet_body => '获取为兽医准备的综合报告。';
 
   @override
   String get coach_hcHistoryShare_title => '分享报告';
@@ -1540,7 +1540,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get faq_q1 => '这个应用是免费的吗？';
 
   @override
-  String get faq_a1 => 'Perch Care 的基本功能免费使用。订阅高级版可使用 AI 视觉健康检查等高级功能。';
+  String get faq_a1 =>
+      '是的，Perch Care 完全免费使用。AI 百科全书（每月 30 次）和 AI 视觉健康检查（每月 10 次）等 AI 功能也免费提供，使用额度每月重置。';
 
   @override
   String get faq_q2 => 'AI 健康分析有多准确？';
