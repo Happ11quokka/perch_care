@@ -9,10 +9,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../models/pet.dart';
 import '../../providers/pet_providers.dart';
-import '../../providers/premium_provider.dart';
 import '../../services/api/api_client.dart';
 import '../../services/api/token_service.dart';
-import '../../services/iap/iap_service.dart';
 import '../../services/push/push_notification_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../services/sync/sync_service.dart';
@@ -130,7 +128,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       try {
         await ref.read(activePetProvider.notifier).refresh();
         await ref.read(petListProvider.notifier).refresh();
-        await ref.read(premiumStatusProvider.notifier).refresh();
         debugPrint('[Splash] Riverpod providers seeded');
       } catch (e) {
         debugPrint('[Splash] Provider seeding error: $e');
@@ -360,10 +357,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       '[Splash] Navigating to: $targetRoute (isLoggedIn: $isLoggedIn)',
     );
 
-    // 로그인 상태면 FCM 푸시 토큰 등록 + IAP 초기화
+    // 로그인 상태면 FCM 푸시 토큰 등록
     if (isLoggedIn) {
       unawaited(PushNotificationService.instance.initialize());
-      await IapService.instance.initialize();
     }
 
     if (!mounted || _disposed) return;
