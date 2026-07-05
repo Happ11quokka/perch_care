@@ -1161,5 +1161,8 @@
 
   "hc_analysisTimeout": "分析耗时过长。请检查网络后重试。",
 
+  "quota_limitReachedTitle": "已达使用上限",
+  "quota_limitReachedMessage": "本月使用次数已达上限，下月将重置。",
+
   "common_defaultPetName": "宝贝"
 }

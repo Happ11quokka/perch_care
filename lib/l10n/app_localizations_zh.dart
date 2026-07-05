@@ -2484,5 +2484,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hc_analysisTimeout => '分析耗时过长。请检查网络后重试。';
 
   @override
+  String get quota_limitReachedTitle => '已达使用上限';
+
+  @override
+  String get quota_limitReachedMessage => '本月使用次数已达上限，下月将重置。';
+
+  @override
   String get common_defaultPetName => '宝贝';
 }

@@ -994,5 +994,8 @@
 
   "hc_analysisTimeout": "The analysis is taking too long. Please check your connection and try again.",
 
+  "quota_limitReachedTitle": "Limit Reached",
+  "quota_limitReachedMessage": "You've reached this month's usage limit. It resets next month.",
+
   "common_defaultPetName": "Buddy"
 }

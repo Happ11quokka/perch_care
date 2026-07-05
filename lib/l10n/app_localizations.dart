@@ -4798,6 +4798,18 @@ abstract class AppLocalizations {
   /// **'분석 시간이 너무 오래 걸려요. 네트워크를 확인하고 다시 시도해주세요.'**
   String get hc_analysisTimeout;
 
+  /// No description provided for @quota_limitReachedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'사용 한도 도달'**
+  String get quota_limitReachedTitle;
+
+  /// No description provided for @quota_limitReachedMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'이번 달 사용 한도에 도달했어요. 다음 달에 다시 이용할 수 있어요.'**
+  String get quota_limitReachedMessage;
+
   /// No description provided for @common_defaultPetName.
   ///
   /// In ko, this message translates to:

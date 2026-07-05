@@ -2624,5 +2624,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The analysis is taking too long. Please check your connection and try again.';
 
   @override
+  String get quota_limitReachedTitle => 'Limit Reached';
+
+  @override
+  String get quota_limitReachedMessage =>
+      'You\'ve reached this month\'s usage limit. It resets next month.';
+
+  @override
   String get common_defaultPetName => 'Buddy';
 }

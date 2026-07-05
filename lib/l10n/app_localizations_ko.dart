@@ -2539,5 +2539,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get hc_analysisTimeout => '분석 시간이 너무 오래 걸려요. 네트워크를 확인하고 다시 시도해주세요.';
 
   @override
+  String get quota_limitReachedTitle => '사용 한도 도달';
+
+  @override
+  String get quota_limitReachedMessage =>
+      '이번 달 사용 한도에 도달했어요. 다음 달에 다시 이용할 수 있어요.';
+
+  @override
   String get common_defaultPetName => '사랑이';
 }
