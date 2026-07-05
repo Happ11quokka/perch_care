@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/breed_standard.dart';
-import '../services/breed/breed_service.dart';
+import '../providers/service_providers.dart';
 import '../theme/colors.dart';
 
 /// Searchable breed selector widget
@@ -114,7 +115,7 @@ class _BreedSelectorState extends State<BreedSelector> {
 }
 
 /// Internal dialog for searching and selecting breeds
-class _BreedSearchDialog extends StatefulWidget {
+class _BreedSearchDialog extends ConsumerStatefulWidget {
   final ValueChanged<BreedStandard?> onBreedSelected;
   final String otherOptionText;
 
@@ -124,10 +125,10 @@ class _BreedSearchDialog extends StatefulWidget {
   });
 
   @override
-  State<_BreedSearchDialog> createState() => _BreedSearchDialogState();
+  ConsumerState<_BreedSearchDialog> createState() => _BreedSearchDialogState();
 }
 
-class _BreedSearchDialogState extends State<_BreedSearchDialog> {
+class _BreedSearchDialogState extends ConsumerState<_BreedSearchDialog> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
@@ -154,7 +155,7 @@ class _BreedSearchDialogState extends State<_BreedSearchDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final breeds = await BreedService.instance.fetchBreedStandards();
+      final breeds = await ref.read(breedServiceProvider).fetchBreedStandards();
       if (mounted) {
         setState(() {
           _allBreeds = breeds;
