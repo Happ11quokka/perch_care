@@ -1,4 +1,4 @@
-"""Weekly insights job — generates AI health insights for premium users' pets.
+"""Weekly insights job — generates AI health insights for all users' pets.
 
 Run via Railway Cron Job: python -m app.jobs.weekly_insights
 Schedule: 0 0 * * 1 (UTC 00:00 Monday = KST 09:00 Monday)
@@ -14,7 +14,6 @@ from app.database import async_session_factory
 import app.models  # noqa: F401 — register all ORM mappers
 from app.models.pet import Pet
 from app.models.user import User
-from app.models.user_tier import UserTier
 from app.models.device_token import DeviceToken
 from app.models.notification import Notification
 from app.services.insights_service import generate_weekly_insight
@@ -41,28 +40,9 @@ MESSAGES = {
 DEFAULT_LANG = "zh"
 
 
-async def _get_premium_users_with_pets(db: AsyncSession) -> list[tuple[User, list[Pet]]]:
-    """Premium 사용자와 그 사용자의 활성 펫 목록을 반환."""
-    from datetime import datetime, timezone
-
-    now = datetime.now(timezone.utc)
-
-    # Premium 사용자 ID 조회
-    tier_result = await db.execute(
-        select(UserTier.user_id).where(
-            UserTier.tier == "premium",
-            UserTier.premium_expires_at > now,
-        )
-    )
-    premium_user_ids = [row for row in tier_result.scalars().all()]
-
-    if not premium_user_ids:
-        return []
-
-    # 사용자 + 펫 조회
-    user_result = await db.execute(
-        select(User).where(User.id.in_(premium_user_ids))
-    )
+async def _get_users_with_pets(db: AsyncSession) -> list[tuple[User, list[Pet]]]:
+    """전체 사용자와 그 사용자의 펫 목록을 반환."""
+    user_result = await db.execute(select(User))
     users = list(user_result.scalars().all())
 
     result = []
@@ -81,12 +61,12 @@ async def run():
     logger.info("=== Weekly insights job started ===")
 
     async with async_session_factory() as db:
-        # 1. Premium 사용자 + 펫 조회
-        user_pets = await _get_premium_users_with_pets(db)
-        logger.info(f"Premium users with pets: {len(user_pets)}")
+        # 1. 전체 사용자 + 펫 조회
+        user_pets = await _get_users_with_pets(db)
+        logger.info(f"Users with pets: {len(user_pets)}")
 
         if not user_pets:
-            logger.info("No premium users to generate insights for. Exiting.")
+            logger.info("No users to generate insights for. Exiting.")
             return
 
         insights_count = 0
