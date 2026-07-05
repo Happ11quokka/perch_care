@@ -5,7 +5,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/colors.dart';
 import '../../services/api/api_client.dart';
-import '../../providers/premium_provider.dart';
 import '../../providers/pet_providers.dart';
 import '../../widgets/app_loading.dart';
 
@@ -33,17 +32,6 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
     setState(() => _isSharing = true);
 
     try {
-      final status = await ref.read(premiumStatusProvider.future);
-      if (status.isFree) {
-        // App Store 3.1.1 대응: 업그레이드 CTA 제거 — 중립 실패 메시지만 표시
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.report_shareFailed)),
-          );
-        }
-        return;
-      }
-
       final result = await ApiClient.instance.post(
         '/reports/share/vet-summary/$petId',
       );
