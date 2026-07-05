@@ -35,9 +35,8 @@ void main() {
 
       // ListView.builder는 화면에 보이는 항목만 렌더링하므로
       // 처음 보이는 카테고리들만 확인
-      // 순서: 일반 → 프리미엄 → 기능 사용법 → 계정 관리 → 반려동물 관리
+      // 순서: 일반 → 기능 사용법 → 계정 관리 → 반려동물 관리
       expect(find.text('일반'), findsOneWidget);
-      expect(find.text('프리미엄'), findsOneWidget);
     });
 
     testWidgets('7.2b 스크롤 후 나머지 카테고리 헤더 렌더링', (tester) async {

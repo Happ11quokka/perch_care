@@ -32,14 +32,6 @@ class FaqScreen extends ConsumerWidget {
         ],
       ),
       _FaqCategory(
-        title: l10n.faq_categoryPremium,
-        items: [
-          _FaqItem(question: l10n.faq_q14, answer: l10n.faq_a14),
-          _FaqItem(question: l10n.faq_q15, answer: l10n.faq_a15),
-          _FaqItem(question: l10n.faq_q16, answer: l10n.faq_a16),
-        ],
-      ),
-      _FaqCategory(
         title: l10n.faq_categoryUsage,
         items: [
           _FaqItem(question: l10n.faq_q4, answer: l10n.faq_a4),
