@@ -64,7 +64,6 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
       next = next.copyWith(
         healthSummary: derived.healthSummary,
         insight: derived.insight,
-        isPremium: derived.isPremium,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('[HomeViewModel] derived data failed: $e');

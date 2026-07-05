@@ -13,7 +13,6 @@ class HomeState {
   final BhiResult? bhi;
   final HealthSummary? healthSummary;
   final PetInsight? insight;
-  final bool isPremium;
 
   /// 기간 변경 시 BHI만 재로드 중인 상태 (전체 화면 로딩과 구분).
   final bool isBhiLoading;
@@ -34,7 +33,6 @@ class HomeState {
     this.bhi,
     this.healthSummary,
     this.insight,
-    this.isPremium = false,
     this.isBhiLoading = false,
     this.isBhiOffline = false,
     this.wciLevel = 0,
@@ -49,7 +47,6 @@ class HomeState {
     BhiResult? bhi,
     HealthSummary? healthSummary,
     PetInsight? insight,
-    bool? isPremium,
     bool? isBhiLoading,
     bool? isBhiOffline,
     int? wciLevel,
@@ -63,7 +60,6 @@ class HomeState {
       bhi: bhi ?? this.bhi,
       healthSummary: healthSummary ?? this.healthSummary,
       insight: insight ?? this.insight,
-      isPremium: isPremium ?? this.isPremium,
       isBhiLoading: isBhiLoading ?? this.isBhiLoading,
       isBhiOffline: isBhiOffline ?? this.isBhiOffline,
       wciLevel: wciLevel ?? this.wciLevel,

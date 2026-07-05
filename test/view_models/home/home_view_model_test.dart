@@ -101,7 +101,6 @@ void main() {
       expect(state.hasWeight, isTrue);
       expect(state.hasFood, isTrue);
       expect(state.hasWater, isFalse);
-      expect(state.isPremium, isTrue);
       expect(state.isBhiOffline, isFalse);
       expect(state.lastBhiFetchTime, isNotNull);
       verify(() => repo.loadPetWithBhi('p1', any())).called(1);
