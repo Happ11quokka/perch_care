@@ -1,3 +1,6 @@
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
 import '../services/auth/auth_service.dart';
 import '../services/api/token_service.dart';
 
@@ -55,6 +58,14 @@ abstract class AuthRepository {
     String? fullName,
     String? email,
   });
+
+  /// Google SDK로 idToken을 직접 획득한 뒤 [signInWithGoogle]에 위임한다.
+  /// 사용자가 로그인을 취소하면 예외 대신 `null`을 반환한다.
+  Future<LoginOutcome?> loginWithGoogle();
+
+  /// Apple SDK로 credential을 직접 획득한 뒤 [signInWithApple]에 위임한다.
+  /// 사용자가 로그인을 취소하면 예외 대신 `null`을 반환한다.
+  Future<LoginOutcome?> loginWithApple();
 
   Future<void> signOut();
 
@@ -157,6 +168,54 @@ class AuthRepositoryImpl implements AuthRepository {
       email: email,
     );
     return _mapSocialResult(result);
+  }
+
+  @override
+  Future<LoginOutcome?> loginWithGoogle() async {
+    final GoogleSignInAccount account;
+    try {
+      final signIn = GoogleSignIn.instance;
+      account = await signIn.authenticate();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) return null;
+      rethrow;
+    }
+    final idToken = account.authentication.idToken;
+    if (idToken == null) throw Exception('idToken is null');
+    return signInWithGoogle(idToken: idToken);
+  }
+
+  @override
+  Future<LoginOutcome?> loginWithApple() async {
+    final AuthorizationCredentialAppleID credential;
+    try {
+      credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) return null;
+      rethrow;
+    }
+    final idToken = credential.identityToken;
+    if (idToken == null) throw Exception('identityToken is null');
+
+    // fullName 조합 (Apple은 최초 로그인 시에만 이름 제공)
+    String? fullName;
+    if (credential.givenName != null || credential.familyName != null) {
+      fullName = '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
+          .trim();
+      if (fullName.isEmpty) fullName = null;
+    }
+
+    return signInWithApple(
+      idToken: idToken,
+      userIdentifier: credential.userIdentifier,
+      fullName: fullName,
+      email: credential.email,
+    );
   }
 
   LoginOutcome _mapSocialResult(SocialLoginResult result) {
