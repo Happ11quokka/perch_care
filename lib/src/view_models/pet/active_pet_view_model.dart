@@ -29,7 +29,7 @@ class ActivePetViewModel extends AsyncViewModel<Pet?> {
     });
   }
 
-  /// 로그아웃 시 상태 초기화 — caller(`auth_actions.performLogout`)가
+  /// 로그아웃 시 상태 초기화 — caller(`AuthViewModel.logout`)가
   /// provider를 invalidate하므로 여기서는 상태만 초기화.
   void clear() {
     state = const AsyncData(null);

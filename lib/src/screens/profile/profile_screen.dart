@@ -6,11 +6,12 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
-import '../../services/auth/auth_service.dart';
+import '../../services/auth/auth_service.dart' show LinkedSocialAccount;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_providers.dart';
-import '../../providers/auth_actions.dart';
+import '../../providers/repository_providers.dart';
+import '../../view_models/auth/auth_view_model.dart';
 import '../../router/route_paths.dart';
 import '../../data/terms_content.dart';
 import '../../widgets/dashed_border.dart';
@@ -36,7 +37,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   static const Color _unselectedCardColor = AppColors.beige;
-  final _authService = AuthService.instance;
   String _userName = '';
   List<LinkedSocialAccount> _socialAccounts = [];
   bool _isLoadingSocial = true;
@@ -112,7 +112,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _loadSocialAccounts() async {
     try {
-      final accounts = await _authService.getSocialAccounts();
+      final accounts = await ref.read(authRepositoryProvider).getSocialAccounts();
       if (!mounted) return;
       setState(() {
         _socialAccounts = accounts;
@@ -136,7 +136,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final account = await signIn.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null) throw Exception('idToken is null');
-      await _authService.linkSocialAccount(
+      await ref.read(authRepositoryProvider).linkSocialAccount(
         provider: 'google',
         idToken: idToken,
       );
@@ -165,7 +165,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
       final idToken = credential.identityToken;
       if (idToken == null) throw Exception('identityToken is null');
-      await _authService.linkSocialAccount(
+      await ref.read(authRepositoryProvider).linkSocialAccount(
         provider: 'apple',
         idToken: idToken,
         providerId: credential.userIdentifier,
@@ -238,7 +238,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (confirm != true) return;
 
     try {
-      await _authService.unlinkSocialAccount(provider);
+      await ref.read(authRepositoryProvider).unlinkSocialAccount(provider);
       await _loadSocialAccounts();
       if (!mounted) return;
       AppSnackBar.success(context, message: l10n.snackbar_unlinked(providerName));
@@ -250,7 +250,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _loadUserProfile() async {
     try {
-      final profile = await _authService.getProfile();
+      final profile = await ref.read(authRepositoryProvider).getProfile();
       if (profile == null || !mounted) return;
       setState(() {
         _userName = profile['nickname'] as String? ?? '';
@@ -1157,7 +1157,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (confirm != true || !mounted) return;
 
     final router = GoRouter.of(context);
-    await performLogout(ref);
+    await ref.read(authViewModelProvider.notifier).logout();
     router.go(RoutePaths.login);
   }
 
@@ -1255,7 +1255,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     try {
       final router = GoRouter.of(context);
-      await _authService.deleteAccount();
+      await ref.read(authRepositoryProvider).deleteAccount();
       ref.invalidate(activePetProvider);
       router.go(RoutePaths.login);
     } catch (_) {

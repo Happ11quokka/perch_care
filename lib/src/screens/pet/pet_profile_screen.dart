@@ -4,9 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
-import '../../services/auth/auth_service.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/repository_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 반려동물 프로필 목록 화면 — MVVM(ViewModel + Repository) 구조.
@@ -21,7 +21,6 @@ class PetProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
-  final _authService = AuthService.instance;
   String _userNickname = '';
 
   @override
@@ -32,7 +31,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   Future<void> _loadUserProfile() async {
     try {
-      final profile = await _authService.getProfile();
+      final profile = await ref.read(authRepositoryProvider).getProfile();
       if (profile == null || !mounted) return;
       setState(() {
         _userNickname = profile['nickname'] as String? ?? '사용자';
