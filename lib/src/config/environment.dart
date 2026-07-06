@@ -7,7 +7,7 @@ class Environment {
   static String get apiBaseUrl => _require('API_BASE_URL');
 
   /// 서버 루트 URL (API prefix 제거). 이미지 등 정적 파일 접근용.
-  /// 예: https://perchcare-staging.up.railway.app
+  /// 예: https://perchcare-production.up.railway.app
   static String get serverBaseUrl {
     final uri = Uri.parse(apiBaseUrl);
     return '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
