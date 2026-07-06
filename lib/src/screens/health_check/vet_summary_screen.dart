@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/colors.dart';
-import '../../services/api/api_client.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/repository_providers.dart';
 import '../../widgets/app_loading.dart';
 
 /// 병원 방문 요약 공유 화면
@@ -32,17 +32,10 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
     setState(() => _isSharing = true);
 
     try {
-      final result = await ApiClient.instance.post(
-        '/reports/share/vet-summary/$petId',
-      );
-
-      final shareUrl = result['share_url'] as String;
+      final shareUrl = await ref
+          .read(reportShareRepositoryProvider)
+          .shareVetSummary(petId: petId);
       await Share.share(shareUrl, sharePositionOrigin: origin);
-    } on ApiException catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.report_shareFailed)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
