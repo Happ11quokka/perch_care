@@ -9,7 +9,7 @@ import 'package:country_picker/country_picker.dart';
 import '../../utils/image_crop_helper.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
-import '../../services/auth/auth_service.dart';
+import '../../providers/repository_providers.dart';
 import '../../services/api/token_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import 'widgets/country_selector_bottom_sheet.dart';
@@ -35,7 +35,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _emailFocusNode = FocusNode();
   final _phoneFocusNode = FocusNode();
 
-  final _authService = AuthService.instance;
   File? _selectedImage;
   Uint8List? _savedImageBytes;
   bool _isSaving = false;
@@ -69,7 +68,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   Future<void> _loadUserProfile() async {
     try {
-      final profile = await _authService.getProfile();
+      final profile = await ref.read(authRepositoryProvider).getProfile();
       if (profile != null && mounted) {
         setState(() {
           final email = profile['email'] as String?;
@@ -699,7 +698,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     final l10n = AppLocalizations.of(context);
 
     try {
-      await _authService.updateProfile(
+      await ref.read(authRepositoryProvider).updateProfile(
         nickname: _nameController.text.trim().isNotEmpty
             ? _nameController.text.trim()
             : null,
