@@ -7,7 +7,6 @@ import '../services/notification/notification_service.dart';
 import '../services/weight/weight_service.dart';
 import '../services/breed/breed_service.dart';
 import '../services/sync/sync_service.dart';
-import '../services/auth/auth_service.dart';
 import '../services/storage/local_image_storage_service.dart';
 
 /// Stateless 서비스 DI 래퍼 — 테스트에서 ProviderScope(overrides: [...])로 모킹 가능
@@ -20,6 +19,5 @@ final notificationServiceProvider = Provider<NotificationService>((ref) => Notif
 final weightServiceProvider = Provider<WeightService>((ref) => WeightService.instance);
 final breedServiceProvider = Provider<BreedService>((ref) => BreedService.instance);
 final syncServiceProvider = Provider<SyncService>((ref) => SyncService.instance);
-final authServiceProvider = Provider<AuthService>((ref) => AuthService.instance);
 final localImageStorageServiceProvider =
     Provider<LocalImageStorageService>((ref) => LocalImageStorageService.instance);

@@ -218,7 +218,7 @@ class AuthRepositoryImpl implements AuthRepository {
     );
   }
 
-  LoginOutcome _mapSocialResult(SocialLoginResult result) {
+  Future<LoginOutcome> _mapSocialResult(SocialLoginResult result) async {
     if (result.signupRequired) {
       return LoginSignupRequired(
         provider: result.provider!,
@@ -226,7 +226,10 @@ class AuthRepositoryImpl implements AuthRepository {
         providerEmail: result.providerEmail,
       );
     }
-    return LoginAuthenticated(result.hasPets);
+    // result.hasPets는 서버가 has_pets를 생략하면 false로 디폴트되어 tri-state를
+    // 잃는다. service.hasPets()를 다시 거쳐 tri-state(null 시 GET /pets/ 폴백)를
+    // 보존한다 — signInWithEmail과 동일한 경로.
+    return LoginAuthenticated(await _service.hasPets());
   }
 
   @override

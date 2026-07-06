@@ -4,7 +4,7 @@
 //   - `petListViewModelProvider`, `PetListViewModel`
 //   - `activePetViewModelProvider`, `ActivePetViewModel`
 //
-// 기존 caller (screens 16개 + auth_actions + bhi_provider)가 `activePetProvider` /
+// 기존 caller (screens 12개 + AuthViewModel.logout)가 `activePetProvider` /
 // `petListProvider`라는 이름을 사용하고 있어 일괄 교체 없이 호환성을 유지하기 위한 alias를 둔다.
 
 export '../view_models/pet/active_pet_view_model.dart';

@@ -117,15 +117,34 @@ void main() {
       expect(signup.providerEmail, 'g@x.com');
     });
 
-    test('authenticated maps to LoginAuthenticated', () async {
+    test(
+        'authenticated routes hasPets through service.hasPets() tri-state '
+        'fallback, not result.hasPets', () async {
+      // 서버가 has_pets를 생략하면 SocialLoginResult.hasPets는 false로 디폴트된다.
+      // service.hasPets()가 GET /pets/ 폴백으로 true를 찾아내면 그 값을 써야 한다.
       when(() => service.signInWithGoogle(idToken: any(named: 'idToken')))
           .thenAnswer(
-              (_) async => SocialLoginResult.authenticated(hasPets: true));
+              (_) async => SocialLoginResult.authenticated(hasPets: false));
+      when(() => service.hasPets()).thenAnswer((_) async => true);
 
       final result = await repo.signInWithGoogle(idToken: 'tok');
 
       expect(result, isA<LoginAuthenticated>());
       expect((result as LoginAuthenticated).hasPets, true);
+      verify(() => service.hasPets()).called(1);
+    });
+
+    test('authenticated preserves null from service.hasPets() (tri-state)',
+        () async {
+      when(() => service.signInWithGoogle(idToken: any(named: 'idToken')))
+          .thenAnswer(
+              (_) async => SocialLoginResult.authenticated(hasPets: false));
+      when(() => service.hasPets()).thenAnswer((_) async => null);
+
+      final result = await repo.signInWithGoogle(idToken: 'tok');
+
+      expect(result, isA<LoginAuthenticated>());
+      expect((result as LoginAuthenticated).hasPets, null);
     });
   });
 
@@ -156,7 +175,9 @@ void main() {
       expect(signup.providerEmail, 'a@x.com');
     });
 
-    test('authenticated maps to LoginAuthenticated', () async {
+    test(
+        'authenticated routes hasPets through service.hasPets() tri-state '
+        'fallback, not result.hasPets', () async {
       when(() => service.signInWithApple(
             idToken: any(named: 'idToken'),
             userIdentifier: any(named: 'userIdentifier'),
@@ -164,11 +185,30 @@ void main() {
             email: any(named: 'email'),
           )).thenAnswer(
               (_) async => SocialLoginResult.authenticated(hasPets: false));
+      when(() => service.hasPets()).thenAnswer((_) async => true);
 
       final result = await repo.signInWithApple(idToken: 'tok');
 
       expect(result, isA<LoginAuthenticated>());
-      expect((result as LoginAuthenticated).hasPets, false);
+      expect((result as LoginAuthenticated).hasPets, true);
+      verify(() => service.hasPets()).called(1);
+    });
+
+    test('authenticated preserves null from service.hasPets() (tri-state)',
+        () async {
+      when(() => service.signInWithApple(
+            idToken: any(named: 'idToken'),
+            userIdentifier: any(named: 'userIdentifier'),
+            fullName: any(named: 'fullName'),
+            email: any(named: 'email'),
+          )).thenAnswer(
+              (_) async => SocialLoginResult.authenticated(hasPets: false));
+      when(() => service.hasPets()).thenAnswer((_) async => null);
+
+      final result = await repo.signInWithApple(idToken: 'tok');
+
+      expect(result, isA<LoginAuthenticated>());
+      expect((result as LoginAuthenticated).hasPets, null);
     });
   });
 
