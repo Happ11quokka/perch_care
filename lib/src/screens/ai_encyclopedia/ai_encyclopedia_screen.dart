@@ -12,10 +12,6 @@ import '../../models/chat_message.dart';
 import '../../models/pet.dart';
 import '../../router/route_names.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../services/chat/chat_api_service.dart';
-import '../../services/ai/ai_encyclopedia_service.dart';
-import '../../services/ai/ai_stream_service.dart';
-import '../../services/storage/chat_storage_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
 import '../../theme/colors.dart';
 import '../../theme/radius.dart';
@@ -29,6 +25,7 @@ import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
 import '../../services/api/api_client.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/repository_providers.dart';
 
 class AIEncyclopediaScreen extends ConsumerStatefulWidget {
   const AIEncyclopediaScreen({super.key});
@@ -42,10 +39,6 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _inputController = TextEditingController();
-  final AiEncyclopediaService _aiService = AiEncyclopediaService.instance;
-  final AiStreamService _streamService = AiStreamService.instance;
-  final ChatStorageService _chatStorage = ChatStorageService.instance;
-  final ChatApiService _chatApi = ChatApiService.instance;
   final List<ChatMessage> _messages = [];
   Pet? _activePet;
   String? _currentSessionId;
@@ -203,26 +196,23 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     _scrollToBottom();
 
     // 서버 세션 생성 또는 메시지 저장
+    final repo = ref.read(chatRepositoryProvider);
     if (_currentSessionId == null) {
-      try {
-        final session = await _chatApi.createSession(
-          petId: petId,
-          firstMessage: text,
-        );
+      // createSession 실패 시 null 반환(Repository가 무음 처리) → 세션 없이 대화 진행
+      final session = await repo.createSession(
+        petId: petId,
+        firstMessage: text,
+      );
+      if (session != null) {
         _currentSessionId = session.id;
-      } catch (e) {
-        debugPrint('[AIEncyclopedia] Session creation failed: $e');
       }
     } else {
-      try {
-        await _chatApi.addMessage(
-          sessionId: _currentSessionId!,
-          role: 'user',
-          content: text,
-        );
-      } catch (e) {
-        debugPrint('[AIEncyclopedia] User message save failed: $e');
-      }
+      // saveMessageToServer는 fire-and-forget(실패 삼킴)
+      await repo.saveMessageToServer(
+        sessionId: _currentSessionId!,
+        role: 'user',
+        content: text,
+      );
     }
 
     try {
@@ -301,15 +291,12 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     if (idx == null || idx >= _messages.length) return;
     final msg = _messages[idx];
     if (msg.role != MessageRole.assistant || msg.text.isEmpty) return;
-    try {
-      await _chatApi.addMessage(
-        sessionId: _currentSessionId!,
-        role: 'assistant',
-        content: msg.text,
-      );
-    } catch (e) {
-      debugPrint('[AIEncyclopedia] Assistant message save failed: $e');
-    }
+    // fire-and-forget(Repository가 실패 삼킴). placeholder 인덱스 초기화 전 호출됨(_finishStreaming).
+    await ref.read(chatRepositoryProvider).saveMessageToServer(
+          sessionId: _currentSessionId!,
+          role: 'assistant',
+          content: msg.text,
+        );
   }
 
   /// SSE 스트리밍으로 토큰별 실시간 응답을 처리한다.
@@ -323,8 +310,9 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     // P2: 토큰 버퍼 (쓰로틀링용)
     final tokenBuffer = StringBuffer();
 
-    _streamSubscription = _streamService
-        .streamEncyclopedia(
+    _streamSubscription = ref
+        .read(chatRepositoryProvider)
+        .streamAnswer(
           query: query,
           history: history,
           petId: petId,
@@ -409,12 +397,12 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     });
 
     try {
-      final answer = await _aiService.ask(
-        query: query,
-        history: history,
-        petId: petId,
-        petProfileContext: petProfileContext,
-      );
+      final answer = await ref.read(chatRepositoryProvider).askAnswer(
+            query: query,
+            history: history,
+            petId: petId,
+            petProfileContext: petProfileContext,
+          );
 
       if (!mounted) return;
       setState(() {
@@ -476,37 +464,16 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       _isLoadingMessages = true;
     });
 
+    // 서버 우선/로컬 폴백 병합 정책은 ChatRepository로 이동 — View는 결과만 반영.
     try {
-      // 서버에서 세션 목록 로드 시도
-      final sessions = await _chatApi.getUserSessions();
-      final petId = _activePet?.id;
-      final matching = sessions.where((s) => s.petId == petId).toList();
-      if (matching.isNotEmpty) {
-        final session = matching.first;
-        _currentSessionId = session.id;
-        final serverMessages = await _chatApi.getSessionMessages(session.id);
-        if (!mounted) return;
-        setState(() {
-          _messages.clear();
-          _messages.addAll(serverMessages);
-          _isLoadingMessages = false;
-        });
-        // 로컬 캐시 업데이트
-        await _chatStorage.saveMessages(petId, _messages);
-        _scrollToBottom();
-        return;
-      }
-    } catch (e) {
-      debugPrint('[AIEncyclopedia] Server load failed, using local: $e');
-    }
-
-    // 로컬 폴백
-    try {
-      final messages = await _chatStorage.loadMessages(_activePet?.id);
+      final load = await ref
+          .read(chatRepositoryProvider)
+          .loadConversation(_activePet?.id);
       if (!mounted) return;
       setState(() {
         _messages.clear();
-        _messages.addAll(messages);
+        _messages.addAll(load.messages);
+        _currentSessionId = load.sessionId;
         _isLoadingMessages = false;
       });
       _scrollToBottom();
@@ -521,7 +488,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
 
   /// 대화 내역 저장
   Future<void> _saveMessages() async {
-    await _chatStorage.saveMessages(_activePet?.id, _messages);
+    await ref.read(chatRepositoryProvider).saveLocal(_activePet?.id, _messages);
   }
 
   /// 대화 내역 삭제 (P1: 스트리밍 중에는 비활성화)
@@ -548,16 +515,12 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     );
 
     if (confirmed == true) {
-      await _chatStorage.clearMessages(_activePet?.id);
-      // 서버 세션 삭제
-      if (_currentSessionId != null) {
-        try {
-          await _chatApi.deleteSession(_currentSessionId!);
-        } catch (e) {
-          debugPrint('[AIEncyclopedia] Session delete failed: $e');
-        }
-        _currentSessionId = null;
-      }
+      // 로컬 clear + (세션 있으면) 서버 세션 삭제 — 병합 정책은 Repository가 캡슐화.
+      await ref.read(chatRepositoryProvider).clearConversation(
+            petId: _activePet?.id,
+            sessionId: _currentSessionId,
+          );
+      _currentSessionId = null;
       if (mounted) {
         setState(() {
           _messages.clear();
