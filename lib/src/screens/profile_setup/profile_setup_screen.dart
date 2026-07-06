@@ -18,7 +18,12 @@ import '../../../l10n/app_localizations.dart';
 
 /// 프로필 설정 화면
 class ProfileSetupScreen extends ConsumerStatefulWidget {
-  const ProfileSetupScreen({super.key});
+  /// 최초 설정 플로우 여부.
+  /// true(온보딩): 완료/다음에 → 펫 등록(isInitialSetup) 화면으로 진행.
+  /// false(프로필 수정): 완료 → 저장 후 복귀, 다음에 → 취소 후 복귀.
+  final bool isInitialSetup;
+
+  const ProfileSetupScreen({super.key, this.isInitialSetup = true});
 
   @override
   ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
@@ -688,8 +693,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   void _handleSkip() {
-    // 다음에 - 펫 등록 화면으로 이동 (초기 설정 플로우)
-    context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
+    if (widget.isInitialSetup) {
+      // 다음에 - 펫 등록 화면으로 이동 (초기 설정 플로우)
+      context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
+    } else {
+      // 수정 모드 - 저장 없이 프로필 화면으로 복귀 (취소)
+      context.pop();
+    }
   }
 
   Future<void> _handleComplete() async {
@@ -704,8 +714,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             : null,
       );
       if (!mounted) return;
-      // 프로필 저장 후 펫 등록 화면으로 이동 (초기 설정 플로우)
-      context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
+      if (widget.isInitialSetup) {
+        // 프로필 저장 후 펫 등록 화면으로 이동 (초기 설정 플로우)
+        context.goNamed(RouteNames.petAdd, extra: {'isInitialSetup': true});
+      } else {
+        // 수정 모드 - 저장 후 프로필 화면으로 복귀
+        context.pop();
+      }
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.error(context, message: l10n.profileSetup_saveError);

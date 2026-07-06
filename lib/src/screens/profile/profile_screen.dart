@@ -750,8 +750,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             button: true,
             label: 'Edit profile',
             child: GestureDetector(
-            onTap: () {
-              context.pushNamed(RouteNames.profileSetup);
+            onTap: () async {
+              await context.pushNamed(
+                RouteNames.profileSetup,
+                extra: {'isInitialSetup': false},
+              );
+              // 수정 화면에서 복귀 시 변경된 닉네임을 즉시 반영
+              if (mounted) _loadUserProfile();
             },
             child: SizedBox(
               width: 50,

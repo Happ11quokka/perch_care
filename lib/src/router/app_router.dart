@@ -216,8 +216,15 @@ class AppRouter {
                   GoRoute(
                     path: 'profile/setup',
                     name: RouteNames.profileSetup,
-                    builder: (context, state) =>
-                        const ProfileSetupScreen(),
+                    builder: (context, state) {
+                      final extra = state.extra;
+                      final map =
+                          extra is Map<String, dynamic> ? extra : null;
+                      return ProfileSetupScreen(
+                        isInitialSetup:
+                            map?['isInitialSetup'] as bool? ?? true,
+                      );
+                    },
                   ),
                   GoRoute(
                     path: 'profile/setup/complete',
