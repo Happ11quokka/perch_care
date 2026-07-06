@@ -4,8 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
-import '../../services/auth/auth_service.dart';
-import '../../services/api/token_service.dart';
+import '../../providers/repository_providers.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/password_strength_indicator.dart';
@@ -40,7 +39,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _emailHasFocus = false;
   bool _passwordHasFocus = false;
   bool _confirmPasswordHasFocus = false;
-  final AuthService _authService = AuthService.instance;
 
   // 아이콘 에셋 경로
   static const String _personIconPath = 'assets/images/signup_vector/name.svg';
@@ -462,7 +460,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               final router = GoRouter.of(context);
               Navigator.pop(dialogContext);
               // 가입 시 자동 저장된 토큰 제거 후 로그인 페이지로 이동
-              await TokenService.instance.clearTokens();
+              await ref.read(authRepositoryProvider).discardSession();
               router.goNamed(RouteNames.login);
             },
             child: Text(
@@ -479,7 +477,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               final router = GoRouter.of(context);
               Navigator.pop(dialogContext);
               // 가입 시 자동 저장된 토큰 제거 후 로그인 페이지로 이동
-              await TokenService.instance.clearTokens();
+              await ref.read(authRepositoryProvider).discardSession();
               router.goNamed(RouteNames.login);
             },
             child: Text(
@@ -514,7 +512,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     try {
       final name = _nameController.text.trim();
 
-      await _authService.signUpWithEmail(
+      await ref.read(authRepositoryProvider).signUpWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         nickname: name,
