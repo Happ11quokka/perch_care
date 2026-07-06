@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../repositories/auth_repository.dart';
 import '../repositories/daily_record_repository.dart';
 import '../repositories/food_repository.dart';
 import '../repositories/home_repository.dart';
@@ -16,6 +17,10 @@ import '../repositories/weight_repository.dart';
 
 final petRepositoryProvider = Provider<PetRepository>(
   (ref) => PetRepositoryImpl(),
+);
+
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => AuthRepositoryImpl(),
 );
 
 final homeRepositoryProvider = Provider<HomeRepository>(
