@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
-import '../../services/auth/auth_service.dart';
+import '../../providers/repository_providers.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
@@ -19,7 +19,6 @@ class ForgotPasswordMethodScreen extends ConsumerStatefulWidget {
 
 class _ForgotPasswordMethodScreenState
     extends ConsumerState<ForgotPasswordMethodScreen> {
-  final _authService = AuthService.instance;
   final _emailController = TextEditingController();
   final _emailFocusNode = FocusNode();
 
@@ -242,7 +241,7 @@ class _ForgotPasswordMethodScreenState
     setState(() => _isSending = true);
 
     try {
-      await _authService.resetPassword(email);
+      await ref.read(authRepositoryProvider).resetPassword(email);
 
       if (!mounted) return;
 

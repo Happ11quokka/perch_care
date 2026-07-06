@@ -8,7 +8,7 @@ import 'dart:async';
 import 'dart:io';
 
 import '../../services/api/api_client.dart';
-import '../../services/auth/auth_service.dart';
+import '../../providers/repository_providers.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -36,7 +36,6 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
   final _newPasswordFocusNode = FocusNode();
   final _confirmPasswordFocusNode = FocusNode();
 
-  final _authService = AuthService.instance;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   bool _newPasswordHasFocus = false;
@@ -348,7 +347,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
 
     setState(() => _isLoading = true);
     try {
-      await _authService.updatePassword(
+      await ref.read(authRepositoryProvider).updatePassword(
         identifier: widget.identifier,
         code: widget.code,
         newPassword: newPassword,

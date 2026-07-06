@@ -9,7 +9,7 @@ import '../../router/route_names.dart';
 import 'dart:io';
 
 import '../../services/api/api_client.dart';
-import '../../services/auth/auth_service.dart';
+import '../../providers/repository_providers.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
@@ -38,7 +38,6 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
   );
   final List<FocusNode> _focusNodes = List.generate(_codeLength, (_) => FocusNode());
 
-  final _authService = AuthService.instance;
   Timer? _timer;
   int _remainingSeconds = 120; // 2분
   bool _isResending = false;
@@ -302,7 +301,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
     final code = _controllers.map((c) => c.text).join();
 
     try {
-      await _authService.verifyResetCode(widget.destination, code, method: widget.method);
+      await ref.read(authRepositoryProvider).verifyResetCode(widget.destination, code, method: widget.method);
       if (!mounted) return;
       context.pushNamed(
         RouteNames.forgotPasswordReset,
@@ -335,9 +334,9 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
     setState(() => _isResending = true);
     try {
       if (widget.method == 'phone') {
-        await _authService.resetPasswordByPhone(widget.destination);
+        await ref.read(authRepositoryProvider).resetPasswordByPhone(widget.destination);
       } else {
-        await _authService.resetPassword(widget.destination);
+        await ref.read(authRepositoryProvider).resetPassword(widget.destination);
       }
       // 입력 필드 초기화
       for (final controller in _controllers) {
