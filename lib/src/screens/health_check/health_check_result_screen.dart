@@ -9,8 +9,8 @@ import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
 import '../../services/storage/health_check_storage_service.dart';
-import '../../services/storage/local_image_storage_service.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/repository_providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
@@ -139,16 +139,9 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
         checkedAt: checkedAt,
       );
 
-      await HealthCheckStorageService.instance.saveRecord(record);
-
-      // 이미지도 로컬에 저장
-      if (widget.imageBytes != null) {
-        await LocalImageStorageService.instance.saveImage(
-          ownerType: ImageOwnerType.healthCheck,
-          ownerId: id,
-          imageBytes: widget.imageBytes!,
-        );
-      }
+      await ref
+          .read(healthCheckRepositoryProvider)
+          .saveLocalMirror(record, widget.imageBytes);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
