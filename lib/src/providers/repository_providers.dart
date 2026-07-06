@@ -6,6 +6,7 @@ import '../repositories/food_repository.dart';
 import '../repositories/home_repository.dart';
 import '../repositories/notification_repository.dart';
 import '../repositories/pet_repository.dart';
+import '../repositories/report_share_repository.dart';
 import '../repositories/schedule_repository.dart';
 import '../repositories/water_repository.dart';
 import '../repositories/weight_repository.dart';
@@ -49,4 +50,8 @@ final dailyRecordRepositoryProvider = Provider<DailyRecordRepository>(
 
 final notificationRepositoryProvider = Provider<NotificationRepository>(
   (ref) => NotificationRepositoryImpl(),
+);
+
+final reportShareRepositoryProvider = Provider<ReportShareRepository>(
+  (ref) => ReportShareRepositoryImpl(),
 );
