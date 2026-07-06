@@ -8,10 +8,10 @@ import '../../config/environment.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
-import '../../services/api/api_client.dart';
 import '../../services/storage/health_check_storage_service.dart';
-import '../../services/storage/local_image_storage_service.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/repository_providers.dart';
+import '../../view_models/health_check/health_check_history_view_model.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/app_loading.dart';
@@ -29,64 +29,13 @@ class HealthCheckHistoryScreen extends ConsumerStatefulWidget {
 
 class _HealthCheckHistoryScreenState
     extends ConsumerState<HealthCheckHistoryScreen> {
-  List<HealthCheckRecord> _records = [];
-  List<_DateGroup>? _groupedRecords;
-  bool _isLoading = true;
-
   // Coach mark target keys
   final _vetSummaryButtonKey = GlobalKey();
   final _shareButtonKey = GlobalKey();
   final _firstHistoryCardKey = GlobalKey();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadRecords();
-  }
-
-  Future<void> _loadRecords() async {
-    if (!_isLoading) {
-      setState(() { _isLoading = true; });
-    }
-    final petId = ref.read(activePetProvider).valueOrNull?.id;
-
-    // Try server first
-    if (petId != null) {
-      try {
-        final serverRecords =
-            await HealthCheckStorageService.instance.fetchFromServer(petId);
-        // Update local cache
-        await HealthCheckStorageService.instance.syncWithServer(petId);
-        if (mounted) {
-          setState(() {
-            _records = serverRecords;
-            _groupedRecords = null;
-            _isLoading = false;
-          });
-          if (_records.isNotEmpty) {
-            _maybeShowCoachMarks();
-          }
-        }
-        return;
-      } catch (e) {
-        debugPrint('[HealthCheckHistory] Server load failed, using local: $e');
-      }
-    }
-
-    // Fallback to local
-    final records =
-        await HealthCheckStorageService.instance.getRecords(petId);
-    if (mounted) {
-      setState(() {
-        _records = records;
-        _groupedRecords = null;
-        _isLoading = false;
-      });
-      if (_records.isNotEmpty) {
-        _maybeShowCoachMarks();
-      }
-    }
-  }
+  // 최초 로드 완료 시 1회만 코치마크를 트리거하기 위한 가드.
+  bool _coachMarksTriggered = false;
 
   Future<void> _maybeShowCoachMarks() async {
     final service = CoachMarkService.instance;
@@ -152,29 +101,11 @@ class _HealthCheckHistoryScreenState
     return confirmed == true;
   }
 
-  /// Dismissible onDismissed에서 호출: 스토리지 + 이미지 + 서버 삭제
+  /// Dismissible onDismissed에서 호출: VM 경유 삭제(로컬+이미지+서버 best-effort).
   Future<void> _performDelete(HealthCheckRecord record) async {
-    await HealthCheckStorageService.instance
-        .deleteRecord(record.petId, record.id);
-    await LocalImageStorageService.instance.deleteImage(
-      ownerType: ImageOwnerType.healthCheck,
-      ownerId: record.id,
-    );
-    // Also delete from server
-    if (record.petId != null) {
-      try {
-        await ApiClient.instance
-            .delete('/pets/${record.petId}/health-checks/${record.id}');
-      } catch (e) {
-        debugPrint('[HealthCheckHistory] Server delete failed: $e');
-      }
-    }
+    await ref.read(healthCheckHistoryViewModelProvider.notifier).delete(record);
     if (mounted) {
       final l10n = AppLocalizations.of(context);
-      setState(() {
-        _records.removeWhere((r) => r.id == record.id);
-        _groupedRecords = null;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.hc_deleteSuccess)),
       );
@@ -194,20 +125,12 @@ class _HealthCheckHistoryScreenState
     try {
       final now = DateTime.now();
       final from = now.subtract(const Duration(days: 30));
-      String fmt(DateTime d) =>
-          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
-      final result = await ApiClient.instance.post(
-        '/reports/share/health/$petId?date_from=${fmt(from)}&date_to=${fmt(now)}',
-      );
-
-      final shareUrl = result['share_url'] as String;
+      final shareUrl = await ref.read(reportShareRepositoryProvider).shareHealthReport(
+            petId: petId,
+            from: from,
+            to: now,
+          );
       await Share.share(shareUrl, sharePositionOrigin: origin);
-    } on ApiException catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.report_shareFailed)),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -220,13 +143,18 @@ class _HealthCheckHistoryScreenState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    ref.listen(activePetProvider, (previous, next) {
-      if (previous?.valueOrNull?.id != next.valueOrNull?.id) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _loadRecords();
-        });
-      }
-    });
+    // activePetViewModelProvider를 watch하는 VM의 build()가 펫 전환 시 자동
+    // 재실행되어 히스토리를 재조회한다 — 기존의 활성 펫 구독 기반 수동 재로드를 대체.
+    final asyncRecords = ref.watch(healthCheckHistoryViewModelProvider);
+    final records = asyncRecords.valueOrNull ?? const [];
+    final isLoading = asyncRecords.isLoading && !asyncRecords.hasValue;
+
+    if (!_coachMarksTriggered && asyncRecords.hasValue && records.isNotEmpty) {
+      _coachMarksTriggered = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _maybeShowCoachMarks();
+      });
+    }
 
     return Scaffold(
       backgroundColor: AppColors.gray100,
@@ -267,18 +195,20 @@ class _HealthCheckHistoryScreenState
         ],
       ),
       body: SafeArea(
-        child: _isLoading
+        child: isLoading
             ? AppLoading.fullPage()
             : RefreshIndicator(
-                onRefresh: _loadRecords,
+                onRefresh: () => ref
+                    .read(healthCheckHistoryViewModelProvider.notifier)
+                    .refresh(),
                 color: AppColors.brandPrimary,
-                child: _records.isEmpty
+                child: records.isEmpty
                     ? ListView(
                         children: [
                           _buildEmptyState(),
                         ],
                       )
-                    : _buildRecordList(l10n),
+                    : _buildRecordList(records, l10n),
               ),
       ),
     );
@@ -296,8 +226,8 @@ class _HealthCheckHistoryScreenState
     );
   }
 
-  Widget _buildRecordList(AppLocalizations l10n) {
-    final grouped = _groupedRecords ??= _groupByDate(_records, l10n);
+  Widget _buildRecordList(List<HealthCheckRecord> records, AppLocalizations l10n) {
+    final grouped = _groupByDate(records, l10n);
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 16),
