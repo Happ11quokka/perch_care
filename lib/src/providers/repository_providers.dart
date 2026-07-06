@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/daily_record_repository.dart';
 import '../repositories/food_repository.dart';
+import '../repositories/health_check_repository.dart';
 import '../repositories/home_repository.dart';
 import '../repositories/notification_repository.dart';
 import '../repositories/pet_repository.dart';
@@ -54,4 +55,8 @@ final notificationRepositoryProvider = Provider<NotificationRepository>(
 
 final reportShareRepositoryProvider = Provider<ReportShareRepository>(
   (ref) => ReportShareRepositoryImpl(),
+);
+
+final healthCheckRepositoryProvider = Provider<HealthCheckRepository>(
+  (ref) => HealthCheckRepositoryImpl(),
 );
