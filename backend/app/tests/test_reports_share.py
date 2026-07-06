@@ -422,7 +422,9 @@ def test_view_report_service_unexpected_error_returns_500(monkeypatch):
         _clear_overrides()
 
     # The RuntimeError is caught and logged (see logger.exception in
-    # reports.py); the client gets the intended generic 500 + "Error" body,
-    # not a crash from `_ERROR_HTML.format()` itself.
+    # reports.py); the client must get the intended _ERROR_HTML 500 page, not a
+    # crash from `_ERROR_HTML.format()` itself. Assert the page-unique message
+    # body (Starlette's generic 500 "Internal Server Error" would NOT contain
+    # it), so reverting the CSS-brace escaping in _ERROR_HTML fails this test.
     assert response.status_code == 500
-    assert "Error" in response.text
+    assert "An error occurred while generating the report." in response.text

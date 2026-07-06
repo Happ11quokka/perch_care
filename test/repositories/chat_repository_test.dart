@@ -103,6 +103,26 @@ void main() {
       verifyNever(() => chatApi.getSessionMessages(any()));
       verifyNever(() => storage.saveMessages(any(), any()));
     });
+
+    test(
+        'matching session but messages fetch fails keeps sessionId (prevents '
+        'duplicate server session) and falls back to local messages', () async {
+      final session = _session(id: 'session-1', petId: 'pet-1');
+      when(() => chatApi.getUserSessions()).thenAnswer((_) async => [session]);
+      when(() => chatApi.getSessionMessages('session-1'))
+          .thenThrow(Exception('messages timeout'));
+      final localMessages = [_message(text: 'from local')];
+      when(() => storage.loadMessages('pet-1'))
+          .thenAnswer((_) async => localMessages);
+
+      final result = await repo.loadConversation('pet-1');
+
+      // The matched session must stay bound so the next send routes to it
+      // instead of createSession() spawning a duplicate for the same pet.
+      expect(result.sessionId, 'session-1');
+      expect(result.messages, localMessages);
+      verifyNever(() => storage.saveMessages(any(), any()));
+    });
   });
 
   group('saveLocal', () {

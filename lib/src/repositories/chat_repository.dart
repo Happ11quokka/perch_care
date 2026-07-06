@@ -85,19 +85,33 @@ class ChatRepositoryImpl implements ChatRepository {
       final matching = sessions.where((s) => s.petId == petId).toList();
       if (matching.isNotEmpty) {
         final session = matching.first;
-        final serverMessages = await _chatApi.getSessionMessages(session.id);
-        // 로컬 캐시 업데이트(미러)
-        await _storage.saveMessages(petId, serverMessages);
-        return ConversationLoad(
-          messages: serverMessages,
-          sessionId: session.id,
-        );
+        try {
+          final serverMessages =
+              await _chatApi.getSessionMessages(session.id);
+          // 로컬 캐시 업데이트(미러)
+          await _storage.saveMessages(petId, serverMessages);
+          return ConversationLoad(
+            messages: serverMessages,
+            sessionId: session.id,
+          );
+        } catch (e) {
+          // 메시지 조회만 일시 실패한 경우 — 매칭된 세션 바인딩은 유지한다.
+          // 그래야 다음 전송이 기존 세션으로 라우팅되어 같은 펫에 서버 세션이
+          // 중복 생성되는 것을 막는다. 메시지는 로컬 캐시로 폴백.
+          debugPrint(
+              '[ChatRepository] Session messages load failed, keeping session ${session.id}: $e');
+          final localMessages = await _storage.loadMessages(petId);
+          return ConversationLoad(
+            messages: localMessages,
+            sessionId: session.id,
+          );
+        }
       }
     } catch (e) {
       debugPrint('[ChatRepository] Server load failed, using local: $e');
     }
 
-    // 로컬 폴백
+    // 로컬 폴백 (매칭 세션 없음 또는 세션 목록 로드 실패)
     final messages = await _storage.loadMessages(petId);
     return ConversationLoad(messages: messages, sessionId: null);
   }

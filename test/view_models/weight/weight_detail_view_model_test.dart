@@ -340,11 +340,17 @@ void main() {
     await container.read(weightDetailViewModelProvider.future);
     final vm = container.read(weightDetailViewModelProvider.notifier);
 
-    // View is focused on a past month (2026-05) before the pet switch.
-    await vm.loadForMonth(2026, 5);
+    // Focus on a month guaranteed different from DateTime.now().month, so a
+    // reverted fix (build() falling back to now.month) always fails this test
+    // instead of coincidentally passing during that calendar month.
+    final now = DateTime.now();
+    final targetMonth = now.month == 5 ? 4 : 5;
+
+    // View is focused on a past month before the pet switch.
+    await vm.loadForMonth(2026, targetMonth);
 
     // Record which month subsequent fetches request, to prove the rebuild
-    // below targets the recorded focused month (5) rather than
+    // below targets the recorded focused month (targetMonth) rather than
     // DateTime.now()'s month.
     final scheduleMonths = <int>[];
     when(() => schedule.fetchByMonth(
@@ -376,12 +382,12 @@ void main() {
 
     expect(state.activePetId, 'p2');
     expect(scheduleMonths, isNotEmpty);
-    expect(scheduleMonths.every((m) => m == 5), isTrue,
+    expect(scheduleMonths.every((m) => m == targetMonth), isTrue,
         reason: 'schedule reload after pet switch must target the focused '
-            'month (5), not DateTime.now().month');
+            'month ($targetMonth), not DateTime.now().month');
     expect(dailyMonths, isNotEmpty);
-    expect(dailyMonths.every((m) => m == 5), isTrue,
+    expect(dailyMonths.every((m) => m == targetMonth), isTrue,
         reason: 'daily reload after pet switch must target the focused '
-            'month (5), not DateTime.now().month');
+            'month ($targetMonth), not DateTime.now().month');
   });
 }
