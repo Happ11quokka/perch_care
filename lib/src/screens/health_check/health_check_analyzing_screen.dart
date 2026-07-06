@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
-import '../../services/health_check/health_check_service.dart';
 import '../../providers/pet_providers.dart';
+import '../../providers/repository_providers.dart';
 import '../../services/api/api_client.dart';
 import '../../theme/durations.dart';
 import '../../../l10n/app_localizations.dart';
@@ -93,14 +93,14 @@ class _HealthCheckAnalyzingScreenState
 
       final Map<String, dynamic> response;
       if (activePetId == null && isFoodMode) {
-        response = await HealthCheckService.instance.analyzeFood(
+        response = await ref.read(healthCheckRepositoryProvider).analyzeFood(
           imageBytes: widget.imageBytes,
           fileName: widget.fileName,
           notes: widget.notes,
           language: language,
         );
       } else {
-        response = await HealthCheckService.instance.analyzeImage(
+        response = await ref.read(healthCheckRepositoryProvider).analyze(
           petId: activePetId!,
           mode: widget.mode.value,
           part: widget.part?.value,
