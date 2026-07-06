@@ -7,9 +7,8 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../services/auth/auth_service.dart';
-import '../../services/pet/pet_local_cache_service.dart';
-import '../../services/pet/pet_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/pet.dart';
 import '../../providers/pet_providers.dart';
 import '../../providers/auth_actions.dart';
 import '../../router/route_paths.dart';
@@ -37,13 +36,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   static const Color _unselectedCardColor = AppColors.beige;
-  final _petCache = PetLocalCacheService.instance;
-  final _petService = PetService.instance;
   final _authService = AuthService.instance;
   String _userName = '';
-  int? _selectedPetIndex = 0;
-  List<PetProfileCache> _cachedPets = [];
-  bool _isLoadingPets = true;
   List<LinkedSocialAccount> _socialAccounts = [];
   bool _isLoadingSocial = true;
   bool _isLinkingSocial = false;
@@ -68,7 +62,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _loadData() async {
     try {
       await Future.wait([
-        _loadPets(),
         _loadUserProfile(),
         _loadSocialAccounts(),
       ]);
@@ -85,6 +78,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     await Future.delayed(AppDurations.coachMarkDelay);
     if (!mounted) return;
 
+    final hasPets =
+        (ref.read(petListViewModelProvider).valueOrNull ?? const <Pet>[])
+            .isNotEmpty;
+
     final l10n = AppLocalizations.of(context);
     final steps = <CoachMarkStep>[
       CoachMarkStep(
@@ -92,7 +89,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         title: l10n.coach_profileAddPet_title,
         body: l10n.coach_profileAddPet_body,
       ),
-      if (_cachedPets.isNotEmpty)
+      if (hasPets)
         CoachMarkStep(
           targetKey: _firstPetCardKey,
           title: l10n.coach_profilePetCard_title,
@@ -251,61 +248,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  Future<void> _loadPets() async {
-    try {
-      // API에서 펫 목록 조회 (UUID 형식 보장)
-      final apiPets = await _petService.getMyPets();
-      if (!mounted) return;
-
-      for (final pet in apiPets) {
-        await _petCache.upsertPet(
-          PetProfileCache(
-            id: pet.id,
-            name: pet.name,
-            species: pet.breed,
-            gender: pet.gender,
-            birthDate: pet.birthDate,
-          ),
-          setActive: false,
-        );
-      }
-
-      final activePet = ref.read(activePetProvider).valueOrNull;
-      if (activePet != null) {
-        await _petCache.setActivePetId(activePet.id);
-      }
-
-      final cachedPets = await _petCache.getPets();
-      if (!mounted) return;
-      setState(() {
-        _cachedPets = cachedPets;
-        _isLoadingPets = false;
-        // 활성 펫의 인덱스를 찾아서 선택
-        if (activePet != null) {
-          final idx = _cachedPets.indexWhere((p) => p.id == activePet.id);
-          _selectedPetIndex = idx >= 0 ? idx : 0;
-        } else if (_cachedPets.isNotEmpty) {
-          _selectedPetIndex = 0;
-        }
-      });
-    } catch (_) {
-      // API 실패 시 로컬 캐시 폴백
-      final pets = await _petCache.getPets();
-      final cachedActive = await _petCache.getActivePet();
-      if (!mounted) return;
-      setState(() {
-        _cachedPets = pets;
-        _isLoadingPets = false;
-        if (cachedActive != null) {
-          final idx = _cachedPets.indexWhere((p) => p.id == cachedActive.id);
-          _selectedPetIndex = idx >= 0 ? idx : 0;
-        } else if (_cachedPets.isNotEmpty) {
-          _selectedPetIndex = 0;
-        }
-      });
-    }
-  }
-
   Future<void> _loadUserProfile() async {
     try {
       final profile = await _authService.getProfile();
@@ -316,21 +258,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (_) {
       // 프로필 로드 실패 시 기본값 사용
     }
-  }
-
-  List<Map<String, dynamic>> _getDisplayPets(AppLocalizations l10n) {
-    return _cachedPets.map((pet) => _mapCacheToDisplay(pet, l10n)).toList();
-  }
-
-  Map<String, dynamic> _mapCacheToDisplay(PetProfileCache pet, AppLocalizations l10n) {
-    return {
-      'id': pet.id,
-      'name': pet.name,
-      'species': pet.species?.isNotEmpty == true ? pet.species! : l10n.profile_noSpecies,
-      'age': _formatAge(pet.birthDate, l10n),
-      'gender': pet.gender,
-      'isCached': true,
-    };
   }
 
   String _formatAge(DateTime? birthDate, AppLocalizations l10n) {
@@ -356,7 +283,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final displayPets = _getDisplayPets(l10n);
+    final petsAsync = ref.watch(petListViewModelProvider);
+    final selectedPetId = ref.watch(activePetViewModelProvider).valueOrNull?.id;
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -401,19 +329,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const SizedBox(height: 7),
 
                     // 반려동물 프로필 카드들
-                    if (_isLoadingPets)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 32),
-                        child: LinearProgressIndicator(minHeight: 2),
-                      )
-                    else
-                      ...displayPets.asMap().entries.map((entry) {
-                        return _buildPetProfileCard(
-                          index: entry.key,
-                          pet: entry.value,
-                          isFirst: entry.key == 0,
-                        );
-                      }),
+                    ...petsAsync.when(
+                      loading: () => const [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 32),
+                          child: LinearProgressIndicator(minHeight: 2),
+                        ),
+                      ],
+                      // Repository 폴백(서버→인메모리→로컬캐시)으로 실제 도달 거의 없음
+                      error: (_, __) => const <Widget>[],
+                      data: (pets) => [
+                        ...pets.asMap().entries.map(
+                          (entry) => _buildPetProfileCard(
+                            pet: entry.value,
+                            isFirst: entry.key == 0,
+                            selectedPetId: selectedPetId,
+                          ),
+                        ),
+                      ],
+                    ),
 
                     const SizedBox(height: 12),
 
@@ -483,7 +417,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   /// 언어 설정 섹션
   Widget _buildLanguageSection(AppLocalizations l10n) {
-    final currentLocale = LocaleProvider.instance.currentLanguageCode;
+    final currentLocale = ref.watch(localeNotifierProvider)?.languageCode;
     final displayName = currentLocale != null
         ? LocaleProvider.getDisplayName(currentLocale)
         : l10n.profile_deviceDefault;
@@ -552,7 +486,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   /// 언어 선택 다이얼로그
   Future<void> _showLanguageDialog(AppLocalizations l10n) async {
-    final currentLocale = LocaleProvider.instance.currentLanguageCode;
+    final currentLocale = ref.read(localeNotifierProvider)?.languageCode;
 
     await showDialog(
       context: context,
@@ -892,11 +826,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   /// 반려동물 프로필 카드
   Widget _buildPetProfileCard({
-    required int index,
-    required Map<String, dynamic> pet,
-    bool isFirst = false,
+    required Pet pet,
+    required bool isFirst,
+    required String? selectedPetId,
   }) {
-    final isSelected = index == _selectedPetIndex;
+    final l10n = AppLocalizations.of(context);
+    final isSelected = pet.id == selectedPetId;
+    final species = (pet.breed?.isNotEmpty == true)
+        ? pet.breed!
+        : l10n.profile_noSpecies;
+    final age = _formatAge(pet.birthDate, l10n);
 
     return Semantics(
       button: true,
@@ -904,15 +843,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: GestureDetector(
       key: isFirst ? _firstPetCardKey : null,
       onTap: () async {
-        setState(() {
-          _selectedPetIndex = index;
-        });
-        final petId = pet['id'] as String?;
-        if (petId != null) {
-          _petCache.setActivePetId(petId);
-          // 서버에 활성 펫 변경 저장
-          ref.read(activePetProvider.notifier).switchPet(petId);
-        }
+        // 활성 펫 전환은 ActivePetViewModel이 SSOT·영속화 담당
+        await ref.read(activePetViewModelProvider.notifier).switchPet(pet.id);
       },
       child: Container(
         height: 120,
@@ -931,7 +863,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // 프로필 이미지
             LocalImageAvatar(
               ownerType: ImageOwnerType.petProfile,
-              ownerId: pet['id'] as String? ?? '',
+              ownerId: pet.id,
               size: 62.64,
               placeholder: SvgPicture.asset(
                 'assets/images/profile/pet_profile_placeholder.svg',
@@ -952,7 +884,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Row(
                     children: [
                       Text(
-                        pet['name'],
+                        pet.name,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -962,10 +894,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(width: 1),
-                      if (pet['gender'] == 'male' ||
-                          pet['gender'] == 'female')
+                      if (pet.gender == 'male' ||
+                          pet.gender == 'female')
                         SvgPicture.asset(
-                          pet['gender'] == 'male'
+                          pet.gender == 'male'
                               ? 'assets/images/profile/gender_male.svg'
                               : 'assets/images/profile/gender_female.svg',
                           width: 20,
@@ -980,7 +912,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   // 종
                   Text(
-                    pet['species'],
+                    species,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -992,7 +924,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   // 나이
                   Text(
-                    pet['age'],
+                    age,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -1010,10 +942,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               button: true,
               label: 'Edit pet profile',
               child: GestureDetector(
-              onTap: () async {
-                await context.pushNamed(RouteNames.petProfileDetail);
-                await _loadPets();
-              },
+              onTap: () => context.pushNamed(RouteNames.petProfileDetail),
               child: Container(
                 width: 32,
                 height: 32,
@@ -1445,10 +1374,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       label: l10n.profile_addNewPet,
       child: GestureDetector(
       key: _addPetButtonKey,
-      onTap: () async {
-        await context.pushNamed(RouteNames.petAdd);
-        await _loadPets();
-      },
+      onTap: () => context.pushNamed(RouteNames.petAdd),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 32),
         child: DashedBorder(
