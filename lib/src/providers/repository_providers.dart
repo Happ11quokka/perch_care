@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repositories/auth_repository.dart';
+import '../repositories/chat_repository.dart';
 import '../repositories/daily_record_repository.dart';
 import '../repositories/food_repository.dart';
 import '../repositories/health_check_repository.dart';
@@ -59,4 +60,8 @@ final reportShareRepositoryProvider = Provider<ReportShareRepository>(
 
 final healthCheckRepositoryProvider = Provider<HealthCheckRepository>(
   (ref) => HealthCheckRepositoryImpl(),
+);
+
+final chatRepositoryProvider = Provider<ChatRepository>(
+  (ref) => ChatRepositoryImpl(),
 );
