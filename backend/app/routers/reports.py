@@ -36,9 +36,9 @@ _SHARE_TOKEN_EXPIRE_DAYS = 7
 
 _ERROR_HTML = """<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{font-family:-apple-system,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#F9F9F9;color:#333;}
-.card{text-align:center;padding:40px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);max-width:400px;}
-h1{color:#FF9A42;font-size:24pt;margin-bottom:12px;}p{color:#97928A;font-size:11pt;line-height:1.6;}</style>
+<style>body{{font-family:-apple-system,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#F9F9F9;color:#333;}}
+.card{{text-align:center;padding:40px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);max-width:400px;}}
+h1{{color:#FF9A42;font-size:24pt;margin-bottom:12px;}}p{{color:#97928A;font-size:11pt;line-height:1.6;}}</style>
 </head><body><div class="card"><h1>⚠️</h1><h1>{title}</h1><p>{message}</p></div></body></html>"""
 
 
