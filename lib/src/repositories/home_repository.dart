@@ -151,21 +151,23 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<HomeDerivedData> loadHealthDerivedData(String petId) async {
-    final summaryJson =
-        await _api.get('/pets/$petId/health-summary') as Map<String, dynamic>;
-    final summary = HealthSummary.fromJson(summaryJson);
+    final summaryFuture = _api.get('/pets/$petId/health-summary');
+    // 주간 인사이트는 항상 조회 (프리미엄 게이트 제거).
+    // catchError를 Future.wait 이전에 부착해 insight 실패는 null로 흡수하고,
+    // summary가 먼저 실패해도 insight future가 unhandled async error가 되지 않게 한다.
+    final insightFuture = _api
+        .get('/pets/$petId/insights?type=weekly')
+        .then<PetInsight?>((insightJson) => insightJson != null
+            ? PetInsight.fromJson(insightJson as Map<String, dynamic>)
+            : null)
+        .catchError((_) => null);
 
-    // 주간 인사이트는 항상 조회 (프리미엄 게이트 제거)
-    PetInsight? insight;
-    try {
-      final insightJson =
-          await _api.get('/pets/$petId/insights?type=weekly');
-      if (insightJson != null) {
-        insight = PetInsight.fromJson(insightJson as Map<String, dynamic>);
-      }
-    } catch (_) {
-      // 인사이트 실패는 무시 (홈 화면의 다른 데이터는 유효)
-    }
+    final results =
+        await Future.wait<dynamic>([summaryFuture, insightFuture]);
+
+    final summary =
+        HealthSummary.fromJson(results[0] as Map<String, dynamic>);
+    final insight = results[1] as PetInsight?;
 
     return HomeDerivedData(
       healthSummary: summary,
