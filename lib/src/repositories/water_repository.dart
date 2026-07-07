@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/bhi/bhi_service.dart';
 import '../services/sync/sync_service.dart';
 import '../services/water/water_record_service.dart';
 import 'save_outcome.dart';
@@ -30,11 +31,14 @@ class WaterRepositoryImpl implements WaterRepository {
   WaterRepositoryImpl({
     WaterRecordService? service,
     SyncService? sync,
+    BhiService? bhi,
   })  : _service = service ?? WaterRecordService.instance,
-        _sync = sync ?? SyncService.instance;
+        _sync = sync ?? SyncService.instance,
+        _bhi = bhi ?? BhiService.instance;
 
   final WaterRecordService _service;
   final SyncService _sync;
+  final BhiService _bhi;
 
   String _storageKey(String petId, DateTime date) {
     final d = '${date.year}-${date.month}-${date.day}';
@@ -83,6 +87,9 @@ class WaterRepositoryImpl implements WaterRepository {
       _storageKey(petId, date),
       jsonEncode({'totalMl': totalMl, 'count': count}),
     );
+
+    // BHI 입력 데이터 변경 → 캐시 무효화
+    _bhi.invalidateCache();
 
     // 2) 서버 upsert
     final dateKey = SyncService.dateKey(date);

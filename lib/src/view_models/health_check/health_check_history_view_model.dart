@@ -17,9 +17,12 @@ class HealthCheckHistoryViewModel
     extends AsyncViewModel<List<HealthCheckRecord>> {
   @override
   Future<List<HealthCheckRecord>> build() async {
-    final pet = ref.watch(activePetViewModelProvider).valueOrNull;
-    if (pet == null) return const [];
-    return ref.read(healthCheckRepositoryProvider).loadHistory(pet.id);
+    // 히스토리는 펫 id에만 의존 — id만 select해 switchPet의 로딩 재발행이나
+    // 프로필 수정(name 등)에는 재조회하지 않는다.
+    final petId = ref
+        .watch(activePetViewModelProvider.select((a) => a.valueOrNull?.id));
+    if (petId == null) return const [];
+    return ref.read(healthCheckRepositoryProvider).loadHistory(petId);
   }
 
   /// 스와이프 삭제 — repo.delete(로컬+이미지+서버 best-effort) 후 state에서 낙관적으로 제거.

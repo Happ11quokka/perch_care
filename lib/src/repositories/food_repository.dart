@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/diet_entry.dart';
+import '../services/bhi/bhi_service.dart';
 import '../services/food/food_record_service.dart';
 import '../services/sync/sync_service.dart';
 import 'save_outcome.dart';
@@ -34,11 +35,14 @@ class FoodRepositoryImpl implements FoodRepository {
   FoodRepositoryImpl({
     FoodRecordService? service,
     SyncService? sync,
+    BhiService? bhi,
   })  : _service = service ?? FoodRecordService.instance,
-        _sync = sync ?? SyncService.instance;
+        _sync = sync ?? SyncService.instance,
+        _bhi = bhi ?? BhiService.instance;
 
   final FoodRecordService _service;
   final SyncService _sync;
+  final BhiService _bhi;
 
   String _storageKey(String petId, DateTime date) {
     final d = '${date.year}-${date.month}-${date.day}';
@@ -95,6 +99,9 @@ class FoodRepositoryImpl implements FoodRepository {
     // 1) 로컬 영속화
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_storageKey(petId, date), entriesJson);
+
+    // BHI 입력 데이터 변경 → 캐시 무효화
+    _bhi.invalidateCache();
 
     // 2) 서버 upsert
     final dateKey = SyncService.dateKey(date);

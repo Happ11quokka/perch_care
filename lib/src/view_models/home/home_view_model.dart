@@ -20,8 +20,15 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
 
   @override
   Future<HomeState> build() async {
-    final petAsync = ref.watch(activePetViewModelProvider);
-    final pet = petAsync.valueOrNull;
+    // 펫 '표시 내용' 키만 select — switchPet의 AsyncLoading 재발행(내용 불변)에는
+    // 재빌드하지 않아, 펫 전환 1회당 구 펫 대상 낭비 리로드(BHI+요약+인사이트)를 막는다.
+    // 펫 전환(id)·프로필 수정(name 등) 시에만 정확히 1회 재로드된다.
+    final petKey =
+        ref.watch(activePetViewModelProvider.select(activePetContentKey));
+    if (petKey == null) {
+      return const HomeState();
+    }
+    final pet = ref.read(activePetViewModelProvider).valueOrNull;
     if (pet == null) {
       return const HomeState();
     }
@@ -29,10 +36,22 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
   }
 
   /// 활성 펫 기반 초기 상태 (Pet+BHI, 파생 데이터, 로컬 배지까지 한 번에 채움).
+  ///
+  /// Pet+BHI와 건강요약/인사이트는 서로 독립 요청이므로 병렬로 발사해
+  /// 순차 왕복 1단계를 제거한다. derived 실패는 메인 상태에 영향 없음(null 처리).
   Future<HomeState> _buildInitialState(Pet pet, DateTime targetDate) async {
     final base = HomeState(activePet: pet);
 
-    final pair = await _repo.loadPetWithBhi(pet.id, targetDate);
+    final pairFuture = _repo.loadPetWithBhi(pet.id, targetDate);
+    final derivedFuture = _repo
+        .loadHealthDerivedData(pet.id)
+        .then<HomeDerivedData?>((v) => v)
+        .catchError((Object e) {
+      if (kDebugMode) debugPrint('[HomeViewModel] derived data failed: $e');
+      return null;
+    });
+
+    final pair = await pairFuture;
     final resolvedPet = pair.pet ?? pet;
     final bhi = pair.bhi;
 
@@ -58,15 +77,12 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
       );
     }
 
-    // 건강 요약/인사이트 로드는 실패해도 메인 상태에는 영향 없게 별도 try
-    try {
-      final derived = await _repo.loadHealthDerivedData(pet.id);
+    final derived = await derivedFuture;
+    if (derived != null) {
       next = next.copyWith(
         healthSummary: derived.healthSummary,
         insight: derived.insight,
       );
-    } catch (e) {
-      if (kDebugMode) debugPrint('[HomeViewModel] derived data failed: $e');
     }
 
     return next;
@@ -113,12 +129,17 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
   }
 
   /// 기록 화면에서 돌아온 후 오늘자 BHI만 갱신 (저장 직후 UI 반영).
+  ///
+  /// 저장이 없었으면 BhiService 캐시가 그대로 유효(동일 인스턴스 반환)하므로
+  /// state 재발행을 생략한다 — pop 전환 애니메이션 중 홈 전체 rebuild 방지.
+  /// 저장이 있었으면 Repository가 캐시를 무효화했으므로 서버 재조회 후 반영된다.
   Future<void> refreshBhi() async {
     final current = state.valueOrNull;
     final pet = current?.activePet;
     if (pet == null) return;
     try {
       final bhi = await _repo.loadBhiForDate(pet.id, DateTime.now());
+      if (identical(bhi, state.valueOrNull?.bhi)) return;
       final latest = state.valueOrNull ?? current!;
       state = AsyncData(latest.copyWith(
         bhi: bhi,

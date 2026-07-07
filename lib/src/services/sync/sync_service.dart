@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
 import '../api/token_service.dart';
+import '../bhi/bhi_service.dart';
 import '../food/food_record_service.dart';
 import '../pet/pet_service.dart';
 import '../water/water_record_service.dart';
@@ -206,6 +207,7 @@ class SyncService with WidgetsBindingObserver {
     final succeeded = <SyncItem>[];
 
     bool deadLetterChanged = false;
+    var sentToServer = 0;
 
     for (final item in List.of(_queue)) {
       if (item.totalRetryCount >= _maxTotalRetries) {
@@ -231,6 +233,7 @@ class SyncService with WidgetsBindingObserver {
       try {
         await _sendToServer(item);
         succeeded.add(item);
+        sentToServer++;
         if (kDebugMode) {
           debugPrint('[SyncService] Synced: ${item.type} ${item.date}');
         }
@@ -275,6 +278,10 @@ class SyncService with WidgetsBindingObserver {
     await _persist();
     if (deadLetterChanged) {
       await _persistDeadLetter();
+    }
+    if (sentToServer > 0) {
+      // 서버 데이터가 변경됨 — 다음 BHI 조회가 최신 값을 반영하도록 캐시 무효화
+      BhiService.instance.invalidateCache();
     }
     _isProcessing = false;
     if (kDebugMode) {

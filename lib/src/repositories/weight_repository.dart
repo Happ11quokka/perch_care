@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../models/weight_record.dart';
+import '../services/bhi/bhi_service.dart';
 import '../services/sync/sync_service.dart';
 import '../services/weight/weight_service.dart';
 
@@ -61,11 +62,14 @@ class WeightRepositoryImpl implements WeightRepository {
   WeightRepositoryImpl({
     WeightService? service,
     SyncService? sync,
+    BhiService? bhi,
   })  : _service = service ?? WeightService.instance,
-        _sync = sync ?? SyncService.instance;
+        _sync = sync ?? SyncService.instance,
+        _bhi = bhi ?? BhiService.instance;
 
   final WeightService _service;
   final SyncService _sync;
+  final BhiService _bhi;
 
   @override
   Future<List<WeightRecord>> fetchAll({required String petId}) =>
@@ -88,6 +92,9 @@ class WeightRepositoryImpl implements WeightRepository {
     // 1) 로컬 저장 (사용자 입력 손실 방지 — 실패하면 즉시 throw)
     final local = await _service.saveLocalWeightRecord(record);
 
+    // BHI 입력 데이터 변경 → 캐시 무효화 (다음 조회 시 서버 재계산 반영)
+    _bhi.invalidateCache();
+
     // 2) 백엔드 동기화는 fire-and-forget (UI 블로킹 방지). 실패 시 큐에 적재.
     unawaited(_syncToBackend(local));
 
@@ -102,6 +109,8 @@ class WeightRepositoryImpl implements WeightRepository {
     );
     try {
       await _service.saveWeightRecord(local);
+      // 서버 반영 완료 — 저장 시점 무효화 이후 fetch된 stale BHI 캐시 제거
+      _bhi.invalidateCache();
       await _sync.markMutationSynced(
         type: 'weight',
         petId: local.petId,
@@ -130,12 +139,16 @@ class WeightRepositoryImpl implements WeightRepository {
   }
 
   @override
-  Future<void> deleteByDate(DateTime date, {required String petId}) =>
-      _service.deleteWeightRecord(date, petId);
+  Future<void> deleteByDate(DateTime date, {required String petId}) async {
+    await _service.deleteWeightRecord(date, petId);
+    _bhi.invalidateCache();
+  }
 
   @override
-  Future<void> deleteById(String recordId, {required String petId}) =>
-      _service.deleteWeightRecordById(recordId, petId);
+  Future<void> deleteById(String recordId, {required String petId}) async {
+    await _service.deleteWeightRecordById(recordId, petId);
+    _bhi.invalidateCache();
+  }
 
   @override
   Future<List<Map<String, dynamic>>> getMonthlyAverages(

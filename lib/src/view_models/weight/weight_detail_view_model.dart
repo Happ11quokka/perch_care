@@ -22,7 +22,13 @@ class WeightDetailViewModel extends AsyncNotifier<WeightDetailState> {
 
   @override
   Future<WeightDetailState> build() async {
-    final activePet = ref.watch(activePetViewModelProvider).valueOrNull;
+    // 펫 '표시 내용' 키만 select — switchPet의 AsyncLoading 재발행에는 재빌드하지
+    // 않아 구 펫 대상 낭비 리로드(전체 체중+일정+데일리)를 막는다.
+    final petKey =
+        ref.watch(activePetViewModelProvider.select(activePetContentKey));
+    final activePet = petKey == null
+        ? null
+        : ref.read(activePetViewModelProvider).valueOrNull;
     final petRepo = ref.read(petRepositoryProvider);
 
     // 셀렉터용 펫 목록 (실패해도 화면은 뜬다)
