@@ -15,8 +15,12 @@ class ApiClient {
   ApiClient._();
 
   static void initialize() {
+    _instance?._httpClient.close();
     _instance = ApiClient._();
   }
+
+  /// 커넥션 재사용(keep-alive) 클라이언트 — 요청마다 TLS 핸드셰이크 반복 방지
+  final http.Client _httpClient = http.Client();
 
   /// 앱 언어 코드 resolver (composition root에서 주입, main.dart 참고)
   /// null 반환 시 플랫폼 로케일로 폴백
@@ -57,7 +61,7 @@ class ApiClient {
   /// GET 요청
   Future<dynamic> get(String path, {Map<String, String>? queryParams}) async {
     final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: queryParams);
-    final response = await _makeRequest(() => http.get(uri, headers: _authHeaders));
+    final response = await _makeRequest(() => _httpClient.get(uri, headers: _authHeaders));
     return _handleResponse(response);
   }
 
@@ -66,7 +70,7 @@ class ApiClient {
     final uri = Uri.parse('$_baseUrl$path');
     final headers = auth ? _authHeaders : _headers;
     final response = await _makeRequest(
-      () => http.post(uri, headers: headers, body: body != null ? jsonEncode(body) : null),
+      () => _httpClient.post(uri, headers: headers, body: body != null ? jsonEncode(body) : null),
     );
     return _handleResponse(response);
   }
@@ -75,7 +79,7 @@ class ApiClient {
   Future<dynamic> put(String path, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('$_baseUrl$path');
     final response = await _makeRequest(
-      () => http.put(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
+      () => _httpClient.put(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
     );
     return _handleResponse(response);
   }
@@ -84,7 +88,7 @@ class ApiClient {
   Future<void> delete(String path, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('$_baseUrl$path');
     final response = await _makeRequest(
-      () => http.delete(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
+      () => _httpClient.delete(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
     );
     if (response.statusCode != 204 && response.statusCode != 200) {
       _handleError(response);
@@ -98,7 +102,7 @@ class ApiClient {
     request.headers['Authorization'] = 'Bearer ${_tokenService.accessToken}';
     request.files.add(http.MultipartFile.fromBytes('file', fileBytes, filename: fileName));
 
-    final streamedResponse = await request.send().timeout(_uploadTimeout);
+    final streamedResponse = await _httpClient.send(request).timeout(_uploadTimeout);
     final response = await http.Response.fromStream(streamedResponse);
     return _handleResponse(response);
   }
@@ -127,7 +131,7 @@ class ApiClient {
           contentType: _inferMediaType(fileName),
         ),
       );
-      final streamedResponse = await request.send().timeout(effectiveTimeout);
+      final streamedResponse = await _httpClient.send(request).timeout(effectiveTimeout);
       return http.Response.fromStream(streamedResponse);
     }
 
@@ -148,7 +152,7 @@ class ApiClient {
   Future<dynamic> postAI(String path, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('$_baseUrl$path');
     final response = await _makeRequest(
-      () => http.post(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
+      () => _httpClient.post(uri, headers: _authHeaders, body: body != null ? jsonEncode(body) : null),
       timeout: _aiTimeout,
     );
     return _handleResponse(response);
@@ -188,7 +192,7 @@ class ApiClient {
 
     try {
       final uri = Uri.parse('$_baseUrl/auth/refresh');
-      final response = await http.post(
+      final response = await _httpClient.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'refresh_token': _tokenService.refreshToken}),
