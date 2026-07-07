@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -15,6 +16,12 @@ import 'src/services/push/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 릴리즈 빌드에서 debugPrint 완전 차단 — kDebugMode 가드 없는 호출(서비스 레이어
+  // 다수)이 릴리즈에서 문자열 보간 + syslog 출력을 하지 않도록 전역 no-op 처리.
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
 
   // iOS에서 앱 재시작 시 secure storage 초기화 문제 방지
   await Future.delayed(const Duration(milliseconds: 50));

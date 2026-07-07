@@ -325,6 +325,8 @@ class _HealthCheckHistoryScreenState
                     Environment.resolveImageUrl(record.imageUrl!),
                     width: 44,
                     height: 44,
+                    // 원본(최대 1920px)을 44px 표시용으로 풀디코드하지 않도록 제한
+                    cacheWidth: 132,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildModeIcon(mode, icon, iconColor),
                   ),

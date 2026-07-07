@@ -123,11 +123,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       debugPrint('[Splash] 5. SyncService init error: $e');
     }
 
-    // 6. Riverpod provider 사전 로드 — HomeScreen 즉시 렌더 (네트워크 1회)
+    // 6. Riverpod provider 사전 로드 — HomeScreen 즉시 렌더.
+    // 활성 펫/펫 목록은 서로 독립 요청이므로 병렬 조회 (순차 대비 왕복 1단계 절감).
     if (TokenService.instance.isLoggedIn) {
       try {
-        await ref.read(activePetProvider.notifier).refresh();
-        await ref.read(petListProvider.notifier).refresh();
+        await Future.wait([
+          ref.read(activePetProvider.notifier).refresh(),
+          ref.read(petListProvider.notifier).refresh(),
+        ]);
         debugPrint('[Splash] Riverpod providers seeded');
       } catch (e) {
         debugPrint('[Splash] Provider seeding error: $e');

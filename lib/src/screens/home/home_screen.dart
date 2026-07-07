@@ -63,6 +63,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // 스크롤 컨트롤러 (코치마크 자동 스크롤용)
   final _scrollController = ScrollController();
 
+  // 월 선택기 전용 — build마다 재생성하면 컨트롤러가 누수되므로 1회 생성 후 재사용.
+  ScrollController? _monthScrollController;
+
   // WCI 단계별 설명 텍스트를 가져오는 메소드
   Map<int, String> _getWciDescriptions(AppLocalizations l10n) => {
     1: l10n.wci_level1,
@@ -96,6 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _monthScrollController?.dispose();
     super.dispose();
   }
 
@@ -249,8 +253,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 // 스크롤 가능한 컨텐츠
                 Column(
                   children: [
-                    // 헤더 높이만큼 공간 확보
-                    SizedBox(height: MediaQuery.of(context).padding.top + 140),
+                    // 헤더 높이만큼 공간 확보 (paddingOf — 키보드 등 다른 MediaQuery
+                    // 변화에 홈 전체가 rebuild되지 않도록 padding만 구독)
+                    SizedBox(height: MediaQuery.paddingOf(context).top + 140),
                     Expanded(
                       child: SingleChildScrollView(
                         controller: _scrollController,
@@ -565,8 +570,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   .clamp(0.0, double.infinity)
               : 0.0;
 
+          _monthScrollController ??=
+              ScrollController(initialScrollOffset: initialOffset);
           return ListView.separated(
-            controller: ScrollController(initialScrollOffset: initialOffset),
+            controller: _monthScrollController,
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(
               horizontal: (constraints.maxWidth - itemWidth) / 2,
