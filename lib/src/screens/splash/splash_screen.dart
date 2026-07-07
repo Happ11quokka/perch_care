@@ -38,6 +38,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   bool _servicesInitialized = false;
   bool _disposed = false;
   bool _isNavigating = false;
+  bool _reducedMotionApplied = false;
 
   @override
   void initState() {
@@ -73,10 +74,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
 
     // 로고 - 원들이 확장된 후 나타남 (0.6 ~ 1.0초)
+    // 진입 요소이므로 ease-out 사용 (감속하며 등장).
     _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.6, 1.0, curve: Curves.easeIn),
+        curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
       ),
     );
 
@@ -87,6 +89,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     // 서비스 초기화 (애니메이션과 병렬로 실행)
     _initializeServices();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // MediaQuery는 initState에서 읽을 수 없어 여기서 1회만 처리(플래그로 중복 방지).
+    if (_reducedMotionApplied) return;
+    _reducedMotionApplied = true;
+
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      // 스플래시 애니메이션을 즉시 완료 상태로 만들어 대기 없이 진입.
+      // value=1.0 설정 시 status가 completed로 전환되며 기존 status listener
+      // (_onAnimationStatus)가 _animationCompleted 플래그를 세팅 → _tryNavigate 진행.
+      _controller.value = 1.0;
+    }
   }
 
   void _onAnimationStatus(AnimationStatus status) {

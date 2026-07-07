@@ -40,9 +40,49 @@ import '../screens/faq/faq_screen.dart';
 import '../data/terms_content.dart';
 import '../services/api/token_service.dart';
 import '../services/analytics/analytics_service.dart';
+import '../theme/durations.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
+
+/// 페이드(+선택적 미세 스케일) 화면 전환 페이지.
+/// reduced-motion 설정 시 전환 시간 자체를 0으로 만들어 즉시 표시한다
+/// (transitionsBuilder에서 child만 즉시 반환하면 duration 동안 프레임이 얼어붙음).
+CustomTransitionPage<void> _fadePage(
+  BuildContext context,
+  GoRouterState state,
+  Widget child, {
+  bool withScale = false,
+}) {
+  final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    transitionDuration: reduce ? Duration.zero : AppDurations.pageFade,
+    reverseTransitionDuration:
+        reduce ? Duration.zero : AppDurations.pageFadeExit,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (reduce) {
+        return child;
+      }
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: AppCurves.enter,
+        reverseCurve: AppCurves.exit,
+      );
+      if (!withScale) {
+        return FadeTransition(opacity: curved, child: child);
+      }
+      return FadeTransition(
+        opacity: curved,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.96, end: 1.0).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
 /// 인증 없이 접근 가능한 경로 목록
 const _publicPaths = {
@@ -103,19 +143,23 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.onboarding,
         name: RouteNames.onboarding,
-        builder: (context, state) => const OnboardingScreen(),
+        // 스플래시 브랜드 연출이 온보딩으로 자연스럽게 디졸브되도록 페이드 전환
+        pageBuilder: (context, state) =>
+            _fadePage(context, state, const OnboardingScreen()),
       ),
       GoRoute(
         path: RoutePaths.login,
         name: RouteNames.login,
-        builder: (context, state) => const LoginScreen(),
+        // 스플래시 → 로그인 하드컷 대신 페이드 디졸브
+        pageBuilder: (context, state) =>
+            _fadePage(context, state, const LoginScreen()),
       ),
       GoRoute(
         path: RoutePaths.signup,
         name: RouteNames.signup,
         builder: (context, state) => const SignupScreen(),
       ),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) {
           return Scaffold(
             body: navigationShell,
@@ -128,6 +172,11 @@ class AppRouter {
             ),
           );
         },
+        navigatorContainerBuilder: (context, navigationShell, children) =>
+            _AnimatedBranchContainer(
+          currentIndex: navigationShell.currentIndex,
+          children: children,
+        ),
         branches: [
           // Branch 0: 홈 탭 및 홈에서 접근하는 상세 화면들
           StatefulShellBranch(
@@ -263,7 +312,8 @@ class AppRouter {
                       GoRoute(
                         path: 'analyzing',
                         name: RouteNames.healthCheckAnalyzing,
-                        builder: (context, state) {
+                        // capture → analyzing: 같은 태스크의 상태 진행이므로 페이드
+                        pageBuilder: (context, state) {
                           final extra = state.extra;
                           final map =
                               extra is Map<String, dynamic> ? extra : null;
@@ -271,30 +321,40 @@ class AppRouter {
                               map['mode'] is! VisionMode ||
                               map['imageBytes'] is! Uint8List ||
                               map['fileName'] is! String) {
-                            return const HealthCheckMainScreen();
+                            return _fadePage(
+                                context, state, const HealthCheckMainScreen());
                           }
-                          return HealthCheckAnalyzingScreen(
-                            mode: map['mode'] as VisionMode,
-                            part: map['part'] as BodyPart?,
-                            imageBytes: map['imageBytes'] as Uint8List,
-                            fileName: map['fileName'] as String,
-                            notes: map['notes'] as String?,
+                          return _fadePage(
+                            context,
+                            state,
+                            HealthCheckAnalyzingScreen(
+                              mode: map['mode'] as VisionMode,
+                              part: map['part'] as BodyPart?,
+                              imageBytes: map['imageBytes'] as Uint8List,
+                              fileName: map['fileName'] as String,
+                              notes: map['notes'] as String?,
+                            ),
                           );
                         },
                       ),
                       GoRoute(
                         path: 'result',
                         name: RouteNames.healthCheckResult,
-                        builder: (context, state) {
+                        // analyzing → result: 이 앱의 hero moment. fade + 미세 scale로 극적 reveal
+                        pageBuilder: (context, state) {
                           final extra = state.extra;
                           final map =
                               extra is Map<String, dynamic> ? extra : null;
                           if (map == null ||
                               map['mode'] is! VisionMode ||
                               map['result'] is! Map<String, dynamic>) {
-                            return const HealthCheckMainScreen();
+                            return _fadePage(
+                                context, state, const HealthCheckMainScreen());
                           }
-                          return HealthCheckResultScreen(
+                          return _fadePage(
+                            context,
+                            state,
+                            HealthCheckResultScreen(
                             mode: map['mode'] as VisionMode,
                             result:
                                 map['result'] as Map<String, dynamic>,
@@ -312,6 +372,8 @@ class AppRouter {
                                 map['serverStatus'] as String?,
                             serverCheckedAt:
                                 map['serverCheckedAt'] as String?,
+                            ),
+                            withScale: true,
                           );
                         },
                       ),
@@ -441,4 +503,46 @@ class AppRouter {
       ),
     ),
   );
+}
+
+/// StatefulShellRoute의 브랜치(탭) 컨테이너.
+///
+/// IndexedStack처럼 모든 브랜치의 상태를 유지하되, 탭 전환 시 0ms 하드컷 대신
+/// [AnimatedOpacity] 크로스페이드로 전환한다. 비활성 브랜치는 [IgnorePointer]로
+/// 입력을 막고 [TickerMode]로 애니메이션을 멈춰 IndexedStack과 동일하게 동작한다.
+/// reduced-motion 설정 시 전환 시간이 0이 되어 즉시 교체된다.
+class _AnimatedBranchContainer extends StatelessWidget {
+  const _AnimatedBranchContainer({
+    required this.currentIndex,
+    required this.children,
+  });
+
+  final int currentIndex;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        for (int i = 0; i < children.length; i++)
+          _branch(context, i, children[i]),
+      ],
+    );
+  }
+
+  Widget _branch(BuildContext context, int index, Widget navigator) {
+    final bool active = index == currentIndex;
+    return AnimatedOpacity(
+      opacity: active ? 1 : 0,
+      duration: AppDurations.of(context, AppDurations.branchCrossfade),
+      curve: AppCurves.enter,
+      child: IgnorePointer(
+        ignoring: !active,
+        child: TickerMode(
+          enabled: active,
+          child: navigator,
+        ),
+      ),
+    );
+  }
 }

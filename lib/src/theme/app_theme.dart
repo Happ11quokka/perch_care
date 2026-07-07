@@ -9,6 +9,17 @@ import 'radius.dart';
 class AppTheme {
   AppTheme._();
 
+  /// 앱 전역 페이지 전환 정책.
+  /// - iOS: Cupertino 슬라이드 유지 → 가장자리 뒤로가기 스와이프 제스처 보존
+  /// - Android: Material 3 FadeForwards → 플랫폼 기본 Zoom 대신 브랜드 일관 모션
+  static const PageTransitionsTheme _pageTransitions = PageTransitionsTheme(
+    builders: {
+      TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+    },
+  );
+
   /// 라이트 테마 (정적 상수 - 매번 재생성 방지)
   static final ThemeData light = ThemeData(
         useMaterial3: true,
@@ -143,6 +154,9 @@ class AppTheme {
             borderRadius: AppRadius.bottomSheet,
           ),
         ),
+
+        // Page Transitions
+        pageTransitionsTheme: _pageTransitions,
       );
 
   /// 다크 테마 (정적 상수 - 매번 재생성 방지)
@@ -279,5 +293,8 @@ class AppTheme {
             borderRadius: AppRadius.bottomSheet,
           ),
         ),
+
+        // Page Transitions
+        pageTransitionsTheme: _pageTransitions,
       );
 }

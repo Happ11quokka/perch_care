@@ -291,9 +291,16 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? AppLoading.fullPage()
-          : SafeArea(
+      body: AnimatedSwitcher(
+        duration: AppDurations.of(context, AppDurations.normal),
+        switchInCurve: AppCurves.enter,
+        child: _isLoading
+            ? KeyedSubtree(
+                key: const ValueKey('water-loading'),
+                child: AppLoading.fullPage(),
+              )
+            : SafeArea(
+              key: const ValueKey('water-content'),
               top: false,
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -540,6 +547,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                 ),
               ),
             ),
+      ),
     );
   }
 

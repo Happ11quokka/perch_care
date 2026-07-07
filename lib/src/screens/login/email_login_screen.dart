@@ -5,12 +5,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/colors.dart';
+import '../../theme/durations.dart';
 import '../../router/route_names.dart';
 import '../../repositories/auth_repository.dart';
 import '../../utils/error_handler.dart';
 import '../../view_models/auth/auth_view_model.dart';
 import '../../view_models/auth/post_login_destination.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 이메일 로그인 화면 - Figma 디자인 기반
@@ -261,7 +263,9 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
+        AnimatedContainer(
+          duration: AppDurations.of(context, AppDurations.quick),
+          curve: AppCurves.enter,
           height: 64,
           decoration: BoxDecoration(
             color: bgColor,
@@ -425,7 +429,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     return Semantics(
       button: true,
       label: l10n.login_button,
-      child: GestureDetector(
+      child: PressableScale(
       onTap: _isLoading ? null : _handleLogin,
       child: Container(
         height: 60,
@@ -438,24 +442,36 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
-          child: _isLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          child: AnimatedSwitcher(
+            duration: AppDurations.of(context, AppDurations.feedback),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.9, end: 1.0).animate(animation),
+                child: child,
+              ),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    key: ValueKey('login_loading'),
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    l10n.login_button,
+                    key: const ValueKey('login_label'),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: -0.45,
+                    ),
                   ),
-                )
-              : Text(
-                  l10n.login_button,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: -0.45,
-                  ),
-                ),
+          ),
         ),
       ),
     ),
@@ -509,7 +525,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     return Semantics(
       button: true,
       label: semanticsLabel,
-      child: GestureDetector(
+      child: PressableScale(
       onTap: isLoading ? null : onTap,
       child: Container(
         width: 60,

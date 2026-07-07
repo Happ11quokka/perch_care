@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/colors.dart';
+import '../theme/durations.dart';
 
 /// 하단 네비게이션 바 위젯
 class BottomNavBar extends StatelessWidget {
@@ -89,22 +91,49 @@ class BottomNavBar extends StatelessWidget {
         button: true,
         label: label,
         selected: isSelected,
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            key: itemKey,
-            height: 92,
-            decoration: const BoxDecoration(
-              color: Colors.transparent,
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                iconPath,
-                width: 30,
-                height: 30,
-                colorFilter: ColorFilter.mode(
-                  isSelected ? AppColors.brandPrimary : AppColors.warmGray,
-                  BlendMode.srcIn,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkResponse(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onTap();
+            },
+            containedInkWell: false,
+            radius: 40,
+            child: SizedBox(
+              key: itemKey,
+              height: 92,
+              child: Center(
+                // 선택 시 아이콘을 살짝 키워 강조
+                child: AnimatedScale(
+                  scale: isSelected ? 1.08 : 1.0,
+                  duration: AppDurations.of(context, AppDurations.feedback),
+                  curve: AppCurves.enter,
+                  // 선택/해제 시 아이콘 색을 하드 스왑하지 않고 보간
+                  child: TweenAnimationBuilder<Color?>(
+                    // begin을 현재 선택 상태의 목표색으로 두어 첫 마운트 시
+                    // 선택된 탭이 회색→주황으로 플래시하지 않게 한다. 탭 전환 시에는
+                    // TweenAnimationBuilder가 현재값에서 새 목표로 이어서 보간한다.
+                    tween: ColorTween(
+                      begin: isSelected
+                          ? AppColors.brandPrimary
+                          : AppColors.warmGray,
+                      end: isSelected
+                          ? AppColors.brandPrimary
+                          : AppColors.warmGray,
+                    ),
+                    duration: AppDurations.of(context, AppDurations.quick),
+                    curve: AppCurves.enter,
+                    builder: (context, color, _) => SvgPicture.asset(
+                      iconPath,
+                      width: 30,
+                      height: 30,
+                      colorFilter: ColorFilter.mode(
+                        color ?? AppColors.warmGray,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

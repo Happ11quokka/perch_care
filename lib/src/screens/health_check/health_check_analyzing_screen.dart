@@ -55,10 +55,22 @@ class _HealthCheckAnalyzingScreenState
     _scaleAnimation = Tween<double>(begin: 0.85, end: 1.15).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
-    _animController.repeat(reverse: true);
+    // 펄스 repeat 시작은 didChangeDependencies에서 reduced-motion 존중.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startAnalysis();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      _animController.stop();
+      _animController.value = 0.5; // scale 1.0에서 정지
+    } else if (!_animController.isAnimating) {
+      _animController.repeat(reverse: true);
+    }
   }
 
   @override
@@ -226,7 +238,19 @@ class _HealthCheckAnalyzingScreenState
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: _isAnalyzing ? _buildLoadingState() : _buildErrorState(),
+          child: AnimatedSwitcher(
+            duration: AppDurations.of(context, AppDurations.normal),
+            switchInCurve: AppCurves.enter,
+            child: _isAnalyzing
+                ? KeyedSubtree(
+                    key: const ValueKey('loading'),
+                    child: _buildLoadingState(),
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('error'),
+                    child: _buildErrorState(),
+                  ),
+          ),
         ),
       ),
     );

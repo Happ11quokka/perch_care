@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../theme/durations.dart';
 import '../../router/route_names.dart';
 import '../../providers/repository_providers.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/password_strength_indicator.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../widgets/terms_agreement_section.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -39,6 +41,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _emailHasFocus = false;
   bool _passwordHasFocus = false;
   bool _confirmPasswordHasFocus = false;
+
+  // 제출 실패 시 문제 필드 테두리를 danger 색으로 표시
+  bool _nameHasError = false;
+  bool _emailHasError = false;
+  bool _passwordHasError = false;
+  bool _confirmPasswordHasError = false;
+
+  final _nameFieldKey = GlobalKey<FormFieldState<String>>();
+  final _emailFieldKey = GlobalKey<FormFieldState<String>>();
+  final _passwordFieldKey = GlobalKey<FormFieldState<String>>();
+  final _confirmPasswordFieldKey = GlobalKey<FormFieldState<String>>();
 
   // 아이콘 에셋 경로
   static const String _personIconPath = 'assets/images/signup_vector/name.svg';
@@ -132,6 +145,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           iconPath: _personIconPath,
                           hasFocus: _nameHasFocus,
                           hasValue: _nameHasValue,
+                          hasError: _nameHasError,
+                          fieldKey: _nameFieldKey,
+                          onChangedClearError: () => _nameHasError = false,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return l10n.input_name_hint;
@@ -149,6 +165,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           iconPath: _emailIconPath,
                           hasFocus: _emailHasFocus,
                           hasValue: _emailHasValue,
+                          hasError: _emailHasError,
+                          fieldKey: _emailFieldKey,
+                          onChangedClearError: () => _emailHasError = false,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -173,6 +192,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           iconPath: _lockIconPath,
                           hasFocus: _passwordHasFocus,
                           hasValue: _passwordHasValue,
+                          hasError: _passwordHasError,
+                          fieldKey: _passwordFieldKey,
+                          onChangedClearError: () => _passwordHasError = false,
                           obscureText: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -198,6 +220,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           iconPath: _lockIconPath,
                           hasFocus: _confirmPasswordHasFocus,
                           hasValue: _confirmPasswordHasValue,
+                          hasError: _confirmPasswordHasError,
+                          fieldKey: _confirmPasswordFieldKey,
+                          onChangedClearError: () => _confirmPasswordHasError = false,
                           obscureText: true,
                           textInputAction: TextInputAction.done,
                           suffixWidget: (_confirmPasswordHasValue &&
@@ -290,6 +315,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     required String iconPath,
     required bool hasFocus,
     required bool hasValue,
+    required bool hasError,
+    required GlobalKey<FormFieldState<String>> fieldKey,
+    VoidCallback? onChangedClearError,
     TextInputType? keyboardType,
     bool obscureText = false,
     String? Function(String?)? validator,
@@ -298,11 +326,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }) {
     // 활성 상태: 포커스가 있거나 값이 있을 때
     final isActive = hasFocus || hasValue;
-    final borderColor = isActive ? AppColors.brandPrimary : AppColors.warmGray;
+    final borderColor = hasError
+        ? AppColors.danger
+        : (isActive ? AppColors.brandPrimary : AppColors.warmGray);
     final bgColor = (hasFocus && hasValue)
         ? AppColors.brandPrimary.withValues(alpha: 0.1)
         : Colors.transparent;
-    final iconColor = isActive ? AppColors.brandPrimary : AppColors.warmGray;
+    final iconColor = hasError
+        ? AppColors.danger
+        : (isActive ? AppColors.brandPrimary : AppColors.warmGray);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -317,7 +349,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
+        AnimatedContainer(
+          duration: AppDurations.of(context, AppDurations.quick),
+          curve: AppCurves.enter,
           height: 64,
           decoration: BoxDecoration(
             color: bgColor,
@@ -336,13 +370,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               const SizedBox(width: 6),
               Expanded(
                 child: TextFormField(
+                  key: fieldKey,
                   controller: controller,
                   focusNode: focusNode,
                   keyboardType: keyboardType,
                   obscureText: obscureText,
                   validator: validator,
                   textInputAction: textInputAction,
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (_) => setState(() {
+                    onChangedClearError?.call();
+                  }),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -388,7 +425,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return Semantics(
       button: true,
       label: l10n.signup_button,
-      child: GestureDetector(
+      child: PressableScale(
       onTap: isEnabled ? _handleSignup : null,
       child: Container(
         height: 60,
@@ -497,15 +534,31 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final l10n = AppLocalizations.of(context);
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
-      // 유효성 검사 실패 시 에러 메시지 표시
+      // 유효성 검사 실패 시 문제 필드 테두리를 danger 색으로 표시 + 햅틱
+      setState(() {
+        _nameHasError = _nameFieldKey.currentState?.hasError ?? false;
+        _emailHasError = _emailFieldKey.currentState?.hasError ?? false;
+        _passwordHasError = _passwordFieldKey.currentState?.hasError ?? false;
+        _confirmPasswordHasError =
+            _confirmPasswordFieldKey.currentState?.hasError ?? false;
+      });
+      // 햅틱은 AppSnackBar.warning이 내부에서 발생시킴 (중복 호출 금지)
       AppSnackBar.warning(context, message: l10n.validation_checkInput);
       return;
     }
     // 비밀번호 일치 이중 검사 (안전 장치)
     if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() => _confirmPasswordHasError = true);
       AppSnackBar.warning(context, message: l10n.validation_passwordMismatch);
       return;
     }
+    // 유효 → 에러 상태 초기화
+    setState(() {
+      _nameHasError = false;
+      _emailHasError = false;
+      _passwordHasError = false;
+      _confirmPasswordHasError = false;
+    });
     if (_isLoading) return;
 
     setState(() => _isLoading = true);

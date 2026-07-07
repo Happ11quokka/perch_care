@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/colors.dart';
+import '../../theme/durations.dart';
 import '../../router/route_names.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -41,11 +42,65 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: Stack(
         children: [
           _buildBackgroundCircles(screenWidth, screenHeight),
-          _buildGradientCircle(screenWidth, screenHeight),
-          _buildMainContent(screenWidth, screenHeight),
+          _buildAnimatedIllustration(screenWidth, screenHeight),
           _buildBottomContent(screenWidth, screenHeight),
         ],
       ),
+    );
+  }
+
+  /// 그라데이션 원 + 일러스트를 하나의 그룹으로 묶어 fade + scale(0.95→1.0) 진입.
+  Widget _buildAnimatedIllustration(double screenWidth, double screenHeight) {
+    return Positioned.fill(
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        duration: AppDurations.of(context, const Duration(milliseconds: 500)),
+        curve: AppCurves.enter,
+        builder: (context, t, child) {
+          return Opacity(
+            opacity: t,
+            child: Transform.scale(scale: 0.95 + 0.05 * t, child: child),
+          );
+        },
+        child: Stack(
+          children: [
+            _buildGradientCircle(screenWidth, screenHeight),
+            _buildMainContent(screenWidth, screenHeight),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 하단 항목을 100ms씩 stagger된 fade + slide-up(Offset(0,16)→0)으로 등장.
+  /// Interval 커브로 delay를 흉내내 별도 컨트롤러 없이 순차 진입시킨다.
+  Widget _staggeredItem({required int index, required Widget child}) {
+    const int delayStep = 100;
+    const int animMs = 400;
+    final int delayMs = index * delayStep;
+    final int totalMs = delayMs + animMs;
+    final Duration total =
+        AppDurations.of(context, Duration(milliseconds: totalMs));
+    final bool instant = total == Duration.zero;
+    final double delayFraction = instant ? 0.0 : delayMs / totalMs;
+    final Curve curve = instant
+        ? AppCurves.enter
+        : Interval(delayFraction, 1.0, curve: AppCurves.enter);
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: total,
+      curve: curve,
+      builder: (context, t, child) {
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, 16 * (1 - t)),
+            child: child,
+          ),
+        );
+      },
+      child: child,
     );
   }
 
@@ -590,34 +645,43 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // 제목
-            Text(
-              l10n.onboarding_title,
-              style: TextStyle(
-                fontSize: w(28),
-                fontWeight: FontWeight.w700,
-                color: AppColors.nearBlack,
-                letterSpacing: -0.5,
+            _staggeredItem(
+              index: 0,
+              child: Text(
+                l10n.onboarding_title,
+                style: TextStyle(
+                  fontSize: w(28),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.nearBlack,
+                  letterSpacing: -0.5,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
 
             SizedBox(height: h(12)),
 
             // 설명
-            Text(
-              l10n.onboarding_description,
-              style: TextStyle(
-                fontSize: w(15),
-                height: 1.6,
-                color: AppColors.gray600,
+            _staggeredItem(
+              index: 1,
+              child: Text(
+                l10n.onboarding_description,
+                style: TextStyle(
+                  fontSize: w(15),
+                  height: 1.6,
+                  color: AppColors.gray600,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
 
             SizedBox(height: h(48)),
 
             // 시작하기 버튼
-            _buildStartButton(w, h, l10n),
+            _staggeredItem(
+              index: 2,
+              child: _buildStartButton(w, h, l10n),
+            ),
           ],
         ),
       ),

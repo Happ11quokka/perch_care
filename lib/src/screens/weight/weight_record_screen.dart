@@ -434,12 +434,20 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                         SizedBox(
                           width: 240,
                           height: 130,
-                          child: CustomPaint(
-                            painter: _WciGaugePainter(
-                              progress: progress,
-                              activeColor: AppColors.brandPrimary,
-                              trackColor: AppColors.gray200,
-                              hasData: hasData,
+                          // 날짜 변경 시 게이지 바늘이 순간이동하지 않고 이동
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween<double>(begin: 0, end: progress),
+                            duration: AppDurations.of(
+                                context, AppDurations.gauge),
+                            curve: AppCurves.enter,
+                            builder: (context, animatedProgress, _) =>
+                                CustomPaint(
+                              painter: _WciGaugePainter(
+                                progress: animatedProgress,
+                                activeColor: AppColors.brandPrimary,
+                                trackColor: AppColors.gray200,
+                                hasData: hasData,
+                              ),
                             ),
                           ),
                         ),

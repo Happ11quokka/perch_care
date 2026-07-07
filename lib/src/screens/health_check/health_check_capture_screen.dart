@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../models/ai_health_check.dart';
 import '../../router/route_names.dart';
 import '../../theme/colors.dart';
+import '../../theme/durations.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/dashed_border.dart';
 
@@ -195,81 +196,97 @@ class _HealthCheckCaptureScreenState
   }
 
   Widget _buildImagePreview(AppLocalizations l10n) {
-    if (_selectedImage != null) {
-      return Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: Image.memory(
-                _selectedImage!,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: Semantics(
-              button: true,
-              label: 'Remove selected image',
-              child: GestureDetector(
-              onTap: () => setState(() {
-                _selectedImage = null;
-                _fileName = '';
-              }),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.close, color: Colors.white, size: 18),
-              ),
-            ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return DashedBorder(
-      radius: 16,
-      color: AppColors.lightGray,
-      strokeWidth: 1.5,
-      dashWidth: 8,
-      dashGap: 4,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.camera_alt_outlined,
-              size: 48,
-              color: AppColors.lightGray,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.hc_photoHint,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.warmGray,
-                letterSpacing: -0.3,
-                height: 1.5,
-              ),
-            ),
-          ],
+    return AnimatedSwitcher(
+      duration: AppDurations.of(context, AppDurations.quick),
+      switchInCurve: AppCurves.enter,
+      switchOutCurve: AppCurves.exit,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.97, end: 1.0).animate(animation),
+          child: child,
         ),
       ),
+      child: _selectedImage != null
+          ? Stack(
+              key: const ValueKey('preview'),
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Image.memory(
+                      _selectedImage!,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Semantics(
+                    button: true,
+                    label: 'Remove selected image',
+                    child: GestureDetector(
+                      onTap: () => setState(() {
+                        _selectedImage = null;
+                        _fileName = '';
+                      }),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : DashedBorder(
+              key: const ValueKey('placeholder'),
+              radius: 16,
+              color: AppColors.lightGray,
+              strokeWidth: 1.5,
+              dashWidth: 8,
+              dashGap: 4,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.camera_alt_outlined,
+                      size: 48,
+                      color: AppColors.lightGray,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.hc_photoHint,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.warmGray,
+                        letterSpacing: -0.3,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -285,7 +302,8 @@ class _HealthCheckCaptureScreenState
               label: _getPartLabel(l10n, part),
               child: GestureDetector(
               onTap: () => setState(() => _selectedPart = part),
-              child: Container(
+              child: AnimatedContainer(
+                duration: AppDurations.of(context, AppDurations.feedback),
                 margin: EdgeInsets.only(
                   right: part != BodyPart.values.last ? 8 : 0,
                 ),
@@ -412,7 +430,8 @@ class _HealthCheckCaptureScreenState
       label: l10n.hc_analyze,
       child: GestureDetector(
       onTap: isEnabled ? _onAnalyze : null,
-      child: Container(
+      child: AnimatedContainer(
+        duration: AppDurations.of(context, AppDurations.feedback),
         width: double.infinity,
         height: 56,
         decoration: BoxDecoration(

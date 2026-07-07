@@ -58,9 +58,19 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   late final AnimationController _floatController;
   late final Animation<double> _floatAnimation;
 
+  // 타이핑 인디케이터 3-dot 주기 애니메이션
+  late final AnimationController _typingController;
+
   // 타이핑 시 살짝 커지는 반응 애니메이션
   late final AnimationController _peekController;
   late final Animation<double> _peekScale;
+
+  // 화면 로드 완료 시점의 메시지 개수 — 이후 index의 버블만 등장 애니메이션.
+  int _animateFromIndex = 0;
+
+  // 등장 애니메이션을 이미 마친 버블 index. ListView가 가상화되어 스크롤로
+  // 재생성돼도 재애니메이션하지 않도록 추적한다.
+  final Set<int> _shownBubbles = {};
 
   bool get _hasUserMessages => _messages.any((m) => m.role == MessageRole.user);
 
@@ -69,14 +79,20 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     super.initState();
     _initializeChat();
 
-    // 부드럽게 위아래로 떠다니는 애니메이션 (무한 반복)
+    // 부드럽게 위아래로 떠다니는 애니메이션 (무한 반복 — 시작은 didChangeDependencies에서 reduced-motion 존중)
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
-    )..repeat(reverse: true);
+    );
 
     _floatAnimation = Tween<double>(begin: -6.0, end: 6.0).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+
+    // 타이핑 인디케이터 3-dot 주기 (1200ms, 무한 반복)
+    _typingController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
     );
 
     // 타자 칠 때 살짝 커지는 애니메이션
@@ -90,6 +106,25 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     );
 
     _inputController.addListener(_onInputChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // reduced-motion이면 무한 반복을 멈추고 정적 상태로 둔다 (initState에선 MediaQuery 접근 불가).
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      _floatController.stop();
+      _floatController.value = 0.5; // 중앙(offset 0)에서 정지
+      _typingController.stop();
+    } else {
+      if (!_floatController.isAnimating) {
+        _floatController.repeat(reverse: true);
+      }
+      if (!_typingController.isAnimating) {
+        _typingController.repeat();
+      }
+    }
   }
 
   /// 채팅 초기화: 펫 로드 후 해당 펫의 대화 내역 로드
@@ -150,6 +185,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     _throttleTimer?.cancel();
     _inputController.removeListener(_onInputChanged);
     _floatController.dispose();
+    _typingController.dispose();
     _peekController.dispose();
     _scrollController.dispose();
     _inputController.dispose();
@@ -475,6 +511,8 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         _messages.addAll(load.messages);
         _currentSessionId = load.sessionId;
         _isLoadingMessages = false;
+        // 로드된 과거 메시지는 등장 애니메이션 스킵 — 이후 추가분만 애니메이션.
+        _animateFromIndex = _messages.length;
       });
       _scrollToBottom();
     } catch (_) {
@@ -524,6 +562,9 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       if (mounted) {
         setState(() {
           _messages.clear();
+          // 등장 애니메이션 추적 상태 리셋 — 삭제 후 새 메시지가 정상 등장하도록.
+          _animateFromIndex = 0;
+          _shownBubbles.clear();
         });
         AppSnackBar.success(context, message: l10n.chatbot_historyCleared);
       }
@@ -820,7 +861,27 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       itemBuilder: (context, index) {
         final message = _messages[index];
         final isUser = message.role == MessageRole.user;
-        return _buildMessageBubble(message, isUser);
+        final bubble = _buildMessageBubble(message, isUser);
+        // 최초 로드된 과거 메시지 + 이미 등장을 마친 버블은 애니메이션 스킵
+        // (가상화된 ListView에서 스크롤 재진입 시 재생 방지).
+        if (index < _animateFromIndex || _shownBubbles.contains(index)) {
+          return bubble;
+        }
+        return TweenAnimationBuilder<double>(
+          key: ValueKey('bubble_$index'),
+          tween: Tween<double>(begin: 0.0, end: 1.0),
+          duration: AppDurations.of(context, const Duration(milliseconds: 220)),
+          curve: AppCurves.enter,
+          onEnd: () => _shownBubbles.add(index),
+          builder: (context, t, child) => Opacity(
+            opacity: t,
+            child: Transform.translate(
+              offset: Offset(0, 12 * (1 - t)),
+              child: child,
+            ),
+          ),
+          child: bubble,
+        );
       },
       separatorBuilder: (context, index) =>
           const SizedBox(height: AppSpacing.md),
@@ -914,11 +975,10 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
 
   Widget _buildTypingIndicator() {
     return AnimatedBuilder(
-      animation: _floatController,
+      animation: _typingController,
       builder: (context, _) {
-        // _floatController cycles 0→1→0 over 2400ms.
-        // Use its value to stagger 3 dots with phase offsets.
-        final t = _floatController.value;
+        // _typingController가 1200ms 주기로 0→1 반복 — 3개 점을 위상차로 스태거.
+        final t = _typingController.value;
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: List.generate(3, (i) {

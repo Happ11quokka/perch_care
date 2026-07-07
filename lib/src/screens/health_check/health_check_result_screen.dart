@@ -320,23 +320,36 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: confidence / 100,
-                      minHeight: 8,
-                      color: AppColors.brandPrimary,
-                      backgroundColor: AppColors.brandSoft,
+                    // AI 신뢰도: 0 → 값으로 채워지는 게이지
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: confidence / 100),
+                      duration:
+                          AppDurations.of(context, AppDurations.dataReveal),
+                      curve: AppCurves.enter,
+                      builder: (context, v, _) => LinearProgressIndicator(
+                        value: v,
+                        minHeight: 8,
+                        color: AppColors.brandPrimary,
+                        backgroundColor: AppColors.brandSoft,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  '${confidence.toStringAsFixed(0)}%',
+                // 게이지와 동기화된 퍼센트 카운트업
+                TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: confidence),
+                  duration: AppDurations.of(context, AppDurations.dataReveal),
+                  curve: AppCurves.enter,
+                  builder: (context, v, _) => Text(
+                  '${v.toStringAsFixed(0)}%',
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.nearBlack,
                     letterSpacing: -0.3,
                   ),
+                ),
                 ),
               ],
             ),

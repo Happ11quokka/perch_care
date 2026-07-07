@@ -722,9 +722,16 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? AppLoading.fullPage()
-          : SafeArea(
+      body: AnimatedSwitcher(
+        duration: AppDurations.of(context, AppDurations.normal),
+        switchInCurve: AppCurves.enter,
+        child: _isLoading
+            ? KeyedSubtree(
+                key: const ValueKey('food-loading'),
+                child: AppLoading.fullPage(),
+              )
+            : SafeArea(
+              key: const ValueKey('food-content'),
               top: false,
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -793,10 +800,26 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                     const SizedBox(height: 16),
 
                     // ── 기록 리스트 ───────────────────────────────────────
-                    if (currentEntries.isNotEmpty) ...[
-                      ...currentEntries.map((entry) => _buildEntryCard(entry)),
-                      const SizedBox(height: 8),
-                    ],
+                    AnimatedSwitcher(
+                      duration:
+                          AppDurations.of(context, AppDurations.quick),
+                      child: currentEntries.isEmpty
+                          ? const SizedBox(
+                              key: ValueKey('food-entries-empty'),
+                              width: double.infinity,
+                            )
+                          : Column(
+                              key: ValueKey(
+                                'food-entries-${_showServing ? 'serving' : 'eating'}',
+                              ),
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ...currentEntries
+                                    .map((entry) => _buildEntryCard(entry)),
+                                const SizedBox(height: 8),
+                              ],
+                            ),
+                    ),
 
                     // ── 기록 추가 버튼 ────────────────────────────────────
                     DashedBorder(
@@ -892,6 +915,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                 ),
               ),
             ),
+      ),
     );
   }
 
@@ -1003,7 +1027,9 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
       label: text,
       child: GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: AppDurations.of(context, AppDurations.feedback),
+        curve: AppCurves.enter,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? AppColors.brandPrimary : Colors.transparent,

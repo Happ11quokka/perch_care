@@ -6,6 +6,7 @@ import '../../router/route_names.dart';
 import '../../providers/repository_providers.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 비밀번호 찾기 - 이메일 입력 화면
@@ -185,7 +186,7 @@ class _ForgotPasswordMethodScreenState
     return Semantics(
       button: true,
       label: l10n.btn_sendCode,
-      child: GestureDetector(
+      child: PressableScale(
       onTap: _isSending ? null : _handleSendCode,
       child: Container(
         height: 60,

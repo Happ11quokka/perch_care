@@ -12,6 +12,7 @@ import '../../utils/error_handler.dart';
 import '../../view_models/weight/weight_add_view_model.dart';
 import '../../widgets/analog_time_picker.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../providers/pet_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -116,7 +117,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
         AppSnackBar.success(context, message: l10n.weight_recordSuccess);
       }
 
-      await Future.delayed(const Duration(milliseconds: 1200));
+      // AppSnackBar는 Overlay 기반이라 화면 pop 후에도 살아남으므로 즉시 pop.
       if (mounted) context.pop(true);
     } catch (e) {
       if (mounted) {
@@ -666,7 +667,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
     return Semantics(
       button: true,
       label: l10n.btn_saveRecord,
-      child: GestureDetector(
+      child: PressableScale(
       onTap: _isLoading ? null : _onSave,
       child: Container(
         width: size.width,

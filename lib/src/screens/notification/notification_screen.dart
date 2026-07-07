@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/colors.dart';
 import '../../theme/spacing.dart';
 import '../../theme/radius.dart';
+import '../../theme/durations.dart';
 import '../../models/notification.dart';
 import '../../view_models/notification/notification_view_model.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -156,7 +157,15 @@ class _NotificationCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: Container(
+      child: AnimatedContainer(
+        duration: AppDurations.of(context, AppDurations.normal),
+        curve: AppCurves.enter,
+        padding: EdgeInsets.only(
+          left: notification.isRead ? AppSpacing.lg : AppSpacing.md,
+          right: AppSpacing.lg,
+          top: AppSpacing.md,
+          bottom: AppSpacing.md,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -176,16 +185,9 @@ class _NotificationCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: notification.isRead ? AppSpacing.lg : AppSpacing.md,
-            right: AppSpacing.lg,
-            top: AppSpacing.md,
-            bottom: AppSpacing.md,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               // 알림 아이콘
               Container(
                 width: 40,
@@ -219,8 +221,12 @@ class _NotificationCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (!notification.isRead)
-                          Container(
+                        AnimatedScale(
+                          duration:
+                              AppDurations.of(context, AppDurations.normal),
+                          curve: AppCurves.enter,
+                          scale: notification.isRead ? 0.0 : 1.0,
+                          child: Container(
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
@@ -228,6 +234,7 @@ class _NotificationCard extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                           ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -252,7 +259,6 @@ class _NotificationCard extends StatelessWidget {
               ),
             ],
           ),
-        ),
       ),
     );
   }

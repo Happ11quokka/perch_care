@@ -25,7 +25,8 @@ abstract class HomeRepository {
   );
 
   /// 특정 날짜의 BHI만 재조회 (기간 선택 변경 시).
-  Future<BhiResult> loadBhiForDate(String petId, DateTime targetDate);
+  Future<BhiResult> loadBhiForDate(String petId, DateTime targetDate,
+      {bool forceRefresh = false});
 
   /// 펫 로컬 캐시에서 Pet 정보 복원 (서버 실패 시 fallback).
   Future<Pet?> loadPetFromLocalCache(String petId);
@@ -113,8 +114,10 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<BhiResult> loadBhiForDate(String petId, DateTime targetDate) =>
-      _bhiService.getBhi(petId, targetDate: targetDate);
+  Future<BhiResult> loadBhiForDate(String petId, DateTime targetDate,
+          {bool forceRefresh = false}) =>
+      _bhiService.getBhi(petId,
+          targetDate: targetDate, forceRefresh: forceRefresh);
 
   @override
   Future<Pet?> loadPetFromLocalCache(String petId) async {

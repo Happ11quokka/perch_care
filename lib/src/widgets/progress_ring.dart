@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../theme/durations.dart';
 
 class ProgressRing extends StatelessWidget {
   final double value;
@@ -10,6 +11,15 @@ class ProgressRing extends StatelessWidget {
   final Color trackColor;
   final Widget? child;
 
+  /// 진입 시 링을 0 → [value]로 채우는 애니메이션 시간.
+  /// reduced-motion 설정 시 자동으로 0이 되어 즉시 최종 상태로 그린다.
+  final Duration duration;
+
+  /// 링 채움과 동기화된 중앙 위젯 빌더. 진행 중인 값(0.0~1.0)을 받아
+  /// 점수 카운트업 등에 사용한다. 지정 시 [child] 대신 이 빌더가 쓰인다.
+  final Widget Function(BuildContext context, double animatedValue)?
+      centerBuilder;
+
   const ProgressRing({
     super.key,
     required this.value,
@@ -18,6 +28,8 @@ class ProgressRing extends StatelessWidget {
     required this.activeColor,
     required this.trackColor,
     this.child,
+    this.centerBuilder,
+    this.duration = AppDurations.dataReveal,
   });
 
   @override
@@ -25,20 +37,30 @@ class ProgressRing extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: Size(size, size),
-            painter: _ProgressRingPainter(
-              value: value,
-              strokeWidth: strokeWidth,
-              activeColor: activeColor,
-              trackColor: trackColor,
-            ),
-          ),
-          if (child != null) child!,
-        ],
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
+        duration: AppDurations.of(context, duration),
+        curve: AppCurves.enter,
+        builder: (context, animatedValue, _) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              CustomPaint(
+                size: Size(size, size),
+                painter: _ProgressRingPainter(
+                  value: animatedValue,
+                  strokeWidth: strokeWidth,
+                  activeColor: activeColor,
+                  trackColor: trackColor,
+                ),
+              ),
+              if (centerBuilder != null)
+                centerBuilder!(context, animatedValue)
+              else if (child != null)
+                child!,
+            ],
+          );
+        },
       ),
     );
   }

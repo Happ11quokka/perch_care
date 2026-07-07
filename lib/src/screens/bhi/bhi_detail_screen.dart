@@ -259,11 +259,12 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
               strokeWidth: 14,
               activeColor: _getScoreColor(bhi.bhiScore),
               trackColor: AppColors.gray100,
-              child: Column(
+              // 링 채움과 동기화된 점수 카운트업
+              centerBuilder: (context, animatedValue) => Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    bhi.bhiScore.toStringAsFixed(0),
+                    (animatedValue * 100).toStringAsFixed(0),
                     style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.w700,
@@ -398,9 +399,16 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                // 채움
-                FractionallySizedBox(
-                  widthFactor: ratio,
+                // 채움 (0 → ratio로 채워지는 진입 애니메이션)
+                TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: ratio),
+                  duration: AppDurations.of(context, AppDurations.gauge),
+                  curve: AppCurves.enter,
+                  builder: (context, animatedRatio, child) =>
+                      FractionallySizedBox(
+                    widthFactor: animatedRatio,
+                    child: child,
+                  ),
                   child: Container(
                     height: 8,
                     decoration: BoxDecoration(
@@ -590,7 +598,9 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
   }
 
   Widget _buildSegment(bool isActive) {
-    return Container(
+    return AnimatedContainer(
+      duration: AppDurations.of(context, AppDurations.quick),
+      curve: AppCurves.enter,
       width: 56,
       height: 8,
       decoration: BoxDecoration(

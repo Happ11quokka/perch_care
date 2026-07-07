@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
 import '../../services/analytics/analytics_service.dart';
@@ -246,6 +247,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.gray150,
+      // NOTE: 로딩→콘텐츠 크로스페이드는 코드리뷰에서 제거됨. content→loading→content
+      // 재전환(펫 0마리 최초 등록 경로) 시 AnimatedSwitcher가 두 content 서브트리를
+      // 동시에 유지해 코치마크 GlobalKey 중복·스크롤컨트롤러 이중 attach 크래시가 남.
       body: showFullLoading
           ? AppLoading.fullPage()
           : Stack(
@@ -257,32 +261,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // 변화에 홈 전체가 rebuild되지 않도록 padding만 구독)
                     SizedBox(height: MediaQuery.paddingOf(context).top + 140),
                     Expanded(
-                      child: SingleChildScrollView(
-                        controller: _scrollController,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 17),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 24),
-                              // WCI 건강 상태 카드
-                              Container(key: _wciCardKey, child: _buildWCICard()),
-                              const SizedBox(height: 12),
-                              // AI 건강체크 배너
-                              _buildAiHealthCheckBanner(),
-                              const SizedBox(height: 12),
-                              // 건강 변화 요약 카드 (Phase 3-3)
-                              if (_healthSummary != null)
-                                HealthSummaryCard(
-                                  summary: _healthSummary!,
-                                ),
-                              if (_healthSummary != null)
-                                const SizedBox(height: 12),
-                              // 주간 인사이트 (Phase 3-4)
-                              Container(key: _insightsSectionKey, child: _buildInsightsSection()),
-                              // 하단 4개 카드
-                              _buildBottomCards(),
-                              const SizedBox(height: 24),
-                            ],
+                      child: RefreshIndicator.adaptive(
+                        color: AppColors.brandPrimary,
+                        onRefresh: () => ref
+                            .read(homeViewModelProvider.notifier)
+                            .pullToRefresh(_getTargetDateForPeriod()),
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 17),
+                            // 펫 전환/갱신 중 콘텐츠를 디밍해 '데이터 갱신 중'임을
+                            // 드러낸다. 서브트리를 복제하지 않아 coach mark
+                            // GlobalKey 중복 없이 안전하다.
+                            child: AnimatedOpacity(
+                              opacity: (homeAsync.isLoading &&
+                                      state.activePet != null)
+                                  ? 0.5
+                                  : 1.0,
+                              duration:
+                                  AppDurations.of(context, AppDurations.quick),
+                              curve: AppCurves.enter,
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 24),
+                                  // WCI 건강 상태 카드
+                                  Container(
+                                      key: _wciCardKey, child: _buildWCICard()),
+                                  const SizedBox(height: 12),
+                                  // AI 건강체크 배너
+                                  _buildAiHealthCheckBanner(),
+                                  const SizedBox(height: 12),
+                                  // 건강 변화 요약 카드 (Phase 3-3)
+                                  if (_healthSummary != null)
+                                    HealthSummaryCard(
+                                      summary: _healthSummary!,
+                                    ),
+                                  if (_healthSummary != null)
+                                    const SizedBox(height: 12),
+                                  // 주간 인사이트 (Phase 3-4)
+                                  Container(
+                                      key: _insightsSectionKey,
+                                      child: _buildInsightsSection()),
+                                  // 하단 4개 카드
+                                  _buildBottomCards(),
+                                  const SizedBox(height: 24),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -334,7 +361,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Semantics(
                     button: true,
                     label: 'Select pet',
-                    child: GestureDetector(
+                    child: PressableScale(
                     onTap: () {
                       context.pushNamed(RouteNames.profile);
                     },
@@ -564,10 +591,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const itemWidth = 36.0;
           const itemSpacing = 4.0;
           final totalItemWidth = itemWidth + itemSpacing;
-          // Center the selected item
+          // 선택 항목을 중앙에 배치. leading padding((maxWidth-itemWidth)/2)이
+          // 이미 콘텐츠에 포함되므로 중앙 오프셋은 index*totalItemWidth이다.
           final initialOffset = selectedIndex >= 0
-              ? (selectedIndex * totalItemWidth - (constraints.maxWidth - itemWidth) / 2)
-                  .clamp(0.0, double.infinity)
+              ? (selectedIndex * totalItemWidth).clamp(0.0, double.infinity)
               : 0.0;
 
           _monthScrollController ??=
@@ -593,9 +620,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     _selectedMonth = entry.month;
                     _selectedYear = entry.year;
                   });
+                  // 선택한 달을 중앙으로 스크롤 (reduced-motion 시 즉시 이동 —
+                  // animateTo(Duration.zero)는 assert 크래시하므로 jumpTo로 분기)
+                  final controller = _monthScrollController;
+                  if (controller != null && controller.hasClients) {
+                    final target = (index * totalItemWidth)
+                        .clamp(0.0, controller.position.maxScrollExtent);
+                    final scrollDuration =
+                        AppDurations.of(context, AppDurations.normal);
+                    if (scrollDuration == Duration.zero) {
+                      controller.jumpTo(target);
+                    } else {
+                      controller.animateTo(
+                        target,
+                        duration: scrollDuration,
+                        curve: AppCurves.enter,
+                      );
+                    }
+                  }
                   _loadBhiForSelectedPeriod();
                 },
-                child: Container(
+                child: AnimatedContainer(
+                  duration: AppDurations.of(context, AppDurations.feedback),
+                  curve: AppCurves.enter,
                   width: itemWidth,
                   height: 36,
                   decoration: BoxDecoration(
@@ -652,7 +699,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               });
               _loadBhiForSelectedPeriod();
             },
-            child: Container(
+            child: AnimatedContainer(
+              duration: AppDurations.of(context, AppDurations.feedback),
+              curve: AppCurves.enter,
               width: 36,
               height: 36,
               margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -764,24 +813,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 로딩 시 반투명 처리로 자연스러운 전환
           AnimatedOpacity(
             opacity: _isBhiLoading ? 0.4 : 1.0,
-            duration: const Duration(milliseconds: 200),
+            duration: AppDurations.of(context, AppDurations.quick),
             child: Column(
               children: [
-                // 일러스트레이션
-                if (_wciLevel == 0)
-                  SvgPicture.asset(
-                    'assets/images/home_vector/wci_bird_empty.svg',
-                    width: 119,
-                    height: 171,
-                  )
-                else
-                  Image.asset(
-                    'assets/images/home_vector/lv$_wciLevel.png',
-                    width: 160,
-                    height: 240,
-                    cacheWidth: 320,
-                    cacheHeight: 480,
+                // 일러스트레이션 — WCI 레벨 변경 시 하드 스왑 대신 fade+scale reveal
+                AnimatedSwitcher(
+                  duration: AppDurations.of(context, AppDurations.normal),
+                  switchInCurve: AppCurves.enter,
+                  switchOutCurve: AppCurves.exit,
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(begin: 0.95, end: 1.0)
+                          .animate(animation),
+                      child: child,
+                    ),
                   ),
+                  child: _wciLevel == 0
+                      ? SvgPicture.asset(
+                          'assets/images/home_vector/wci_bird_empty.svg',
+                          key: const ValueKey('wci_level_0'),
+                          width: 119,
+                          height: 171,
+                        )
+                      : Image.asset(
+                          'assets/images/home_vector/lv$_wciLevel.png',
+                          key: ValueKey('wci_level_$_wciLevel'),
+                          width: 160,
+                          height: 240,
+                          cacheWidth: 320,
+                          cacheHeight: 480,
+                        ),
+                ),
                 const SizedBox(height: 13),
                 // 설명 텍스트
                 if (_wciLevel == 0 && _isBhiOffline) ...[
@@ -914,7 +977,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildProgressBar(bool isActive) {
-    return Container(
+    return AnimatedContainer(
+      duration: AppDurations.of(context, AppDurations.quick),
+      curve: AppCurves.enter,
       width: 74,
       height: 8,
       decoration: BoxDecoration(
@@ -933,7 +998,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Semantics(
       button: true,
       label: l10n.hc_title,
-      child: GestureDetector(
+      child: PressableScale(
       key: _aiHealthCheckKey,
       onTap: () => context.pushNamed(RouteNames.healthCheck),
       child: Container(
@@ -1152,7 +1217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Semantics(
       button: true,
       label: title,
-      child: GestureDetector(
+      child: PressableScale(
       onTap: onTap,
       child: Container(
         height: 170,
@@ -1223,7 +1288,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Semantics(
       button: true,
       label: l10n.home_todayHealthSignal,
-      child: GestureDetector(
+      child: PressableScale(
       onTap: () {
         AnalyticsService.instance.logBhiViewed(_activePet?.id ?? '');
         context.pushNamed(

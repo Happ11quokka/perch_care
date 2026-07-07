@@ -155,6 +155,38 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
     }
   }
 
+  /// 당겨서 새로고침 — 캐시를 우회해 서버에서 [targetDate](화면에서 선택된 기간)의
+  /// BHI를 강제 재조회한다. (refreshBhi는 캐시-우선이라 최신 데이터를 강제하지 못함)
+  Future<void> pullToRefresh(DateTime targetDate) async {
+    final current = state.valueOrNull;
+    final pet = current?.activePet;
+    if (pet == null) return;
+
+    final requestId = ++_bhiRequestId;
+    state = AsyncData(current!.copyWith(isBhiLoading: true));
+    try {
+      final bhi =
+          await _repo.loadBhiForDate(pet.id, targetDate, forceRefresh: true);
+      if (requestId != _bhiRequestId) return;
+      final latest = state.valueOrNull ?? current;
+      state = AsyncData(latest.copyWith(
+        bhi: bhi,
+        wciLevel: bhi.wciLevel,
+        hasWeight: bhi.hasWeightData,
+        hasFood: bhi.hasFoodData,
+        hasWater: bhi.hasWaterData,
+        isBhiLoading: false,
+        isBhiOffline: false,
+        lastBhiFetchTime: _repo.lastBhiFetchTime,
+      ));
+    } catch (e) {
+      if (requestId != _bhiRequestId) return;
+      final latest = state.valueOrNull ?? current;
+      state = AsyncData(latest.copyWith(isBhiLoading: false, isBhiOffline: true));
+      if (kDebugMode) debugPrint('[HomeViewModel] pullToRefresh failed: $e');
+    }
+  }
+
   /// 오프라인 큐 처리 (fire-and-forget).
   Future<void> processOfflineQueue() async {
     try {

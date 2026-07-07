@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/durations.dart';
+import 'pressable_scale.dart';
 
 /// 코치마크 단계 데이터
 class CoachMarkStep {
@@ -402,7 +403,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                       Semantics(
                         button: true,
                         label: widget.skipLabel,
-                        child: GestureDetector(
+                        child: PressableScale(
                           onTap: _animateOut,
                           child: Text(
                             widget.skipLabel,
@@ -418,7 +419,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                       Semantics(
                         button: true,
                         label: isLastStep ? widget.gotItLabel : widget.nextLabel,
-                        child: GestureDetector(
+                        child: PressableScale(
                           onTap: _nextStep,
                           child: Container(
                             padding: const EdgeInsets.symmetric(

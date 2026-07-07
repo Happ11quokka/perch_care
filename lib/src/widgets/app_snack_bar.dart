@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/colors.dart';
 import '../theme/durations.dart';
 import '../theme/typography.dart';
@@ -24,6 +25,7 @@ class AppSnackBar {
   AppSnackBar._();
 
   static OverlayEntry? _currentEntry;
+  static GlobalKey<_SnackBarOverlayState>? _currentKey;
 
   /// 스낵바 표시
   static void show(
@@ -32,25 +34,56 @@ class AppSnackBar {
     SnackBarType type = SnackBarType.info,
     Duration duration = AppDurations.snackBarDisplay,
   }) {
-    // 기존 스낵바가 있으면 즉시 제거
-    _dismiss();
+    _emitHaptic(type);
 
-    final overlay = Overlay.of(context);
+    // 기존 스낵바가 있으면 애니메이션으로 내보낸다(즉시 제거 대신).
+    // 새 스낵바는 곧바로 삽입되어 이전 것이 위로 빠지는 동안 아래로 내려온다.
+    final previousState = _currentKey?.currentState;
+    if (previousState != null) {
+      previousState.animateOut();
+    } else {
+      _dismiss();
+    }
+
+    // rootOverlay: 탭(브랜치) Navigator의 Overlay가 아니라 앱 루트 Overlay에 삽입.
+    // 탭 전환 시 TickerMode 음소거로 exit 애니메이션이 멈춰 스낵바가 잔류하는 것을 방지.
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final key = GlobalKey<_SnackBarOverlayState>();
 
     late OverlayEntry entry;
     entry = OverlayEntry(
       builder: (context) => _SnackBarOverlay(
+        key: key,
         message: message,
         type: type,
         duration: duration,
         onDismiss: () {
-          _dismiss();
+          // 자신의 entry만 제거 — 그 사이 다른 스낵바가 떠 있어도 안전.
+          entry.remove();
+          if (_currentEntry == entry) {
+            _currentEntry = null;
+            _currentKey = null;
+          }
         },
       ),
     );
 
     _currentEntry = entry;
+    _currentKey = key;
     overlay.insert(entry);
+  }
+
+  static void _emitHaptic(SnackBarType type) {
+    switch (type) {
+      case SnackBarType.success:
+        HapticFeedback.lightImpact();
+      case SnackBarType.error:
+        HapticFeedback.heavyImpact();
+      case SnackBarType.warning:
+        HapticFeedback.mediumImpact();
+      case SnackBarType.info:
+        break;
+    }
   }
 
   /// 성공 스낵바 표시
@@ -76,6 +109,7 @@ class AppSnackBar {
   static void _dismiss() {
     _currentEntry?.remove();
     _currentEntry = null;
+    _currentKey = null;
   }
 }
 
@@ -86,6 +120,7 @@ class _SnackBarOverlay extends StatefulWidget {
   final VoidCallback onDismiss;
 
   const _SnackBarOverlay({
+    super.key,
     required this.message,
     required this.type,
     required this.duration,
@@ -133,12 +168,13 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
     // 자동 사라짐
     Future.delayed(widget.duration, () {
       if (mounted) {
-        _animateOut();
+        animateOut();
       }
     });
   }
 
-  void _animateOut() {
+  void animateOut() {
+    if (!mounted || _controller.status == AnimationStatus.reverse) return;
     _controller.reverse().then((_) {
       if (mounted) {
         widget.onDismiss();
@@ -171,7 +207,7 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
               onVerticalDragEnd: (details) {
                 if (details.primaryVelocity != null &&
                     details.primaryVelocity! < 0) {
-                  _animateOut();
+                  animateOut();
                 }
               },
               child: Padding(
@@ -238,7 +274,7 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
                           button: true,
                           label: 'Close',
                           child: GestureDetector(
-                            onTap: _animateOut,
+                            onTap: animateOut,
                             behavior: HitTestBehavior.opaque,
                             child: Padding(
                               padding: const EdgeInsets.all(AppSpacing.xs),

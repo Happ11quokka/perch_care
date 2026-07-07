@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,7 +31,8 @@ class ForgotPasswordCodeScreen extends ConsumerStatefulWidget {
       _ForgotPasswordCodeScreenState();
 }
 
-class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScreen> {
+class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScreen>
+    with SingleTickerProviderStateMixin {
   static const int _codeLength = 6;
   final List<TextEditingController> _controllers = List.generate(
     _codeLength,
@@ -43,9 +45,17 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
   bool _isResending = false;
   bool _isVerifying = false;
 
+  // 오입력 피드백: 흔들림 + 테두리 danger 플래시
+  late final AnimationController _shakeController;
+  bool _hasError = false;
+
   @override
   void initState() {
     super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
     _startTimer();
     // 첫 번째 필드에 포커스
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -55,6 +65,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
 
   @override
   void dispose() {
+    _shakeController.dispose();
     _timer?.cancel();
     for (final controller in _controllers) {
       controller.dispose();
@@ -189,10 +200,20 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
   }
 
   Widget _buildCodeInputBoxes() {
-    return Row(
+    return AnimatedBuilder(
+      animation: _shakeController,
+      builder: (context, child) {
+        // sin(t*3π)*8 → 350ms 동안 좌우로 흔들림
+        final dx = math.sin(_shakeController.value * 3 * math.pi) * 8;
+        return Transform.translate(offset: Offset(dx, 0), child: child);
+      },
+      child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(_codeLength, (index) {
         final hasValue = _controllers[index].text.isNotEmpty;
+        final borderColor = _hasError
+            ? AppColors.danger
+            : (hasValue ? AppColors.brandPrimary : AppColors.warmGray);
         return Container(
           margin: EdgeInsets.only(right: index < _codeLength - 1 ? 12 : 0),
           child: SizedBox(
@@ -212,21 +233,21 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
               ),
               decoration: InputDecoration(
                 counterText: '',
-                filled: hasValue,
-                fillColor: AppColors.brandPrimary.withValues(alpha: 0.1),
+                filled: _hasError || hasValue,
+                fillColor: _hasError
+                    ? AppColors.dangerLight
+                    : AppColors.brandPrimary.withValues(alpha: 0.1),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(
-                    color: hasValue
-                        ? AppColors.brandPrimary
-                        : AppColors.warmGray,
+                    color: borderColor,
                     width: 1,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(
-                    color: AppColors.brandPrimary,
+                  borderSide: BorderSide(
+                    color: _hasError ? AppColors.danger : AppColors.brandPrimary,
                     width: 1,
                   ),
                 ),
@@ -249,6 +270,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
           ),
         );
       }),
+      ),
     );
   }
 
@@ -321,6 +343,16 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
       } else {
         AppSnackBar.warning(context, message: l10n.error_invalidCode);
       }
+      // 검증 실패 피드백: 흔들림 + 테두리 danger 플래시 (햅틱은 위 AppSnackBar가
+      // 타입별로 발생시키므로 중복 호출하지 않음). clear는 인과를 위해 직후 수행.
+      final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+      setState(() => _hasError = true);
+      if (!reduceMotion) {
+        _shakeController.forward(from: 0);
+      }
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (mounted) setState(() => _hasError = false);
+      });
       for (final controller in _controllers) {
         controller.clear();
       }

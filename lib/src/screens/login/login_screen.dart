@@ -13,6 +13,7 @@ import '../../view_models/auth/auth_view_model.dart';
 import '../../view_models/auth/post_login_destination.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/pressable_scale.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 로그인 화면 - Figma 디자인 기반
@@ -231,7 +232,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Semantics(
       button: true,
       label: label,
-      child: GestureDetector(
+      child: PressableScale(
         onTap: isLoading ? null : onTap,
         child: Container(
           height: 56,
