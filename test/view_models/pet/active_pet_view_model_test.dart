@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -6,6 +8,7 @@ import 'package:perch_care/src/models/pet.dart';
 import 'package:perch_care/src/providers/repository_providers.dart';
 import 'package:perch_care/src/repositories/pet_repository.dart';
 import 'package:perch_care/src/view_models/pet/active_pet_view_model.dart';
+import 'package:perch_care/src/view_models/pet/pet_list_view_model.dart';
 
 class MockPetRepository extends Mock implements PetRepository {}
 
@@ -53,6 +56,10 @@ void main() {
         () async {
       when(() => repo.getActivePet(forceRefresh: false))
           .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.getMyPets())
+          .thenAnswer((_) async => [_pet('p1'), _pet('p2', name: 'Second')]);
+      when(() => repo.getLocalPets())
+          .thenAnswer((_) async => [_pet('p1'), _pet('p2', name: 'Second')]);
       when(() => repo.setActivePet('p2')).thenAnswer((_) async {});
       when(() => repo.getActivePet(forceRefresh: true))
           .thenAnswer((_) async => _pet('p2', name: 'Second'));
@@ -72,14 +79,104 @@ void main() {
       ]);
     });
 
-    test('switchPet() 실패 시 AsyncError 상태로 전파된다', () async {
+    // 낙관적 업데이트(2026-07 성능 개선) 회귀 테스트:
+    // 서버 왕복이 끝나기 전에 로컬 데이터 기반으로 상태가 즉시 전환되어야 한다.
+    test('switchPet()은 서버 응답 전에 상태를 타겟 펫으로 즉시 전환한다(낙관적 업데이트)',
+        () async {
       when(() => repo.getActivePet(forceRefresh: false))
           .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.getMyPets())
+          .thenAnswer((_) async => [_pet('p1'), _pet('p2', name: 'Second')]);
+
+      final setActivePetGate = Completer<void>();
+      when(() => repo.setActivePet('p2'))
+          .thenAnswer((_) => setActivePetGate.future);
+      when(() => repo.getActivePet(forceRefresh: true))
+          .thenAnswer((_) async => _pet('p2', name: 'Second'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future); // 초기 로드 p1
+      // 펫 목록 provider를 미리 로드 (프로필 화면 진입 상태 재현)
+      await container.read(petListViewModelProvider.future);
+
+      final switching = container
+          .read(activePetViewModelProvider.notifier)
+          .switchPet('p2');
+
+      // 서버 PUT이 완료되기 전에 이미 상태가 p2
+      expect(
+        container.read(activePetViewModelProvider).valueOrNull?.id,
+        'p2',
+        reason: '낙관적 업데이트로 서버 응답 전에 상태가 전환되어야 함',
+      );
+
+      setActivePetGate.complete();
+      await switching;
+
+      expect(
+        container.read(activePetViewModelProvider).valueOrNull?.id,
+        'p2',
+      );
+    });
+
+    test('switchPet() 재진입 가드 — 진행 중 재호출은 무시된다', () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.getMyPets())
+          .thenAnswer((_) async => [_pet('p1'), _pet('p2'), _pet('p3')]);
+
+      final setActivePetGate = Completer<void>();
+      when(() => repo.setActivePet(any()))
+          .thenAnswer((_) => setActivePetGate.future);
+      when(() => repo.getActivePet(forceRefresh: true))
+          .thenAnswer((_) async => _pet('p2'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future);
+      await container.read(petListViewModelProvider.future);
+
+      final notifier = container.read(activePetViewModelProvider.notifier);
+      final first = notifier.switchPet('p2');
+      final second = notifier.switchPet('p3'); // 진행 중 연타 → 무시
+
+      setActivePetGate.complete();
+      await first;
+      await second;
+
+      verify(() => repo.setActivePet('p2')).called(1);
+      verifyNever(() => repo.setActivePet('p3'));
+      expect(
+        container.read(activePetViewModelProvider).valueOrNull?.id,
+        'p2',
+      );
+    });
+
+    test('switchPet() 동일 펫 재선택은 서버 호출 없이 무시된다', () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future);
+
+      await container
+          .read(activePetViewModelProvider.notifier)
+          .switchPet('p1');
+
+      verifyNever(() => repo.setActivePet(any()));
+      verifyNever(() => repo.getActivePet(forceRefresh: true));
+    });
+
+    test('switchPet() 실패 시 AsyncError 상태로 전파되고 이전 펫으로 롤백된다', () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.getMyPets())
+          .thenAnswer((_) async => [_pet('p1'), _pet('p2')]);
       when(() => repo.setActivePet('p2'))
           .thenThrow(Exception('network error'));
 
       final container = _container(repo);
       await container.read(activePetViewModelProvider.future);
+      await container.read(petListViewModelProvider.future);
 
       await container
           .read(activePetViewModelProvider.notifier)
@@ -87,6 +184,34 @@ void main() {
 
       final state = container.read(activePetViewModelProvider);
       expect(state.hasError, isTrue);
+      expect(state.valueOrNull?.id, 'p1',
+          reason: '실패 시 낙관적 상태가 이전 펫으로 롤백되어야 함');
+    });
+
+    test('switchPet() 확정 재조회가 다른 펫을 반환하면(스테일 캐시 폴백) 낙관적 상태를 유지한다',
+        () async {
+      when(() => repo.getActivePet(forceRefresh: false))
+          .thenAnswer((_) async => _pet('p1'));
+      when(() => repo.getMyPets())
+          .thenAnswer((_) async => [_pet('p1'), _pet('p2')]);
+      when(() => repo.setActivePet('p2')).thenAnswer((_) async {});
+      // PUT은 성공했지만 확정 GET이 오프라인 폴백으로 이전 펫을 반환하는 상황
+      when(() => repo.getActivePet(forceRefresh: true))
+          .thenAnswer((_) async => _pet('p1'));
+
+      final container = _container(repo);
+      await container.read(activePetViewModelProvider.future);
+      await container.read(petListViewModelProvider.future);
+
+      await container
+          .read(activePetViewModelProvider.notifier)
+          .switchPet('p2');
+
+      expect(
+        container.read(activePetViewModelProvider).valueOrNull?.id,
+        'p2',
+        reason: '서버 PUT이 성공했으므로 낙관적 상태가 유지되어야 함',
+      );
     });
 
     test('deletePet: 서버+캐시 삭제 후 남은 펫으로 전환', () async {
@@ -161,7 +286,8 @@ void main() {
       verify(() => repo.deletePet('p1')).called(1);
       verify(() => repo.removeLocalCache('p1')).called(1);
       verify(() => repo.getMyPets(forceRefresh: true)).called(1);
-      verify(() => repo.getLocalPets()).called(1);
+      // deletePet 폴백 1회 + switchPet 낙관적 업데이트의 로컬 캐시 조회 1회
+      verify(() => repo.getLocalPets()).called(2);
       verify(() => repo.setActivePet('p3')).called(1);
 
       final pet = container.read(activePetViewModelProvider).valueOrNull;

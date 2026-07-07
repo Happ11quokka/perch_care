@@ -1925,7 +1925,13 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
 
   Widget _buildPetSelector() {
     final petList = _vm?.petList ?? const <Pet>[];
-    final activePetId = _vm?.activePetId;
+    // 칩 하이라이트는 activePet SSOT에 직접 바인딩 — switchPet의 낙관적 업데이트로
+    // 탭 즉시 이동한다. aggregated VM(activePetId)은 재로드 완료까지 이전 펫이므로
+    // 폴백으로만 사용.
+    final activePetId = ref.watch(
+          activePetViewModelProvider.select((a) => a.valueOrNull?.id),
+        ) ??
+        _vm?.activePetId;
     return SizedBox(
       height: 40,
       child: ListView.separated(
