@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     # Embedding / Vector Search
     embedding_model: str = "text-embedding-3-large"
     hyde_model: str = "gpt-4o-mini"
+    hyde_timeout_seconds: float = 5.0
+    openai_timeout_seconds: float = 10.0
     vector_search_top_k: int = 5
     vector_search_min_similarity: float = 0.3
 
