@@ -317,7 +317,7 @@ App next start / resume
 | **Streaming** | SSE 토큰 단위 전송 |
 | **Vision** | GPT-4V — 전신 · 부위 · 배설물 · 먹이 안전성 4개 분석 |
 
-Bird Health Index 수식과 임계값은 [`docs/BHI.md`](docs/BHI.md) 참조.
+Bird Health Index 수식과 임계값은 [`docs/BHI.md`](docs/BHI.md) 참조. RAG/Hybrid LLM/Vision AI/인프라를 3축으로 정리한 심화 기술 문서는 [`docs/AI_ARCHITECTURE.md`](docs/AI_ARCHITECTURE.md) 참조.
 
 <br/>
 
@@ -444,6 +444,7 @@ flutter clean              # 캐시 초기화
 
 | 문서 | 내용 |
 |---|---|
+| [`docs/AI_ARCHITECTURE.md`](docs/AI_ARCHITECTURE.md) | **AI 아키텍처 3축 정리** — ① 지식DB·RAG(HyDE+pgvector) ② Hybrid LLM 라우팅·Vision AI ③ BHI·배포 인프라. draw.io 다이어그램 3개 + 로컬 검증 결과(pytest 64/64, 실측/코드검증 구분) 포함 |
 | [`docs/BHI.md`](docs/BHI.md) | Bird Health Index 수식 (체중·식사·음수 가중치, 성장 단계별 수식, 5-tier 레벨) |
 | [`docs/project-analysis-report.md`](docs/project-analysis-report.md) | 전체 프로젝트 분석 리포트 (모델·서비스·라우터·화면·데이터 스키마) |
 | [`docs/development-logs/2026-04-18-mvvm-architecture-adoption.md`](docs/development-logs/2026-04-18-mvvm-architecture-adoption.md) | **MVVM 5-layer 도입** — 설계 결정, 레이어 계약, 리팩터링 패턴, 테스트 전략 |
