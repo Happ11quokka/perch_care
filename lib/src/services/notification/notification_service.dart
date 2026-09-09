@@ -1,4 +1,7 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+
 import '../../models/notification.dart';
 import '../api/api_client.dart';
 
@@ -78,23 +81,39 @@ class NotificationService {
   }
 
   /// 알림 폴링 스트림 (점진적 백오프)
-  Stream<List<AppNotification>> subscribeToNotifications() async* {
+  ///
+  /// 폴링 중 네트워크 에러가 나도 **빈 리스트를 yield하지 않는다** — 이전에 성공한
+  /// 목록이 구독자(ViewModel) 쪽에 그대로 남고, 다음 성공 폴링에서 갱신된다.
+  Stream<List<AppNotification>> subscribeToNotifications() =>
+      poll(fetchNotifications);
+
+  /// 폴링 루프 본체 — `fetch`와 `delay`를 주입받아 단위 테스트 가능하게 분리.
+  ///
+  /// - 성공: 목록을 yield. 미읽음이 있으면 30초, 없으면 1.5배씩 늘려 최대 120초.
+  /// - 실패: 아무것도 yield하지 않고 간격만 2배로 늘린다(최대 120초). 일시적 에러로
+  ///   화면 목록이 통째로 비워지는 것을 막기 위함(F14).
+  @visibleForTesting
+  static Stream<List<AppNotification>> poll(
+    Future<List<AppNotification>> Function() fetch, {
+    Future<void> Function(Duration) delay = Future.delayed,
+  }) async* {
     int interval = 30;
     const maxInterval = 120;
     while (true) {
-      await Future.delayed(Duration(seconds: interval));
+      await delay(Duration(seconds: interval));
+      List<AppNotification> notifications;
       try {
-        final notifications = await fetchNotifications();
-        yield notifications;
-        // 새 알림이 있으면 빠르게, 없으면 점진적으로 늘림
-        if (notifications.any((n) => !n.isRead)) {
-          interval = 30;
-        } else {
-          interval = (interval * 1.5).clamp(30, maxInterval).toInt();
-        }
+        notifications = await fetch();
       } catch (_) {
-        yield <AppNotification>[];
         interval = (interval * 2).clamp(30, maxInterval).toInt();
+        continue;
+      }
+      yield notifications;
+      // 새 알림이 있으면 빠르게, 없으면 점진적으로 늘림
+      if (notifications.any((n) => !n.isRead)) {
+        interval = 30;
+      } else {
+        interval = (interval * 1.5).clamp(30, maxInterval).toInt();
       }
     }
   }

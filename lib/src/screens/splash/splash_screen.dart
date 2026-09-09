@@ -143,11 +143,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     // 6. Riverpod provider 사전 로드 — HomeScreen 즉시 렌더.
     // 활성 펫/펫 목록은 서로 독립 요청이므로 병렬 조회 (순차 대비 왕복 1단계 절감).
+    // `.future`로 build()의 첫 fetch(서버 → 로컬 캐시 폴백)를 그대로 기다린다.
+    // 이전의 `.notifier.refresh()`는 provider 생성 시 build()가 이미 시작한 요청 위에
+    // forceRefresh 요청을 한 번 더 겹쳐 콜드 스타트마다 provider당 2회 호출했다(F13).
     if (TokenService.instance.isLoggedIn) {
       try {
         await Future.wait([
-          ref.read(activePetProvider.notifier).refresh(),
-          ref.read(petListProvider.notifier).refresh(),
+          ref.read(activePetProvider.future),
+          ref.read(petListProvider.future),
         ]);
         debugPrint('[Splash] Riverpod providers seeded');
       } catch (e) {

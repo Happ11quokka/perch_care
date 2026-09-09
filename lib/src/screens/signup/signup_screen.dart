@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../theme/durations.dart';
+import '../../router/navigation_extensions.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import '../../providers/repository_providers.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -105,7 +107,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo(RoutePaths.login),
         ),
         centerTitle: true,
         title: Text(
@@ -282,7 +284,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     button: true,
                     label: l10n.login_button,
                     child: GestureDetector(
-                    onTap: () => context.pop(),
+                    onTap: () => context.popOrGo(RoutePaths.login),
                     child: Text(
                       l10n.login_button,
                       style: const TextStyle(

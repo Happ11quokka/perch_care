@@ -197,9 +197,8 @@ void main() {
   });
 
   test(
-      'subscribe stream emitting empty list after initial build clears state '
-      '(documents pre-existing NotificationService error-yields-empty behavior, preserved as-is)',
-      () async {
+      'subscribe stream emitting a genuinely empty server list after initial build '
+      'clears state (legitimate "no notifications" response)', () async {
     final controller = StreamController<List<AppNotification>>();
     when(() => repo.fetch())
         .thenAnswer((_) async => [_notif('n1'), _notif('n2')]);
@@ -215,5 +214,77 @@ void main() {
     expect(state, isEmpty);
 
     await controller.close();
+  });
+
+  // F14: 폴링 에러가 이미 표시 중인 목록을 비우면 안 된다.
+  test('polling stream error keeps the previously shown list (F14)', () async {
+    final controller = StreamController<List<AppNotification>>();
+    when(() => repo.fetch())
+        .thenAnswer((_) async => [_notif('n1'), _notif('n2')]);
+    when(() => repo.subscribe()).thenAnswer((_) => controller.stream);
+
+    final container = _container(repo);
+    await container.read(notificationViewModelProvider.future);
+
+    controller.addError(Exception('network'));
+    await _flush();
+
+    final state = container.read(notificationViewModelProvider);
+    expect(state.hasError, isTrue, reason: 'View가 스낵바를 1회 띄울 수 있게 에러는 노출');
+    expect(state.valueOrNull?.map((n) => n.id), ['n1', 'n2'],
+        reason: '이전 목록은 그대로 유지되어야 한다');
+
+    // 다음 성공 폴링이 오면 정상 데이터로 복귀한다.
+    controller.add([_notif('n1'), _notif('n2'), _notif('n3')]);
+    await _flush();
+    final recovered = container.read(notificationViewModelProvider);
+    expect(recovered.hasError, isFalse);
+    expect(recovered.value, hasLength(3));
+
+    await controller.close();
+  });
+
+  test(
+      'markAsRead failure followed by re-fetch failure restores the pre-action '
+      'snapshot and does not throw to the caller (F14)', () async {
+    when(() => repo.fetch()).thenAnswer((_) async => [_notif('n1')]);
+    when(() => repo.subscribe())
+        .thenAnswer((_) => const Stream<List<AppNotification>>.empty());
+    when(() => repo.markAsRead('n1')).thenThrow(Exception('network'));
+
+    final container = _container(repo);
+    await container.read(notificationViewModelProvider.future);
+    final vm = container.read(notificationViewModelProvider.notifier);
+
+    when(() => repo.fetch()).thenThrow(Exception('network again'));
+
+    await expectLater(vm.markAsRead('n1'), completes);
+
+    final state = container.read(notificationViewModelProvider);
+    expect(state.hasError, isFalse);
+    final list = state.value!;
+    expect(list.map((n) => n.id), ['n1']);
+    expect(list.single.isRead, isFalse, reason: '낙관적 갱신이 롤백되어야 한다');
+  });
+
+  test(
+      'delete failure followed by re-fetch failure restores the pre-action '
+      'snapshot and still rethrows for the View snackbar (F14)', () async {
+    when(() => repo.fetch())
+        .thenAnswer((_) async => [_notif('n1'), _notif('n2')]);
+    when(() => repo.subscribe())
+        .thenAnswer((_) => const Stream<List<AppNotification>>.empty());
+    when(() => repo.delete('n1')).thenThrow(Exception('network'));
+
+    final container = _container(repo);
+    await container.read(notificationViewModelProvider.future);
+    final vm = container.read(notificationViewModelProvider.notifier);
+
+    when(() => repo.fetch()).thenThrow(Exception('network again'));
+
+    await expectLater(vm.delete('n1'), throwsA(isA<Exception>()));
+
+    final state = container.read(notificationViewModelProvider).value!;
+    expect(state.map((n) => n.id), ['n1', 'n2']);
   });
 }

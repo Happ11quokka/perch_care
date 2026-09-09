@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../theme/colors.dart';
 import '../../theme/durations.dart';
+import '../../router/navigation_extensions.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import '../../repositories/auth_repository.dart';
 import '../../utils/error_handler.dart';
 import '../../view_models/auth/auth_view_model.dart';
@@ -118,7 +120,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo(RoutePaths.login),
         ),
         centerTitle: true,
         title: Text(
