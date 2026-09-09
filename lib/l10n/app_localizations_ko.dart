@@ -2320,4 +2320,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get a11y_toggleInputSheet => '입력 시트 펼치기/접기';
+
+  @override
+  String get a11y_selectPet => '펫 선택';
+
+  @override
+  String get a11y_wciHealthStatus => 'WCI 건강 상태';
+
+  @override
+  String get a11y_editPetPhoto => '펫 사진 수정';
+
+  @override
+  String get a11y_selectLanguage => '언어 선택';
+
+  @override
+  String get a11y_editProfile => '프로필 수정';
+
+  @override
+  String get a11y_editPetProfile => '펫 프로필 수정';
+
+  @override
+  String get a11y_removeSelectedImage => '선택한 이미지 제거';
 }

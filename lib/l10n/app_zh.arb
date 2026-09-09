@@ -1069,5 +1069,12 @@
   "a11y_editDailyRecord": "编辑每日记录",
   "a11y_editProfilePhoto": "编辑个人资料照片",
   "a11y_editPetProfilePhoto": "编辑宠物资料照片",
-  "a11y_toggleInputSheet": "展开或收起输入面板"
+  "a11y_toggleInputSheet": "展开或收起输入面板",
+  "a11y_selectPet": "选择宠物",
+  "a11y_wciHealthStatus": "WCI 健康状态",
+  "a11y_editPetPhoto": "编辑宠物照片",
+  "a11y_selectLanguage": "选择语言",
+  "a11y_editProfile": "编辑个人资料",
+  "a11y_editPetProfile": "编辑宠物资料",
+  "a11y_removeSelectedImage": "移除所选图片"
 }

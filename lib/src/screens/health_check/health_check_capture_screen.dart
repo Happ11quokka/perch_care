@@ -226,7 +226,7 @@ class _HealthCheckCaptureScreenState
                   right: 8,
                   child: Semantics(
                     button: true,
-                    label: 'Remove selected image',
+                    label: AppLocalizations.of(context).a11y_removeSelectedImage,
                     child: GestureDetector(
                       onTap: () => setState(() {
                         _selectedImage = null;

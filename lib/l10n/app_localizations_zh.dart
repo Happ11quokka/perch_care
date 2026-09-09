@@ -2274,4 +2274,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get a11y_toggleInputSheet => '展开或收起输入面板';
+
+  @override
+  String get a11y_selectPet => '选择宠物';
+
+  @override
+  String get a11y_wciHealthStatus => 'WCI 健康状态';
+
+  @override
+  String get a11y_editPetPhoto => '编辑宠物照片';
+
+  @override
+  String get a11y_selectLanguage => '选择语言';
+
+  @override
+  String get a11y_editProfile => '编辑个人资料';
+
+  @override
+  String get a11y_editPetProfile => '编辑宠物资料';
+
+  @override
+  String get a11y_removeSelectedImage => '移除所选图片';
 }

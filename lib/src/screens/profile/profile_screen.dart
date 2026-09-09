@@ -440,7 +440,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
           Semantics(
             button: true,
-            label: 'Select language',
+            label: AppLocalizations.of(context).a11y_selectLanguage,
             child: GestureDetector(
             onTap: () => _showLanguageDialog(l10n),
             child: Container(
@@ -702,7 +702,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               left: 0,
               child: Semantics(
                 button: true,
-                label: 'Go back',
+                label: AppLocalizations.of(context).a11y_goBack,
                 child: GestureDetector(
                 onTap: () {
                   if (context.canPop()) {
@@ -748,7 +748,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           // 프로필 아이콘과 편집 버튼
           Semantics(
             button: true,
-            label: 'Edit profile',
+            label: AppLocalizations.of(context).a11y_editProfile,
             child: GestureDetector(
             onTap: () async {
               await context.pushNamed(
@@ -844,7 +844,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Semantics(
       button: true,
-      label: 'Select pet',
+      label: AppLocalizations.of(context).a11y_selectPet,
       child: GestureDetector(
       key: isFirst ? _firstPetCardKey : null,
       onTap: () async {
@@ -949,7 +949,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // 편집 아이콘
             Semantics(
               button: true,
-              label: 'Edit pet profile',
+              label: AppLocalizations.of(context).a11y_editPetProfile,
               child: GestureDetector(
               onTap: () => context.pushNamed(RouteNames.petProfileDetail),
               child: Container(

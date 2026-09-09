@@ -902,5 +902,12 @@
   "a11y_editDailyRecord": "Edit daily record",
   "a11y_editProfilePhoto": "Edit profile photo",
   "a11y_editPetProfilePhoto": "Edit pet profile photo",
-  "a11y_toggleInputSheet": "Expand or collapse input sheet"
+  "a11y_toggleInputSheet": "Expand or collapse input sheet",
+  "a11y_selectPet": "Select pet",
+  "a11y_wciHealthStatus": "WCI health status",
+  "a11y_editPetPhoto": "Edit pet photo",
+  "a11y_selectLanguage": "Select language",
+  "a11y_editProfile": "Edit profile",
+  "a11y_editPetProfile": "Edit pet profile",
+  "a11y_removeSelectedImage": "Remove selected image"
 }

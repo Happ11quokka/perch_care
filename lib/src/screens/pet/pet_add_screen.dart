@@ -340,7 +340,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                                   bottom: 0,
                                   child: Semantics(
                                     button: true,
-                                    label: 'Edit pet photo',
+                                    label: AppLocalizations.of(context).a11y_editPetPhoto,
                                     child: GestureDetector(
                                     onTap: _handlePickImage,
                                     child: Container(

@@ -4401,6 +4401,48 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'입력 시트 펼치기/접기'**
   String get a11y_toggleInputSheet;
+
+  /// No description provided for @a11y_selectPet.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 선택'**
+  String get a11y_selectPet;
+
+  /// No description provided for @a11y_wciHealthStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'WCI 건강 상태'**
+  String get a11y_wciHealthStatus;
+
+  /// No description provided for @a11y_editPetPhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 사진 수정'**
+  String get a11y_editPetPhoto;
+
+  /// No description provided for @a11y_selectLanguage.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어 선택'**
+  String get a11y_selectLanguage;
+
+  /// No description provided for @a11y_editProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 수정'**
+  String get a11y_editProfile;
+
+  /// No description provided for @a11y_editPetProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 프로필 수정'**
+  String get a11y_editPetProfile;
+
+  /// No description provided for @a11y_removeSelectedImage.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택한 이미지 제거'**
+  String get a11y_removeSelectedImage;
 }
 
 class _AppLocalizationsDelegate

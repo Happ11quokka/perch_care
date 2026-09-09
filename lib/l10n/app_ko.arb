@@ -1100,5 +1100,12 @@
   "a11y_editDailyRecord": "일일 기록 수정",
   "a11y_editProfilePhoto": "프로필 사진 수정",
   "a11y_editPetProfilePhoto": "펫 프로필 사진 수정",
-  "a11y_toggleInputSheet": "입력 시트 펼치기/접기"
+  "a11y_toggleInputSheet": "입력 시트 펼치기/접기",
+  "a11y_selectPet": "펫 선택",
+  "a11y_wciHealthStatus": "WCI 건강 상태",
+  "a11y_editPetPhoto": "펫 사진 수정",
+  "a11y_selectLanguage": "언어 선택",
+  "a11y_editProfile": "프로필 수정",
+  "a11y_editPetProfile": "펫 프로필 수정",
+  "a11y_removeSelectedImage": "선택한 이미지 제거"
 }

@@ -2392,4 +2392,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11y_toggleInputSheet => 'Expand or collapse input sheet';
+
+  @override
+  String get a11y_selectPet => 'Select pet';
+
+  @override
+  String get a11y_wciHealthStatus => 'WCI health status';
+
+  @override
+  String get a11y_editPetPhoto => 'Edit pet photo';
+
+  @override
+  String get a11y_selectLanguage => 'Select language';
+
+  @override
+  String get a11y_editProfile => 'Edit profile';
+
+  @override
+  String get a11y_editPetProfile => 'Edit pet profile';
+
+  @override
+  String get a11y_removeSelectedImage => 'Remove selected image';
 }

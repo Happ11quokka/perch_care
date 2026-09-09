@@ -387,7 +387,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Flexible(
                     child: Semantics(
                     button: true,
-                    label: 'Select pet',
+                    label: AppLocalizations.of(context).a11y_selectPet,
                     child: PressableScale(
                     onTap: () {
                       context.pushNamed(RouteNames.profile);
@@ -781,7 +781,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Expanded(
                   child: Semantics(
                   button: true,
-                  label: 'WCI health status',
+                  label: AppLocalizations.of(context).a11y_wciHealthStatus,
                   child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => context.pushNamed(RouteNames.wciIndex),
