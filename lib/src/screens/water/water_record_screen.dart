@@ -12,7 +12,15 @@ import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
 import '../../providers/pet_providers.dart';
+import '../../models/pet.dart';
 import '../../../l10n/app_localizations.dart';
+
+/// 활성 펫 구독 키 — 로딩 중(값 없음) / 펫 없음(null) / 펫 id 를 구분한다.
+/// AsyncLoading.copyWithPrevious(이전 펫 유지)는 로딩으로 취급하지 않는다.
+typedef _ActivePetKey = ({bool loading, String? petId});
+
+_ActivePetKey _activePetKey(AsyncValue<Pet?> s) =>
+    (loading: s.isLoading && !s.hasValue, petId: s.valueOrNull?.id);
 
 class WaterRecordScreen extends ConsumerStatefulWidget {
   const WaterRecordScreen({super.key});
@@ -26,6 +34,13 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
   String? _activePetId;
   bool _isLoading = true;
 
+  /// 마지막으로 처리한 활성 펫 키 — 동일 키 재발행은 무시.
+  _ActivePetKey? _lastPetKey;
+
+  /// 로드 시퀀스 — 이전 펫/날짜의 in-flight 결과를 폐기하기 위한 가드.
+  int _loadSeq = 0;
+  bool _coachMarksChecked = false;
+
   double _totalMl = 0;
   int _count = 0;
   final double _goalMl = 270;
@@ -38,7 +53,8 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
   @override
   void initState() {
     super.initState();
-    _loadActivePet();
+    // 초기값은 동기 read, 이후 변경은 build()의 ref.listen 으로 구독한다.
+    _onActivePetChanged(_activePetKey(ref.read(activePetProvider)));
   }
 
   @override
@@ -47,24 +63,19 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
     super.dispose();
   }
 
-  Future<void> _loadActivePet() async {
-    try {
-      final pet = ref.read(activePetProvider).valueOrNull;
-      if (!mounted) return;
-      setState(() {
-        _activePetId = pet?.id;
-      });
-      await _loadRecord();
-    } catch (_) {
-      if (!mounted) return;
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        _maybeShowCoachMarks();
-      }
-    }
+  /// 활성 펫 확정/전환 시 호출 — 로딩 중이면 대기, 펫이 바뀌면 재로드.
+  void _onActivePetChanged(_ActivePetKey next) {
+    if (next.loading) return;
+    if (next == _lastPetKey) return;
+    _lastPetKey = next;
+    _activePetId = next.petId;
+    _setLoading(true);
+    _loadRecord();
+  }
+
+  void _setLoading(bool value) {
+    if (_isLoading == value) return;
+    setState(() => _isLoading = value);
   }
 
   Future<void> _maybeShowCoachMarks() async {
@@ -96,38 +107,51 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
     );
   }
 
+  /// 현재 펫·날짜의 기록 로드. 로드 중 펫/날짜가 바뀌면 결과를 폐기한다.
   Future<void> _loadRecord() async {
-    if (_activePetId == null) {
-      if (!mounted) return;
-      setState(() {
-        _totalMl = 0;
-        _count = 0;
-      });
-      return;
+    final seq = ++_loadSeq;
+    final petId = _activePetId;
+    ({double totalMl, int count})? result;
+    if (petId != null) {
+      try {
+        result = await ref
+            .read(waterRecordViewModelProvider.notifier)
+            .loadByDate(petId: petId, date: _selectedDate);
+      } catch (_) {
+        result = null;
+      }
     }
-    final result = await ref
-        .read(waterRecordViewModelProvider.notifier)
-        .loadByDate(petId: _activePetId!, date: _selectedDate);
-    if (!mounted) return;
+    if (!mounted || seq != _loadSeq) return;
     setState(() {
       _totalMl = result?.totalMl ?? 0;
       _count = result?.count ?? 0;
+      _isLoading = false;
     });
+    if (!_coachMarksChecked) {
+      _coachMarksChecked = true;
+      _maybeShowCoachMarks();
+    }
   }
 
-  Future<void> _saveRecord() async {
-    if (_activePetId == null) return;
+  /// 저장 시도. 활성 펫이 없으면 경고 스낵바 후 false 반환 (성공 스낵바 금지).
+  Future<bool> _saveRecord() async {
+    final petId = _activePetId;
+    final l10n = AppLocalizations.of(context);
+    if (petId == null) {
+      AppSnackBar.warning(context, message: l10n.error_noPetFound);
+      return false;
+    }
     final outcome = await ref.read(waterRecordViewModelProvider.notifier).save(
-          petId: _activePetId!,
+          petId: petId,
           date: _selectedDate,
           totalMl: _totalMl,
           targetMl: _goalMl,
           count: _count,
         );
     if (mounted && outcome == SaveOutcome.offline) {
-      final l10n = AppLocalizations.of(context);
       AppSnackBar.info(context, message: l10n.snackbar_savedOffline);
     }
+    return true;
   }
 
   Future<void> _pickDate() async {
@@ -268,6 +292,10 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<_ActivePetKey>(
+      activePetProvider.select(_activePetKey),
+      (_, next) => _onActivePetChanged(next),
+    );
     final l10n = AppLocalizations.of(context);
     final hasData = _totalMl > 0;
     return Scaffold(
@@ -512,8 +540,8 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                       label: l10n.btn_save,
                       child: GestureDetector(
                       onTap: () async {
-                        await _saveRecord();
-                        if (!context.mounted) return;
+                        final saved = await _saveRecord();
+                        if (!saved || !context.mounted) return;
                         AppSnackBar.success(
                           context,
                           message: l10n.snackbar_saved,

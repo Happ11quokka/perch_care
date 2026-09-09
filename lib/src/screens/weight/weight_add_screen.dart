@@ -35,15 +35,11 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
   double _expandedHeight = 0;
   int _bcsLevel = 3;
   double _sliderWeight = 65;
-  String? _activePetId;
 
   @override
   void initState() {
     super.initState();
     _weightController.addListener(_onWeightChanged);
-    Future.microtask(() async {
-      await _loadActivePet();
-    });
   }
 
   @override
@@ -68,28 +64,15 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
     }
   }
 
-  /// 활성 펫 ID 로드
-  Future<void> _loadActivePet() async {
-    try {
-      final activePet = ref.read(activePetProvider).valueOrNull;
-      if (activePet != null && mounted) {
-        setState(() {
-          _activePetId = activePet.id;
-        });
-      }
-    } catch (e) {
-      // 에러 처리는 saveWeightRecord에서 사용자에게 알림
-    }
-  }
-
-  /// 저장 버튼 클릭
+  /// 저장 버튼 클릭 — 활성 펫은 저장 시점에 provider에서 읽는다 (initState 1회 read 금지).
   Future<void> _onSave() async {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_activePetId == null) {
+    final petId = ref.read(activePetProvider).valueOrNull?.id;
+    if (petId == null) {
       final l10n = AppLocalizations.of(context);
       AppSnackBar.warning(context, message: l10n.error_noPetFound);
       return;
@@ -102,7 +85,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
     try {
       final weight = double.parse(_weightController.text);
       final record = WeightRecord(
-        petId: _activePetId!,
+        petId: petId,
         date: widget.date,
         weight: weight,
         recordedHour: _selectedTime.hour,
@@ -664,11 +647,15 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
 
   Widget _buildSaveButton(Size size) {
     final l10n = AppLocalizations.of(context);
+    // 활성 펫이 아직 로딩 중이면 저장 비활성 (펫 없음/에러는 _onSave에서 경고).
+    final petLoading = ref.watch(
+      activePetProvider.select((s) => s.isLoading && !s.hasValue),
+    );
     return Semantics(
       button: true,
       label: l10n.btn_saveRecord,
       child: PressableScale(
-      onTap: _isLoading ? null : _onSave,
+      onTap: (_isLoading || petLoading) ? null : _onSave,
       child: Container(
         width: size.width,
         padding: const EdgeInsets.symmetric(
