@@ -131,7 +131,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     alignment: Alignment.centerLeft,
                     child: Semantics(
                       button: true,
-                      label: 'Go back',
+                      label: AppLocalizations.of(context).a11y_goBack,
                       child: GestureDetector(
                       onTap: () => context.pop(),
                       child: SizedBox(
@@ -234,7 +234,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             right: 0,
             child: Semantics(
               button: true,
-              label: 'Edit profile photo',
+              label: AppLocalizations.of(context).a11y_editProfilePhoto,
               child: GestureDetector(
               onTap: _handleEditPhoto,
               child: Container(
@@ -427,7 +427,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           // 국가 선택
           Semantics(
             button: true,
-            label: 'Select country',
+            label: AppLocalizations.of(context).a11y_selectCountry,
             child: GestureDetector(
             onTap: _showCountrySelector,
             child: Row(

@@ -105,7 +105,34 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
+bool _semanticsLabel(Widget w, String label) =>
+    w is Semantics && w.properties.label == label;
+
 void main() {
+  // F17 회귀 — 배경 탭 영역의 접근성 라벨은 하드코딩 'Next' 가 아니라 호출자가
+  // 넘긴 l10n 라벨(마지막 단계면 gotItLabel, 아니면 nextLabel)을 써야 한다.
+  testWidgets('background tap area uses the localized next/got-it label', (
+    tester,
+  ) async {
+    final h = _Harness();
+    await tester.pumpWidget(h.app);
+    await _settle(tester);
+
+    h.show(tester); // 단일 단계 → 마지막 단계
+    await _settle(tester);
+
+    // 배경 영역 + 버튼 모두 gotItLabel 을 쓴다.
+    expect(
+      find.byWidgetPredicate((w) => _semanticsLabel(w, 'Got it')),
+      findsNWidgets(2),
+    );
+    expect(
+      find.byWidgetPredicate((w) => _semanticsLabel(w, 'Next')),
+      findsNothing,
+    );
+    await h.dispose(tester);
+  });
+
   testWidgets('shows the coach mark when the calling screen is visible', (
     tester,
   ) async {

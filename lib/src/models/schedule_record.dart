@@ -59,24 +59,24 @@ class ScheduleRecord {
     );
   }
 
-  // 시간 포맷 헬퍼
-  String get formattedStartTime {
-    final hour = startTime.hour;
-    final minute = startTime.minute.toString().padLeft(2, '0');
-    final period = hour < 12 ? '오전' : '오후';
+  // 시간 포맷 헬퍼 — 모델은 BuildContext가 없으므로 오전/오후 라벨([am]/[pm])은
+  // 호출자가 `l10n.datetime_am` / `l10n.datetime_pm`으로 넘긴다.
+  static String _formatTime(DateTime time, {required String am, required String pm}) {
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = hour < 12 ? am : pm;
     final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
     return '$period ${displayHour.toString().padLeft(2, '0')}:$minute';
   }
 
-  String get formattedEndTime {
-    final hour = endTime.hour;
-    final minute = endTime.minute.toString().padLeft(2, '0');
-    final period = hour < 12 ? '오전' : '오후';
-    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-    return '$period ${displayHour.toString().padLeft(2, '0')}:$minute';
-  }
+  String formatStartTime({required String am, required String pm}) =>
+      _formatTime(startTime, am: am, pm: pm);
 
-  String get formattedTimeRange => '$formattedStartTime - $formattedEndTime';
+  String formatEndTime({required String am, required String pm}) =>
+      _formatTime(endTime, am: am, pm: pm);
+
+  String formatTimeRange({required String am, required String pm}) =>
+      '${formatStartTime(am: am, pm: pm)} - ${formatEndTime(am: am, pm: pm)}';
 
   String formatDate(DateTime date) {
     const weekdays = ['월', '화', '수', '목', '금', '토', '일'];

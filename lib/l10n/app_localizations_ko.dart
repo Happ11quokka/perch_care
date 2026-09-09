@@ -2260,4 +2260,64 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get common_defaultPetName => '사랑이';
+
+  @override
+  String profile_ageYears(int years) {
+    return '$years년';
+  }
+
+  @override
+  String profile_ageMonths(int months) {
+    return '$months개월';
+  }
+
+  @override
+  String profile_ageDays(int days) {
+    return '$days일';
+  }
+
+  @override
+  String get a11y_goBack => '뒤로 가기';
+
+  @override
+  String get a11y_close => '닫기';
+
+  @override
+  String get a11y_dismissKeyboard => '키보드 닫기';
+
+  @override
+  String get a11y_previousMonth => '이전 달';
+
+  @override
+  String get a11y_nextMonth => '다음 달';
+
+  @override
+  String get a11y_selectDate => '날짜 선택';
+
+  @override
+  String get a11y_selectColor => '색상 선택';
+
+  @override
+  String get a11y_selectCountry => '국가 선택';
+
+  @override
+  String get a11y_sendMessage => '메시지 보내기';
+
+  @override
+  String get a11y_editFoodRecord => '사료 기록 수정';
+
+  @override
+  String get a11y_deleteFoodRecord => '사료 기록 삭제';
+
+  @override
+  String get a11y_editDailyRecord => '일일 기록 수정';
+
+  @override
+  String get a11y_editProfilePhoto => '프로필 사진 수정';
+
+  @override
+  String get a11y_editPetProfilePhoto => '펫 프로필 사진 수정';
+
+  @override
+  String get a11y_toggleInputSheet => '입력 시트 펼치기/접기';
 }

@@ -22,14 +22,17 @@ class DietEntry {
   /// 시간이 기록되었는지 여부
   bool get hasTime => recordedHour != null && recordedMinute != null;
 
-  /// 시간 표시 문자열 (예: "오전 8:30")
-  String get timeDisplayString {
+  /// 시간 표시 문자열 (예: "오전 8:30" / "AM 8:30").
+  ///
+  /// 모델은 BuildContext가 없으므로 오전/오후 라벨([am]/[pm])은 호출자가
+  /// `l10n.datetime_am` / `l10n.datetime_pm`으로 넘긴다.
+  String formatTime({required String am, required String pm}) {
     if (!hasTime) return '';
     final hour = recordedHour!;
     final minute = recordedMinute!;
     final isAM = hour < 12;
     final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-    final period = isAM ? '오전' : '오후';
+    final period = isAM ? am : pm;
     return '$period $displayHour:${minute.toString().padLeft(2, '0')}';
   }
 

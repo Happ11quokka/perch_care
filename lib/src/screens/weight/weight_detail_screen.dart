@@ -1072,7 +1072,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
         children: [
           Semantics(
             button: true,
-            label: 'Previous month',
+            label: AppLocalizations.of(context).a11y_previousMonth,
             child: GestureDetector(
             onTap: _previousMonth,
             child: const Icon(
@@ -1097,7 +1097,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
           const SizedBox(width: 10),
           Semantics(
             button: true,
-            label: 'Next month',
+            label: AppLocalizations.of(context).a11y_nextMonth,
             child: GestureDetector(
             onTap: _nextMonth,
             child: const Icon(
@@ -1568,7 +1568,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       },
       child: Semantics(
         button: true,
-        label: 'Edit daily record',
+        label: AppLocalizations.of(context).a11y_editDailyRecord,
         child: GestureDetector(
         onTap: () => _openDailyRecordBottomSheetFor(date),
         child: Container(
@@ -1900,7 +1900,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    schedule.formattedTimeRange,
+                    schedule.formatTimeRange(
+                      am: AppLocalizations.of(context).datetime_am,
+                      pm: AppLocalizations.of(context).datetime_pm,
+                    ),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.mediumGray,

@@ -1065,5 +1065,40 @@
   "quota_limitReachedTitle": "사용 한도 도달",
   "quota_limitReachedMessage": "이번 달 사용 한도에 도달했어요. 다음 달에 다시 이용할 수 있어요.",
 
-  "common_defaultPetName": "사랑이"
+  "common_defaultPetName": "사랑이",
+
+  "profile_ageYears": "{years}년",
+  "@profile_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "profile_ageMonths": "{months}개월",
+  "@profile_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "profile_ageDays": "{days}일",
+  "@profile_ageDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "a11y_goBack": "뒤로 가기",
+  "a11y_close": "닫기",
+  "a11y_dismissKeyboard": "키보드 닫기",
+  "a11y_previousMonth": "이전 달",
+  "a11y_nextMonth": "다음 달",
+  "a11y_selectDate": "날짜 선택",
+  "a11y_selectColor": "색상 선택",
+  "a11y_selectCountry": "국가 선택",
+  "a11y_sendMessage": "메시지 보내기",
+  "a11y_editFoodRecord": "사료 기록 수정",
+  "a11y_deleteFoodRecord": "사료 기록 삭제",
+  "a11y_editDailyRecord": "일일 기록 수정",
+  "a11y_editProfilePhoto": "프로필 사진 수정",
+  "a11y_editPetProfilePhoto": "펫 프로필 사진 수정",
+  "a11y_toggleInputSheet": "입력 시트 펼치기/접기"
 }

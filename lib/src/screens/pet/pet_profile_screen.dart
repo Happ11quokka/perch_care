@@ -35,7 +35,8 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       final profile = await ref.read(authRepositoryProvider).getProfile();
       if (profile == null || !mounted) return;
       setState(() {
-        _userNickname = profile['nickname'] as String? ?? '사용자';
+        _userNickname =
+            profile['nickname'] as String? ?? AppLocalizations.of(context).profile_user;
       });
     } catch (_) {
       // 프로필 로드 실패 시 기본값 사용
@@ -61,9 +62,9 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     }
 
     final segments = <String>[];
-    if (years > 0) segments.add('$years년');
-    if (months > 0) segments.add('$months개월');
-    if (days > 0) segments.add('$days일');
+    if (years > 0) segments.add(l10n.profile_ageYears(years));
+    if (months > 0) segments.add(l10n.profile_ageMonths(months));
+    if (days > 0) segments.add(l10n.profile_ageDays(days));
     return segments.isEmpty ? l10n.profile_zeroDay : segments.join(' ');
   }
 

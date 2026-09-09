@@ -355,7 +355,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           const SizedBox(width: 8),
           Semantics(
             button: true,
-            label: 'Select color',
+            label: AppLocalizations.of(context).a11y_selectColor,
             child: GestureDetector(
               onTap: () => setState(() => _showColorPalette = !_showColorPalette),
               child: Container(
@@ -383,7 +383,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
           final isSelected = color == _selectedColor;
           return Semantics(
             button: true,
-            label: 'Select color',
+            label: AppLocalizations.of(context).a11y_selectColor,
             selected: isSelected,
             child: GestureDetector(
               onTap: () => setState(() {
@@ -457,7 +457,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
             children: [
               Semantics(
                 button: true,
-                label: 'Previous month',
+                label: AppLocalizations.of(context).a11y_previousMonth,
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
@@ -484,7 +484,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
               const SizedBox(width: 16),
               Semantics(
                 button: true,
-                label: 'Next month',
+                label: AppLocalizations.of(context).a11y_nextMonth,
                 child: GestureDetector(
                   onTap: () {
                     setState(() {

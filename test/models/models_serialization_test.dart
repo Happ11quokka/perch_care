@@ -879,22 +879,22 @@ void main() {
       expect(int.tryParse(record.id), isNotNull); // 숫자 문자열
     });
 
-    test('formattedStartTime 오전 9:00', () {
+    test('formatStartTime 오전 9:00', () {
       final record = ScheduleRecord.fromJson(fullJson());
-      expect(record.formattedStartTime, '오전 09:00');
+      expect(record.formatStartTime(am: '오전', pm: '오후'), '오전 09:00');
     });
 
-    test('formattedEndTime 오전 10:00', () {
+    test('formatEndTime 오전 10:00', () {
       final record = ScheduleRecord.fromJson(fullJson());
-      expect(record.formattedEndTime, '오전 10:00');
+      expect(record.formatEndTime(am: '오전', pm: '오후'), '오전 10:00');
     });
 
-    test('formattedStartTime 오후 2:30 (hour=14)', () {
+    test('formatStartTime 오후 2:30 (hour=14)', () {
       final record = ScheduleRecord.fromJson({
         ...fullJson(),
         'start_time': '2024-05-10T14:30:00.000',
       });
-      expect(record.formattedStartTime, '오후 02:30');
+      expect(record.formatStartTime(am: '오전', pm: '오후'), '오후 02:30');
     });
   });
 

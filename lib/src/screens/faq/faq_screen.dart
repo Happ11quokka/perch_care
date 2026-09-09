@@ -88,7 +88,7 @@ class FaqScreen extends ConsumerWidget {
                       left: 0,
                       child: Semantics(
                         button: true,
-                        label: 'Go back',
+                        label: AppLocalizations.of(context).a11y_goBack,
                         child: GestureDetector(
                         onTap: () {
                           if (context.canPop()) {

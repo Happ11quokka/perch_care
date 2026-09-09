@@ -398,7 +398,7 @@ class _WeightAddScreenState extends ConsumerState<WeightAddScreen> {
           children: [
             Semantics(
               button: true,
-              label: 'Expand or collapse input sheet',
+              label: AppLocalizations.of(context).a11y_toggleInputSheet,
               child: GestureDetector(
               onTap: () {
                 setState(() {

@@ -2214,4 +2214,64 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get common_defaultPetName => '宝贝';
+
+  @override
+  String profile_ageYears(int years) {
+    return '$years年';
+  }
+
+  @override
+  String profile_ageMonths(int months) {
+    return '$months个月';
+  }
+
+  @override
+  String profile_ageDays(int days) {
+    return '$days天';
+  }
+
+  @override
+  String get a11y_goBack => '返回';
+
+  @override
+  String get a11y_close => '关闭';
+
+  @override
+  String get a11y_dismissKeyboard => '收起键盘';
+
+  @override
+  String get a11y_previousMonth => '上个月';
+
+  @override
+  String get a11y_nextMonth => '下个月';
+
+  @override
+  String get a11y_selectDate => '选择日期';
+
+  @override
+  String get a11y_selectColor => '选择颜色';
+
+  @override
+  String get a11y_selectCountry => '选择国家';
+
+  @override
+  String get a11y_sendMessage => '发送消息';
+
+  @override
+  String get a11y_editFoodRecord => '编辑饲料记录';
+
+  @override
+  String get a11y_deleteFoodRecord => '删除饲料记录';
+
+  @override
+  String get a11y_editDailyRecord => '编辑每日记录';
+
+  @override
+  String get a11y_editProfilePhoto => '编辑个人资料照片';
+
+  @override
+  String get a11y_editPetProfilePhoto => '编辑宠物资料照片';
+
+  @override
+  String get a11y_toggleInputSheet => '展开或收起输入面板';
 }

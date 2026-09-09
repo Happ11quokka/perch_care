@@ -1034,5 +1034,40 @@
   "quota_limitReachedTitle": "已达使用上限",
   "quota_limitReachedMessage": "本月使用次数已达上限，下月将重置。",
 
-  "common_defaultPetName": "宝贝"
+  "common_defaultPetName": "宝贝",
+
+  "profile_ageYears": "{years}年",
+  "@profile_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "profile_ageMonths": "{months}个月",
+  "@profile_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "profile_ageDays": "{days}天",
+  "@profile_ageDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "a11y_goBack": "返回",
+  "a11y_close": "关闭",
+  "a11y_dismissKeyboard": "收起键盘",
+  "a11y_previousMonth": "上个月",
+  "a11y_nextMonth": "下个月",
+  "a11y_selectDate": "选择日期",
+  "a11y_selectColor": "选择颜色",
+  "a11y_selectCountry": "选择国家",
+  "a11y_sendMessage": "发送消息",
+  "a11y_editFoodRecord": "编辑饲料记录",
+  "a11y_deleteFoodRecord": "删除饲料记录",
+  "a11y_editDailyRecord": "编辑每日记录",
+  "a11y_editProfilePhoto": "编辑个人资料照片",
+  "a11y_editPetProfilePhoto": "编辑宠物资料照片",
+  "a11y_toggleInputSheet": "展开或收起输入面板"
 }

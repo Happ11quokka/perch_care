@@ -121,7 +121,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         ),
       ),
       body: Semantics(
-        label: 'Dismiss keyboard',
+        label: AppLocalizations.of(context).a11y_dismissKeyboard,
         child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,

@@ -78,19 +78,16 @@ class _AddDailyRecordBottomSheetState
 
   String _formatDate(DateTime date) {
     final l10n = AppLocalizations.of(context);
-    const weekdaysKo = ['월', '화', '수', '목', '금', '토', '일'];
-    const weekdaysEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const weekdaysZh = ['一', '二', '三', '四', '五', '六', '日'];
-
+    final weekdays = [
+      l10n.datetime_weekday_mon,
+      l10n.datetime_weekday_tue,
+      l10n.datetime_weekday_wed,
+      l10n.datetime_weekday_thu,
+      l10n.datetime_weekday_fri,
+      l10n.datetime_weekday_sat,
+      l10n.datetime_weekday_sun,
+    ];
     final lang = l10n.localeName;
-    List<String> weekdays;
-    if (lang == 'zh') {
-      weekdays = weekdaysZh;
-    } else if (lang == 'en') {
-      weekdays = weekdaysEn;
-    } else {
-      weekdays = weekdaysKo;
-    }
     final weekday = weekdays[date.weekday - 1];
 
     if (lang == 'en') {
@@ -505,7 +502,7 @@ class _AddDailyRecordBottomSheetState
             children: [
               Semantics(
                 button: true,
-                label: 'Previous month',
+                label: AppLocalizations.of(context).a11y_previousMonth,
                 child: GestureDetector(
                   onTap: () {
                     final newDate = DateTime(year, month - 1);
@@ -536,7 +533,7 @@ class _AddDailyRecordBottomSheetState
               const SizedBox(width: 16),
               Semantics(
                 button: true,
-                label: 'Next month',
+                label: AppLocalizations.of(context).a11y_nextMonth,
                 child: GestureDetector(
                   onTap: () {
                     final newDate = DateTime(year, month + 1);
@@ -559,7 +556,15 @@ class _AddDailyRecordBottomSheetState
           ),
           const SizedBox(height: 16),
           Row(
-            children: ['일', '월', '화', '수', '목', '금', '토'].map((day) {
+            children: [
+              AppLocalizations.of(context).datetime_weekday_sun,
+              AppLocalizations.of(context).datetime_weekday_mon,
+              AppLocalizations.of(context).datetime_weekday_tue,
+              AppLocalizations.of(context).datetime_weekday_wed,
+              AppLocalizations.of(context).datetime_weekday_thu,
+              AppLocalizations.of(context).datetime_weekday_fri,
+              AppLocalizations.of(context).datetime_weekday_sat,
+            ].map((day) {
               return Expanded(
                 child: Center(
                   child: Text(

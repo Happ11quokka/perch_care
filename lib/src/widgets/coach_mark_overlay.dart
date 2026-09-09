@@ -342,7 +342,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
             Positioned.fill(
               child: Semantics(
                 button: true,
-                label: 'Next',
+                label: isLastStep ? widget.gotItLabel : widget.nextLabel,
                 child: GestureDetector(
                   onTap: _nextStep,
                   behavior: HitTestBehavior.translucent,

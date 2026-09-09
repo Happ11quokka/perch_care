@@ -707,7 +707,8 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
         ? 12
         : (time.hour > 12 ? time.hour - 12 : time.hour);
     final minute = time.minute.toString().padLeft(2, '0');
-    final period = isAM ? '오전' : '오후';
+    final l10n = AppLocalizations.of(context);
+    final period = isAM ? l10n.datetime_am : l10n.datetime_pm;
     return '$period $hour:$minute';
   }
 
@@ -778,7 +779,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                     // ── 날짜 선택 pill ────────────────────────────────────
                     Semantics(
                       button: true,
-                      label: 'Select date',
+                      label: AppLocalizations.of(context).a11y_selectDate,
                       child: GestureDetector(
                       onTap: _pickDate,
                       child: Container(
@@ -1089,7 +1090,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
   Widget _buildEntryCard(DietEntry entry) {
     return Semantics(
       button: true,
-      label: 'Edit food record',
+      label: AppLocalizations.of(context).a11y_editFoodRecord,
       child: GestureDetector(
       onTap: () => _openEntryModal(existing: entry),
       child: Container(
@@ -1111,7 +1112,10 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  entry.timeDisplayString,
+                  entry.formatTime(
+                    am: AppLocalizations.of(context).datetime_am,
+                    pm: AppLocalizations.of(context).datetime_pm,
+                  ),
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -1164,7 +1168,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
             // 삭제 버튼
             Semantics(
               button: true,
-              label: 'Delete food record',
+              label: AppLocalizations.of(context).a11y_deleteFoodRecord,
               child: GestureDetector(
               onTap: () => _deleteEntry(entry),
               child: Container(

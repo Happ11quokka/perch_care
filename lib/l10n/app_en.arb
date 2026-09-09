@@ -867,5 +867,40 @@
   "quota_limitReachedTitle": "Limit Reached",
   "quota_limitReachedMessage": "You've reached this month's usage limit. It resets next month.",
 
-  "common_defaultPetName": "Buddy"
+  "common_defaultPetName": "Buddy",
+
+  "profile_ageYears": "{years}y",
+  "@profile_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "profile_ageMonths": "{months}m",
+  "@profile_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "profile_ageDays": "{days}d",
+  "@profile_ageDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "a11y_goBack": "Go back",
+  "a11y_close": "Close",
+  "a11y_dismissKeyboard": "Dismiss keyboard",
+  "a11y_previousMonth": "Previous month",
+  "a11y_nextMonth": "Next month",
+  "a11y_selectDate": "Select date",
+  "a11y_selectColor": "Select color",
+  "a11y_selectCountry": "Select country",
+  "a11y_sendMessage": "Send message",
+  "a11y_editFoodRecord": "Edit food record",
+  "a11y_deleteFoodRecord": "Delete food record",
+  "a11y_editDailyRecord": "Edit daily record",
+  "a11y_editProfilePhoto": "Edit profile photo",
+  "a11y_editPetProfilePhoto": "Edit pet profile photo",
+  "a11y_toggleInputSheet": "Expand or collapse input sheet"
 }

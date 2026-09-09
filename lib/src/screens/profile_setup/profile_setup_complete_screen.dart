@@ -35,7 +35,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     alignment: Alignment.centerLeft,
                     child: Semantics(
                       button: true,
-                      label: 'Go back',
+                      label: AppLocalizations.of(context).a11y_goBack,
                       child: GestureDetector(
                       onTap: () => context.pop(),
                       child: SizedBox(

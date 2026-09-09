@@ -1090,7 +1090,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
           const SizedBox(width: AppSpacing.sm),
           Semantics(
             button: true,
-            label: 'Send message',
+            label: AppLocalizations.of(context).a11y_sendMessage,
             child: GestureDetector(
             onTap: _isSending ? null : _handleSend,
             child: Container(

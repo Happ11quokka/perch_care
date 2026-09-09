@@ -2332,4 +2332,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get common_defaultPetName => 'Buddy';
+
+  @override
+  String profile_ageYears(int years) {
+    return '${years}y';
+  }
+
+  @override
+  String profile_ageMonths(int months) {
+    return '${months}m';
+  }
+
+  @override
+  String profile_ageDays(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String get a11y_goBack => 'Go back';
+
+  @override
+  String get a11y_close => 'Close';
+
+  @override
+  String get a11y_dismissKeyboard => 'Dismiss keyboard';
+
+  @override
+  String get a11y_previousMonth => 'Previous month';
+
+  @override
+  String get a11y_nextMonth => 'Next month';
+
+  @override
+  String get a11y_selectDate => 'Select date';
+
+  @override
+  String get a11y_selectColor => 'Select color';
+
+  @override
+  String get a11y_selectCountry => 'Select country';
+
+  @override
+  String get a11y_sendMessage => 'Send message';
+
+  @override
+  String get a11y_editFoodRecord => 'Edit food record';
+
+  @override
+  String get a11y_deleteFoodRecord => 'Delete food record';
+
+  @override
+  String get a11y_editDailyRecord => 'Edit daily record';
+
+  @override
+  String get a11y_editProfilePhoto => 'Edit profile photo';
+
+  @override
+  String get a11y_editPetProfilePhoto => 'Edit pet profile photo';
+
+  @override
+  String get a11y_toggleInputSheet => 'Expand or collapse input sheet';
 }

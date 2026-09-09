@@ -270,7 +270,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
             alignment: Alignment.centerLeft,
             child: Semantics(
               button: true,
-              label: 'Go back',
+              label: AppLocalizations.of(context).a11y_goBack,
               child: GestureDetector(
               onTap: () {
                 if (context.canPop()) {
@@ -356,7 +356,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
               bottom: 0,
               child: Semantics(
                 button: true,
-                label: 'Edit pet profile photo',
+                label: AppLocalizations.of(context).a11y_editPetProfilePhoto,
                 child: GestureDetector(
                 onTap: _handlePickImage,
                 child: Container(
