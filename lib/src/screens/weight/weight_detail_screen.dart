@@ -17,6 +17,7 @@ import '../../widgets/add_schedule_bottom_sheet.dart';
 import '../../widgets/add_daily_record_bottom_sheet.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
+import '../../widgets/empty_state_widget.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
 import '../../../l10n/app_localizations.dart';
@@ -199,6 +200,24 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       );
     }
 
+    // 로드 실패(이전 값 없음)는 "펫 없음"과 구분해 에러 + 재시도로 표시한다.
+    // 이전 값이 있는 에러(펫 전환 중 실패 등)는 기존 콘텐츠를 유지한다.
+    if (vmAsync.hasError && !vmAsync.hasValue) {
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(
+        backgroundColor: AppColors.white,
+        appBar: _buildAppBar(),
+        body: EmptyStateWidget(
+          icon: Icons.cloud_off_outlined,
+          title: l10n.error_loadPet,
+          subtitle: l10n.error_server,
+          actionLabel: l10n.hc_retry,
+          onAction: () => ref.invalidate(weightDetailViewModelProvider),
+        ),
+      );
+    }
+
+    // 성공적으로 로드했지만 활성 펫이 없는 경우에만 "펫 없음" 안내.
     if (vm?.activePetId == null) {
       final l10n = AppLocalizations.of(context);
       return Scaffold(

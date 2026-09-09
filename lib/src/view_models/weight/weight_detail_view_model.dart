@@ -33,16 +33,23 @@ class WeightDetailViewModel extends AsyncNotifier<WeightDetailState> {
 
     // 셀렉터용 펫 목록 (실패해도 화면은 뜬다)
     List<Pet> pets = const [];
+    var petsFailed = false;
     try {
       pets = await petRepo.getMyPets();
-    } catch (_) {}
+    } catch (_) {
+      petsFailed = true;
+    }
 
     // 활성 펫: watch 값 우선, 없으면 repository(서비스+로컬 폴백 내장)
     Pet? pet = activePet;
     if (pet == null) {
       try {
         pet = await petRepo.getActivePet();
-      } catch (_) {}
+      } catch (e) {
+        // 펫 목록·활성 펫 조회가 모두 실패했다면 "펫 없음"이 아니라 로드 실패다 —
+        // 삼켜서 빈 상태로 그리지 않고 AsyncError로 노출해 View가 재시도 UI를 띄우게 한다.
+        if (petsFailed) rethrow;
+      }
     }
 
     if (pet == null) {

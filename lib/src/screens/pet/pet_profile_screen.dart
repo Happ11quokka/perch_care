@@ -7,6 +7,7 @@ import '../../router/route_names.dart';
 import '../../models/pet.dart';
 import '../../providers/pet_providers.dart';
 import '../../providers/repository_providers.dart';
+import '../../widgets/empty_state_widget.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 반려동물 프로필 목록 화면 — MVVM(ViewModel + Repository) 구조.
@@ -129,8 +130,17 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 32),
                       child: LinearProgressIndicator(minHeight: 2),
                     ),
-                    // Repository 4-tier fallback(서버→인메모리→로컬캐시)으로 실제 도달 거의 없음
-                    error: (_, __) => const SizedBox.shrink(),
+                    // Repository 4-tier fallback(서버→인메모리→로컬캐시)까지 모두 실패한
+                    // 경우 — 빈 목록("펫 없음")과 구분해 에러 + 재시도로 표시한다.
+                    error: (_, __) => EmptyStateWidget(
+                      icon: Icons.cloud_off_outlined,
+                      title: l10n.error_loadPet,
+                      subtitle: l10n.error_server,
+                      actionLabel: l10n.hc_retry,
+                      onAction: () => ref
+                          .read(petListViewModelProvider.notifier)
+                          .refresh(),
+                    ),
                     data: (pets) => Column(
                       children: pets
                           .map((pet) => _buildPetCard(pet, selectedPetId))

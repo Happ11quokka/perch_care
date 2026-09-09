@@ -22,6 +22,7 @@ import '../../view_models/home/home_view_model.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
+import '../../widgets/empty_state_widget.dart';
 import '../../../l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -244,6 +245,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _lastUpdateText = _formatLastUpdateTime(l10n, state.lastBhiFetchTime);
 
     final showFullLoading = homeAsync.isLoading && state.activePet == null;
+    // 초기 로드 실패(이전 값 없음): 빈 HomeState로 그리면 "펫 없음"처럼 보이므로
+    // 에러 + 재시도 UI를 표시한다. 이전 값이 있는 에러(펫 전환 실패 등)는 기존
+    // 콘텐츠를 유지한다. 당겨서 새로고침은 이 상태에서도 그대로 동작(VM이 전체 재로드).
+    final showLoadError =
+        homeAsync.hasError && !homeAsync.hasValue && !homeAsync.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.gray150,
@@ -275,7 +281,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             // 펫 전환/갱신 중 콘텐츠를 디밍해 '데이터 갱신 중'임을
                             // 드러낸다. 서브트리를 복제하지 않아 coach mark
                             // GlobalKey 중복 없이 안전하다.
-                            child: AnimatedOpacity(
+                            child: showLoadError
+                                ? _buildLoadErrorState(l10n)
+                                : AnimatedOpacity(
                               opacity: (homeAsync.isLoading &&
                                       state.activePet != null)
                                   ? 0.5
@@ -325,6 +333,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  /// 초기 로드 실패 상태 — 에러 안내 + 재시도 버튼.
+  /// RefreshIndicator 안에 배치되므로 당겨서 새로고침으로도 재시도할 수 있다.
+  Widget _buildLoadErrorState(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 64),
+      child: EmptyStateWidget(
+        icon: Icons.cloud_off_outlined,
+        title: l10n.error_loadPet,
+        subtitle: l10n.error_server,
+        actionLabel: l10n.hc_retry,
+        onAction: () => ref
+            .read(homeViewModelProvider.notifier)
+            .retry(targetDate: _getTargetDateForPeriod()),
+      ),
     );
   }
 

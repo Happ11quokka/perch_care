@@ -21,6 +21,20 @@ class _FakeActivePetViewModel extends ActivePetViewModel {
   Future<Pet?> build() => SynchronousFuture<Pet?>(_value);
 }
 
+/// 첫 build()는 실패하고, 이후 build()부터는 pet을 반환하는 fake —
+/// 활성 펫 provider 자체가 실패한 상황에서의 HomeVM 복구 검증용.
+class _FlakyActivePetViewModel extends ActivePetViewModel {
+  _FlakyActivePetViewModel(this._value);
+  final Pet _value;
+  int buildCount = 0;
+  @override
+  Future<Pet?> build() {
+    buildCount++;
+    if (buildCount == 1) return Future<Pet?>.error(Exception('pet offline'));
+    return SynchronousFuture<Pet?>(_value);
+  }
+}
+
 Pet _pet(String id) => Pet(
       id: id,
       userId: 'u',
@@ -157,6 +171,105 @@ void main() {
       expect(state.isBhiLoading, isFalse);
       expect(state.isBhiOffline, isFalse);
       verify(() => repo.loadBhiForDate('p1', any())).called(1);
+    });
+
+    // F06 회귀: 첫 로드 실패(AsyncError) 후 당겨서 새로고침으로 복구돼야 한다.
+    test('pullToRefresh()는 초기 로드 실패(AsyncError) 후 전체 초기 로드로 복구한다',
+        () async {
+      final pet = _pet('p1');
+      final bhi = _bhi(level: 3);
+      when(() => repo.loadPetWithBhi(any(), any()))
+          .thenThrow(Exception('offline'));
+      when(() => repo.loadHealthDerivedData(any()))
+          .thenAnswer((_) async => const HomeDerivedData());
+      when(() => repo.lastBhiFetchTime).thenReturn(null);
+
+      final container = _container(repo: repo, activePet: pet);
+      await expectLater(
+          container.read(homeViewModelProvider.future), throwsException);
+      expect(container.read(homeViewModelProvider).hasError, isTrue);
+
+      // 서버 복구
+      when(() => repo.loadPetWithBhi(any(), any()))
+          .thenAnswer((_) async => (pet: pet, bhi: bhi));
+      when(() => repo.loadBhiForDate(any(), any(), forceRefresh: true))
+          .thenAnswer((_) async => bhi);
+
+      await container
+          .read(homeViewModelProvider.notifier)
+          .pullToRefresh(DateTime(2026, 3, 1));
+
+      final async = container.read(homeViewModelProvider);
+      expect(async.hasError, isFalse);
+      expect(async.value?.activePet?.id, 'p1');
+      expect(async.value?.bhi, same(bhi));
+      expect(async.value?.wciLevel, 3);
+      // 복구 경로는 초기 로더(Pet+BHI+파생) 재실행 — 화면이 선택한 기간을 그대로 사용.
+      verify(() => repo.loadPetWithBhi('p1', DateTime(2026, 3, 1))).called(1);
+      // 첫 빌드는 loadPetWithBhi에서 동기 throw → 파생 로더 미도달. 복구 시 1회.
+      verify(() => repo.loadHealthDerivedData('p1')).called(1);
+      verifyNever(() => repo.loadBhiForDate(any(), any(),
+          forceRefresh: any(named: 'forceRefresh')));
+    });
+
+    test('retry() 재실패 시 AsyncError를 유지하고 예외를 밖으로 던지지 않는다', () async {
+      final pet = _pet('p1');
+      when(() => repo.loadPetWithBhi(any(), any()))
+          .thenThrow(Exception('still offline'));
+      when(() => repo.loadHealthDerivedData(any()))
+          .thenAnswer((_) async => const HomeDerivedData());
+      when(() => repo.lastBhiFetchTime).thenReturn(null);
+
+      final container = _container(repo: repo, activePet: pet);
+      await expectLater(
+          container.read(homeViewModelProvider.future), throwsException);
+
+      // RefreshIndicator.onRefresh 등 호출자에게 예외가 전파되면 안 된다.
+      await container.read(homeViewModelProvider.notifier).retry();
+
+      final async = container.read(homeViewModelProvider);
+      expect(async.hasError, isTrue);
+      expect(async.isLoading, isFalse);
+      expect(async.hasValue, isFalse);
+      verify(() => repo.loadPetWithBhi('p1', any())).called(2);
+    });
+
+    test('활성 펫 provider가 실패했을 때 retry()는 펫 로드까지 다시 수행해 복구한다',
+        () async {
+      final pet = _pet('p1');
+      final bhi = _bhi(level: 2);
+      final flaky = _FlakyActivePetViewModel(pet);
+      when(() => repo.loadPetWithBhi(any(), any()))
+          .thenAnswer((_) async => (pet: pet, bhi: bhi));
+      when(() => repo.loadHealthDerivedData(any()))
+          .thenAnswer((_) async => const HomeDerivedData());
+      when(() => repo.lastBhiFetchTime).thenReturn(null);
+
+      final container = ProviderContainer(overrides: [
+        homeRepositoryProvider.overrideWithValue(repo),
+        activePetViewModelProvider.overrideWith(() => flaky),
+      ]);
+      addTearDown(container.dispose);
+
+      // 활성 펫 provider 에러 → HomeVM은 펫 없음(empty)으로 보인다.
+      final sub = container.listen(homeViewModelProvider, (_, __) {});
+      addTearDown(sub.close);
+      await expectLater(
+          container.read(activePetViewModelProvider.future), throwsException);
+      await container.read(homeViewModelProvider.future);
+      expect(container.read(homeViewModelProvider).value?.activePet, isNull);
+      verifyNever(() => repo.loadPetWithBhi(any(), any()));
+
+      await container
+          .read(homeViewModelProvider.notifier)
+          .pullToRefresh(DateTime(2026, 3, 1));
+      await container.pump();
+
+      final state = container.read(homeViewModelProvider).value;
+      expect(flaky.buildCount, 2);
+      expect(state?.activePet?.id, 'p1');
+      expect(state?.bhi, same(bhi));
+      verify(() => repo.loadPetWithBhi('p1', any())).called(1);
     });
   });
 }
