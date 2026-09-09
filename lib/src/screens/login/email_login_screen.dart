@@ -345,8 +345,12 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
 
   Widget _buildOptionsRow() {
     final l10n = AppLocalizations.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    // 큰 글자 크기에서 두 항목이 한 줄에 안 들어가면 다음 줄로 내린다
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 12,
+      runSpacing: 8,
       children: [
         // 아이디 저장 체크박스
         Semantics(
@@ -359,6 +363,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             });
           },
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 22,

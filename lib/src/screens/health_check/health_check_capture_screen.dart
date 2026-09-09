@@ -407,13 +407,19 @@ class _HealthCheckCaptureScreenState
           children: [
             Icon(icon, color: AppColors.brandPrimary, size: 20),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.brandPrimary,
-                letterSpacing: -0.3,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.brandPrimary,
+                    letterSpacing: -0.3,
+                  ),
+                ),
               ),
             ),
           ],

@@ -852,7 +852,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await ref.read(activePetViewModelProvider.notifier).switchPet(pet.id);
       },
       child: Container(
-        height: 120,
+        constraints: const BoxConstraints(minHeight: 120),
         margin: const EdgeInsets.fromLTRB(32, 0, 32, 12),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -888,14 +888,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   // 이름과 성별
                   Row(
                     children: [
-                      Text(
-                        pet.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.nearBlack,
-                          height: 22 / 16,
-                          letterSpacing: 0.08,
+                      Flexible(
+                        child: Text(
+                          pet.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.nearBlack,
+                            height: 22 / 16,
+                            letterSpacing: 0.08,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 1),
@@ -1037,8 +1041,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required AppLocalizations l10n,
   }) {
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      constraints: const BoxConstraints(minHeight: 60),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         color: isLinked ? AppColors.brandPale : AppColors.gray50,

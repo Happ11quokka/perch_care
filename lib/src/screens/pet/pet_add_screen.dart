@@ -719,15 +719,19 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                displayValue ?? l10n.pet_growthStage_hint,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: hasValue
-                      ? AppColors.nearBlack
-                      : AppColors.warmGray,
-                  letterSpacing: -0.35,
+              Expanded(
+                child: Text(
+                  displayValue ?? l10n.pet_growthStage_hint,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: hasValue
+                        ? AppColors.nearBlack
+                        : AppColors.warmGray,
+                    letterSpacing: -0.35,
+                  ),
                 ),
               ),
               Icon(
