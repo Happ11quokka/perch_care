@@ -20,7 +20,6 @@ import 'package:firebase_core_platform_interface/test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:country_picker/country_picker.dart';
 
 import 'package:perch_care/l10n/app_localizations.dart';
 import 'package:perch_care/src/models/ai_health_check.dart';
@@ -180,7 +179,6 @@ Widget _app(GoRouter router, {required String language, required double scale}) 
       supportedLocales: const [Locale('ko'), Locale('en'), Locale('zh')],
       localizationsDelegates: const [
         AppLocalizations.delegate,
-        CountryLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

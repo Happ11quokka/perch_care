@@ -828,12 +828,9 @@
   "btn_addDailyRecord": "Add Daily Record",
 
   "profileSetup_title": "Profile Setup",
-  "profileSetup_phoneHint": "Enter phone number",
+  "profileSetup_emailNone": "No email registered",
   "profileSetup_complete": "Complete",
   "profileSetup_saveError": "Error saving profile.",
-  "profileSetup_genderSelectTitle": "Select gender",
-  "profileSetup_genderMale": "Male",
-  "profileSetup_genderFemale": "Female",
   "profileSetup_doneTitle": "Setup Complete",
   "profileSetup_doneMessage": "Setup is complete!",
   "profileSetup_startRecording": "Start Recording!",
@@ -841,7 +838,6 @@
   "timePicker_title": "Select Time",
   "timePicker_confirm": "Confirm",
 
-  "country_selectTitle": "Select Country",
 
   "datetime_am": "AM",
   "datetime_pm": "PM",
@@ -895,7 +891,6 @@
   "a11y_nextMonth": "Next month",
   "a11y_selectDate": "Select date",
   "a11y_selectColor": "Select color",
-  "a11y_selectCountry": "Select country",
   "a11y_sendMessage": "Send message",
   "a11y_editFoodRecord": "Edit food record",
   "a11y_deleteFoodRecord": "Delete food record",

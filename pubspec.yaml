@@ -19,7 +19,6 @@ dependencies:
   http: ^1.2.2
   http_parser: ^4.1.0
   shared_preferences: ^2.3.2
-  country_picker: ^2.0.26
   image_picker: ^1.2.1
   image_cropper: ^8.0.2
   flutter_secure_storage: ^10.0.0

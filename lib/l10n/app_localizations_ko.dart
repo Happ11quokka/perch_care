@@ -2181,22 +2181,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profileSetup_title => '프로필 설정';
 
   @override
-  String get profileSetup_phoneHint => '전화번호를 입력해 주세요';
+  String get profileSetup_emailNone => '등록된 이메일이 없습니다';
 
   @override
   String get profileSetup_complete => '입력완료';
 
   @override
   String get profileSetup_saveError => '프로필 저장 중 오류가 발생했습니다.';
-
-  @override
-  String get profileSetup_genderSelectTitle => '성별을 선택하세요';
-
-  @override
-  String get profileSetup_genderMale => '남';
-
-  @override
-  String get profileSetup_genderFemale => '여';
 
   @override
   String get profileSetup_doneTitle => '설정 완료';
@@ -2212,9 +2203,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timePicker_confirm => '선택 완료';
-
-  @override
-  String get country_selectTitle => '국가를 선택하세요';
 
   @override
   String get datetime_am => '오전';
@@ -2296,9 +2284,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get a11y_selectColor => '색상 선택';
-
-  @override
-  String get a11y_selectCountry => '국가 선택';
 
   @override
   String get a11y_sendMessage => '메시지 보내기';

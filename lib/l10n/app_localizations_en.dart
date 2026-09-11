@@ -2252,22 +2252,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSetup_title => 'Profile Setup';
 
   @override
-  String get profileSetup_phoneHint => 'Enter phone number';
+  String get profileSetup_emailNone => 'No email registered';
 
   @override
   String get profileSetup_complete => 'Complete';
 
   @override
   String get profileSetup_saveError => 'Error saving profile.';
-
-  @override
-  String get profileSetup_genderSelectTitle => 'Select gender';
-
-  @override
-  String get profileSetup_genderMale => 'Male';
-
-  @override
-  String get profileSetup_genderFemale => 'Female';
 
   @override
   String get profileSetup_doneTitle => 'Setup Complete';
@@ -2283,9 +2274,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timePicker_confirm => 'Confirm';
-
-  @override
-  String get country_selectTitle => 'Select Country';
 
   @override
   String get datetime_am => 'AM';
@@ -2368,9 +2356,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11y_selectColor => 'Select color';
-
-  @override
-  String get a11y_selectCountry => 'Select country';
 
   @override
   String get a11y_sendMessage => 'Send message';

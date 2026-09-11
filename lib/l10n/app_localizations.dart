@@ -4138,11 +4138,11 @@ abstract class AppLocalizations {
   /// **'프로필 설정'**
   String get profileSetup_title;
 
-  /// No description provided for @profileSetup_phoneHint.
+  /// No description provided for @profileSetup_emailNone.
   ///
   /// In ko, this message translates to:
-  /// **'전화번호를 입력해 주세요'**
-  String get profileSetup_phoneHint;
+  /// **'등록된 이메일이 없습니다'**
+  String get profileSetup_emailNone;
 
   /// No description provided for @profileSetup_complete.
   ///
@@ -4155,24 +4155,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'프로필 저장 중 오류가 발생했습니다.'**
   String get profileSetup_saveError;
-
-  /// No description provided for @profileSetup_genderSelectTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'성별을 선택하세요'**
-  String get profileSetup_genderSelectTitle;
-
-  /// No description provided for @profileSetup_genderMale.
-  ///
-  /// In ko, this message translates to:
-  /// **'남'**
-  String get profileSetup_genderMale;
-
-  /// No description provided for @profileSetup_genderFemale.
-  ///
-  /// In ko, this message translates to:
-  /// **'여'**
-  String get profileSetup_genderFemale;
 
   /// No description provided for @profileSetup_doneTitle.
   ///
@@ -4203,12 +4185,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'선택 완료'**
   String get timePicker_confirm;
-
-  /// No description provided for @country_selectTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'국가를 선택하세요'**
-  String get country_selectTitle;
 
   /// No description provided for @datetime_am.
   ///
@@ -4353,12 +4329,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'색상 선택'**
   String get a11y_selectColor;
-
-  /// No description provided for @a11y_selectCountry.
-  ///
-  /// In ko, this message translates to:
-  /// **'국가 선택'**
-  String get a11y_selectCountry;
 
   /// No description provided for @a11y_sendMessage.
   ///

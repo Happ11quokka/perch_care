@@ -24,7 +24,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:perch_care/l10n/app_localizations.dart';
 import 'package:perch_care/src/router/app_router.dart';
 import 'package:perch_care/src/providers/service_providers.dart';
@@ -249,7 +248,6 @@ Widget app(
     supportedLocales: const [Locale('ko'), Locale('en'), Locale('zh')],
     localizationsDelegates: const [
       AppLocalizations.delegate,
-      CountryLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,

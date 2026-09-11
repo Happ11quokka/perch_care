@@ -1026,12 +1026,9 @@
   "btn_addDailyRecord": "일일 기록 추가",
 
   "profileSetup_title": "프로필 설정",
-  "profileSetup_phoneHint": "전화번호를 입력해 주세요",
+  "profileSetup_emailNone": "등록된 이메일이 없습니다",
   "profileSetup_complete": "입력완료",
   "profileSetup_saveError": "프로필 저장 중 오류가 발생했습니다.",
-  "profileSetup_genderSelectTitle": "성별을 선택하세요",
-  "profileSetup_genderMale": "남",
-  "profileSetup_genderFemale": "여",
   "profileSetup_doneTitle": "설정 완료",
   "profileSetup_doneMessage": "설정이 완료되었습니다!",
   "profileSetup_startRecording": "기록 시작!",
@@ -1039,7 +1036,6 @@
   "timePicker_title": "시간을 선택해주세요",
   "timePicker_confirm": "선택 완료",
 
-  "country_selectTitle": "국가를 선택하세요",
 
   "datetime_am": "오전",
   "datetime_pm": "오후",
@@ -1093,7 +1089,6 @@
   "a11y_nextMonth": "다음 달",
   "a11y_selectDate": "날짜 선택",
   "a11y_selectColor": "색상 선택",
-  "a11y_selectCountry": "국가 선택",
   "a11y_sendMessage": "메시지 보내기",
   "a11y_editFoodRecord": "사료 기록 수정",
   "a11y_deleteFoodRecord": "사료 기록 삭제",

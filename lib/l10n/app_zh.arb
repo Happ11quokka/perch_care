@@ -995,12 +995,9 @@
   "btn_addDailyRecord": "添加每日记录",
 
   "profileSetup_title": "个人资料设置",
-  "profileSetup_phoneHint": "请输入电话号码",
+  "profileSetup_emailNone": "未注册邮箱",
   "profileSetup_complete": "完成",
   "profileSetup_saveError": "保存个人资料时发生错误。",
-  "profileSetup_genderSelectTitle": "请选择性别",
-  "profileSetup_genderMale": "男",
-  "profileSetup_genderFemale": "女",
   "profileSetup_doneTitle": "设置完成",
   "profileSetup_doneMessage": "设置已完成！",
   "profileSetup_startRecording": "开始记录！",
@@ -1008,7 +1005,6 @@
   "timePicker_title": "请选择时间",
   "timePicker_confirm": "确认选择",
 
-  "country_selectTitle": "选择国家",
 
   "datetime_am": "上午",
   "datetime_pm": "下午",
@@ -1062,7 +1058,6 @@
   "a11y_nextMonth": "下个月",
   "a11y_selectDate": "选择日期",
   "a11y_selectColor": "选择颜色",
-  "a11y_selectCountry": "选择国家",
   "a11y_sendMessage": "发送消息",
   "a11y_editFoodRecord": "编辑饲料记录",
   "a11y_deleteFoodRecord": "删除饲料记录",

@@ -2136,22 +2136,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileSetup_title => '个人资料设置';
 
   @override
-  String get profileSetup_phoneHint => '请输入电话号码';
+  String get profileSetup_emailNone => '未注册邮箱';
 
   @override
   String get profileSetup_complete => '完成';
 
   @override
   String get profileSetup_saveError => '保存个人资料时发生错误。';
-
-  @override
-  String get profileSetup_genderSelectTitle => '请选择性别';
-
-  @override
-  String get profileSetup_genderMale => '男';
-
-  @override
-  String get profileSetup_genderFemale => '女';
 
   @override
   String get profileSetup_doneTitle => '设置完成';
@@ -2167,9 +2158,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timePicker_confirm => '确认选择';
-
-  @override
-  String get country_selectTitle => '选择国家';
 
   @override
   String get datetime_am => '上午';
@@ -2250,9 +2238,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get a11y_selectColor => '选择颜色';
-
-  @override
-  String get a11y_selectCountry => '选择国家';
 
   @override
   String get a11y_sendMessage => '发送消息';
