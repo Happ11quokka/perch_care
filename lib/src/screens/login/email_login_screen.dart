@@ -11,6 +11,7 @@ import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
 import '../../repositories/auth_repository.dart';
 import '../../utils/error_handler.dart';
+import '../../utils/platform_support.dart';
 import '../../view_models/auth/auth_view_model.dart';
 import '../../view_models/auth/post_login_destination.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -501,21 +502,23 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             height: 24,
           ),
         ),
-        const SizedBox(width: 8),
-        // 애플
-        _buildSocialLoginButton(
-          onTap: _handleAppleLogin,
-          isLoading: _isAppleLoading,
-          backgroundColor: Colors.black,
-          borderColor: Colors.black,
-          loadingColor: Colors.white,
-          semanticsLabel: 'Sign in with Apple',
-          child: SvgPicture.asset(
-            'assets/images/btn_apple/apple_logo_white.svg',
-            width: 60,
-            height: 60,
+        // Apple 로그인은 Apple 플랫폼에서만 동작한다 (감사 F10).
+        if (canStartAppleSignIn) ...[
+          const SizedBox(width: 8),
+          _buildSocialLoginButton(
+            onTap: _handleAppleLogin,
+            isLoading: _isAppleLoading,
+            backgroundColor: Colors.black,
+            borderColor: Colors.black,
+            loadingColor: Colors.white,
+            semanticsLabel: 'Sign in with Apple',
+            child: SvgPicture.asset(
+              'assets/images/btn_apple/apple_logo_white.svg',
+              width: 60,
+              height: 60,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

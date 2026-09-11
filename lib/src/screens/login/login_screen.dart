@@ -9,6 +9,7 @@ import '../../router/route_names.dart';
 import '../../router/route_paths.dart';
 import '../../repositories/auth_repository.dart';
 import '../../utils/error_handler.dart';
+import '../../utils/platform_support.dart';
 import '../../view_models/auth/auth_view_model.dart';
 import '../../view_models/auth/post_login_destination.dart';
 import '../../widgets/app_loading.dart';
@@ -141,24 +142,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onTap: _handleGoogleLogin,
                         isLoading: _isGoogleLoading,
                       ),
-                      const SizedBox(height: 12),
-                      _buildSocialLoginButton(
-                        icon: SvgPicture.asset(
-                          'assets/images/btn_apple/btn_apple.svg',
-                          width: 20,
-                          height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
+                      // Apple 로그인은 Apple 플랫폼에서만 동작한다 (감사 F10).
+                      if (canStartAppleSignIn) ...[
+                        const SizedBox(height: 12),
+                        _buildSocialLoginButton(
+                          icon: SvgPicture.asset(
+                            'assets/images/btn_apple/btn_apple.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
                           ),
+                          label: l10n.login_apple,
+                          onTap: _handleAppleLogin,
+                          isLoading: _isAppleLoading,
+                          backgroundColor: Colors.black,
+                          textColor: Colors.white,
+                          borderColor: Colors.black,
                         ),
-                        label: l10n.login_apple,
-                        onTap: _handleAppleLogin,
-                        isLoading: _isAppleLoading,
-                        backgroundColor: Colors.black,
-                        textColor: Colors.white,
-                        borderColor: Colors.black,
-                      ),
+                      ],
                       const SizedBox(height: 12),
                       _buildSocialLoginButton(
                         icon: const Icon(

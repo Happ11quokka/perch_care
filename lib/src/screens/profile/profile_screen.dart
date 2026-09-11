@@ -25,6 +25,7 @@ import '../../providers/locale_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../utils/platform_support.dart';
 import '../../theme/durations.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
@@ -1011,20 +1012,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               onUnlink: () => _handleUnlinkSocial('google'),
               l10n: l10n,
             ),
-            const SizedBox(height: 10),
-            _buildSocialAccountRow(
-              provider: 'apple',
-              label: l10n.social_apple,
-              icon: SvgPicture.asset(
-                'assets/images/btn_apple/btn_apple.svg',
-                width: 20,
-                height: 20,
+            // Apple 연동은 Apple 플랫폼에서만 시작할 수 있다 (감사 F10).
+            // 이미 연동된 계정은 해제(서버 호출)가 가능하므로 계속 노출한다.
+            if (canStartAppleSignIn || _isProviderLinked('apple')) ...[
+              const SizedBox(height: 10),
+              _buildSocialAccountRow(
+                provider: 'apple',
+                label: l10n.social_apple,
+                icon: SvgPicture.asset(
+                  'assets/images/btn_apple/btn_apple.svg',
+                  width: 20,
+                  height: 20,
+                ),
+                isLinked: _isProviderLinked('apple'),
+                onLink: _handleLinkApple,
+                onUnlink: () => _handleUnlinkSocial('apple'),
+                l10n: l10n,
               ),
-              isLinked: _isProviderLinked('apple'),
-              onLink: _handleLinkApple,
-              onUnlink: () => _handleUnlinkSocial('apple'),
-              l10n: l10n,
-            ),
+            ],
           ],
         ],
       ),
