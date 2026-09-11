@@ -499,6 +499,12 @@ flutter clean              # 캐시 초기화
 
 전체 조항은 [`LICENSE`](LICENSE) 파일을 참조하세요. 라이선스 문의: [perch.ai.kr](https://perch.ai.kr)
 
+### 서드파티 자산
+
+| 자산 | 라이선스 |
+|---|---|
+| [Pretendard](https://github.com/orioncactus/pretendard) v1.3.9 (Regular·Medium·SemiBold·Bold) | SIL Open Font License 1.1 — [`assets/fonts/LICENSE-Pretendard.txt`](assets/fonts/LICENSE-Pretendard.txt) |
+
 ---
 
 <p align="center">

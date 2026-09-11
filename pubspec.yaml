@@ -67,3 +67,20 @@ flutter:
     - assets/images/signup_vector/
     - assets/images/home_vector/
     - assets/images/profile/
+    # OFL은 폰트 배포 시 라이선스 동봉을 요구한다 — 앱 번들에 함께 넣는다.
+    - assets/fonts/LICENSE-Pretendard.txt
+
+  # Pretendard (SIL Open Font License 1.1) — assets/fonts/LICENSE-Pretendard.txt
+  # AppTypography.fontFamily가 지정하는 서체. 등록하지 않으면 시스템 서체로
+  # 대체되어 디자인 시안과 자간·굵기가 달라진다.
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700

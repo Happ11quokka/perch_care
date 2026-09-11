@@ -222,9 +222,17 @@ final _routes = <String, _Route>{
   'email-login': (path: RoutePaths.emailLogin, extra: null),
 };
 
-/// 앱은 폰트를 번들하지 않고 플랫폼 폰트('Pretendard' 폴백)를 쓴다. flutter_test 기본 Ahem
-/// 폰트는 모든 글리프가 1em 정사각형이라 실제보다 훨씬 넓게 측정되므로, 감사 프로브와
-/// 동일하게 macOS 시스템 폰트를 앱 폰트 패밀리 이름으로 등록해 실기기에 가까운 폭으로 잰다.
+/// flutter_test 기본 Ahem 폰트는 모든 글리프가 1em 정사각형이라 실제보다 훨씬
+/// 넓게 측정된다. 앱이 번들하는 Pretendard(assets/fonts)를 그대로 등록해 실기기와
+/// 같은 글자 폭으로 레이아웃을 잰다. 번들 자산을 읽지 못하면 macOS 시스템 폰트로
+/// 폴백한다.
+const _bundledFonts = [
+  'assets/fonts/Pretendard-Regular.otf',
+  'assets/fonts/Pretendard-Medium.otf',
+  'assets/fonts/Pretendard-SemiBold.otf',
+  'assets/fonts/Pretendard-Bold.otf',
+];
+
 const _systemFontCandidates = [
   '/System/Library/Fonts/AppleSDGothicNeo.ttc',
   '/System/Library/Fonts/Supplemental/AppleGothic.ttf',
@@ -233,6 +241,17 @@ const _systemFontCandidates = [
 bool _realFontLoaded = false;
 
 Future<void> _loadRealFont() async {
+  try {
+    final loader = FontLoader('Pretendard');
+    for (final asset in _bundledFonts) {
+      loader.addFont(rootBundle.load(asset));
+    }
+    await loader.load();
+    _realFontLoaded = true;
+    return;
+  } catch (_) {
+    // 번들 자산을 읽을 수 없는 환경 → 시스템 폰트 폴백
+  }
   for (final path in _systemFontCandidates) {
     final file = File(path);
     if (!file.existsSync()) continue;

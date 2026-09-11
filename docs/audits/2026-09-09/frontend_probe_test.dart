@@ -318,11 +318,13 @@ void main() {
   setUpAll(() async {
     registerFallbackValue(DateTime(2026));
     registerFallbackValue(Uint8List(0));
-    final fontFile = File('/System/Library/Fonts/AppleSDGothicNeo.ttc');
+    // 앱이 번들하는 Pretendard를 그대로 등록한다(F17 이후). Ahem 폰트의 1em
+    // 정사각 글리프로 인한 overflow 오검출을 막는다.
     final loader = FontLoader('Pretendard')
-      ..addFont(
-        Future.value(ByteData.sublistView(await fontFile.readAsBytes())),
-      );
+      ..addFont(rootBundle.load('assets/fonts/Pretendard-Regular.otf'))
+      ..addFont(rootBundle.load('assets/fonts/Pretendard-Medium.otf'))
+      ..addFont(rootBundle.load('assets/fonts/Pretendard-SemiBold.otf'))
+      ..addFont(rootBundle.load('assets/fonts/Pretendard-Bold.otf'));
     await loader.load();
     final icons = FontLoader('MaterialIcons')
       ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'));
