@@ -1,0 +1,538 @@
+00:00 +0: loading /Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart
+00:00 +0: (setUpAll)
+TokenService init success: hasAccessToken=false
+00:00 +0: API POST retries with the refreshed token
+00:00 +0 -1: API POST retries with the refreshed token [E]
+  Expected: ['Bearer old', 'Bearer new']
+    Actual: ['Bearer old', 'Bearer old']
+     Which: at location [1] is 'Bearer old' instead of 'Bearer new'
+  Saved token=new; request failure=ApiException(401): expired
+  
+  package:matcher                                        expect
+  package:flutter_test/src/widget_tester.dart 473:18     expect
+  docs/audits/2026-09-09/frontend_probe_test.dart 369:5  main.<fn>
+  
+00:00 +0 -1: login reloads pet state populated before authentication
+00:00 +0 -2: login reloads pet state populated before authentication [E]
+  Expected: 'a'
+    Actual: <null>
+     Which: not an <Instance of 'String'>
+  
+  package:matcher                                        expect
+  package:flutter_test/src/widget_tester.dart 473:18     expect
+  docs/audits/2026-09-09/frontend_probe_test.dart 407:5  main.<fn>
+  
+00:00 +0 -2: temporary refresh network failure keeps the saved session
+[ApiClient] Token refresh error: ClientException: offline
+00:00 +0 -3: temporary refresh network failure keeps the saved session [E]
+  Expected: 'refresh'
+    Actual: <null>
+     Which: not an <Instance of 'String'>
+  
+  package:matcher                                        expect
+  package:flutter_test/src/widget_tester.dart 473:18     expect
+  docs/audits/2026-09-09/frontend_probe_test.dart 423:5  main.<fn>
+  
+00:00 +0 -3: water record loads the pet when initial provider loading finishes
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+No matching calls (actually, no calls at all).
+(If you called `verify(...).called(0);`, please instead use `verifyNever(...);`.)
+
+When the exception was thrown, this was the stack:
+#0      fail (package:matcher/src/expect/expect.dart:187:31)
+#1      _VerifyCall._checkWith (package:mocktail/src/mocktail.dart:728:7)
+#2      _makeVerify.<anonymous closure> (package:mocktail/src/mocktail.dart:519:18)
+#3      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:441:13)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  water record loads the pet when initial provider loading finishes
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -4: water record loads the pet when initial provider loading finishes [E]
+  Test failed. See exception logs above.
+  The test description was: water record loads the pet when initial provider loading finishes
+  
+00:00 +0 -4: AI conversation reloads after switching the active pet
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+No matching calls. All calls: ChatMock.loadConversation(a)
+(If you called `verify(...).called(0);`, please instead use `verifyNever(...);`.)
+
+When the exception was thrown, this was the stack:
+#0      fail (package:matcher/src/expect/expect.dart:187:31)
+#1      _VerifyCall._checkWith (package:mocktail/src/mocktail.dart:728:7)
+#2      _makeVerify.<anonymous closure> (package:mocktail/src/mocktail.dart:519:18)
+#3      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:468:11)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  AI conversation reloads after switching the active pet
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -5: AI conversation reloads after switching the active pet [E]
+  Test failed. See exception logs above.
+  The test description was: AI conversation reloads after switching the active pet
+  
+00:01 +0 -5: all protected routes redirect signed-out users to login
+AUDIT_GUARD protected routes: 25
+00:01 +1 -5: coach marks from an inactive AI tab do not cover home
+[HomeScreen] initState called
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: false
+  Actual: <true>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:536:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart line 536
+The test description was:
+  coach marks from an inactive AI tab do not cover home
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +1 -6: coach marks from an inactive AI tab do not cover home [E]
+  Test failed. See exception logs above.
+  The test description was: coach marks from an inactive AI tab do not cover home
+  
+00:01 +1 -6: home pull-to-refresh recovers from the first data load failure
+00:01 +1 -7: home pull-to-refresh recovers from the first data load failure [E]
+  Expected: false
+    Actual: <true>
+  
+  package:matcher                                        expect
+  package:flutter_test/src/widget_tester.dart 473:18     expect
+  docs/audits/2026-09-09/frontend_probe_test.dart 566:7  main.<fn>
+  
+00:01 +1 -7: direct public signup route has a working back action
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: GoError:<GoError: There is nothing to pop>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:582:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart line 582
+The test description was:
+  direct public signup route has a working back action
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +1 -8: direct public signup route has a working back action [E]
+  Test failed. See exception logs above.
+  The test description was: direct public signup route has a working back action
+  
+00:01 +1 -8: route matrix ko 390.0 scale 1.0
+AUDIT_ROUTE {"name":"onboarding","path":"/onboarding","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"login","path":"/login","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"signup","path":"/signup","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"home","path":"/home","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"notification","path":"/home/notification","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile","path":"/home/profile","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile-detail","path":"/home/pet/profile/detail","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-add","path":"/home/pet/add","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile","path":"/home/pet/profile","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"food-record","path":"/home/food/record","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"water-record","path":"/home/water/record","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"wci-index","path":"/home/wci/index","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"bhi-detail","path":"/home/bhi/detail","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"terms-detail","path":"/home/terms/detail","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"faq","path":"/home/faq","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup","path":"/home/profile/setup","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup-complete","path":"/home/profile/setup/complete","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check","path":"/home/health-check","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-capture","path":"/home/health-check/capture","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+unhandled element <filter/>; Picture key: Svg loader
+[HealthCheck] activePetId=a, mode=food, part=null, fileName=audit.jpg, imageSize=0 bytes, language=ko
+[HealthCheck] ApiException: ApiException(503): Audit simulated server failure
+AUDIT_ROUTE {"name":"health-check-analyzing","path":"/home/health-check/analyzing","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-result","path":"/home/health-check/result","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-history","path":"/home/health-check/history","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"vet-summary","path":"/home/health-check/vet-summary","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-detail","path":"/weight-detail","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-record","path":"/weight-detail/record","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add-today","path":"/weight-detail/add/today","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add","path":"/weight-detail/add/2026-09-09","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"ai-encyclopedia","path":"/ai-encyclopedia","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"terms-detail-public","path":"/terms/detail","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"email-login","path":"/email-login","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"forgot-password-method","path":"/forgot-password/method","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"forgot-password-code","path":"/forgot-password/code","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":["A RenderFlex overflowed by 46 pixels on the right. | during layout"]}
+AUDIT_ROUTE {"name":"forgot-password-reset","path":"/forgot-password/reset","scenario":"(height: 844.0, language: ko, scale: 1.0, width: 390.0)","errors":[]}
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: empty
+  Actual: WhereIterable<List<String>>:[
+            ['A RenderFlex overflowed by 46 pixels on the right. | during layout']
+          ]
+[{"route":"forgot-password-code","errors":["A RenderFlex overflowed by 46 pixels on the right. |
+during layout"]}]
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:660:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart line 660
+The test description was:
+  route matrix ko 390.0 scale 1.0
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:04 +1 -9: route matrix ko 390.0 scale 1.0 [E]
+  Test failed. See exception logs above.
+  The test description was: route matrix ko 390.0 scale 1.0
+  
+00:04 +1 -9: route matrix en 320.0 scale 1.0
+AUDIT_ROUTE {"name":"onboarding","path":"/onboarding","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"login","path":"/login","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"signup","path":"/signup","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"home","path":"/home","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":["A RenderFlex overflowed by 103 pixels on the right. | during layout","A RenderFlex overflowed by 40 pixels on the right. | during layout","A RenderFlex overflowed by 3.6 pixels on the right. | during layout"]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"notification","path":"/home/notification","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile","path":"/home/profile","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile-detail","path":"/home/pet/profile/detail","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-add","path":"/home/pet/add","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile","path":"/home/pet/profile","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"food-record","path":"/home/food/record","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"water-record","path":"/home/water/record","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"wci-index","path":"/home/wci/index","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"bhi-detail","path":"/home/bhi/detail","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":["A RenderFlex overflowed by 40 pixels on the right. | during layout"]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"terms-detail","path":"/home/terms/detail","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"faq","path":"/home/faq","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup","path":"/home/profile/setup","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup-complete","path":"/home/profile/setup/complete","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check","path":"/home/health-check","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-capture","path":"/home/health-check/capture","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+[HealthCheck] activePetId=a, mode=food, part=null, fileName=audit.jpg, imageSize=0 bytes, language=en
+[HealthCheck] ApiException: ApiException(503): Audit simulated server failure
+AUDIT_ROUTE {"name":"health-check-analyzing","path":"/home/health-check/analyzing","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-result","path":"/home/health-check/result","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-history","path":"/home/health-check/history","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"vet-summary","path":"/home/health-check/vet-summary","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":["A RenderFlex overflowed by 93 pixels on the right. | during layout","A RenderFlex overflowed by 85 pixels on the bottom. | during layout"]}
+AUDIT_ROUTE {"name":"weight-detail","path":"/weight-detail","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-record","path":"/weight-detail/record","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add-today","path":"/weight-detail/add/today","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add","path":"/weight-detail/add/2026-09-09","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"ai-encyclopedia","path":"/ai-encyclopedia","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"terms-detail-public","path":"/terms/detail","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"email-login","path":"/email-login","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"forgot-password-method","path":"/forgot-password/method","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+AUDIT_ROUTE {"name":"forgot-password-code","path":"/forgot-password/code","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":["A RenderFlex overflowed by 116 pixels on the right. | during layout"]}
+AUDIT_ROUTE {"name":"forgot-password-reset","path":"/forgot-password/reset","scenario":"(height: 568.0, language: en, scale: 1.0, width: 320.0)","errors":[]}
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: empty
+  Actual: WhereIterable<List<String>>:[
+            [
+              'A RenderFlex overflowed by 103 pixels on the right. | during layout',
+              'A RenderFlex overflowed by 40 pixels on the right. | during layout',
+              'A RenderFlex overflowed by 3.6 pixels on the right. | during layout'
+            ],
+            ['A RenderFlex overflowed by 40 pixels on the right. | during layout'],
+            [
+              'A RenderFlex overflowed by 93 pixels on the right. | during layout',
+              'A RenderFlex overflowed by 85 pixels on the bottom. | during layout'
+            ],
+            ['A RenderFlex overflowed by 116 pixels on the right. | during layout']
+          ]
+[{"route":"home","errors":["A RenderFlex overflowed by 103 pixels on the right. | during layout","A
+RenderFlex overflowed by 40 pixels on the right. | during layout","A RenderFlex overflowed by 3.6
+pixels on the right. | during layout"]},{"route":"bhi-detail","errors":["A RenderFlex overflowed by
+40 pixels on the right. | during layout"]},{"route":"vet-summary","errors":["A RenderFlex overflowed
+by 93 pixels on the right. | during layout","A RenderFlex overflowed by 85 pixels on the bottom. |
+during layout"]},{"route":"forgot-password-code","errors":["A RenderFlex overflowed by 116 pixels on
+the right. | during layout"]}]
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:660:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart line 660
+The test description was:
+  route matrix en 320.0 scale 1.0
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +1 -10: route matrix en 320.0 scale 1.0 [E]
+  Test failed. See exception logs above.
+  The test description was: route matrix en 320.0 scale 1.0
+  
+00:07 +1 -10: route matrix ko 390.0 scale 2.0
+AUDIT_ROUTE {"name":"onboarding","path":"/onboarding","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"login","path":"/login","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"signup","path":"/signup","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"home","path":"/home","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":["A RenderFlex overflowed by 44 pixels on the bottom. | during layout","A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout","A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout","A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout","A RenderFlex overflowed by 3.1 pixels on the right. | during layout","A RenderFlex overflowed by 31 pixels on the bottom. | during layout"]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"notification","path":"/home/notification","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile","path":"/home/profile","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":["A RenderFlex overflowed by 58 pixels on the bottom. | during layout","A RenderFlex overflowed by 14 pixels on the bottom. | during layout","A RenderFlex overflowed by 14 pixels on the bottom. | during layout"]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile-detail","path":"/home/pet/profile/detail","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-add","path":"/home/pet/add","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":["A RenderFlex overflowed by 24 pixels on the right. | during layout"]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile","path":"/home/pet/profile","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"food-record","path":"/home/food/record","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"water-record","path":"/home/water/record","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"wci-index","path":"/home/wci/index","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"bhi-detail","path":"/home/bhi/detail","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"terms-detail","path":"/home/terms/detail","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"faq","path":"/home/faq","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup","path":"/home/profile/setup","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup-complete","path":"/home/profile/setup/complete","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check","path":"/home/health-check","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-capture","path":"/home/health-check/capture","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":["A RenderFlex overflowed by 8.6 pixels on the right. | during layout"]}
+[HomeScreen] initState called
+[HealthCheck] activePetId=a, mode=food, part=null, fileName=audit.jpg, imageSize=0 bytes, language=ko
+[HealthCheck] ApiException: ApiException(503): Audit simulated server failure
+AUDIT_ROUTE {"name":"health-check-analyzing","path":"/home/health-check/analyzing","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-result","path":"/home/health-check/result","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-history","path":"/home/health-check/history","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"vet-summary","path":"/home/health-check/vet-summary","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":["A RenderFlex overflowed by 27 pixels on the right. | during layout"]}
+AUDIT_ROUTE {"name":"weight-detail","path":"/weight-detail","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-record","path":"/weight-detail/record","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add-today","path":"/weight-detail/add/today","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add","path":"/weight-detail/add/2026-09-09","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"ai-encyclopedia","path":"/ai-encyclopedia","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"terms-detail-public","path":"/terms/detail","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"email-login","path":"/email-login","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":["A RenderFlex overflowed by 68 pixels on the right. | during layout"]}
+AUDIT_ROUTE {"name":"forgot-password-method","path":"/forgot-password/method","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"forgot-password-code","path":"/forgot-password/code","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":["A RenderFlex overflowed by 46 pixels on the right. | during layout"]}
+AUDIT_ROUTE {"name":"forgot-password-reset","path":"/forgot-password/reset","scenario":"(height: 844.0, language: ko, scale: 2.0, width: 390.0)","errors":[]}
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: empty
+  Actual: WhereIterable<List<String>>:[
+            [
+              'A RenderFlex overflowed by 44 pixels on the bottom. | during layout',
+              'A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout',
+              'A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout',
+              'A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout',
+              'A RenderFlex overflowed by 3.1 pixels on the right. | during layout',
+              'A RenderFlex overflowed by 31 pixels on the bottom. | during layout'
+            ],
+            [
+              'A RenderFlex overflowed by 58 pixels on the bottom. | during layout',
+              'A RenderFlex overflowed by 14 pixels on the bottom. | during layout',
+              'A RenderFlex overflowed by 14 pixels on the bottom. | during layout'
+            ],
+            ['A RenderFlex overflowed by 24 pixels on the right. | during layout'],
+            ['A RenderFlex overflowed by 8.6 pixels on the right. | during layout'],
+            ['A RenderFlex overflowed by 27 pixels on the right. | during layout'],
+            ['A RenderFlex overflowed by 68 pixels on the right. | during layout'],
+            ['A RenderFlex overflowed by 46 pixels on the right. | during layout']
+          ]
+[{"route":"home","errors":["A RenderFlex overflowed by 44 pixels on the bottom. | during layout","A
+RenderFlex overflowed by 3.0 pixels on the bottom. | during layout","A RenderFlex overflowed by 3.0
+pixels on the bottom. | during layout","A RenderFlex overflowed by 3.0 pixels on the bottom. |
+during layout","A RenderFlex overflowed by 3.1 pixels on the right. | during layout","A RenderFlex
+overflowed by 31 pixels on the bottom. | during layout"]},{"route":"profile","errors":["A RenderFlex
+overflowed by 58 pixels on the bottom. | during layout","A RenderFlex overflowed by 14 pixels on the
+bottom. | during layout","A RenderFlex overflowed by 14 pixels on the bottom. | during
+layout"]},{"route":"pet-add","errors":["A RenderFlex overflowed by 24 pixels on the right. | during
+layout"]},{"route":"health-check-capture","errors":["A RenderFlex overflowed by 8.6 pixels on the
+right. | during layout"]},{"route":"vet-summary","errors":["A RenderFlex overflowed by 27 pixels on
+the right. | during layout"]},{"route":"email-login","errors":["A RenderFlex overflowed by 68 pixels
+on the right. | during layout"]},{"route":"forgot-password-code","errors":["A RenderFlex overflowed
+by 46 pixels on the right. | during layout"]}]
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:660:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart line 660
+The test description was:
+  route matrix ko 390.0 scale 2.0
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:10 +1 -11: route matrix ko 390.0 scale 2.0 [E]
+  Test failed. See exception logs above.
+  The test description was: route matrix ko 390.0 scale 2.0
+  
+00:10 +1 -11: route matrix zh 390.0 scale 1.0
+AUDIT_ROUTE {"name":"onboarding","path":"/onboarding","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"login","path":"/login","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"signup","path":"/signup","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"home","path":"/home","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"notification","path":"/home/notification","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile","path":"/home/profile","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile-detail","path":"/home/pet/profile/detail","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-add","path":"/home/pet/add","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"pet-profile","path":"/home/pet/profile","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"food-record","path":"/home/food/record","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"water-record","path":"/home/water/record","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"wci-index","path":"/home/wci/index","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"bhi-detail","path":"/home/bhi/detail","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"terms-detail","path":"/home/terms/detail","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"faq","path":"/home/faq","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup","path":"/home/profile/setup","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"profile-setup-complete","path":"/home/profile/setup/complete","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check","path":"/home/health-check","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-capture","path":"/home/health-check/capture","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+[HealthCheck] activePetId=a, mode=food, part=null, fileName=audit.jpg, imageSize=0 bytes, language=zh
+[HealthCheck] ApiException: ApiException(503): Audit simulated server failure
+AUDIT_ROUTE {"name":"health-check-analyzing","path":"/home/health-check/analyzing","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-result","path":"/home/health-check/result","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"health-check-history","path":"/home/health-check/history","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+[HomeScreen] initState called
+AUDIT_ROUTE {"name":"vet-summary","path":"/home/health-check/vet-summary","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-detail","path":"/weight-detail","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-record","path":"/weight-detail/record","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add-today","path":"/weight-detail/add/today","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"weight-add","path":"/weight-detail/add/2026-09-09","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"ai-encyclopedia","path":"/ai-encyclopedia","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"terms-detail-public","path":"/terms/detail","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"email-login","path":"/email-login","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"forgot-password-method","path":"/forgot-password/method","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+AUDIT_ROUTE {"name":"forgot-password-code","path":"/forgot-password/code","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":["A RenderFlex overflowed by 46 pixels on the right. | during layout"]}
+AUDIT_ROUTE {"name":"forgot-password-reset","path":"/forgot-password/reset","scenario":"(height: 844.0, language: zh, scale: 1.0, width: 390.0)","errors":[]}
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: empty
+  Actual: WhereIterable<List<String>>:[
+            ['A RenderFlex overflowed by 46 pixels on the right. | during layout']
+          ]
+[{"route":"forgot-password-code","errors":["A RenderFlex overflowed by 46 pixels on the right. |
+during layout"]}]
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart:660:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart line 660
+The test description was:
+  route matrix zh 390.0 scale 1.0
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:12 +1 -12: route matrix zh 390.0 scale 1.0 [E]
+  Test failed. See exception logs above.
+  The test description was: route matrix zh 390.0 scale 1.0
+  
+00:12 +1 -12: (tearDownAll)
+00:12 +1 -12: Some tests failed.
+
+Failing tests:
+  /Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart: AI conversation reloads after switching the active pet
+  /Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart: API POST retries with the refreshed token
+  /Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart: coach marks from an inactive AI tab do not cover home
+  /Users/imdonghyeon/perch_care/docs/audits/2026-09-09/frontend_probe_test.dart: direct public signup route has a working back action
+  ... and 8 more

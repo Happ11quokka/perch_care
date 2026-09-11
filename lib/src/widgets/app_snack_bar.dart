@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/colors.dart';
 import '../theme/durations.dart';
 import '../theme/typography.dart';
@@ -272,7 +273,7 @@ class _SnackBarOverlayState extends State<_SnackBarOverlay>
                         // 닫기 버튼
                         Semantics(
                           button: true,
-                          label: 'Close',
+                          label: AppLocalizations.of(context).a11y_close,
                           child: GestureDetector(
                             onTap: animateOut,
                             behavior: HitTestBehavior.opaque,

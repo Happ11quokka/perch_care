@@ -61,8 +61,25 @@ class AppColors {
   static const Color gray900 = nearBlack; // #1A1A1A
 
   // Warm Tones
+  /// 테두리·아이콘 등 **비텍스트** 요소용 웜 그레이. 흰 배경 대비 3.09:1로
+  /// UI 컴포넌트 기준(3:1)은 만족하지만 본문 텍스트 기준(4.5:1)에는 미달한다.
+  /// 텍스트에는 [textSecondary]를 사용한다.
   static const Color warmGray = Color(0xFF97928A);
   static const Color beige = Color(0xFFE7E5E1);
+
+  /// 보조·설명·플레이스홀더 **텍스트**용 웜 그레이. [warmGray]의 색조를 유지한
+  /// 채 명도만 낮춰, 앱에서 실제로 쓰는 밝은 배경 전체에서 WCAG AA 본문
+  /// 기준(4.5:1)을 만족한다 — white 5.23 · gray50 5.01 · gray100 4.79 ·
+  /// gray200 4.50 · brandLight 4.86. beige(4.15)는 장식용 배경이므로 그 위에는
+  /// 본문 텍스트를 두지 않는다.
+  static const Color textSecondary = Color(0xFF706C64);
+
+  /// 밝은 배경 위 **브랜드 색 텍스트**용 딥 오렌지. [brandPrimary]를 텍스트에
+  /// 쓰면 흰 배경 대비 2.11:1로 큰 글자 기준(3:1)조차 미달한다. 색조를 유지한
+  /// 채 명도를 낮춰 white 5.28 · gray100 4.84 · gray200 4.55를 확보했다.
+  ///
+  /// 채움(버튼 배경)에는 [brandPrimary]를 그대로 쓴다 — 브랜드 색은 유지한다.
+  static const Color brandTextOnLight = Color(0xFFAE5100);
 
   // Brand Variants
   static const Color brandLight = Color(0xFFFFF5ED);

@@ -270,7 +270,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
             alignment: Alignment.centerLeft,
             child: Semantics(
               button: true,
-              label: 'Go back',
+              label: AppLocalizations.of(context).a11y_goBack,
               child: GestureDetector(
               onTap: () {
                 if (context.canPop()) {
@@ -356,7 +356,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
               bottom: 0,
               child: Semantics(
                 button: true,
-                label: 'Edit pet profile photo',
+                label: AppLocalizations.of(context).a11y_editPetProfilePhoto,
                 child: GestureDetector(
                 onTap: _handlePickImage,
                 child: Container(
@@ -481,7 +481,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
               hintStyle: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),
@@ -537,7 +537,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                 fontWeight: FontWeight.w400,
                 color: displayGender != null
                     ? AppColors.nearBlack
-                    : AppColors.warmGray,
+                    : AppColors.textSecondary,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),
@@ -588,7 +588,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                 fontWeight: FontWeight.w400,
                 color: selectedDate != null
                     ? AppColors.nearBlack
-                    : AppColors.warmGray,
+                    : AppColors.textSecondary,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),

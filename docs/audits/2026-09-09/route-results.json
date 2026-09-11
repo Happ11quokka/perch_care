@@ -1,0 +1,830 @@
+[
+  {
+    "name": "onboarding",
+    "path": "/onboarding",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "login",
+    "path": "/login",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "signup",
+    "path": "/signup",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "home",
+    "path": "/home",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "notification",
+    "path": "/home/notification",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile",
+    "path": "/home/profile",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-profile-detail",
+    "path": "/home/pet/profile/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-add",
+    "path": "/home/pet/add",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-profile",
+    "path": "/home/pet/profile",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "food-record",
+    "path": "/home/food/record",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "water-record",
+    "path": "/home/water/record",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "wci-index",
+    "path": "/home/wci/index",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "bhi-detail",
+    "path": "/home/bhi/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "terms-detail",
+    "path": "/home/terms/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "faq",
+    "path": "/home/faq",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup",
+    "path": "/home/profile/setup",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup-complete",
+    "path": "/home/profile/setup/complete",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check",
+    "path": "/home/health-check",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-capture",
+    "path": "/home/health-check/capture",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-analyzing",
+    "path": "/home/health-check/analyzing",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-result",
+    "path": "/home/health-check/result",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-history",
+    "path": "/home/health-check/history",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "vet-summary",
+    "path": "/home/health-check/vet-summary",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-detail",
+    "path": "/weight-detail",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-record",
+    "path": "/weight-detail/record",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add-today",
+    "path": "/weight-detail/add/today",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add",
+    "path": "/weight-detail/add/2026-09-09",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "ai-encyclopedia",
+    "path": "/ai-encyclopedia",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "terms-detail-public",
+    "path": "/terms/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "email-login",
+    "path": "/email-login",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "forgot-password-method",
+    "path": "/forgot-password/method",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "forgot-password-code",
+    "path": "/forgot-password/code",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 46 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "forgot-password-reset",
+    "path": "/forgot-password/reset",
+    "scenario": "(height: 844.0, language: ko, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "onboarding",
+    "path": "/onboarding",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "login",
+    "path": "/login",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "signup",
+    "path": "/signup",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "home",
+    "path": "/home",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": [
+      "A RenderFlex overflowed by 103 pixels on the right. | during layout",
+      "A RenderFlex overflowed by 40 pixels on the right. | during layout",
+      "A RenderFlex overflowed by 3.6 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "notification",
+    "path": "/home/notification",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "profile",
+    "path": "/home/profile",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-profile-detail",
+    "path": "/home/pet/profile/detail",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-add",
+    "path": "/home/pet/add",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-profile",
+    "path": "/home/pet/profile",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "food-record",
+    "path": "/home/food/record",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "water-record",
+    "path": "/home/water/record",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "wci-index",
+    "path": "/home/wci/index",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "bhi-detail",
+    "path": "/home/bhi/detail",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": [
+      "A RenderFlex overflowed by 40 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "terms-detail",
+    "path": "/home/terms/detail",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "faq",
+    "path": "/home/faq",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup",
+    "path": "/home/profile/setup",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup-complete",
+    "path": "/home/profile/setup/complete",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check",
+    "path": "/home/health-check",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-capture",
+    "path": "/home/health-check/capture",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-analyzing",
+    "path": "/home/health-check/analyzing",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-result",
+    "path": "/home/health-check/result",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-history",
+    "path": "/home/health-check/history",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "vet-summary",
+    "path": "/home/health-check/vet-summary",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": [
+      "A RenderFlex overflowed by 93 pixels on the right. | during layout",
+      "A RenderFlex overflowed by 85 pixels on the bottom. | during layout"
+    ]
+  },
+  {
+    "name": "weight-detail",
+    "path": "/weight-detail",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-record",
+    "path": "/weight-detail/record",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add-today",
+    "path": "/weight-detail/add/today",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add",
+    "path": "/weight-detail/add/2026-09-09",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "ai-encyclopedia",
+    "path": "/ai-encyclopedia",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "terms-detail-public",
+    "path": "/terms/detail",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "email-login",
+    "path": "/email-login",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "forgot-password-method",
+    "path": "/forgot-password/method",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "forgot-password-code",
+    "path": "/forgot-password/code",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": [
+      "A RenderFlex overflowed by 116 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "forgot-password-reset",
+    "path": "/forgot-password/reset",
+    "scenario": "(height: 568.0, language: en, scale: 1.0, width: 320.0)",
+    "errors": []
+  },
+  {
+    "name": "onboarding",
+    "path": "/onboarding",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "login",
+    "path": "/login",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "signup",
+    "path": "/signup",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "home",
+    "path": "/home",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 44 pixels on the bottom. | during layout",
+      "A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout",
+      "A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout",
+      "A RenderFlex overflowed by 3.0 pixels on the bottom. | during layout",
+      "A RenderFlex overflowed by 3.1 pixels on the right. | during layout",
+      "A RenderFlex overflowed by 31 pixels on the bottom. | during layout"
+    ]
+  },
+  {
+    "name": "notification",
+    "path": "/home/notification",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile",
+    "path": "/home/profile",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 58 pixels on the bottom. | during layout",
+      "A RenderFlex overflowed by 14 pixels on the bottom. | during layout",
+      "A RenderFlex overflowed by 14 pixels on the bottom. | during layout"
+    ]
+  },
+  {
+    "name": "pet-profile-detail",
+    "path": "/home/pet/profile/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-add",
+    "path": "/home/pet/add",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 24 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "pet-profile",
+    "path": "/home/pet/profile",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "food-record",
+    "path": "/home/food/record",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "water-record",
+    "path": "/home/water/record",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "wci-index",
+    "path": "/home/wci/index",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "bhi-detail",
+    "path": "/home/bhi/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "terms-detail",
+    "path": "/home/terms/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "faq",
+    "path": "/home/faq",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup",
+    "path": "/home/profile/setup",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup-complete",
+    "path": "/home/profile/setup/complete",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check",
+    "path": "/home/health-check",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-capture",
+    "path": "/home/health-check/capture",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 8.6 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "health-check-analyzing",
+    "path": "/home/health-check/analyzing",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-result",
+    "path": "/home/health-check/result",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-history",
+    "path": "/home/health-check/history",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "vet-summary",
+    "path": "/home/health-check/vet-summary",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 27 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "weight-detail",
+    "path": "/weight-detail",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-record",
+    "path": "/weight-detail/record",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add-today",
+    "path": "/weight-detail/add/today",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add",
+    "path": "/weight-detail/add/2026-09-09",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "ai-encyclopedia",
+    "path": "/ai-encyclopedia",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "terms-detail-public",
+    "path": "/terms/detail",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "email-login",
+    "path": "/email-login",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 68 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "forgot-password-method",
+    "path": "/forgot-password/method",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "forgot-password-code",
+    "path": "/forgot-password/code",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 46 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "forgot-password-reset",
+    "path": "/forgot-password/reset",
+    "scenario": "(height: 844.0, language: ko, scale: 2.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "onboarding",
+    "path": "/onboarding",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "login",
+    "path": "/login",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "signup",
+    "path": "/signup",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "home",
+    "path": "/home",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "notification",
+    "path": "/home/notification",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile",
+    "path": "/home/profile",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-profile-detail",
+    "path": "/home/pet/profile/detail",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-add",
+    "path": "/home/pet/add",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "pet-profile",
+    "path": "/home/pet/profile",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "food-record",
+    "path": "/home/food/record",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "water-record",
+    "path": "/home/water/record",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "wci-index",
+    "path": "/home/wci/index",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "bhi-detail",
+    "path": "/home/bhi/detail",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "terms-detail",
+    "path": "/home/terms/detail",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "faq",
+    "path": "/home/faq",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup",
+    "path": "/home/profile/setup",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "profile-setup-complete",
+    "path": "/home/profile/setup/complete",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check",
+    "path": "/home/health-check",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-capture",
+    "path": "/home/health-check/capture",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-analyzing",
+    "path": "/home/health-check/analyzing",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-result",
+    "path": "/home/health-check/result",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "health-check-history",
+    "path": "/home/health-check/history",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "vet-summary",
+    "path": "/home/health-check/vet-summary",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-detail",
+    "path": "/weight-detail",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-record",
+    "path": "/weight-detail/record",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add-today",
+    "path": "/weight-detail/add/today",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "weight-add",
+    "path": "/weight-detail/add/2026-09-09",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "ai-encyclopedia",
+    "path": "/ai-encyclopedia",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "terms-detail-public",
+    "path": "/terms/detail",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "email-login",
+    "path": "/email-login",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "forgot-password-method",
+    "path": "/forgot-password/method",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  },
+  {
+    "name": "forgot-password-code",
+    "path": "/forgot-password/code",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": [
+      "A RenderFlex overflowed by 46 pixels on the right. | during layout"
+    ]
+  },
+  {
+    "name": "forgot-password-reset",
+    "path": "/forgot-password/reset",
+    "scenario": "(height: 844.0, language: zh, scale: 1.0, width: 390.0)",
+    "errors": []
+  }
+]

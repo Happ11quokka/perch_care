@@ -245,7 +245,7 @@ class _HealthCheckHistoryScreenState
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -353,7 +353,7 @@ class _HealthCheckHistoryScreenState
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                        color: AppColors.textSecondary,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -384,7 +384,7 @@ class _HealthCheckHistoryScreenState
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.warmGray,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],

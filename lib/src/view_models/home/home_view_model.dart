@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/pet.dart';
 import '../../providers/repository_providers.dart';
 import '../../repositories/home_repository.dart';
+import '../base/async_view_model.dart';
 import 'home_state.dart';
 import '../pet/active_pet_view_model.dart';
 
@@ -12,7 +13,9 @@ import '../pet/active_pet_view_model.dart';
 /// - `activePetViewModelProvider`를 `ref.watch`하여 활성 펫이 바뀌면 자동 재로드.
 /// - 기간 선택기 변경 시 `loadBhiForDate(targetDate)`만 재호출.
 /// - 저장 화면에서 돌아왔을 때 `refreshBhi()` 호출로 BHI/로컬 배지만 갱신.
-class HomeViewModel extends AsyncNotifier<HomeState> {
+/// - 초기 로드 실패(AsyncError) 상태에서는 `pullToRefresh()`/`retry()`가 전체
+///   초기 로드를 다시 수행해 복구한다 (BHI만 갱신하는 경로로는 복구 불가).
+class HomeViewModel extends AsyncViewModel<HomeState> {
   HomeRepository get _repo => ref.read(homeRepositoryProvider);
 
   /// 기간 전환이 빠르게 연타됐을 때 오래된 응답이 최신 응답을 덮어쓰지 않도록 하는 요청 ID.
@@ -157,10 +160,16 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
 
   /// 당겨서 새로고침 — 캐시를 우회해 서버에서 [targetDate](화면에서 선택된 기간)의
   /// BHI를 강제 재조회한다. (refreshBhi는 캐시-우선이라 최신 데이터를 강제하지 못함)
+  ///
+  /// 현재 state에 활성 펫이 없으면(초기 로드 실패 → AsyncError, 또는 펫 미확정)
+  /// BHI만 갱신할 대상이 없으므로 [retry]로 위임해 초기 로드 전체를 다시 수행한다.
   Future<void> pullToRefresh(DateTime targetDate) async {
     final current = state.valueOrNull;
     final pet = current?.activePet;
-    if (pet == null) return;
+    if (pet == null) {
+      await retry(targetDate: targetDate);
+      return;
+    }
 
     final requestId = ++_bhiRequestId;
     state = AsyncData(current!.copyWith(isBhiLoading: true));
@@ -184,6 +193,34 @@ class HomeViewModel extends AsyncNotifier<HomeState> {
       final latest = state.valueOrNull ?? current;
       state = AsyncData(latest.copyWith(isBhiLoading: false, isBhiOffline: true));
       if (kDebugMode) debugPrint('[HomeViewModel] pullToRefresh failed: $e');
+    }
+  }
+
+  /// 초기 로드 실패(AsyncError) 복구 — 활성 펫 + BHI + 파생 데이터를 처음부터 다시 로드.
+  ///
+  /// - 활성 펫이 확정돼 있으면 `build()`와 동일한 로더(`_buildInitialState`)를
+  ///   `runLoad`로 재실행한다 (실패 시 다시 AsyncError, 예외는 밖으로 던지지 않음).
+  /// - 활성 펫 provider 자체가 실패/미확정이면 그 provider까지 invalidate한 뒤
+  ///   `build()`를 재실행한다 — 펫 로드 실패도 함께 복구되도록.
+  /// - 진행 중이던 BHI 단독 갱신 응답이 새 상태를 덮어쓰지 않도록 요청 ID를 올린다.
+  Future<void> retry({DateTime? targetDate}) async {
+    _bhiRequestId++;
+    final activePetAsync = ref.read(activePetViewModelProvider);
+    final pet = activePetAsync.valueOrNull;
+    if (pet != null) {
+      await runLoad(
+          () => _buildInitialState(pet, targetDate ?? DateTime.now()));
+      return;
+    }
+    if (activePetAsync.hasError) {
+      ref.invalidate(activePetViewModelProvider);
+    }
+    ref.invalidateSelf();
+    try {
+      await future;
+    } catch (e) {
+      // 재시도 실패 — state는 이미 AsyncError. 호출자(RefreshIndicator 등)에는 전파하지 않는다.
+      if (kDebugMode) debugPrint('[HomeViewModel] retry failed: $e');
     }
   }
 

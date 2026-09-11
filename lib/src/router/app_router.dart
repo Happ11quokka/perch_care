@@ -12,7 +12,6 @@ import '../screens/weight/weight_detail_screen.dart';
 import '../screens/weight/weight_record_screen.dart';
 import '../screens/weight/weight_add_screen.dart';
 import '../screens/pet/pet_add_screen.dart';
-import '../screens/pet/pet_profile_screen.dart';
 import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/pet_profile_detail_screen.dart';
@@ -104,7 +103,7 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: kDebugMode,
-    observers: [AnalyticsService.instance.observer],
+    observers: AnalyticsService.instance.navigatorObservers,
     redirect: (context, state) {
       final currentPath = state.uri.path;
       final isPublicRoute = _publicPaths.contains(currentPath);
@@ -216,11 +215,6 @@ class AppRouter {
                         isInitialSetup: map?['isInitialSetup'] == true,
                       );
                     },
-                  ),
-                  GoRoute(
-                    path: 'pet/profile',
-                    name: RouteNames.petProfile,
-                    builder: (context, state) => const PetProfileScreen(),
                   ),
                   GoRoute(
                     path: 'food/record',

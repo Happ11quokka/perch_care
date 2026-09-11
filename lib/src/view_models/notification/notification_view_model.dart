@@ -10,13 +10,11 @@ import '../../repositories/notification_repository.dart';
 /// (폴링 스트림)를 구독해 이후 값 변경을 state에 그대로 반영한다. 구독은
 /// `ref.onDispose`로 해제한다.
 ///
-/// **알려진 동작(behavior-preserving, 잠재 UX 버그로 플래그):**
-/// `NotificationService.subscribeToNotifications()`는 폴링 도중 네트워크 에러가
-/// 나면 빈 리스트를 정상 값처럼 yield하는 기존 계약을 갖고 있다(에러를 삼키고
-/// `yield <AppNotification>[]`). 이 태스크는 구조 전환(MVVM 전환)에 집중하며
-/// 스트림 병합 시맨틱은 바꾸지 않으므로, VM은 스트림 값을 그대로 신뢰해 state에
-/// 반영한다 — 즉 폴링 중 일시적 네트워크 에러가 발생하면 화면 목록이 통째로
-/// 비워지는 기존 버그가 그대로 보존된다. 별도 태스크에서 다뤄야 한다.
+/// **폴링 실패 시 목록 유지 (F14):**
+/// `NotificationService.subscribeToNotifications()`는 폴링 실패 시 아무것도
+/// yield하지 않는다(빈 리스트를 흘리지 않음). 방어적으로 스트림 에러가 오더라도
+/// `AsyncError.copyWithPrevious`로 마지막 목록을 유지한다 — 화면은
+/// `valueOrNull`로 목록을 그리므로 일시적 네트워크 에러에 목록이 비워지지 않는다.
 class NotificationViewModel extends AsyncNotifier<List<AppNotification>> {
   NotificationRepository get _repo => ref.read(notificationRepositoryProvider);
 
@@ -27,17 +25,32 @@ class NotificationViewModel extends AsyncNotifier<List<AppNotification>> {
     // 구독은 build() 동기 구간에서 등록하되, 콜백에서의 state 대입은 build()의
     // 반환 Future가 완료된 "이후"에만 일어난다(폴링 간격이 최소 30초이므로 실제
     // 런타임에서는 항상 그렇다). onDispose로 재빌드/폐기 시 해제한다.
-    final sub = repo.subscribe().listen((list) {
-      state = AsyncData(list);
-    });
+    final sub = repo.subscribe().listen(
+      (list) {
+        state = AsyncData(list);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        // 이전 목록을 유지한 채 에러만 표시(View는 스낵바 1회, 목록은 그대로).
+        state = AsyncError<List<AppNotification>>(error, stackTrace)
+            .copyWithPrevious(state);
+      },
+    );
     ref.onDispose(sub.cancel);
 
     return repo.fetch();
   }
 
   /// 실패 시 롤백 대신 서버 최신 상태로 재조회.
-  Future<void> _refetch() async {
-    state = AsyncData(await _repo.fetch());
+  ///
+  /// 재조회 자체도 실패하면(예: 네트워크 단절) 호출자에게 throw하지 않고
+  /// 낙관적 갱신 이전 스냅샷(`fallback`)으로 되돌린다 — 화면 콜백이
+  /// 2차 예외로 죽거나 목록이 비워지지 않게 한다.
+  Future<void> _refetch(List<AppNotification> fallback) async {
+    try {
+      state = AsyncData(await _repo.fetch());
+    } catch (_) {
+      state = AsyncData(fallback);
+    }
   }
 
   /// 낙관적 읽음 처리 — 실패 시 재조회.
@@ -51,7 +64,7 @@ class NotificationViewModel extends AsyncNotifier<List<AppNotification>> {
     try {
       await _repo.markAsRead(id);
     } catch (_) {
-      await _refetch();
+      await _refetch(current);
     }
   }
 
@@ -70,7 +83,7 @@ class NotificationViewModel extends AsyncNotifier<List<AppNotification>> {
     try {
       await _repo.markAllAsRead();
     } catch (e) {
-      await _refetch();
+      await _refetch(current);
       rethrow;
     }
   }
@@ -88,7 +101,7 @@ class NotificationViewModel extends AsyncNotifier<List<AppNotification>> {
     try {
       await _repo.delete(id);
     } catch (e) {
-      await _refetch();
+      await _refetch(current);
       rethrow;
     }
   }

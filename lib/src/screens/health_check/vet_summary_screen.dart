@@ -76,65 +76,86 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              const Spacer(),
-              // Illustration
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+              // 본문은 스크롤 가능, 공유 버튼은 항상 하단에 고정
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          children: [
+                            const Spacer(),
+                            // Illustration
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.local_hospital_outlined,
+                                size: 56,
+                                color: AppColors.brandPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              l10n.report_vetSummaryTitle,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.nearBlack,
+                                letterSpacing: -0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.report_vetSummaryDesc,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.mediumGray,
+                                height: 1.5,
+                                letterSpacing: -0.3,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 32),
+                            // Feature list
+                            _buildFeatureItem(
+                              Icons.monitor_weight_outlined,
+                              l10n.report_vetFeatureWeight,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildFeatureItem(
+                              Icons.health_and_safety_outlined,
+                              l10n.report_vetFeatureChecks,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildFeatureItem(
+                              Icons.edit_note,
+                              l10n.report_vetFeatureNotes,
+                            ),
+                            const Spacer(flex: 2),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.local_hospital_outlined,
-                  size: 56,
-                  color: AppColors.brandPrimary,
-                ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                l10n.report_vetSummaryTitle,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.nearBlack,
-                  letterSpacing: -0.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.report_vetSummaryDesc,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.mediumGray,
-                  height: 1.5,
-                  letterSpacing: -0.3,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              // Feature list
-              _buildFeatureItem(
-                Icons.monitor_weight_outlined,
-                l10n.report_vetFeatureWeight,
-              ),
-              const SizedBox(height: 12),
-              _buildFeatureItem(
-                Icons.health_and_safety_outlined,
-                l10n.report_vetFeatureChecks,
-              ),
-              const SizedBox(height: 12),
-              _buildFeatureItem(
-                Icons.edit_note,
-                l10n.report_vetFeatureNotes,
-              ),
-              const Spacer(flex: 2),
               // CTA button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: double.infinity,
+                  minHeight: 52,
+                ),
                 child: ElevatedButton(
                   onPressed: _isSharing ? null : _shareVetSummary,
                   style: ElevatedButton.styleFrom(
@@ -148,15 +169,21 @@ class _VetSummaryScreenState extends ConsumerState<VetSummaryScreen> {
                   child: _isSharing
                       ? AppLoading.button()
                       : Row(
+                          mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.share_outlined, size: 20),
                             const SizedBox(width: 8),
-                            Text(
-                              l10n.report_vetShareButton,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                            Flexible(
+                              child: Text(
+                                l10n.report_vetShareButton,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],

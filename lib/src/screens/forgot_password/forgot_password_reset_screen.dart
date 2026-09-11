@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../router/navigation_extensions.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -87,7 +89,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo(RoutePaths.login),
         ),
         centerTitle: true,
         title: Text(
@@ -120,7 +122,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),
@@ -131,7 +133,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                         label: l10n.input_newPassword,
                         controller: _newPasswordController,
                         focusNode: _newPasswordFocusNode,
-                        hintText: '비밀번호를 입력해 주세요',
+                        hintText: l10n.input_password_hint,
                         hasFocus: _newPasswordHasFocus,
                         hasValue: _newPasswordHasValue,
                         obscureText: _obscureNewPassword,
@@ -147,7 +149,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                         label: l10n.input_confirmPassword,
                         controller: _confirmPasswordController,
                         focusNode: _confirmPasswordFocusNode,
-                        hintText: '비밀번호를 입력해 주세요',
+                        hintText: l10n.input_password_hint,
                         hasFocus: _confirmPasswordHasFocus,
                         hasValue: _confirmPasswordHasValue,
                         obscureText: _obscureConfirmPassword,
@@ -201,7 +203,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -240,7 +242,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,

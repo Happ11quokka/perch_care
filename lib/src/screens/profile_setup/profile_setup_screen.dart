@@ -5,14 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:country_picker/country_picker.dart';
 import '../../utils/image_crop_helper.dart';
 import '../../theme/colors.dart';
 import '../../router/route_names.dart';
 import '../../providers/repository_providers.dart';
 import '../../services/api/token_service.dart';
 import '../../services/storage/local_image_storage_service.dart';
-import 'widgets/country_selector_bottom_sheet.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -33,26 +31,20 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   static const _fieldBorderColor = AppColors.warmGray;
   static const _fieldRadius = 16.0;
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
 
   final _nameFocusNode = FocusNode();
-  final _emailFocusNode = FocusNode();
-  final _phoneFocusNode = FocusNode();
+
+  /// 계정 이메일. 가입·소셜 연동 시점에 정해지는 값이라 이 화면에서는 표시만 한다.
+  String? _email;
 
   File? _selectedImage;
   Uint8List? _savedImageBytes;
   bool _isSaving = false;
 
-  String? _selectedGender;
-  Country _selectedCountry = CountryParser.parseCountryCode('KR'); // 대한민국
-
   @override
   void initState() {
     super.initState();
     _nameFocusNode.addListener(() => setState(() {}));
-    _emailFocusNode.addListener(() => setState(() {}));
-    _phoneFocusNode.addListener(() => setState(() {}));
     _loadUserProfile();
     _loadSavedImage();
   }
@@ -78,7 +70,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         setState(() {
           final email = profile['email'] as String?;
           if (email != null && email.isNotEmpty) {
-            _emailController.text = email;
+            _email = email;
           }
           final nickname = profile['nickname'] as String?;
           if (nickname != null && nickname.isNotEmpty) {
@@ -94,19 +86,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
     _nameFocusNode.dispose();
-    _emailFocusNode.dispose();
-    _phoneFocusNode.dispose();
     super.dispose();
-  }
-
-  String _genderDisplayText(AppLocalizations l10n) {
-    if (_selectedGender == null) return l10n.pet_gender_hint;
-    return _selectedGender == 'male'
-        ? l10n.profileSetup_genderMale
-        : l10n.profileSetup_genderFemale;
   }
 
   @override
@@ -131,7 +112,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     alignment: Alignment.centerLeft,
                     child: Semantics(
                       button: true,
-                      label: 'Go back',
+                      label: AppLocalizations.of(context).a11y_goBack,
                       child: GestureDetector(
                       onTap: () => context.pop(),
                       child: SizedBox(
@@ -173,11 +154,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     // 입력 필드들
                     _buildNameField(l10n),
                     const SizedBox(height: 16),
-                    _buildGenderField(l10n),
-                    const SizedBox(height: 16),
                     _buildEmailField(l10n),
-                    const SizedBox(height: 16),
-                    _buildPhoneField(l10n),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -234,7 +211,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             right: 0,
             child: Semantics(
               button: true,
-              label: 'Edit profile photo',
+              label: AppLocalizations.of(context).a11y_editProfilePhoto,
               child: GestureDetector(
               onTap: _handleEditPhoto,
               child: Container(
@@ -303,7 +280,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             hintStyle: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
+              color: AppColors.textSecondary,
               letterSpacing: -0.35,
             ),
           ),
@@ -312,199 +289,35 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildGenderField(AppLocalizations l10n) {
+  /// 이메일은 계정 값이므로 읽기 전용으로 표시한다.
+  ///
+  /// 저장 계약(`updateProfile`)은 nickname·avatarUrl만 받으므로 입력을 허용하면
+  /// 사용자가 고친 값이 조용히 사라진다. 소셜 로그인에서 이메일을 받지 못한
+  /// 계정은 빈 값이므로 안내 문구를 대신 보여준다.
+  Widget _buildEmailField(AppLocalizations l10n) {
+    final email = _email;
+    final hasEmail = email != null && email.isNotEmpty;
     return Semantics(
-      button: true,
-      label: l10n.pet_gender_hint,
-      child: GestureDetector(
-      onTap: () => _showGenderPicker(l10n),
+      label: l10n.input_email_hint,
+      readOnly: true,
       child: Container(
-        height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        constraints: const BoxConstraints(minHeight: 60),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.gray100,
           border: Border.all(color: _fieldBorderColor, width: 1),
           borderRadius: BorderRadius.circular(_fieldRadius),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _genderDisplayText(l10n),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: _selectedGender != null
-                    ? AppColors.nearBlack
-                    : _fieldBorderColor,
-                letterSpacing: -0.35,
-              ),
-            ),
-            Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.warmGray,
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    ),
-    );
-  }
-
-  Widget _buildEmailField(AppLocalizations l10n) {
-    final hasEmail = _emailController.text.isNotEmpty;
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: hasEmail ? AppColors.gray100 : Colors.white,
-        border: Border.all(
-          color: _fieldBorderColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(_fieldRadius),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      alignment: Alignment.centerLeft,
-      child: Theme(
-        data: ThemeData(
-          textSelectionTheme: TextSelectionThemeData(
-            cursorColor: AppColors.brandPrimary,
-          ),
-        ),
-        child: TextField(
-          controller: _emailController,
-          focusNode: _emailFocusNode,
-          keyboardType: TextInputType.emailAddress,
-          readOnly: hasEmail,
-          enabled: !hasEmail,
-          style: TextStyle(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          hasEmail ? email : l10n.profileSetup_emailNone,
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: hasEmail ? AppColors.warmGray : AppColors.nearBlack,
+            color: AppColors.textSecondary,
             letterSpacing: -0.35,
           ),
-          decoration: InputDecoration(
-            filled: false,
-            fillColor: Colors.transparent,
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            errorBorder: InputBorder.none,
-            disabledBorder: InputBorder.none,
-            focusedErrorBorder: InputBorder.none,
-            hintText: l10n.input_email_hint,
-            hintStyle: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
-              letterSpacing: -0.35,
-            ),
-          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPhoneField(AppLocalizations l10n) {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(
-          color: _fieldBorderColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(_fieldRadius),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      alignment: Alignment.centerLeft,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 국가 선택
-          Semantics(
-            button: true,
-            label: 'Select country',
-            child: GestureDetector(
-            onTap: _showCountrySelector,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // 국기 이모지
-                Text(
-                  _selectedCountry.flagEmoji,
-                  textHeightBehavior: const TextHeightBehavior(
-                    applyHeightToFirstAscent: false,
-                    applyHeightToLastDescent: false,
-                  ),
-                  strutStyle: const StrutStyle(
-                    forceStrutHeight: true,
-                    fontSize: 20,
-                    height: 1,
-                  ),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    height: 1,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Icon(
-                  Icons.keyboard_arrow_down,
-                  color: AppColors.warmGray,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-          ),
-          const SizedBox(width: 10),
-          // 전화번호 입력
-          Expanded(
-            child: Theme(
-              data: ThemeData(
-                textSelectionTheme: TextSelectionThemeData(
-                  cursorColor: AppColors.brandPrimary,
-                ),
-              ),
-              child: TextField(
-                controller: _phoneController,
-                focusNode: _phoneFocusNode,
-                keyboardType: TextInputType.phone,
-                textAlignVertical: TextAlignVertical.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.nearBlack,
-                  letterSpacing: -0.35,
-                ),
-                decoration: InputDecoration(
-                  filled: false,
-                  fillColor: Colors.transparent,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  focusedErrorBorder: InputBorder.none,
-                  hintText: l10n.profileSetup_phoneHint,
-                  hintStyle: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.warmGray,
-                    letterSpacing: -0.35,
-                  ),
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -536,7 +349,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.45,
                     ),
                   ),
@@ -601,95 +414,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       _selectedImage = file;
       _savedImageBytes = bytes;
     });
-  }
-
-  void _showGenderPicker(AppLocalizations l10n) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    margin: const EdgeInsets.only(top: 12, bottom: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.beige,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(
-                    l10n.profileSetup_genderSelectTitle,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.nearBlack,
-                      letterSpacing: -0.35,
-                    ),
-                  ),
-                ),
-                ListTile(
-                  title: Text(
-                    l10n.profileSetup_genderMale,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.nearBlack,
-                    ),
-                  ),
-                  onTap: () {
-                    setState(() => _selectedGender = 'male');
-                    Navigator.pop(context);
-                  },
-                ),
-                ListTile(
-                  title: Text(
-                    l10n.profileSetup_genderFemale,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.nearBlack,
-                    ),
-                  ),
-                  onTap: () {
-                    setState(() => _selectedGender = 'female');
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showCountrySelector() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return CountrySelectorBottomSheet(
-          selectedCountry: _selectedCountry,
-          onCountrySelected: (country) {
-            setState(() => _selectedCountry = country);
-          },
-        );
-      },
-    );
   }
 
   void _handleSkip() {

@@ -94,7 +94,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 l10n.notification_markAllRead,
                 style: const TextStyle(
                   fontSize: 14,
-                  color: AppColors.brandPrimary,
+                  color: AppColors.brandTextOnLight,
                 ),
               ),
             ),

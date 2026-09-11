@@ -22,6 +22,7 @@ import '../../view_models/home/home_view_model.dart';
 import '../../widgets/app_loading.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
+import '../../widgets/empty_state_widget.dart';
 import '../../../l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -244,6 +245,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _lastUpdateText = _formatLastUpdateTime(l10n, state.lastBhiFetchTime);
 
     final showFullLoading = homeAsync.isLoading && state.activePet == null;
+    // 초기 로드 실패(이전 값 없음): 빈 HomeState로 그리면 "펫 없음"처럼 보이므로
+    // 에러 + 재시도 UI를 표시한다. 이전 값이 있는 에러(펫 전환 실패 등)는 기존
+    // 콘텐츠를 유지한다. 당겨서 새로고침은 이 상태에서도 그대로 동작(VM이 전체 재로드).
+    final showLoadError =
+        homeAsync.hasError && !homeAsync.hasValue && !homeAsync.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.gray150,
@@ -275,7 +281,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             // 펫 전환/갱신 중 콘텐츠를 디밍해 '데이터 갱신 중'임을
                             // 드러낸다. 서브트리를 복제하지 않아 coach mark
                             // GlobalKey 중복 없이 안전하다.
-                            child: AnimatedOpacity(
+                            child: showLoadError
+                                ? _buildLoadErrorState(l10n)
+                                : AnimatedOpacity(
                               opacity: (homeAsync.isLoading &&
                                       state.activePet != null)
                                   ? 0.5
@@ -328,6 +336,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  /// 초기 로드 실패 상태 — 에러 안내 + 재시도 버튼.
+  /// RefreshIndicator 안에 배치되므로 당겨서 새로고침으로도 재시도할 수 있다.
+  Widget _buildLoadErrorState(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 64),
+      child: EmptyStateWidget(
+        icon: Icons.cloud_off_outlined,
+        title: l10n.error_loadPet,
+        subtitle: l10n.error_server,
+        actionLabel: l10n.hc_retry,
+        onAction: () => ref
+            .read(homeViewModelProvider.notifier)
+            .retry(targetDate: _getTargetDateForPeriod()),
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return Container(
       decoration: BoxDecoration(
@@ -353,14 +378,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // 토글 버튼 (왼쪽)
                   _buildViewToggle(),
-                  const Spacer(),
-                  // 펫 이름 칩
-                  Semantics(
+                  const SizedBox(width: 8),
+                  // 펫 이름 칩 — 좁은 화면에서는 이름을 말줄임해 토글과 겹치지 않게 축소
+                  Flexible(
+                    child: Semantics(
                     button: true,
-                    label: 'Select pet',
+                    label: AppLocalizations.of(context).a11y_selectPet,
                     child: PressableScale(
                     onTap: () {
                       context.pushNamed(RouteNames.profile);
@@ -409,22 +436,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           const SizedBox(width: 8),
                           // 이름
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 80),
-                            child: Text(
-                              _activePet?.name ?? '',
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.nearBlack,
-                                letterSpacing: -0.35,
+                          Flexible(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 80),
+                              child: Text(
+                                _activePet?.name ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.nearBlack,
+                                  letterSpacing: -0.35,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ),
                   ),
                   ),
                 ],
@@ -512,7 +543,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: _isMonthlyView ? AppColors.white : AppColors.warmGray,
+                          color: _isMonthlyView ? AppColors.white : AppColors.textSecondary,
                           letterSpacing: -0.35,
                         ),
                         child: Text(l10n.home_monthlyUnit),
@@ -547,7 +578,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: !_isMonthlyView ? AppColors.white : AppColors.warmGray,
+                          color: !_isMonthlyView ? AppColors.white : AppColors.textSecondary,
                           letterSpacing: -0.35,
                         ),
                         child: Text(l10n.home_weeklyUnit),
@@ -747,9 +778,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Semantics(
+                Expanded(
+                  child: Semantics(
                   button: true,
-                  label: 'WCI health status',
+                  label: AppLocalizations.of(context).a11y_wciHealthStatus,
                   child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => context.pushNamed(RouteNames.wciIndex),
@@ -770,7 +802,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         TextSpan(
                           text: '*',
                           style: const TextStyle(
-                            color: AppColors.brandPrimary,
+                            color: AppColors.brandTextOnLight,
                           ),
                         ),
                         TextSpan(text: ' ${l10n.home_wciHealthStatus.replaceAll('WCI* ', '')}'),
@@ -779,7 +811,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 ),
-                Row(
+                ),
+                const SizedBox(width: 8),
+                // 마지막 업데이트 — 좁은 화면/큰 글자에서는 말줄임
+                Flexible(
+                  child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
                       Icons.access_time,
@@ -787,15 +824,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: AppColors.warmGray,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      _lastUpdateText ?? l10n.home_noUpdateData,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                    Flexible(
+                      child: Text(
+                        _lastUpdateText ?? l10n.home_noUpdateData,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ],
+                ),
                 ),
               ],
             ),
@@ -872,7 +914,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             l10n.error_network,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: AppColors.warmGray,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ),
@@ -966,13 +1008,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       } else {
         // 바: 동그라미 왼쪽이면 채움, 오른쪽이면 비움
         final bool filled = _wciLevel > 0 && i < circlePos;
-        children.add(_buildProgressBar(filled));
+        children.add(Expanded(child: _buildProgressBar(filled)));
       }
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: children,
+    // 바 4개(74px) + 원(22px) + 간격(2px×4) = 326px. 좁은 화면에서는 바가 축소된다.
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 326),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: children,
+        ),
+      ),
     );
   }
 
@@ -980,7 +1028,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return AnimatedContainer(
       duration: AppDurations.of(context, AppDurations.quick),
       curve: AppCurves.enter,
-      width: 74,
       height: 8,
       decoration: BoxDecoration(
         color: isActive ? AppColors.brandPrimary : AppColors.gray150,
@@ -1003,8 +1050,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       onTap: () => context.pushNamed(RouteNames.healthCheck),
       child: Container(
         width: double.infinity,
-        height: 80,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        constraints: const BoxConstraints(minHeight: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [AppColors.brandPrimary, AppColors.brandDark],
@@ -1140,7 +1187,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Column(
       children: [
         // 첫 번째 행: 체중, 사료
-        Row(
+        // IntrinsicHeight: 큰 글자에서 카드가 내용만큼 늘어나도 두 카드 높이를 맞춘다
+        IntrinsicHeight(
+          child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Container(
@@ -1175,9 +1225,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
         ),
+        ),
         const SizedBox(height: 6),
         // 두 번째 행: 수분, 오늘의 건강 신호
-        Row(
+        IntrinsicHeight(
+          child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Container(
@@ -1203,6 +1256,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
         ),
+        ),
       ],
     );
   }
@@ -1220,7 +1274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: PressableScale(
       onTap: onTap,
       child: Container(
-        height: 170,
+        constraints: const BoxConstraints(minHeight: 170),
         padding: const EdgeInsets.all(17),
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -1233,13 +1287,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.nearBlack,
-                    letterSpacing: -0.4,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.nearBlack,
+                      letterSpacing: -0.4,
+                    ),
                   ),
                 ),
                 const Icon(
@@ -1297,7 +1353,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
       child: Container(
-        height: 170,
+        constraints: const BoxConstraints(minHeight: 170),
         padding: const EdgeInsets.all(17),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -1322,7 +1378,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
+                Expanded(
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -1346,6 +1403,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   ],
+                ),
                 ),
                 const Icon(
                   Icons.chevron_right,

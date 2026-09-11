@@ -158,7 +158,7 @@ void main() {
       });
     });
 
-    group('hasTime / timeDisplayString', () {
+    group('hasTime / formatTime', () {
       test('3.2e hasTime - hour와 minute 모두 있으면 true', () {
         const entry = DietEntry(
           foodName: 'A', type: DietType.eating, grams: 10,
@@ -175,43 +175,43 @@ void main() {
         expect(entry.hasTime, isFalse);
       });
 
-      test('3.2g timeDisplayString - 오전 시간', () {
+      test('3.2g formatTime - 오전 시간', () {
         const entry = DietEntry(
           foodName: 'A', type: DietType.eating, grams: 10,
           recordedHour: 8, recordedMinute: 5,
         );
-        expect(entry.timeDisplayString, '오전 8:05');
+        expect(entry.formatTime(am: '오전', pm: '오후'), '오전 8:05');
       });
 
-      test('3.2h timeDisplayString - 오후 시간', () {
+      test('3.2h formatTime - 오후 시간', () {
         const entry = DietEntry(
           foodName: 'A', type: DietType.eating, grams: 10,
           recordedHour: 14, recordedMinute: 30,
         );
-        expect(entry.timeDisplayString, '오후 2:30');
+        expect(entry.formatTime(am: '오전', pm: '오후'), '오후 2:30');
       });
 
-      test('3.2i timeDisplayString - 자정 (hour=0)', () {
+      test('3.2i formatTime - 자정 (hour=0)', () {
         const entry = DietEntry(
           foodName: 'A', type: DietType.eating, grams: 10,
           recordedHour: 0, recordedMinute: 0,
         );
-        expect(entry.timeDisplayString, '오전 12:00');
+        expect(entry.formatTime(am: '오전', pm: '오후'), '오전 12:00');
       });
 
-      test('3.2j timeDisplayString - 정오 (hour=12)', () {
+      test('3.2j formatTime - 정오 (hour=12)', () {
         const entry = DietEntry(
           foodName: 'A', type: DietType.eating, grams: 10,
           recordedHour: 12, recordedMinute: 0,
         );
-        expect(entry.timeDisplayString, '오후 12:00');
+        expect(entry.formatTime(am: '오전', pm: '오후'), '오후 12:00');
       });
 
-      test('3.2k timeDisplayString - 시간 없으면 빈 문자열', () {
+      test('3.2k formatTime - 시간 없으면 빈 문자열', () {
         const entry = DietEntry(
           foodName: 'A', type: DietType.eating, grams: 10,
         );
-        expect(entry.timeDisplayString, '');
+        expect(entry.formatTime(am: '오전', pm: '오후'), '');
       });
     });
 

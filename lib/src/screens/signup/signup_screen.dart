@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
 import '../../theme/durations.dart';
+import '../../router/navigation_extensions.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import '../../providers/repository_providers.dart';
 import '../../utils/error_handler.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -105,7 +107,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo(RoutePaths.login),
         ),
         centerTitle: true,
         title: Text(
@@ -119,7 +121,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         ),
       ),
       body: Semantics(
-        label: 'Dismiss keyboard',
+        label: AppLocalizations.of(context).a11y_dismissKeyboard,
         child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,
@@ -273,7 +275,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -282,13 +284,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     button: true,
                     label: l10n.login_button,
                     child: GestureDetector(
-                    onTap: () => context.pop(),
+                    onTap: () => context.popOrGo(RoutePaths.login),
                     child: Text(
                       l10n.login_button,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.brandPrimary,
+                        color: AppColors.brandTextOnLight,
                         letterSpacing: -0.35,
                         decoration: TextDecoration.underline,
                         decorationColor: AppColors.brandPrimary,
@@ -344,7 +346,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -391,7 +393,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
@@ -503,7 +505,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: Text(
               l10n.common_later,
               style: const TextStyle(
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -520,7 +522,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: Text(
               l10n.common_confirm,
               style: const TextStyle(
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 fontWeight: FontWeight.w600,
               ),
             ),

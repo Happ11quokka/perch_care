@@ -20,7 +20,7 @@
 <p align="center">
   <a href="https://perch.ai.kr/ko"><img src="https://img.shields.io/badge/Homepage-perch.ai.kr-FF9A42?style=flat-square" alt="Website" /></a>
   <a href="https://apps.apple.com/br/app/%ED%8D%BC%EC%B9%98%EC%BC%80%EC%96%B4/id6758549078"><img src="https://img.shields.io/badge/App_Store-Download-0D96F6?style=flat-square&logo=apple&logoColor=white" alt="App Store" /></a>
-  <img src="https://img.shields.io/badge/Version-2.0.1-FF9A42?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-2.1.0-FF9A42?style=flat-square" alt="Version" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Proprietary-red?style=flat-square" alt="License: Proprietary" /></a>
 </p>
 
@@ -391,6 +391,17 @@ perch_care/
 
 ## 🚀 Getting Started
 
+### 지원 플랫폼
+
+| 플랫폼 | 상태 | 비고 |
+|---|---|---|
+| iOS | ✅ 공식 지원 | App Store 배포 대상 |
+| Android | ✅ 공식 지원 | |
+| macOS · Web · Windows · Linux | ⚠️ 비공식 | `DefaultFirebaseOptions`에 설정이 없어 Firebase 초기화가 실패한다. 앱은 계속 실행되지만 **분석·푸시 알림이 비활성화**된다 |
+
+Firebase 초기화 실패는 치명적 오류로 다루지 않는다 (`FirebaseInit.ensureInitialized()`).
+기록·AI·인증 등 본 기능은 Firebase 없이도 동작한다.
+
 ### Frontend (Flutter)
 
 ```bash
@@ -487,6 +498,12 @@ flutter clean              # 캐시 초기화
 |  | ❌ Perch 상표·로고 사용 |
 
 전체 조항은 [`LICENSE`](LICENSE) 파일을 참조하세요. 라이선스 문의: [perch.ai.kr](https://perch.ai.kr)
+
+### 서드파티 자산
+
+| 자산 | 라이선스 |
+|---|---|
+| [Pretendard](https://github.com/orioncactus/pretendard) v1.3.9 (Regular·Medium·SemiBold·Bold) | SIL Open Font License 1.1 — [`assets/fonts/LICENSE-Pretendard.txt`](assets/fonts/LICENSE-Pretendard.txt) |
 
 ---
 

@@ -340,7 +340,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                                   bottom: 0,
                                   child: Semantics(
                                     button: true,
-                                    label: 'Edit pet photo',
+                                    label: AppLocalizations.of(context).a11y_editPetPhoto,
                                     child: GestureDetector(
                                     onTap: _handlePickImage,
                                     child: Container(
@@ -567,7 +567,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                 hintStyle: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                   letterSpacing: -0.35,
                 ),
                 suffixText: suffixText,
@@ -658,7 +658,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontWeight: FontWeight.w400,
                   color: hasValue
                       ? AppColors.nearBlack
-                      : AppColors.warmGray,
+                      : AppColors.textSecondary,
                   letterSpacing: -0.35,
                 ),
               ),
@@ -719,15 +719,19 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                displayValue ?? l10n.pet_growthStage_hint,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: hasValue
-                      ? AppColors.nearBlack
-                      : AppColors.warmGray,
-                  letterSpacing: -0.35,
+              Expanded(
+                child: Text(
+                  displayValue ?? l10n.pet_growthStage_hint,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: hasValue
+                        ? AppColors.nearBlack
+                        : AppColors.textSecondary,
+                    letterSpacing: -0.35,
+                  ),
                 ),
               ),
               Icon(
@@ -781,7 +785,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontWeight: FontWeight.w400,
                   color: hasValue
                       ? AppColors.nearBlack
-                      : AppColors.warmGray,
+                      : AppColors.textSecondary,
                   letterSpacing: -0.35,
                 ),
               ),

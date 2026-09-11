@@ -25,6 +25,7 @@ import '../../providers/locale_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/coach_mark_overlay.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
+import '../../utils/platform_support.dart';
 import '../../theme/durations.dart';
 
 /// 프로필 화면 - 반려동물 프로필 목록
@@ -218,7 +219,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -226,7 +227,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Text(
               l10n.profile_unlink,
               style: const TextStyle(
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -440,7 +441,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
           Semantics(
             button: true,
-            label: 'Select language',
+            label: AppLocalizations.of(context).a11y_selectLanguage,
             child: GestureDetector(
             onTap: () => _showLanguageDialog(l10n),
             child: Container(
@@ -588,7 +589,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                 ],
@@ -702,7 +703,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               left: 0,
               child: Semantics(
                 button: true,
-                label: 'Go back',
+                label: AppLocalizations.of(context).a11y_goBack,
                 child: GestureDetector(
                 onTap: () {
                   if (context.canPop()) {
@@ -748,7 +749,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           // 프로필 아이콘과 편집 버튼
           Semantics(
             button: true,
-            label: 'Edit profile',
+            label: AppLocalizations.of(context).a11y_editProfile,
             child: GestureDetector(
             onTap: () async {
               await context.pushNamed(
@@ -844,7 +845,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Semantics(
       button: true,
-      label: 'Select pet',
+      label: AppLocalizations.of(context).a11y_selectPet,
       child: GestureDetector(
       key: isFirst ? _firstPetCardKey : null,
       onTap: () async {
@@ -852,7 +853,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await ref.read(activePetViewModelProvider.notifier).switchPet(pet.id);
       },
       child: Container(
-        height: 120,
+        constraints: const BoxConstraints(minHeight: 120),
         margin: const EdgeInsets.fromLTRB(32, 0, 32, 12),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -888,14 +889,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   // 이름과 성별
                   Row(
                     children: [
-                      Text(
-                        pet.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.nearBlack,
-                          height: 22 / 16,
-                          letterSpacing: 0.08,
+                      Flexible(
+                        child: Text(
+                          pet.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.nearBlack,
+                            height: 22 / 16,
+                            letterSpacing: 0.08,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 1),
@@ -945,7 +950,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // 편집 아이콘
             Semantics(
               button: true,
-              label: 'Edit pet profile',
+              label: AppLocalizations.of(context).a11y_editPetProfile,
               child: GestureDetector(
               onTap: () => context.pushNamed(RouteNames.petProfileDetail),
               child: Container(
@@ -1007,20 +1012,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               onUnlink: () => _handleUnlinkSocial('google'),
               l10n: l10n,
             ),
-            const SizedBox(height: 10),
-            _buildSocialAccountRow(
-              provider: 'apple',
-              label: l10n.social_apple,
-              icon: SvgPicture.asset(
-                'assets/images/btn_apple/btn_apple.svg',
-                width: 20,
-                height: 20,
+            // Apple 연동은 Apple 플랫폼에서만 시작할 수 있다 (감사 F10).
+            // 이미 연동된 계정은 해제(서버 호출)가 가능하므로 계속 노출한다.
+            if (canStartAppleSignIn || _isProviderLinked('apple')) ...[
+              const SizedBox(height: 10),
+              _buildSocialAccountRow(
+                provider: 'apple',
+                label: l10n.social_apple,
+                icon: SvgPicture.asset(
+                  'assets/images/btn_apple/btn_apple.svg',
+                  width: 20,
+                  height: 20,
+                ),
+                isLinked: _isProviderLinked('apple'),
+                onLink: _handleLinkApple,
+                onUnlink: () => _handleUnlinkSocial('apple'),
+                l10n: l10n,
               ),
-              isLinked: _isProviderLinked('apple'),
-              onLink: _handleLinkApple,
-              onUnlink: () => _handleUnlinkSocial('apple'),
-              l10n: l10n,
-            ),
+            ],
           ],
         ],
       ),
@@ -1037,8 +1046,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required AppLocalizations l10n,
   }) {
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      constraints: const BoxConstraints(minHeight: 60),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         color: isLinked ? AppColors.brandPale : AppColors.gray50,
@@ -1079,7 +1088,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
-                    color: isLinked ? AppColors.brandDark : AppColors.warmGray,
+                    color: isLinked ? AppColors.brandDark : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -1142,7 +1151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -1150,7 +1159,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Text(
               l10n.profile_logout,
               style: const TextStyle(
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1194,7 +1203,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -1239,7 +1248,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -1416,7 +1425,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.warmGray,
+                    color: AppColors.textSecondary,
                     height: 34 / 16,
                     letterSpacing: -0.5,
                   ),

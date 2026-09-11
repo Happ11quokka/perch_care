@@ -214,7 +214,7 @@ class _HealthCheckAnalyzingScreenState
             child: Text(
               l10n.common_cancel,
               style: const TextStyle(
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
               ),
             ),
           ),

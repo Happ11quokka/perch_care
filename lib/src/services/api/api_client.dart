@@ -68,9 +68,14 @@ class ApiClient {
   /// POST 요청
   Future<dynamic> post(String path, {Map<String, dynamic>? body, bool auth = true}) async {
     final uri = Uri.parse('$_baseUrl$path');
-    final headers = auth ? _authHeaders : _headers;
+    // 헤더는 클로저 안에서 매번 생성 — 401 → 토큰 갱신 후 재시도 시
+    // 갱신된 access token이 반영되어야 한다 (F01 회귀 방지)
     final response = await _makeRequest(
-      () => _httpClient.post(uri, headers: headers, body: body != null ? jsonEncode(body) : null),
+      () => _httpClient.post(
+        uri,
+        headers: auth ? _authHeaders : _headers,
+        body: body != null ? jsonEncode(body) : null,
+      ),
     );
     return _handleResponse(response);
   }
@@ -175,60 +180,114 @@ class ApiClient {
   }
 
   /// 외부에서 토큰 갱신이 필요할 때 (예: SSE 스트리밍)
-  Future<bool> tryRefreshToken() => _refreshToken();
+  ///
+  /// 갱신 성공 시 true, 서버가 refresh token을 명시적으로 거부했으면 false(토큰 삭제됨).
+  /// 네트워크 오류·타임아웃·5xx 같은 일시적 실패도 false를 반환하지만
+  /// 세션(토큰)은 유지된다 — 호출자는 원래 요청 실패로 처리하면 된다.
+  Future<bool> tryRefreshToken() async {
+    try {
+      return await _refreshToken();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[ApiClient] Token refresh unavailable: $e');
+      return false;
+    }
+  }
 
-  /// 토큰 갱신 (동시 요청 시 Completer로 중복 방지)
-  Future<bool> _refreshToken() async {
-    // 이미 갱신 진행 중이면 해당 결과를 공유
+  /// 토큰 갱신 (동시 요청 시 Completer로 중복 방지 — single-flight)
+  ///
+  /// - 200 → 새 토큰 저장, true
+  /// - 명시적 거부(401/403, 또는 refresh token 무효를 알리는 4xx body) → 토큰 삭제, false
+  /// - 그 외(네트워크 오류·타임아웃·5xx·429 등 일시적 실패) → 토큰 유지, 예외 전파
+  ///   (네트워크 예외는 그대로, HTTP 오류는 [ApiException])
+  ///
+  /// 진행 중인 갱신이 있으면 그 결과(성공/실패/예외)를 모든 대기자가 공유한다.
+  Future<bool> _refreshToken() {
     final existing = _refreshCompleter;
     if (existing != null) {
       return existing.future;
     }
 
-    // 로컬 변수로 잡아둔 completer를 사용해 예외 경로에서도 항상 complete 보장
     final completer = Completer<bool>();
     _refreshCompleter = completer;
-    bool result = false;
 
-    try {
-      final uri = Uri.parse('$_baseUrl/auth/refresh');
-      final response = await _httpClient.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refresh_token': _tokenService.refreshToken}),
-      ).timeout(_refreshTimeout);
+    _performRefresh().then(
+      (ok) {
+        _refreshCompleter = null;
+        completer.complete(ok);
+      },
+      onError: (Object e, StackTrace st) {
+        _refreshCompleter = null;
+        completer.completeError(e, st);
+      },
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        await _tokenService.saveTokens(
-          accessToken: data['access_token'],
-          refreshToken: data['refresh_token'],
-        );
-        result = true;
-      } else {
-        if (kDebugMode) {
-          debugPrint('[ApiClient] Token refresh failed: ${response.statusCode}');
-        }
-        try {
-          await _tokenService.clearTokens();
-        } catch (_) {/* ignore cleanup errors */}
-        result = false;
+    return completer.future;
+  }
+
+  Future<bool> _performRefresh() async {
+    final refreshToken = _tokenService.refreshToken;
+    if (refreshToken == null) return false;
+
+    final uri = Uri.parse('$_baseUrl/auth/refresh');
+    // 네트워크 예외(ClientException/SocketException)·TimeoutException은 그대로 전파:
+    // 일시적 실패이므로 저장된 세션을 절대 지우지 않는다 (F02 회귀 방지)
+    final response = await _httpClient
+        .post(
+          uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'refresh_token': refreshToken}),
+        )
+        .timeout(_refreshTimeout);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      await _tokenService.saveTokens(
+        accessToken: data['access_token'] as String,
+        refreshToken: data['refresh_token'] as String,
+      );
+      return true;
+    }
+
+    if (_isRefreshRejected(response)) {
+      if (kDebugMode) {
+        debugPrint('[ApiClient] Refresh token rejected: ${response.statusCode}');
       }
-    } catch (e) {
-      if (kDebugMode) debugPrint('[ApiClient] Token refresh error: $e');
       try {
         await _tokenService.clearTokens();
       } catch (_) {/* ignore cleanup errors */}
-      result = false;
-    } finally {
-      // completer.complete가 try/catch 도중 실패했을 경우를 포함해 반드시 완료시킴
-      if (!completer.isCompleted) {
-        completer.complete(result);
-      }
-      _refreshCompleter = null;
+      return false;
     }
 
-    return result;
+    if (kDebugMode) {
+      debugPrint('[ApiClient] Token refresh unavailable: ${response.statusCode}');
+    }
+    _handleError(response);
+  }
+
+  /// 서버가 refresh token 자체를 거부했는지 판별 (세션 폐기 대상)
+  ///
+  /// 401/403은 항상 거부로 본다. 400/422는 body가 refresh token 무효를 명시할 때만
+  /// 거부로 취급하고, 5xx·429·408 등은 일시적 실패로 본다.
+  static bool _isRefreshRejected(http.Response response) {
+    final code = response.statusCode;
+    if (code == 401 || code == 403) return true;
+    if (code == 400 || code == 422) {
+      String detail = '';
+      try {
+        final body = jsonDecode(response.body);
+        if (body is Map && body['detail'] != null) {
+          detail = body['detail'].toString();
+        }
+      } catch (_) {
+        detail = response.body;
+      }
+      final lower = detail.toLowerCase();
+      return lower.contains('refresh') &&
+          (lower.contains('invalid') ||
+              lower.contains('expired') ||
+              lower.contains('revoked'));
+    }
+    return false;
   }
 
   static MediaType _inferMediaType(String fileName) {

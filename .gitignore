@@ -118,3 +118,6 @@ store_assets/
 lelvel_1.svg
 problem/
 .impeccable.md
+
+# wayfinder 로컬 트래커 (로컬 전용)
+.scratch/

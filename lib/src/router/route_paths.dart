@@ -23,7 +23,6 @@ class RoutePaths {
   static const String profile = '/home/profile';
   static const String petProfileDetail = '/home/pet/profile/detail';
   static const String petAdd = '/home/pet/add';
-  static const String petProfile = '/home/pet/profile';
   static const String foodRecord = '/home/food/record';
   static const String waterRecord = '/home/water/record';
   static const String wciIndex = '/home/wci/index';

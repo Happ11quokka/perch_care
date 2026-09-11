@@ -2252,22 +2252,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSetup_title => 'Profile Setup';
 
   @override
-  String get profileSetup_phoneHint => 'Enter phone number';
+  String get profileSetup_emailNone => 'No email registered';
 
   @override
   String get profileSetup_complete => 'Complete';
 
   @override
   String get profileSetup_saveError => 'Error saving profile.';
-
-  @override
-  String get profileSetup_genderSelectTitle => 'Select gender';
-
-  @override
-  String get profileSetup_genderMale => 'Male';
-
-  @override
-  String get profileSetup_genderFemale => 'Female';
 
   @override
   String get profileSetup_doneTitle => 'Setup Complete';
@@ -2283,9 +2274,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timePicker_confirm => 'Confirm';
-
-  @override
-  String get country_selectTitle => 'Select Country';
 
   @override
   String get datetime_am => 'AM';
@@ -2332,4 +2320,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get common_defaultPetName => 'Buddy';
+
+  @override
+  String profile_ageYears(int years) {
+    return '${years}y';
+  }
+
+  @override
+  String profile_ageMonths(int months) {
+    return '${months}m';
+  }
+
+  @override
+  String profile_ageDays(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String get a11y_goBack => 'Go back';
+
+  @override
+  String get a11y_close => 'Close';
+
+  @override
+  String get a11y_dismissKeyboard => 'Dismiss keyboard';
+
+  @override
+  String get a11y_previousMonth => 'Previous month';
+
+  @override
+  String get a11y_nextMonth => 'Next month';
+
+  @override
+  String get a11y_selectDate => 'Select date';
+
+  @override
+  String get a11y_selectColor => 'Select color';
+
+  @override
+  String get a11y_sendMessage => 'Send message';
+
+  @override
+  String get a11y_editFoodRecord => 'Edit food record';
+
+  @override
+  String get a11y_deleteFoodRecord => 'Delete food record';
+
+  @override
+  String get a11y_editDailyRecord => 'Edit daily record';
+
+  @override
+  String get a11y_editProfilePhoto => 'Edit profile photo';
+
+  @override
+  String get a11y_editPetProfilePhoto => 'Edit pet profile photo';
+
+  @override
+  String get a11y_toggleInputSheet => 'Expand or collapse input sheet';
+
+  @override
+  String get a11y_selectPet => 'Select pet';
+
+  @override
+  String get a11y_wciHealthStatus => 'WCI health status';
+
+  @override
+  String get a11y_editPetPhoto => 'Edit pet photo';
+
+  @override
+  String get a11y_selectLanguage => 'Select language';
+
+  @override
+  String get a11y_editProfile => 'Edit profile';
+
+  @override
+  String get a11y_editPetProfile => 'Edit pet profile';
+
+  @override
+  String get a11y_removeSelectedImage => 'Remove selected image';
 }

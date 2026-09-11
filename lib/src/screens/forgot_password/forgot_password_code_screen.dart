@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/colors.dart';
+import '../../router/navigation_extensions.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import 'dart:io';
 
 import '../../services/api/api_client.dart';
@@ -119,7 +121,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo(RoutePaths.login),
         ),
         centerTitle: true,
         title: Text(
@@ -152,7 +154,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),
@@ -164,7 +166,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                           letterSpacing: -0.35,
                         ),
                       ),
@@ -179,7 +181,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.warmGray,
+                            color: AppColors.textSecondary,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -207,69 +209,94 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
         final dx = math.sin(_shakeController.value * 3 * math.pi) * 8;
         return Transform.translate(offset: Offset(dx, 0), child: child);
       },
-      child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(_codeLength, (index) {
-        final hasValue = _controllers[index].text.isNotEmpty;
-        final borderColor = _hasError
-            ? AppColors.danger
-            : (hasValue ? AppColors.brandPrimary : AppColors.warmGray);
-        return Container(
-          margin: EdgeInsets.only(right: index < _codeLength - 1 ? 12 : 0),
-          child: SizedBox(
-            width: 52,
-            height: 52,
-            child: TextField(
-              controller: _controllers[index],
-              focusNode: _focusNodes[index],
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              maxLength: 1,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
-                color: AppColors.nearBlack,
-                letterSpacing: -0.6,
-              ),
-              decoration: InputDecoration(
-                counterText: '',
-                filled: _hasError || hasValue,
-                fillColor: _hasError
-                    ? AppColors.dangerLight
-                    : AppColors.brandPrimary.withValues(alpha: 0.1),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: borderColor,
-                    width: 1,
-                  ),
+      // F08: 6×52 + 5×12 = 372px 고정 폭은 좌우 32px 패딩을 뺀 326px(390px 폰)
+      // 에서 넘쳤다. 사용 가능한 폭으로부터 박스/간격을 계산한다(간격 먼저 축소).
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final layout = _CodeBoxLayout.fit(constraints.maxWidth);
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_codeLength, (index) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  right: index < _codeLength - 1 ? layout.gap : 0,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: _hasError ? AppColors.danger : AppColors.brandPrimary,
-                    width: 1,
-                  ),
-                ),
+                child: _buildCodeBox(index, layout.boxSize),
+              );
+            }),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCodeBox(int index, double boxSize) {
+    final hasValue = _controllers[index].text.isNotEmpty;
+    final borderColor = _hasError
+        ? AppColors.danger
+        : (hasValue ? AppColors.brandPrimary : AppColors.warmGray);
+    // 숫자 폰트는 박스 크기에 비례(52px 박스 = 24px). 시스템 글자 크기(최대 2.0)로
+    // 확대돼도 박스 안에 머물도록 텍스트 스케일 상한을 박스 크기 기준으로 제한한다.
+    final fontSize = boxSize * _CodeBoxLayout.fontRatio;
+    final radius = boxSize * _CodeBoxLayout.radiusRatio;
+    final maxScale = (boxSize * _CodeBoxLayout.maxGlyphRatio / fontSize)
+        .clamp(1.0, 2.0)
+        .toDouble();
+    return SizedBox(
+      width: boxSize,
+      height: boxSize,
+      child: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: maxScale,
+        child: TextField(
+          controller: _controllers[index],
+          focusNode: _focusNodes[index],
+          textAlign: TextAlign.center,
+          keyboardType: TextInputType.number,
+          maxLength: 1,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: AppColors.nearBlack,
+            letterSpacing: -0.6,
+          ),
+          decoration: InputDecoration(
+            counterText: '',
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
+            filled: _hasError || hasValue,
+            fillColor: _hasError
+                ? AppColors.dangerLight
+                : AppColors.brandPrimary.withValues(alpha: 0.1),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(radius),
+              borderSide: BorderSide(
+                color: borderColor,
+                width: 1,
               ),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onChanged: (value) {
-                setState(() {});
-                if (value.isNotEmpty && index < _codeLength - 1) {
-                  _focusNodes[index + 1].requestFocus();
-                }
-                if (value.isEmpty && index > 0) {
-                  _focusNodes[index - 1].requestFocus();
-                }
-                // 모든 코드 입력 완료시 자동 제출
-                if (_isCodeComplete) {
-                  _handleVerifyCode();
-                }
-              },
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(radius),
+              borderSide: BorderSide(
+                color: _hasError ? AppColors.danger : AppColors.brandPrimary,
+                width: 1,
+              ),
             ),
           ),
-        );
-      }),
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          onChanged: (value) {
+            setState(() {});
+            if (value.isNotEmpty && index < _codeLength - 1) {
+              _focusNodes[index + 1].requestFocus();
+            }
+            if (value.isEmpty && index > 0) {
+              _focusNodes[index - 1].requestFocus();
+            }
+            // 모든 코드 입력 완료시 자동 제출
+            if (_isCodeComplete) {
+              _handleVerifyCode();
+            }
+          },
+        ),
       ),
     );
   }
@@ -388,5 +415,50 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
     } finally {
       if (mounted) setState(() => _isResending = false);
     }
+  }
+}
+
+/// 인증 코드 6칸의 박스 크기/간격을 사용 가능한 폭에 맞춰 계산한다.
+///
+/// 우선순위: 기본(52px 박스, 12px 간격) → 간격을 [minGap]까지 축소 →
+/// 그래도 넘치면 박스를 축소. 박스는 [maxBoxSize]를 넘지 않아 태블릿에서
+/// 과대해 보이지 않고, 항상 정사각형을 유지한다.
+class _CodeBoxLayout {
+  const _CodeBoxLayout({required this.boxSize, required this.gap});
+
+  static const int count = 6;
+  static const double maxBoxSize = 52;
+  static const double maxGap = 12;
+  static const double minGap = 6;
+  static const double minBoxSize = 32;
+
+  /// 숫자 폰트 크기 = 박스 × 비율 (52px 박스 → 24px).
+  static const double fontRatio = 24 / 52;
+
+  /// 모서리 반경 = 박스 × 비율 (52px 박스 → 16px). 작은 박스가 알약형이 되지 않도록.
+  static const double radiusRatio = 16 / 52;
+
+  /// 텍스트 스케일 적용 후 글리프가 차지할 수 있는 박스 대비 최대 비율.
+  static const double maxGlyphRatio = 0.6;
+
+  final double boxSize;
+  final double gap;
+
+  double get totalWidth => boxSize * count + gap * (count - 1);
+
+  static _CodeBoxLayout fit(double maxWidth) {
+    if (!maxWidth.isFinite || maxWidth <= 0) {
+      return const _CodeBoxLayout(boxSize: maxBoxSize, gap: maxGap);
+    }
+    final boxesWidth = maxBoxSize * count;
+    // 1) 간격을 먼저 줄인다.
+    final gap = ((maxWidth - boxesWidth) / (count - 1)).clamp(minGap, maxGap);
+    if (boxesWidth + gap * (count - 1) <= maxWidth) {
+      return _CodeBoxLayout(boxSize: maxBoxSize, gap: gap.toDouble());
+    }
+    // 2) 최소 간격으로도 넘치면 박스를 줄인다.
+    final boxSize = ((maxWidth - minGap * (count - 1)) / count)
+        .clamp(minBoxSize, maxBoxSize);
+    return _CodeBoxLayout(boxSize: boxSize.toDouble(), gap: minGap);
   }
 }

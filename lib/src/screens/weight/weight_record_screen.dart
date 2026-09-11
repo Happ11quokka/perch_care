@@ -19,7 +19,27 @@ import '../../models/breed_standard.dart';
 import '../../providers/pet_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../../providers/service_providers.dart';
+import '../../models/pet.dart';
 import '../../../l10n/app_localizations.dart';
+
+/// 활성 펫 구독 키 — 로딩 중(값 없음) / 에러(값 없음) / 펫 없음(null) / 펫 id·품종.
+/// AsyncLoading.copyWithPrevious(이전 펫 유지)는 로딩으로 취급하지 않는다.
+typedef _ActivePetKey = ({
+  bool loading,
+  bool failed,
+  String? petId,
+  String? breedId,
+});
+
+_ActivePetKey _activePetKey(AsyncValue<Pet?> s) {
+  final pet = s.valueOrNull;
+  return (
+    loading: s.isLoading && !s.hasValue,
+    failed: s.hasError && !s.hasValue,
+    petId: pet?.id,
+    breedId: pet?.breedId,
+  );
+}
 
 class WeightRecordScreen extends ConsumerStatefulWidget {
   const WeightRecordScreen({super.key});
@@ -46,10 +66,18 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
   final _timeCardKey = GlobalKey();
   final _saveButtonKey = GlobalKey();
 
+  /// 마지막으로 처리한 활성 펫 키 — 동일 키 재발행은 무시.
+  _ActivePetKey? _lastPetKey;
+
+  /// 로드 시퀀스 — 이전 펫의 in-flight 결과를 폐기하기 위한 가드.
+  int _loadSeq = 0;
+  bool _coachMarksChecked = false;
+
   @override
   void initState() {
     super.initState();
-    _loadActivePet();
+    // 초기값은 동기 read, 이후 변경은 build()의 ref.listen 으로 구독한다.
+    _onActivePetChanged(_activePetKey(ref.read(activePetProvider)));
   }
 
   @override
@@ -59,58 +87,60 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
     super.dispose();
   }
 
-  Future<void> _loadActivePet() async {
-    try {
-      // provider에서 활성 펫 조회 (캐시 우선, 실패 시 로컬 폴백)
-      final apiPet = ref.read(activePetProvider).valueOrNull;
-      if (!mounted) return;
-      if (apiPet != null) {
-        setState(() {
-          _activePetId = apiPet.id;
-        });
-        // 품종 정보 로드
-        if (apiPet.breedId != null) {
-          try {
-            final breed = await ref
-                .read(breedServiceProvider)
-                .fetchBreedById(apiPet.breedId!);
-            if (mounted && breed != null) {
-              setState(() => _breedStandard = breed);
-            }
-          } catch (_) {}
-        }
-      } else {
-        // 로컬 캐시 폴백
-        final cachedPet =
-            await ref.read(petRepositoryProvider).getActivePetFromLocalCache();
-        if (!mounted) return;
-        setState(() {
-          _activePetId = cachedPet?.id;
-        });
-      }
-      if (_activePetId != null) {
-        await _loadRecords();
-      }
-    } catch (_) {
-      // 로컬 캐시 폴백
+  /// 활성 펫 확정/전환 시 호출 — 로딩 중이면 대기, 펫이 바뀌면 재로드.
+  void _onActivePetChanged(_ActivePetKey next) {
+    if (next.loading) return;
+    if (next == _lastPetKey) return;
+    _lastPetKey = next;
+    _activePetId = next.petId;
+    _setLoading(true);
+    _loadForPet(next);
+  }
+
+  void _setLoading(bool value) {
+    if (_isLoading == value) return;
+    setState(() => _isLoading = value);
+  }
+
+  /// 펫 확정/전환 시 품종 + 기록 재로드. provider 에러면 로컬 캐시 폴백.
+  Future<void> _loadForPet(_ActivePetKey key) async {
+    final seq = ++_loadSeq;
+    var petId = key.petId;
+    var breedId = key.breedId;
+    if (petId == null && key.failed) {
       try {
         final cachedPet =
             await ref.read(petRepositoryProvider).getActivePetFromLocalCache();
-        if (!mounted) return;
-        setState(() {
-          _activePetId = cachedPet?.id;
-        });
-        if (_activePetId != null) {
-          await _loadRecords();
-        }
+        petId = cachedPet?.id;
+        breedId = cachedPet?.breedId;
       } catch (_) {}
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        _maybeShowCoachMarks();
+      if (!mounted || seq != _loadSeq) return;
+      _activePetId = petId;
+    }
+
+    BreedStandard? breed;
+    var records = <WeightRecord>[];
+    if (petId != null) {
+      if (breedId != null) {
+        try {
+          breed = await ref.read(breedServiceProvider).fetchBreedById(breedId);
+        } catch (_) {}
       }
+      try {
+        records =
+            await ref.read(weightRepositoryProvider).fetchLocal(petId: petId);
+      } catch (_) {}
+    }
+    if (!mounted || seq != _loadSeq) return;
+    setState(() {
+      _breedStandard = breed;
+      _records = records;
+      _isLoading = false;
+    });
+    _syncWeightController();
+    if (!_coachMarksChecked) {
+      _coachMarksChecked = true;
+      _maybeShowCoachMarks();
     }
   }
 
@@ -153,12 +183,13 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
     );
   }
 
+  /// 저장 후 기록 재로드. 로드 중 펫이 바뀌면 결과 폐기.
   Future<void> _loadRecords() async {
-    if (_activePetId == null) return;
-    final records = await ref
-        .read(weightRepositoryProvider)
-        .fetchLocal(petId: _activePetId!);
-    if (!mounted) return;
+    final petId = _activePetId;
+    if (petId == null) return;
+    final records =
+        await ref.read(weightRepositoryProvider).fetchLocal(petId: petId);
+    if (!mounted || petId != _activePetId) return;
     setState(() {
       _records = records;
     });
@@ -291,8 +322,12 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
 
   Future<void> _saveWeight() async {
     FocusScope.of(context).unfocus();
-    if (_activePetId == null) return;
     final l10n = AppLocalizations.of(context);
+    final petId = _activePetId;
+    if (petId == null) {
+      AppSnackBar.warning(context, message: l10n.error_noPetFound);
+      return;
+    }
     final weight = double.tryParse(_weightController.text.trim());
     if (weight == null || weight <= 0) {
       _weightFocusNode.requestFocus();
@@ -305,7 +340,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
 
     try {
       final record = WeightRecord(
-        petId: _activePetId!,
+        petId: petId,
         date: _selectedDate,
         weight: weight,
         recordedHour: _selectedTime.hour,
@@ -340,6 +375,10 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<_ActivePetKey>(
+      activePetProvider.select(_activePetKey),
+      (_, next) => _onActivePetChanged(next),
+    );
     final l10n = AppLocalizations.of(context);
     final current = _recordForDate(_selectedDate);
     final baseline = _baselineRecord(_selectedDate);
@@ -397,7 +436,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.warmGray,
+                            color: AppColors.textSecondary,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -739,6 +778,8 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
           border: Border.all(color: AppColors.gray300),
           borderRadius: BorderRadius.circular(12),
         ),
+        // 라벨은 남는 폭을 차지하며 줄어들고(Spacer 역할 겸함), 값도 좁은 화면에서
+        // 함께 줄어든다. 320px 영어에서 고정 폭 조합이 넘치던 문제(F09) 대응.
         child: Row(
           children: [
             const Icon(
@@ -747,23 +788,32 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
               color: AppColors.brandPrimary,
             ),
             const SizedBox(width: 10),
-            Text(
-              l10n.weight_selectTime,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.mediumGray,
-                letterSpacing: -0.35,
+            Expanded(
+              child: Text(
+                l10n.weight_selectTime,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.35,
+                ),
               ),
             ),
-            const Spacer(),
-            Text(
-              timeText,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.nearBlack,
-                letterSpacing: -0.35,
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                timeText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.nearBlack,
+                  letterSpacing: -0.35,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -804,7 +854,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 letterSpacing: -0.3,
               ),
             ),

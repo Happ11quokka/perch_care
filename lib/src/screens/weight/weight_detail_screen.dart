@@ -17,6 +17,7 @@ import '../../widgets/add_schedule_bottom_sheet.dart';
 import '../../widgets/add_daily_record_bottom_sheet.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/coach_mark_overlay.dart';
+import '../../widgets/empty_state_widget.dart';
 import '../../services/coach_mark/coach_mark_service.dart';
 import '../../theme/durations.dart';
 import '../../../l10n/app_localizations.dart';
@@ -199,6 +200,24 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       );
     }
 
+    // 로드 실패(이전 값 없음)는 "펫 없음"과 구분해 에러 + 재시도로 표시한다.
+    // 이전 값이 있는 에러(펫 전환 중 실패 등)는 기존 콘텐츠를 유지한다.
+    if (vmAsync.hasError && !vmAsync.hasValue) {
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(
+        backgroundColor: AppColors.white,
+        appBar: _buildAppBar(),
+        body: EmptyStateWidget(
+          icon: Icons.cloud_off_outlined,
+          title: l10n.error_loadPet,
+          subtitle: l10n.error_server,
+          actionLabel: l10n.hc_retry,
+          onAction: () => ref.invalidate(weightDetailViewModelProvider),
+        ),
+      );
+    }
+
+    // 성공적으로 로드했지만 활성 펫이 없는 경우에만 "펫 없음" 안내.
     if (vm?.activePetId == null) {
       final l10n = AppLocalizations.of(context);
       return Scaffold(
@@ -1053,7 +1072,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
         children: [
           Semantics(
             button: true,
-            label: 'Previous month',
+            label: AppLocalizations.of(context).a11y_previousMonth,
             child: GestureDetector(
             onTap: _previousMonth,
             child: const Icon(
@@ -1078,7 +1097,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
           const SizedBox(width: 10),
           Semantics(
             button: true,
-            label: 'Next month',
+            label: AppLocalizations.of(context).a11y_nextMonth,
             child: GestureDetector(
             onTap: _nextMonth,
             child: const Icon(
@@ -1123,7 +1142,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -1258,7 +1277,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                   color: isSelected
                       ? AppColors.white
                       : isOtherMonth
-                      ? AppColors.warmGray
+                      ? AppColors.textSecondary
                       : isToday
                       ? AppColors.brandPrimary
                       : isSunday
@@ -1549,7 +1568,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
       },
       child: Semantics(
         button: true,
-        label: 'Edit daily record',
+        label: AppLocalizations.of(context).a11y_editDailyRecord,
         child: GestureDetector(
         onTap: () => _openDailyRecordBottomSheetFor(date),
         child: Container(
@@ -1881,7 +1900,10 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    schedule.formattedTimeRange,
+                    schedule.formatTimeRange(
+                      am: AppLocalizations.of(context).datetime_am,
+                      pm: AppLocalizations.of(context).datetime_pm,
+                    ),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.mediumGray,
@@ -2139,7 +2161,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.brandPrimary,
+                        color: AppColors.brandTextOnLight,
                         letterSpacing: -0.35,
                       ),
                     ),
@@ -2203,7 +2225,7 @@ class _WeightDetailScreenState extends ConsumerState<WeightDetailScreen> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.brandPrimary,
+                                  color: AppColors.brandTextOnLight,
                                   letterSpacing: -0.35,
                                 ),
                               ),

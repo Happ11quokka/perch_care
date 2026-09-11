@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../data/terms_content.dart';
+import '../../router/navigation_extensions.dart';
+import '../../router/route_paths.dart';
 import '../../theme/colors.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -29,7 +32,16 @@ class TermsDetailScreen extends ConsumerWidget {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            // 공개 라우트(/terms/detail)와 홈 하위 라우트(/home/terms/detail)를
+            // 공유하므로 직접 진입 시 폴백은 현재 위치로 판단한다.
+            final location = GoRouterState.of(context).matchedLocation;
+            context.popOrGo(
+              location.startsWith(RoutePaths.home)
+                  ? RoutePaths.home
+                  : RoutePaths.login,
+            );
+          },
         ),
         centerTitle: true,
         title: Text(

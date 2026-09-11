@@ -42,6 +42,10 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   final List<ChatMessage> _messages = [];
   Pet? _activePet;
   String? _currentSessionId;
+
+  /// 활성 펫 세대 카운터. 펫이 바뀔 때마다 증가하며, 이전 펫으로 시작한
+  /// 비동기 작업(대화 로드·스트리밍·폴백 응답)은 완료 시점에 세대가 다르면 결과를 버린다.
+  int _petEpoch = 0;
   StreamSubscription<String>? _streamSubscription;
   int? _assistantPlaceholderIndex; // 스트리밍 중 assistant 메시지 인덱스 고정
   int _receivedTokenCount = 0; // P1: fallback 판단용 수신 토큰 수
@@ -202,6 +206,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     final history = _buildCleanHistory();
     final petId = _activePet?.id;
     final petProfileContext = _buildPetProfileContext();
+    final epoch = _petEpoch;
 
     setState(() {
       _isSending = true;
@@ -239,6 +244,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         petId: petId,
         firstMessage: text,
       );
+      if (epoch != _petEpoch) return; // 펫 전환됨 — 이전 펫 세션 폐기
       if (session != null) {
         _currentSessionId = session.id;
       }
@@ -260,7 +266,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         petProfileContext: petProfileContext,
       );
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || epoch != _petEpoch) return;
       // 서버 쿼터 초과(429) → 중립 한도 안내 메시지 표시
       if (e is ApiException && e.statusCode == 429) {
         debugPrint('[AIEncyclopedia] Quota exceeded (429)');
@@ -282,6 +288,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
           history: history,
           petId: petId,
           petProfileContext: petProfileContext,
+          epoch: epoch,
         );
       } else {
         // 일부 토큰 수신 후 실패 → 연결 끊김 처리
@@ -423,8 +430,9 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     required List<Map<String, String>> history,
     String? petId,
     String? petProfileContext,
+    required int epoch,
   }) async {
-    if (!mounted) return;
+    if (!mounted || epoch != _petEpoch) return;
     final l10n = AppLocalizations.of(context);
 
     // placeholder를 "준비 중..."으로 변경
@@ -440,14 +448,14 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
             petProfileContext: petProfileContext,
           );
 
-      if (!mounted) return;
+      if (!mounted || epoch != _petEpoch) return; // 펫 전환됨 — 이전 펫 응답 폐기
       setState(() {
         _updateAssistantMessage(text: answer, timestamp: DateTime.now());
       });
       await _saveMessages();
       await _saveAssistantMessageToServer();
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || epoch != _petEpoch) return;
       final l10nErr = AppLocalizations.of(context);
       // 서버 쿼터 초과(429) → 중립 한도 안내 메시지 표시
       if (e is ApiException && e.statusCode == 429) {
@@ -472,13 +480,16 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
         message: l10nErr.chatbot_aiCallFailed(e.toString()),
       );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSending = false;
-        });
+      // 펫 전환으로 상태가 이미 리셋된 경우 새 펫의 진행 상태를 건드리지 않는다.
+      if (epoch == _petEpoch) {
+        if (mounted) {
+          setState(() {
+            _isSending = false;
+          });
+        }
+        _assistantPlaceholderIndex = null;
+        _scrollToBottom();
       }
-      _assistantPlaceholderIndex = null;
-      _scrollToBottom();
     }
   }
 
@@ -494,8 +505,30 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
     }
   }
 
+  /// 활성 펫 전환(또는 초기 로딩 완료) 시 호출. 이 화면은 유지되는 탭 브랜치라
+  /// initState가 다시 실행되지 않으므로 여기서 대화/세션을 새 펫으로 교체한다.
+  /// 이전 펫 기준으로 진행 중이던 스트리밍·폴백 응답은 취소/폐기한다.
+  void _onActivePetChanged(Pet? pet) {
+    _petEpoch++;
+    _streamSubscription?.cancel();
+    _streamSubscription = null;
+    _throttleTimer?.cancel();
+    _throttleTimer = null;
+    _assistantPlaceholderIndex = null;
+    setState(() {
+      _activePet = pet;
+      _currentSessionId = null;
+      _isSending = false;
+      _messages.clear();
+      _animateFromIndex = 0;
+      _shownBubbles.clear();
+    });
+    _loadMessages();
+  }
+
   /// 저장된 대화 내역 로드 (서버 우선, 로컬 폴백)
   Future<void> _loadMessages() async {
+    final epoch = _petEpoch;
     setState(() {
       _isLoadingMessages = true;
     });
@@ -505,7 +538,8 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       final load = await ref
           .read(chatRepositoryProvider)
           .loadConversation(_activePet?.id);
-      if (!mounted) return;
+      // 로드 중 펫이 바뀌었으면 이전 펫의 결과는 버린다 (새 펫 로드가 이미 진행 중).
+      if (!mounted || epoch != _petEpoch) return;
       setState(() {
         _messages.clear();
         _messages.addAll(load.messages);
@@ -516,7 +550,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
       });
       _scrollToBottom();
     } catch (_) {
-      if (mounted) {
+      if (mounted && epoch == _petEpoch) {
         setState(() {
           _isLoadingMessages = false;
         });
@@ -574,6 +608,16 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    // 활성 펫 id 구독 — 유지되는 탭이라 initState의 1회 읽기만으로는 펫 전환을
+    // 놓친다(F04). id가 바뀌면 새 펫의 대화/세션으로 교체하고 이전 작업은 폐기.
+    ref.listen<String?>(
+      activePetViewModelProvider.select((a) => a.valueOrNull?.id),
+      (previous, next) {
+        if (next == _activePet?.id) return;
+        _onActivePetChanged(ref.read(activePetViewModelProvider).valueOrNull);
+      },
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -1046,7 +1090,7 @@ class _AIEncyclopediaScreenState extends ConsumerState<AIEncyclopediaScreen>
           const SizedBox(width: AppSpacing.sm),
           Semantics(
             button: true,
-            label: 'Send message',
+            label: AppLocalizations.of(context).a11y_sendMessage,
             child: GestureDetector(
             onTap: _isSending ? null : _handleSend,
             child: Container(

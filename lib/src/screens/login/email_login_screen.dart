@@ -6,9 +6,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../theme/colors.dart';
 import '../../theme/durations.dart';
+import '../../router/navigation_extensions.dart';
 import '../../router/route_names.dart';
+import '../../router/route_paths.dart';
 import '../../repositories/auth_repository.dart';
 import '../../utils/error_handler.dart';
+import '../../utils/platform_support.dart';
 import '../../view_models/auth/auth_view_model.dart';
 import '../../view_models/auth/post_login_destination.dart';
 import '../../widgets/app_snack_bar.dart';
@@ -118,7 +121,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.nearBlack),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo(RoutePaths.login),
         ),
         centerTitle: true,
         title: Text(
@@ -197,7 +200,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -212,7 +215,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.brandPrimary,
+                        color: AppColors.brandTextOnLight,
                         letterSpacing: -0.35,
                         decoration: TextDecoration.underline,
                         decorationColor: AppColors.brandPrimary,
@@ -258,7 +261,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -300,7 +303,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
@@ -343,8 +346,12 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
 
   Widget _buildOptionsRow() {
     final l10n = AppLocalizations.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    // 큰 글자 크기에서 두 항목이 한 줄에 안 들어가면 다음 줄로 내린다
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 12,
+      runSpacing: 8,
       children: [
         // 아이디 저장 체크박스
         Semantics(
@@ -357,6 +364,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             });
           },
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 22,
@@ -393,7 +401,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                   letterSpacing: 0.07,
                 ),
               ),
@@ -414,7 +422,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
+              color: AppColors.textSecondary,
               letterSpacing: 0.07,
             ),
           ),
@@ -494,21 +502,23 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             height: 24,
           ),
         ),
-        const SizedBox(width: 8),
-        // 애플
-        _buildSocialLoginButton(
-          onTap: _handleAppleLogin,
-          isLoading: _isAppleLoading,
-          backgroundColor: Colors.black,
-          borderColor: Colors.black,
-          loadingColor: Colors.white,
-          semanticsLabel: 'Sign in with Apple',
-          child: SvgPicture.asset(
-            'assets/images/btn_apple/apple_logo_white.svg',
-            width: 60,
-            height: 60,
+        // Apple 로그인은 Apple 플랫폼에서만 동작한다 (감사 F10).
+        if (canStartAppleSignIn) ...[
+          const SizedBox(width: 8),
+          _buildSocialLoginButton(
+            onTap: _handleAppleLogin,
+            isLoading: _isAppleLoading,
+            backgroundColor: Colors.black,
+            borderColor: Colors.black,
+            loadingColor: Colors.white,
+            semanticsLabel: 'Sign in with Apple',
+            child: SvgPicture.asset(
+              'assets/images/btn_apple/apple_logo_white.svg',
+              width: 60,
+              height: 60,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

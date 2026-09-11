@@ -3,15 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:country_picker/country_picker.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'src/router/app_router.dart';
 import 'src/theme/app_theme.dart';
 import 'src/providers/locale_provider.dart';
 import 'src/services/api/api_client.dart';
+import 'src/services/firebase/firebase_init.dart';
 import 'src/services/push/push_notification_service.dart';
 
 void main() async {
@@ -39,7 +37,7 @@ void main() async {
 
   await Future.wait([
     loadEnv(),
-    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    FirebaseInit.ensureInitialized(),
     LocaleProvider.instance.initialize(),
   ]);
 
@@ -49,7 +47,10 @@ void main() async {
   PushNotificationService.languageCodeResolver = () => LocaleProvider.instance.currentLanguageCode;
 
   // FCM 백그라운드 메시지 핸들러 등록 (Firebase 의존)
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // 초기화가 실패한 환경에서는 등록 자체가 예외를 던지므로 건너뛴다.
+  if (FirebaseInit.isAvailable) {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
 
   // 나머지 I/O 작업은 SplashScreen에서 수행 (UI 블로킹 최소화)
   runApp(const ProviderScope(child: MyApp()));
@@ -72,7 +73,6 @@ class MyApp extends ConsumerWidget {
       // Localization
       localizationsDelegates: const [
         AppLocalizations.delegate,
-        CountryLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

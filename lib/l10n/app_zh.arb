@@ -995,12 +995,9 @@
   "btn_addDailyRecord": "添加每日记录",
 
   "profileSetup_title": "个人资料设置",
-  "profileSetup_phoneHint": "请输入电话号码",
+  "profileSetup_emailNone": "未注册邮箱",
   "profileSetup_complete": "完成",
   "profileSetup_saveError": "保存个人资料时发生错误。",
-  "profileSetup_genderSelectTitle": "请选择性别",
-  "profileSetup_genderMale": "男",
-  "profileSetup_genderFemale": "女",
   "profileSetup_doneTitle": "设置完成",
   "profileSetup_doneMessage": "设置已完成！",
   "profileSetup_startRecording": "开始记录！",
@@ -1008,7 +1005,6 @@
   "timePicker_title": "请选择时间",
   "timePicker_confirm": "确认选择",
 
-  "country_selectTitle": "选择国家",
 
   "datetime_am": "上午",
   "datetime_pm": "下午",
@@ -1034,5 +1030,46 @@
   "quota_limitReachedTitle": "已达使用上限",
   "quota_limitReachedMessage": "本月使用次数已达上限，下月将重置。",
 
-  "common_defaultPetName": "宝贝"
+  "common_defaultPetName": "宝贝",
+
+  "profile_ageYears": "{years}年",
+  "@profile_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "profile_ageMonths": "{months}个月",
+  "@profile_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "profile_ageDays": "{days}天",
+  "@profile_ageDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "a11y_goBack": "返回",
+  "a11y_close": "关闭",
+  "a11y_dismissKeyboard": "收起键盘",
+  "a11y_previousMonth": "上个月",
+  "a11y_nextMonth": "下个月",
+  "a11y_selectDate": "选择日期",
+  "a11y_selectColor": "选择颜色",
+  "a11y_sendMessage": "发送消息",
+  "a11y_editFoodRecord": "编辑饲料记录",
+  "a11y_deleteFoodRecord": "删除饲料记录",
+  "a11y_editDailyRecord": "编辑每日记录",
+  "a11y_editProfilePhoto": "编辑个人资料照片",
+  "a11y_editPetProfilePhoto": "编辑宠物资料照片",
+  "a11y_toggleInputSheet": "展开或收起输入面板",
+  "a11y_selectPet": "选择宠物",
+  "a11y_wciHealthStatus": "WCI 健康状态",
+  "a11y_editPetPhoto": "编辑宠物照片",
+  "a11y_selectLanguage": "选择语言",
+  "a11y_editProfile": "编辑个人资料",
+  "a11y_editPetProfile": "编辑宠物资料",
+  "a11y_removeSelectedImage": "移除所选图片"
 }

@@ -226,7 +226,7 @@ class _HealthCheckCaptureScreenState
                   right: 8,
                   child: Semantics(
                     button: true,
-                    label: 'Remove selected image',
+                    label: AppLocalizations.of(context).a11y_removeSelectedImage,
                     child: GestureDetector(
                       onTap: () => setState(() {
                         _selectedImage = null;
@@ -278,7 +278,7 @@ class _HealthCheckCaptureScreenState
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                        color: AppColors.textSecondary,
                         letterSpacing: -0.3,
                         height: 1.5,
                       ),
@@ -362,7 +362,7 @@ class _HealthCheckCaptureScreenState
         hintStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w400,
-          color: AppColors.warmGray,
+          color: AppColors.textSecondary,
           letterSpacing: -0.3,
         ),
         filled: true,
@@ -407,13 +407,19 @@ class _HealthCheckCaptureScreenState
           children: [
             Icon(icon, color: AppColors.brandPrimary, size: 20),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.brandPrimary,
-                letterSpacing: -0.3,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.brandTextOnLight,
+                    letterSpacing: -0.3,
+                  ),
+                ),
               ),
             ),
           ],

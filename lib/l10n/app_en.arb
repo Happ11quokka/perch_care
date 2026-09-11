@@ -828,12 +828,9 @@
   "btn_addDailyRecord": "Add Daily Record",
 
   "profileSetup_title": "Profile Setup",
-  "profileSetup_phoneHint": "Enter phone number",
+  "profileSetup_emailNone": "No email registered",
   "profileSetup_complete": "Complete",
   "profileSetup_saveError": "Error saving profile.",
-  "profileSetup_genderSelectTitle": "Select gender",
-  "profileSetup_genderMale": "Male",
-  "profileSetup_genderFemale": "Female",
   "profileSetup_doneTitle": "Setup Complete",
   "profileSetup_doneMessage": "Setup is complete!",
   "profileSetup_startRecording": "Start Recording!",
@@ -841,7 +838,6 @@
   "timePicker_title": "Select Time",
   "timePicker_confirm": "Confirm",
 
-  "country_selectTitle": "Select Country",
 
   "datetime_am": "AM",
   "datetime_pm": "PM",
@@ -867,5 +863,46 @@
   "quota_limitReachedTitle": "Limit Reached",
   "quota_limitReachedMessage": "You've reached this month's usage limit. It resets next month.",
 
-  "common_defaultPetName": "Buddy"
+  "common_defaultPetName": "Buddy",
+
+  "profile_ageYears": "{years}y",
+  "@profile_ageYears": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "profile_ageMonths": "{months}m",
+  "@profile_ageMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "profile_ageDays": "{days}d",
+  "@profile_ageDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "a11y_goBack": "Go back",
+  "a11y_close": "Close",
+  "a11y_dismissKeyboard": "Dismiss keyboard",
+  "a11y_previousMonth": "Previous month",
+  "a11y_nextMonth": "Next month",
+  "a11y_selectDate": "Select date",
+  "a11y_selectColor": "Select color",
+  "a11y_sendMessage": "Send message",
+  "a11y_editFoodRecord": "Edit food record",
+  "a11y_deleteFoodRecord": "Delete food record",
+  "a11y_editDailyRecord": "Edit daily record",
+  "a11y_editProfilePhoto": "Edit profile photo",
+  "a11y_editPetProfilePhoto": "Edit pet profile photo",
+  "a11y_toggleInputSheet": "Expand or collapse input sheet",
+  "a11y_selectPet": "Select pet",
+  "a11y_wciHealthStatus": "WCI health status",
+  "a11y_editPetPhoto": "Edit pet photo",
+  "a11y_selectLanguage": "Select language",
+  "a11y_editProfile": "Edit profile",
+  "a11y_editPetProfile": "Edit pet profile",
+  "a11y_removeSelectedImage": "Remove selected image"
 }

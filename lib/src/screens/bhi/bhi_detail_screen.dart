@@ -220,7 +220,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
                 letterSpacing: -0.3,
               ),
             ),
@@ -278,7 +278,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -302,7 +302,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
+              color: AppColors.textSecondary,
               letterSpacing: -0.3,
               height: 1.5,
             ),
@@ -378,7 +378,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                        color: AppColors.textSecondary,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -490,7 +490,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.warmGray,
+                    color: AppColors.textSecondary,
                   ),
                 ),
             ],
@@ -587,13 +587,19 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
       } else {
         // 바: 동그라미 왼쪽이면 채움, 오른쪽이면 비움
         final bool filled = wciLevel > 0 && i < circlePos;
-        children.add(_buildSegment(filled));
+        children.add(Expanded(child: _buildSegment(filled)));
       }
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: children,
+    // 바 4개(56px) + 원(22px) + 간격(2px×4) = 254px. 좁은 화면에서는 바가 축소된다.
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 254),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: children,
+        ),
+      ),
     );
   }
 
@@ -601,7 +607,6 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
     return AnimatedContainer(
       duration: AppDurations.of(context, AppDurations.quick),
       curve: AppCurves.enter,
-      width: 56,
       height: 8,
       decoration: BoxDecoration(
         color: isActive ? AppColors.brandPrimary : AppColors.gray100,

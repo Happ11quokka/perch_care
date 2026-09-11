@@ -2136,22 +2136,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileSetup_title => '个人资料设置';
 
   @override
-  String get profileSetup_phoneHint => '请输入电话号码';
+  String get profileSetup_emailNone => '未注册邮箱';
 
   @override
   String get profileSetup_complete => '完成';
 
   @override
   String get profileSetup_saveError => '保存个人资料时发生错误。';
-
-  @override
-  String get profileSetup_genderSelectTitle => '请选择性别';
-
-  @override
-  String get profileSetup_genderMale => '男';
-
-  @override
-  String get profileSetup_genderFemale => '女';
 
   @override
   String get profileSetup_doneTitle => '设置完成';
@@ -2167,9 +2158,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timePicker_confirm => '确认选择';
-
-  @override
-  String get country_selectTitle => '选择国家';
 
   @override
   String get datetime_am => '上午';
@@ -2214,4 +2202,82 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get common_defaultPetName => '宝贝';
+
+  @override
+  String profile_ageYears(int years) {
+    return '$years年';
+  }
+
+  @override
+  String profile_ageMonths(int months) {
+    return '$months个月';
+  }
+
+  @override
+  String profile_ageDays(int days) {
+    return '$days天';
+  }
+
+  @override
+  String get a11y_goBack => '返回';
+
+  @override
+  String get a11y_close => '关闭';
+
+  @override
+  String get a11y_dismissKeyboard => '收起键盘';
+
+  @override
+  String get a11y_previousMonth => '上个月';
+
+  @override
+  String get a11y_nextMonth => '下个月';
+
+  @override
+  String get a11y_selectDate => '选择日期';
+
+  @override
+  String get a11y_selectColor => '选择颜色';
+
+  @override
+  String get a11y_sendMessage => '发送消息';
+
+  @override
+  String get a11y_editFoodRecord => '编辑饲料记录';
+
+  @override
+  String get a11y_deleteFoodRecord => '删除饲料记录';
+
+  @override
+  String get a11y_editDailyRecord => '编辑每日记录';
+
+  @override
+  String get a11y_editProfilePhoto => '编辑个人资料照片';
+
+  @override
+  String get a11y_editPetProfilePhoto => '编辑宠物资料照片';
+
+  @override
+  String get a11y_toggleInputSheet => '展开或收起输入面板';
+
+  @override
+  String get a11y_selectPet => '选择宠物';
+
+  @override
+  String get a11y_wciHealthStatus => 'WCI 健康状态';
+
+  @override
+  String get a11y_editPetPhoto => '编辑宠物照片';
+
+  @override
+  String get a11y_selectLanguage => '选择语言';
+
+  @override
+  String get a11y_editProfile => '编辑个人资料';
+
+  @override
+  String get a11y_editPetProfile => '编辑宠物资料';
+
+  @override
+  String get a11y_removeSelectedImage => '移除所选图片';
 }

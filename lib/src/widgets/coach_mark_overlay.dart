@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/colors.dart';
 import '../theme/durations.dart';
 import 'pressable_scale.dart';
@@ -19,9 +20,54 @@ class CoachMarkStep {
 }
 
 /// 코치마크 오버레이 관리자
+///
+/// 오버레이는 루트 [Overlay]에 전체 화면 배리어로 삽입되므로, 호출한 화면이
+/// 실제로 보이는 상태인지 반드시 확인한다. StatefulShellRoute 탭은 비활성 상태에서도
+/// 위젯이 살아 있어(`mounted == true`) 지연 콜백이 그대로 실행되기 때문에,
+/// [show]는 [isContextVisible]로 가시성을 검사하고 라우트가 바뀌면 스스로 닫힌다.
 class CoachMarkOverlay {
   static OverlayEntry? _currentEntry;
+  static Listenable? _routeListenable;
+  static VoidCallback? _routeListener;
 
+  /// 현재 코치마크가 떠 있는지.
+  static bool get isShowing => _currentEntry != null;
+
+  /// [context]가 속한 화면이 지금 사용자에게 보이는지 판단한다.
+  ///
+  /// 1. 같은 Navigator 안에서 다른 route(푸시된 화면/다이얼로그)에 덮여 있으면 false
+  /// 2. go_router 사용 시, 이 화면이 매칭된 경로가 현재 라우터 위치와 다르면 false
+  ///    (StatefulShellRoute의 비활성 탭 — 위젯은 살아 있지만 화면에는 없음)
+  /// 3. 프레임워크 신호: 비활성 브랜치·불투명 route 아래 서브트리는 [TickerMode]가 꺼진다
+  static bool isContextVisible(BuildContext context) {
+    if (!context.mounted) return false;
+
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) return false;
+
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      String? matched;
+      try {
+        matched = GoRouterState.of(context).matchedLocation;
+      } catch (_) {
+        // go_router 페이지 밖의 context(예: 테스트의 일반 MaterialPageRoute)
+        matched = null;
+      }
+      if (matched != null) {
+        final current = router.routerDelegate.currentConfiguration.uri.path;
+        if (current != matched && !current.startsWith('$matched/')) {
+          return false;
+        }
+      }
+    }
+
+    if (!TickerMode.valuesOf(context).enabled) return false;
+    return true;
+  }
+
+  /// 코치마크를 표시한다. [context]의 화면이 보이지 않으면(비활성 탭·덮인 route)
+  /// 아무것도 하지 않고 [onComplete]도 호출하지 않는다 — 다음 진입 시 다시 시도된다.
   static void show(
     BuildContext context, {
     required List<CoachMarkStep> steps,
@@ -31,6 +77,8 @@ class CoachMarkOverlay {
     ScrollController? scrollController,
     VoidCallback? onComplete,
   }) {
+    if (!isContextVisible(context)) return;
+
     // 타겟이 위젯 트리에 없는 단계 필터링
     final validSteps =
         steps.where((s) => s.targetKey.currentContext != null).toList();
@@ -58,9 +106,36 @@ class CoachMarkOverlay {
     );
     _currentEntry = entry;
     overlay.insert(entry);
+    _watchRouteChanges(context, entry);
+  }
+
+  /// 라우트/탭이 바뀌어 호출 화면이 더 이상 보이지 않으면 배리어를 즉시 걷어낸다.
+  /// 화면을 떠난 것이므로 [onComplete](markSeen)는 호출하지 않는다.
+  static void _watchRouteChanges(BuildContext origin, OverlayEntry entry) {
+    final router = GoRouter.maybeOf(origin);
+    if (router == null) return;
+    final listenable = router.routerDelegate;
+    void listener() {
+      // 새 위치가 프레임에 반영된 뒤(isCurrent/TickerMode 갱신) 판정한다.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_currentEntry != entry) return;
+        if (!isContextVisible(origin)) dismiss();
+      });
+    }
+
+    listenable.addListener(listener);
+    _routeListenable = listenable;
+    _routeListener = listener;
   }
 
   static void dismiss() {
+    final listenable = _routeListenable;
+    final listener = _routeListener;
+    if (listenable != null && listener != null) {
+      listenable.removeListener(listener);
+    }
+    _routeListenable = null;
+    _routeListener = null;
     _currentEntry?.remove();
     _currentEntry = null;
   }
@@ -267,7 +342,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
             Positioned.fill(
               child: Semantics(
                 button: true,
-                label: 'Next',
+                label: isLastStep ? widget.gotItLabel : widget.nextLabel,
                 child: GestureDetector(
                   onTap: _nextStep,
                   behavior: HitTestBehavior.translucent,
@@ -435,7 +510,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.brandPrimary,
+                                color: AppColors.brandTextOnLight,
                                 letterSpacing: -0.35,
                               ),
                             ),

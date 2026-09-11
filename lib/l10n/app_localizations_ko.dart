@@ -2181,22 +2181,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profileSetup_title => '프로필 설정';
 
   @override
-  String get profileSetup_phoneHint => '전화번호를 입력해 주세요';
+  String get profileSetup_emailNone => '등록된 이메일이 없습니다';
 
   @override
   String get profileSetup_complete => '입력완료';
 
   @override
   String get profileSetup_saveError => '프로필 저장 중 오류가 발생했습니다.';
-
-  @override
-  String get profileSetup_genderSelectTitle => '성별을 선택하세요';
-
-  @override
-  String get profileSetup_genderMale => '남';
-
-  @override
-  String get profileSetup_genderFemale => '여';
 
   @override
   String get profileSetup_doneTitle => '설정 완료';
@@ -2212,9 +2203,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timePicker_confirm => '선택 완료';
-
-  @override
-  String get country_selectTitle => '국가를 선택하세요';
 
   @override
   String get datetime_am => '오전';
@@ -2260,4 +2248,82 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get common_defaultPetName => '사랑이';
+
+  @override
+  String profile_ageYears(int years) {
+    return '$years년';
+  }
+
+  @override
+  String profile_ageMonths(int months) {
+    return '$months개월';
+  }
+
+  @override
+  String profile_ageDays(int days) {
+    return '$days일';
+  }
+
+  @override
+  String get a11y_goBack => '뒤로 가기';
+
+  @override
+  String get a11y_close => '닫기';
+
+  @override
+  String get a11y_dismissKeyboard => '키보드 닫기';
+
+  @override
+  String get a11y_previousMonth => '이전 달';
+
+  @override
+  String get a11y_nextMonth => '다음 달';
+
+  @override
+  String get a11y_selectDate => '날짜 선택';
+
+  @override
+  String get a11y_selectColor => '색상 선택';
+
+  @override
+  String get a11y_sendMessage => '메시지 보내기';
+
+  @override
+  String get a11y_editFoodRecord => '사료 기록 수정';
+
+  @override
+  String get a11y_deleteFoodRecord => '사료 기록 삭제';
+
+  @override
+  String get a11y_editDailyRecord => '일일 기록 수정';
+
+  @override
+  String get a11y_editProfilePhoto => '프로필 사진 수정';
+
+  @override
+  String get a11y_editPetProfilePhoto => '펫 프로필 사진 수정';
+
+  @override
+  String get a11y_toggleInputSheet => '입력 시트 펼치기/접기';
+
+  @override
+  String get a11y_selectPet => '펫 선택';
+
+  @override
+  String get a11y_wciHealthStatus => 'WCI 건강 상태';
+
+  @override
+  String get a11y_editPetPhoto => '펫 사진 수정';
+
+  @override
+  String get a11y_selectLanguage => '언어 선택';
+
+  @override
+  String get a11y_editProfile => '프로필 수정';
+
+  @override
+  String get a11y_editPetProfile => '펫 프로필 수정';
+
+  @override
+  String get a11y_removeSelectedImage => '선택한 이미지 제거';
 }

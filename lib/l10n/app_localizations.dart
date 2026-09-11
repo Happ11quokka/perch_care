@@ -4138,11 +4138,11 @@ abstract class AppLocalizations {
   /// **'프로필 설정'**
   String get profileSetup_title;
 
-  /// No description provided for @profileSetup_phoneHint.
+  /// No description provided for @profileSetup_emailNone.
   ///
   /// In ko, this message translates to:
-  /// **'전화번호를 입력해 주세요'**
-  String get profileSetup_phoneHint;
+  /// **'등록된 이메일이 없습니다'**
+  String get profileSetup_emailNone;
 
   /// No description provided for @profileSetup_complete.
   ///
@@ -4155,24 +4155,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'프로필 저장 중 오류가 발생했습니다.'**
   String get profileSetup_saveError;
-
-  /// No description provided for @profileSetup_genderSelectTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'성별을 선택하세요'**
-  String get profileSetup_genderSelectTitle;
-
-  /// No description provided for @profileSetup_genderMale.
-  ///
-  /// In ko, this message translates to:
-  /// **'남'**
-  String get profileSetup_genderMale;
-
-  /// No description provided for @profileSetup_genderFemale.
-  ///
-  /// In ko, this message translates to:
-  /// **'여'**
-  String get profileSetup_genderFemale;
 
   /// No description provided for @profileSetup_doneTitle.
   ///
@@ -4203,12 +4185,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'선택 완료'**
   String get timePicker_confirm;
-
-  /// No description provided for @country_selectTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'국가를 선택하세요'**
-  String get country_selectTitle;
 
   /// No description provided for @datetime_am.
   ///
@@ -4293,6 +4269,150 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'사랑이'**
   String get common_defaultPetName;
+
+  /// No description provided for @profile_ageYears.
+  ///
+  /// In ko, this message translates to:
+  /// **'{years}년'**
+  String profile_ageYears(int years);
+
+  /// No description provided for @profile_ageMonths.
+  ///
+  /// In ko, this message translates to:
+  /// **'{months}개월'**
+  String profile_ageMonths(int months);
+
+  /// No description provided for @profile_ageDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일'**
+  String profile_ageDays(int days);
+
+  /// No description provided for @a11y_goBack.
+  ///
+  /// In ko, this message translates to:
+  /// **'뒤로 가기'**
+  String get a11y_goBack;
+
+  /// No description provided for @a11y_close.
+  ///
+  /// In ko, this message translates to:
+  /// **'닫기'**
+  String get a11y_close;
+
+  /// No description provided for @a11y_dismissKeyboard.
+  ///
+  /// In ko, this message translates to:
+  /// **'키보드 닫기'**
+  String get a11y_dismissKeyboard;
+
+  /// No description provided for @a11y_previousMonth.
+  ///
+  /// In ko, this message translates to:
+  /// **'이전 달'**
+  String get a11y_previousMonth;
+
+  /// No description provided for @a11y_nextMonth.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음 달'**
+  String get a11y_nextMonth;
+
+  /// No description provided for @a11y_selectDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'날짜 선택'**
+  String get a11y_selectDate;
+
+  /// No description provided for @a11y_selectColor.
+  ///
+  /// In ko, this message translates to:
+  /// **'색상 선택'**
+  String get a11y_selectColor;
+
+  /// No description provided for @a11y_sendMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지 보내기'**
+  String get a11y_sendMessage;
+
+  /// No description provided for @a11y_editFoodRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'사료 기록 수정'**
+  String get a11y_editFoodRecord;
+
+  /// No description provided for @a11y_deleteFoodRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'사료 기록 삭제'**
+  String get a11y_deleteFoodRecord;
+
+  /// No description provided for @a11y_editDailyRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'일일 기록 수정'**
+  String get a11y_editDailyRecord;
+
+  /// No description provided for @a11y_editProfilePhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 사진 수정'**
+  String get a11y_editProfilePhoto;
+
+  /// No description provided for @a11y_editPetProfilePhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 프로필 사진 수정'**
+  String get a11y_editPetProfilePhoto;
+
+  /// No description provided for @a11y_toggleInputSheet.
+  ///
+  /// In ko, this message translates to:
+  /// **'입력 시트 펼치기/접기'**
+  String get a11y_toggleInputSheet;
+
+  /// No description provided for @a11y_selectPet.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 선택'**
+  String get a11y_selectPet;
+
+  /// No description provided for @a11y_wciHealthStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'WCI 건강 상태'**
+  String get a11y_wciHealthStatus;
+
+  /// No description provided for @a11y_editPetPhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 사진 수정'**
+  String get a11y_editPetPhoto;
+
+  /// No description provided for @a11y_selectLanguage.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어 선택'**
+  String get a11y_selectLanguage;
+
+  /// No description provided for @a11y_editProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 수정'**
+  String get a11y_editProfile;
+
+  /// No description provided for @a11y_editPetProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'펫 프로필 수정'**
+  String get a11y_editPetProfile;
+
+  /// No description provided for @a11y_removeSelectedImage.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택한 이미지 제거'**
+  String get a11y_removeSelectedImage;
 }
 
 class _AppLocalizationsDelegate

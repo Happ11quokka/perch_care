@@ -7,7 +7,7 @@ import '../base/async_view_model.dart';
 
 /// 내 펫 목록 ViewModel.
 ///
-/// View: `PetProfileScreen` (펫 목록 화면)
+/// View: `ProfileScreen`(펫 목록 섹션) · `SplashScreen`(초기 라우팅 판단)
 /// Repository: `PetRepository`
 class PetListViewModel extends AsyncViewModel<List<Pet>> {
   PetRepository get _repo => ref.read(petRepositoryProvider);
