@@ -778,6 +778,8 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
           border: Border.all(color: AppColors.gray300),
           borderRadius: BorderRadius.circular(12),
         ),
+        // 라벨은 남는 폭을 차지하며 줄어들고(Spacer 역할 겸함), 값도 좁은 화면에서
+        // 함께 줄어든다. 320px 영어에서 고정 폭 조합이 넘치던 문제(F09) 대응.
         child: Row(
           children: [
             const Icon(
@@ -786,23 +788,32 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
               color: AppColors.brandPrimary,
             ),
             const SizedBox(width: 10),
-            Text(
-              l10n.weight_selectTime,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.mediumGray,
-                letterSpacing: -0.35,
+            Expanded(
+              child: Text(
+                l10n.weight_selectTime,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.mediumGray,
+                  letterSpacing: -0.35,
+                ),
               ),
             ),
-            const Spacer(),
-            Text(
-              timeText,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.nearBlack,
-                letterSpacing: -0.35,
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                timeText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.nearBlack,
+                  letterSpacing: -0.35,
+                ),
               ),
             ),
             const SizedBox(width: 4),

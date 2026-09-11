@@ -220,6 +220,7 @@ final _routes = <String, _Route>{
     extra: {'mode': VisionMode.partSpecific},
   ),
   'email-login': (path: RoutePaths.emailLogin, extra: null),
+  'weight-record': (path: RoutePaths.weightRecord, extra: null),
 };
 
 /// flutter_test 기본 Ahem 폰트는 모든 글리프가 1em 정사각형이라 실제보다 훨씬
