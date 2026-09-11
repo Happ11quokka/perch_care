@@ -12,7 +12,6 @@ import '../screens/weight/weight_detail_screen.dart';
 import '../screens/weight/weight_record_screen.dart';
 import '../screens/weight/weight_add_screen.dart';
 import '../screens/pet/pet_add_screen.dart';
-import '../screens/pet/pet_profile_screen.dart';
 import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/pet_profile_detail_screen.dart';
@@ -216,11 +215,6 @@ class AppRouter {
                         isInitialSetup: map?['isInitialSetup'] == true,
                       );
                     },
-                  ),
-                  GoRoute(
-                    path: 'pet/profile',
-                    name: RouteNames.petProfile,
-                    builder: (context, state) => const PetProfileScreen(),
                   ),
                   GoRoute(
                     path: 'food/record',

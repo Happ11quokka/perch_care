@@ -12,7 +12,6 @@ class RouteNames {
   static const String weightAddToday = 'weight-add-today';
   static const String weightAdd = 'weight-add';
   static const String petAdd = 'pet-add';
-  static const String petProfile = 'pet-profile';
   static const String petProfileDetail = 'pet-profile-detail';
   static const String notification = 'notification';
   static const String profile = 'profile';
