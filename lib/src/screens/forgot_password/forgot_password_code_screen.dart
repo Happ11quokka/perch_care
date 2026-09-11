@@ -154,7 +154,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),
@@ -166,7 +166,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                           letterSpacing: -0.35,
                         ),
                       ),
@@ -181,7 +181,7 @@ class _ForgotPasswordCodeScreenState extends ConsumerState<ForgotPasswordCodeScr
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.warmGray,
+                            color: AppColors.textSecondary,
                             letterSpacing: -0.35,
                           ),
                         ),

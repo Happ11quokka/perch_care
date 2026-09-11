@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:perch_care/src/models/weight_record.dart';
 import 'package:perch_care/src/providers/repository_providers.dart';
@@ -29,6 +30,11 @@ ProviderContainer _container(WeightRepository repo) {
 }
 
 void main() {
+  // 체중 저장은 AnalyticsService를 fire-and-forget으로 호출하고, 그 안의 리뷰
+  // 유도 확인이 SharedPreferences에 접근한다.
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   late MockWeightRepository repo;
 
   setUpAll(() {

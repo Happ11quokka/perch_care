@@ -280,7 +280,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             hintStyle: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
+              color: AppColors.textSecondary,
               letterSpacing: -0.35,
             ),
           ),
@@ -314,7 +314,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
             letterSpacing: -0.35,
           ),
         ),
@@ -349,7 +349,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.45,
                     ),
                   ),

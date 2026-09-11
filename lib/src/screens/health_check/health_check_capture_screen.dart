@@ -278,7 +278,7 @@ class _HealthCheckCaptureScreenState
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                        color: AppColors.textSecondary,
                         letterSpacing: -0.3,
                         height: 1.5,
                       ),
@@ -362,7 +362,7 @@ class _HealthCheckCaptureScreenState
         hintStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w400,
-          color: AppColors.warmGray,
+          color: AppColors.textSecondary,
           letterSpacing: -0.3,
         ),
         filled: true,
@@ -416,7 +416,7 @@ class _HealthCheckCaptureScreenState
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.brandPrimary,
+                    color: AppColors.brandTextOnLight,
                     letterSpacing: -0.3,
                   ),
                 ),

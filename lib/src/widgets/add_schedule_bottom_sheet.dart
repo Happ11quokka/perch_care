@@ -512,7 +512,7 @@ class _AddScheduleBottomSheetState extends State<AddScheduleBottomSheet> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),

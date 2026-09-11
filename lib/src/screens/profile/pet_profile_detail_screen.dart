@@ -481,7 +481,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
               hintStyle: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),
@@ -537,7 +537,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                 fontWeight: FontWeight.w400,
                 color: displayGender != null
                     ? AppColors.nearBlack
-                    : AppColors.warmGray,
+                    : AppColors.textSecondary,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),
@@ -588,7 +588,7 @@ class _PetProfileDetailScreenState extends ConsumerState<PetProfileDetailScreen>
                 fontWeight: FontWeight.w400,
                 color: selectedDate != null
                     ? AppColors.nearBlack
-                    : AppColors.warmGray,
+                    : AppColors.textSecondary,
                 height: 20 / 14,
                 letterSpacing: -0.35,
               ),

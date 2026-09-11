@@ -510,7 +510,7 @@ class _CoachMarkWidgetState extends State<_CoachMarkWidget>
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.brandPrimary,
+                                color: AppColors.brandTextOnLight,
                                 letterSpacing: -0.35,
                               ),
                             ),

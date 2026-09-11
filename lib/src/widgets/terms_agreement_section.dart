@@ -173,7 +173,7 @@ class _TermsAgreementSectionState extends State<TermsAgreementSection> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       decoration: TextDecoration.underline,
                     ),
                   ),

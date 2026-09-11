@@ -632,7 +632,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.brandPrimary,
+                          color: AppColors.brandTextOnLight,
                         ),
                       ),
                       Expanded(
@@ -813,7 +813,7 @@ class _HealthCheckResultScreenState extends ConsumerState<HealthCheckResultScree
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
                 letterSpacing: -0.3,
               ),
             ),

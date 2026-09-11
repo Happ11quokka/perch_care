@@ -122,7 +122,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),
@@ -203,7 +203,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -242,7 +242,7 @@ class _ForgotPasswordResetScreenState extends ConsumerState<ForgotPasswordResetS
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,

@@ -219,7 +219,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -227,7 +227,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Text(
               l10n.profile_unlink,
               style: const TextStyle(
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -589,7 +589,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                 ],
@@ -1088,7 +1088,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
-                    color: isLinked ? AppColors.brandDark : AppColors.warmGray,
+                    color: isLinked ? AppColors.brandDark : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -1151,7 +1151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -1159,7 +1159,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Text(
               l10n.profile_logout,
               style: const TextStyle(
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1203,7 +1203,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -1248,7 +1248,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               l10n.common_cancel,
-              style: const TextStyle(color: AppColors.warmGray),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
@@ -1425,7 +1425,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.warmGray,
+                    color: AppColors.textSecondary,
                     height: 34 / 16,
                     letterSpacing: -0.5,
                   ),

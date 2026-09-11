@@ -74,19 +74,25 @@ class AnalyticsService {
   static const _kReviewPromptedKey = 'analytics_review_prompted';
   static const _kReviewThreshold = 5;
 
+  /// 리뷰 유도는 부가 기능이다. 저장 흐름에서 fire-and-forget으로 호출되므로
+  /// 실패를 밖으로 던지면 처리되지 않는 비동기 오류가 된다.
   Future<void> _checkReviewPrompt() async {
-    final prefs = await SharedPreferences.getInstance();
-    final alreadyPrompted = prefs.getBool(_kReviewPromptedKey) ?? false;
-    if (alreadyPrompted) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final alreadyPrompted = prefs.getBool(_kReviewPromptedKey) ?? false;
+      if (alreadyPrompted) return;
 
-    final count = (prefs.getInt(_kWeightCountKey) ?? 0) + 1;
-    await prefs.setInt(_kWeightCountKey, count);
+      final count = (prefs.getInt(_kWeightCountKey) ?? 0) + 1;
+      await prefs.setInt(_kWeightCountKey, count);
 
-    if (count >= _kReviewThreshold) {
-      if (await _inAppReview.isAvailable()) {
-        await _inAppReview.requestReview();
-        await prefs.setBool(_kReviewPromptedKey, true);
+      if (count >= _kReviewThreshold) {
+        if (await _inAppReview.isAvailable()) {
+          await _inAppReview.requestReview();
+          await prefs.setBool(_kReviewPromptedKey, true);
+        }
       }
+    } catch (e) {
+      debugPrint('[Analytics] 리뷰 유도 확인 실패: $e');
     }
   }
 }

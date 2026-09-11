@@ -572,7 +572,7 @@ class _AddDailyRecordBottomSheetState
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),

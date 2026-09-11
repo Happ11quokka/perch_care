@@ -355,7 +355,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.warmGray,
+                            color: AppColors.textSecondary,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -478,7 +478,7 @@ class _WaterRecordScreenState extends ConsumerState<WaterRecordScreen> {
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
-                                    color: AppColors.brandPrimary,
+                                    color: AppColors.brandTextOnLight,
                                     letterSpacing: -0.3,
                                   ),
                                 ),

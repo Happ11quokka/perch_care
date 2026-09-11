@@ -200,7 +200,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -215,7 +215,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.brandPrimary,
+                        color: AppColors.brandTextOnLight,
                         letterSpacing: -0.35,
                         decoration: TextDecoration.underline,
                         decorationColor: AppColors.brandPrimary,
@@ -261,7 +261,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -303,7 +303,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
@@ -401,7 +401,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                   letterSpacing: 0.07,
                 ),
               ),
@@ -422,7 +422,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
+              color: AppColors.textSecondary,
               letterSpacing: 0.07,
             ),
           ),

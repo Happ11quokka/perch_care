@@ -220,7 +220,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
                 letterSpacing: -0.3,
               ),
             ),
@@ -278,7 +278,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -302,7 +302,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w400,
-              color: AppColors.warmGray,
+              color: AppColors.textSecondary,
               letterSpacing: -0.3,
               height: 1.5,
             ),
@@ -378,7 +378,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.warmGray,
+                        color: AppColors.textSecondary,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -490,7 +490,7 @@ class _BhiDetailScreenState extends ConsumerState<BhiDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.warmGray,
+                    color: AppColors.textSecondary,
                   ),
                 ),
             ],

@@ -87,7 +87,7 @@ class _BreedSelectorState extends State<BreedSelector> {
                     fontWeight: FontWeight.w400,
                     color: hasSelection
                         ? AppColors.nearBlack
-                        : AppColors.warmGray,
+                        : AppColors.textSecondary,
                     letterSpacing: -0.35,
                   ),
                 ),
@@ -432,7 +432,7 @@ class _BreedSearchDialogState extends ConsumerState<_BreedSearchDialog> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.brandPrimary,
+                  color: AppColors.brandTextOnLight,
                   height: 1.5,
                 ),
               ),

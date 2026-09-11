@@ -106,7 +106,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       height: 20 / 14,
                       letterSpacing: -0.35,
                     ),
@@ -149,7 +149,7 @@ class ProfileSetupCompleteScreen extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.45,
                       height: 1.44,
                     ),

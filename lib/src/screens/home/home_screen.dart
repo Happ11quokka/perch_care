@@ -543,7 +543,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: _isMonthlyView ? AppColors.white : AppColors.warmGray,
+                          color: _isMonthlyView ? AppColors.white : AppColors.textSecondary,
                           letterSpacing: -0.35,
                         ),
                         child: Text(l10n.home_monthlyUnit),
@@ -578,7 +578,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: !_isMonthlyView ? AppColors.white : AppColors.warmGray,
+                          color: !_isMonthlyView ? AppColors.white : AppColors.textSecondary,
                           letterSpacing: -0.35,
                         ),
                         child: Text(l10n.home_weeklyUnit),
@@ -802,7 +802,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         TextSpan(
                           text: '*',
                           style: const TextStyle(
-                            color: AppColors.brandPrimary,
+                            color: AppColors.brandTextOnLight,
                           ),
                         ),
                         TextSpan(text: ' ${l10n.home_wciHealthStatus.replaceAll('WCI* ', '')}'),
@@ -832,7 +832,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -914,7 +914,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             l10n.error_network,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: AppColors.warmGray,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ),

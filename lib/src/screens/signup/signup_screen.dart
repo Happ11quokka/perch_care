@@ -275,7 +275,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.35,
                     ),
                   ),
@@ -290,7 +290,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.brandPrimary,
+                        color: AppColors.brandTextOnLight,
                         letterSpacing: -0.35,
                         decoration: TextDecoration.underline,
                         decorationColor: AppColors.brandPrimary,
@@ -346,7 +346,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.warmGray,
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -393,7 +393,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.warmGray,
+                      color: AppColors.textSecondary,
                       letterSpacing: 0.07,
                     ),
                     border: InputBorder.none,
@@ -505,7 +505,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: Text(
               l10n.common_later,
               style: const TextStyle(
-                color: AppColors.warmGray,
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -522,7 +522,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: Text(
               l10n.common_confirm,
               style: const TextStyle(
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 fontWeight: FontWeight.w600,
               ),
             ),

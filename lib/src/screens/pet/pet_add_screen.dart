@@ -567,7 +567,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                 hintStyle: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.warmGray,
+                  color: AppColors.textSecondary,
                   letterSpacing: -0.35,
                 ),
                 suffixText: suffixText,
@@ -658,7 +658,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontWeight: FontWeight.w400,
                   color: hasValue
                       ? AppColors.nearBlack
-                      : AppColors.warmGray,
+                      : AppColors.textSecondary,
                   letterSpacing: -0.35,
                 ),
               ),
@@ -729,7 +729,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                     fontWeight: FontWeight.w400,
                     color: hasValue
                         ? AppColors.nearBlack
-                        : AppColors.warmGray,
+                        : AppColors.textSecondary,
                     letterSpacing: -0.35,
                   ),
                 ),
@@ -785,7 +785,7 @@ class _PetAddScreenState extends ConsumerState<PetAddScreen> {
                   fontWeight: FontWeight.w400,
                   color: hasValue
                       ? AppColors.nearBlack
-                      : AppColors.warmGray,
+                      : AppColors.textSecondary,
                   letterSpacing: -0.35,
                 ),
               ),

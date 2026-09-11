@@ -796,7 +796,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.warmGray,
+                            color: AppColors.textSecondary,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -899,7 +899,7 @@ class _FoodRecordScreenState extends ConsumerState<FoodRecordScreen> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.warmGray,
+                                  color: AppColors.textSecondary,
                                   letterSpacing: -0.35,
                                 ),
                               ),

@@ -82,7 +82,7 @@ class _ForgotPasswordMethodScreenState
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.warmGray,
+                          color: AppColors.textSecondary,
                           letterSpacing: -0.35,
                           height: 1.43,
                         ),

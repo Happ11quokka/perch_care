@@ -436,7 +436,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.warmGray,
+                            color: AppColors.textSecondary,
                             letterSpacing: -0.35,
                           ),
                         ),
@@ -843,7 +843,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: AppColors.brandPrimary,
+                color: AppColors.brandTextOnLight,
                 letterSpacing: -0.3,
               ),
             ),
