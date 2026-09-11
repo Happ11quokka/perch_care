@@ -39,6 +39,7 @@ import 'package:perch_care/src/repositories/weight_repository.dart';
 import 'package:perch_care/src/router/app_router.dart';
 import 'package:perch_care/src/router/route_paths.dart';
 import 'package:perch_care/src/services/api/token_service.dart';
+import 'package:perch_care/src/services/firebase/firebase_init.dart';
 import 'package:perch_care/src/services/storage/local_image_storage_service.dart';
 import 'package:perch_care/src/theme/app_theme.dart';
 import 'package:perch_care/src/view_models/home/home_state.dart';
@@ -255,7 +256,8 @@ void main() {
     final icons = FontLoader('MaterialIcons')
       ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'));
     await icons.load();
-    // AppRouter는 FirebaseAnalyticsObserver를 등록하므로 Firebase core mock이 필요.
+    // AppRouter는 Firebase를 쓸 수 있을 때만 FirebaseAnalyticsObserver를 등록한다.
+    // 실제 앱과 같은 구성(관찰자 포함)으로 검사하기 위해 core mock을 초기화한다.
     setupFirebaseCoreMocks();
     await Firebase.initializeApp();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -263,6 +265,7 @@ void main() {
       const MethodChannel('plugins.flutter.io/firebase_analytics'),
       (_) async => null,
     );
+    FirebaseInit.setAvailableForTest(value: true);
     FlutterSecureStorage.setMockInitialValues({});
     await TokenService.instance.init();
     dotenv.testLoad(fileInput: 'API_BASE_URL=https://layout.invalid/api/v1');

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../api/api_client.dart';
+import '../firebase/firebase_init.dart';
 
 /// FCM 푸시 알림 서비스
 class PushNotificationService {
@@ -17,7 +18,8 @@ class PushNotificationService {
   /// null 반환 시 플랫폼 로케일로 폴백
   static String? Function()? languageCodeResolver;
 
-  final _messaging = FirebaseMessaging.instance;
+  // Firebase 초기화 실패 환경에서 `.instance` 접근이 예외를 던지므로 지연 조회한다.
+  FirebaseMessaging get _messaging => FirebaseMessaging.instance;
   final _api = ApiClient.instance;
 
   // 스트림 구독 관리
@@ -30,6 +32,10 @@ class PushNotificationService {
   /// 초기화: 권한 요청 + 토큰 등록 + 리스너 설정
   Future<void> initialize() async {
     if (_isInitialized) return;
+    if (!FirebaseInit.isAvailable) {
+      if (kDebugMode) debugPrint('[Push] Firebase 미초기화 — 푸시 비활성화');
+      return;
+    }
 
     // 1. 알림 권한 요청
     final settings = await _messaging.requestPermission(

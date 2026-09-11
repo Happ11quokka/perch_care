@@ -103,7 +103,7 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: kDebugMode,
-    observers: [AnalyticsService.instance.observer],
+    observers: AnalyticsService.instance.navigatorObservers,
     redirect: (context, state) {
       final currentPath = state.uri.path;
       final isPublicRoute = _publicPaths.contains(currentPath);

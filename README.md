@@ -391,6 +391,17 @@ perch_care/
 
 ## 🚀 Getting Started
 
+### 지원 플랫폼
+
+| 플랫폼 | 상태 | 비고 |
+|---|---|---|
+| iOS | ✅ 공식 지원 | App Store 배포 대상 |
+| Android | ✅ 공식 지원 | |
+| macOS · Web · Windows · Linux | ⚠️ 비공식 | `DefaultFirebaseOptions`에 설정이 없어 Firebase 초기화가 실패한다. 앱은 계속 실행되지만 **분석·푸시 알림이 비활성화**된다 |
+
+Firebase 초기화 실패는 치명적 오류로 다루지 않는다 (`FirebaseInit.ensureInitialized()`).
+기록·AI·인증 등 본 기능은 Firebase 없이도 동작한다.
+
 ### Frontend (Flutter)
 
 ```bash
