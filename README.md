@@ -20,7 +20,7 @@
 <p align="center">
   <a href="https://perch.ai.kr/ko"><img src="https://img.shields.io/badge/Homepage-perch.ai.kr-FF9A42?style=flat-square" alt="Website" /></a>
   <a href="https://apps.apple.com/br/app/%ED%8D%BC%EC%B9%98%EC%BC%80%EC%96%B4/id6758549078"><img src="https://img.shields.io/badge/App_Store-Download-0D96F6?style=flat-square&logo=apple&logoColor=white" alt="App Store" /></a>
-  <img src="https://img.shields.io/badge/Version-2.1.0-FF9A42?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-2.1.1-FF9A42?style=flat-square" alt="Version" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Proprietary-red?style=flat-square" alt="License: Proprietary" /></a>
 </p>
 
