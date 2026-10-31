@@ -121,3 +121,7 @@ problem/
 
 # wayfinder 로컬 트래커 (로컬 전용)
 .scratch/
+
+# 로컬 전용 — 실사용자 데이터 포함 리포트, 체중기 하드웨어 번들
+docs/reports/2026-10-usage/
+체중기/
