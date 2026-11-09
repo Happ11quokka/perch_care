@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+DEEPSEEK_MODEL = "deepseek-flash"
 
 TEXT_SUPPLEMENT_PROMPT = """你是一位熟悉中国宠物鸟饲养文化的鸟类专家。
 
@@ -78,7 +79,11 @@ async def get_chinese_supplement(
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "deepseek-chat",
+                    # deepseek-chat은 2026-07-24 지원 종료 공지된 별칭 → 정식 이름 사용.
+                    # deepseek-flash는 기본이 thinking 모드라 명시적으로 끈다
+                    # (켜져 있으면 temperature 무시 + 추론 토큰이 max_tokens를 소모).
+                    "model": DEEPSEEK_MODEL,
+                    "thinking": {"type": "disabled"},
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.3,
                     "max_tokens": 500,
