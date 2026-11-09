@@ -92,7 +92,7 @@ flowchart LR
 | S6 | Google Play Billing | Android Billing Library |
 | S7 | ⭐ In-App Review | StoreKit Review API (체중 5회 기록 후 호출) |
 | S8 | AI Vision LLM | GPT-4o / Gemini Vision (백엔드 프록시 경유) |
-| S9 | AI Encyclopedia LLM | gpt-4o-mini/gpt-4.1-nano/gpt-4o/deepseek (모델은 tier별 동적 선택) |
+| S9 | AI Encyclopedia LLM | gpt-4o-mini/gpt-4o/deepseek-flash (카테고리·언어별 선택) |
 | S10 | pgvector DB | `knowledge_chunks` 벡터 검색 (RAG) |
 | S11 | Device Camera/Gallery | `image_picker` + 카메라/사진 라이브러리 권한 |
 | S12 | Local Storage | SharedPreferences + flutter_secure_storage + SQLite (이미지/캐시/큐) |
@@ -637,7 +637,7 @@ flowchart LR
 ### 액터
 
 - **Primary** — Free User (월간 encyclopedia 쿼터), Premium User
-- **Secondary** — Encyclopedia LLM (모델은 tier별 동적: Free=`gpt-4o-mini`/`deepseek-chat`, Premium=`gpt-4.1-nano`/`gpt-4o`), pgvector DB (RAG), Local Storage
+- **Secondary** — Encyclopedia LLM (`gpt-4o-mini`, 중국어 질문 시 `deepseek-flash` 보충, 비전은 `gpt-4o`), pgvector DB (RAG), Local Storage
 
 ### 유스케이스 표
 

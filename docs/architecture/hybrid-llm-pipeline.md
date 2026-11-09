@@ -10,13 +10,13 @@
 하이브리드 LLM 구조: 중국 조류 문화·법규 표현 보충은 **DeepSeek**이 담당하고, 메인 추론·요약은 **GPT 계열**이 처리한다. 카테고리별 모델 라우팅·SSE 토큰 스트리밍·LangSmith 트레이싱을 묶어 production-grade 다국어 AI 어시스턴트(앵박사)를 구축했다. 사용자는 중국어로 물어도 자연스럽고 문화적으로 정합한 답을, 질병 질문에는 더 정확한 모델의 답을, 일상 질문에는 빠르고 저렴한 모델의 답을 받는다.
 
 **사용 기술 스택**
-OpenAI **GPT-4o-mini / GPT-4.1-nano / GPT-4o**, **DeepSeek-chat**, **LangSmith** 트레이싱, **FastAPI SSE**, async/await + 다중 DB 세션 분리.
+OpenAI **GPT-4o-mini / GPT-4o**, **DeepSeek (deepseek-flash)**, **LangSmith** 트레이싱, **FastAPI SSE**, async/await + 다중 DB 세션 분리.
 
 **트러블슈팅**
 
 *문제*: 초기 단일 LLM(GPT-only) 구조는 영어·한국어 학습 비중이 높아 중국 시장향 사용자에게 정확도와 문화적 자연스러움이 떨어졌고, 모든 질문에 동일 모델을 쓰는 구조라 질병처럼 정확도가 critical한 도메인과 일반 질문 사이의 비용·품질 트레이드오프를 조정할 수 없었다. 응답 메타데이터(`<!-- META:category=...|severity=...|vet=... -->`) 파싱이 단일 정규식에 의존해 형식이 조금만 달라져도 카테고리·심각도 정보가 null로 떨어졌다. SSE 스트림 응답 도중에는 DB 세션을 잡은 채로 토큰을 흘려보내고 있어, 응답이 길어지면 connection pool이 고갈될 위험도 있었다. 비전(Health Check) 쪽도 흐릿하거나 부위가 가려진 이미지를 정상이라고 답하면서 높은 confidence를 함께 돌려주는 환각 문제가 있었다.
 
-*해결법*: 하이브리드 라우팅으로 분기했다. 언어 감지를 단순 문자 범위 체크에서 `Counter` 빈도 기반 분류로 바꿔 혼합 언어 오탐을 줄이고, 중국어가 가장 많은 입력이면 비동기로 DeepSeek-chat에 중국 조류 문화·법규 컨텍스트 보충을 요청해 RAG 블록에 합류시켰다. 카테고리별 모델 라우팅도 도입해 `_select_model(tier, category)`에서 disease는 더 정확한 gpt-4o-mini로, 일반 질문은 속도가 빠른 gpt-4.1-nano로, 비전 분석은 gpt-4o로 분기했다. SSE 흐름은 Quota / Log 두 DB 세션으로 분리해 LLM 스트림 진행 중에는 DB 커넥션을 점유하지 않도록 했다.
+*해결법*: 하이브리드 라우팅으로 분기했다. 언어 감지를 단순 문자 범위 체크에서 `Counter` 빈도 기반 분류로 바꿔 혼합 언어 오탐을 줄이고, 중국어가 가장 많은 입력이면 비동기로 DeepSeek(현 `deepseek-flash`)에 중국 조류 문화·법규 컨텍스트 보충을 요청해 RAG 블록에 합류시켰다. 카테고리별 모델 라우팅도 도입해 `_select_model(tier, category)`에서 disease는 더 정확한 gpt-4o-mini로, 일반 질문은 속도가 빠른 gpt-4.1-nano로, 비전 분석은 gpt-4o로 분기했다. (2026-11: gpt-4.1-nano가 OpenAI에서 폐기되어 일반 질문도 gpt-4o-mini로 통일, DeepSeek는 지원 종료 공지된 `deepseek-chat` 대신 `deepseek-flash` + thinking 비활성으로 전환.) SSE 흐름은 Quota / Log 두 DB 세션으로 분리해 LLM 스트림 진행 중에는 DB 커넥션을 점유하지 않도록 했다.
 
 *정합성 개선*: 메타데이터 파싱은 1차 정규식 → 2차 `<!-- ... -->` 블록 내 개별 필드 추출의 2단계 fallback parser로 강화해 형식 변동에도 견디게 했다. 컨텍스트 오버플로우는 최근 10턴 슬라이딩 윈도우 + 트림 알림 시스템 노트로 대처했고, 비전 쪽은 보이지 않는 부위에 `not_visible` severity를 강제하고 `_calibrate_confidence()`로 자체 보고 confidence를 보정(not_visible 영역당 -8점, full_body 80캡)해 거짓 음성과 과대 신뢰도를 동시에 차단했다.
 
@@ -35,9 +35,9 @@ flowchart LR
     Mode -- "Vision Health Check" --> V["GPT-4o<br/>(RAG 근거 + 이미지 분석 +<br/>not_visible severity +<br/>confidence 보정)"]
 
     Cat -- "disease" --> A["GPT-4o-mini<br/>(정확도 critical)"]
-    Cat -- "기타<br/>(nutrition / behavior /<br/>species / general)" --> B["GPT-4.1-nano<br/>(일반 질문은 속도 우선)"]
+    Cat -- "기타<br/>(nutrition / behavior /<br/>species / general)" --> B["GPT-4o-mini<br/>(gpt-4.1-nano 폐기 후 통일)"]
 
-    Start -. "병렬 호출<br/>(언어 == 중국어)" .-> DS["DeepSeek-chat<br/>(중국 문화·법규 보충 →<br/>system prompt에 합류)<br/>Encyclopedia + Vision 공통"]
+    Start -. "병렬 호출<br/>(언어 == 중국어)" .-> DS["DeepSeek-flash<br/>(중국 문화·법규 보충 →<br/>system prompt에 합류)<br/>Encyclopedia + Vision 공통"]
 
     A --> Done(["답변 + 메타"])
     B --> Done
@@ -90,7 +90,7 @@ sequenceDiagram
     actor U as 사용자 (중국어)
     participant R as FastAPI Router<br/>(ai.py)
     participant Lang as detect_language<br/>(Counter 빈도)
-    participant DS as DeepSeek-chat
+    participant DS as DeepSeek-flash
     participant RAG as RAG Pipeline<br/>(별도 문서)
     participant Sel as _select_model<br/>(tier, category)
     participant GPT as GPT-4o-mini
@@ -166,7 +166,7 @@ flowchart LR
     end
 
     subgraph CONTEXT["컨텍스트 수집"]
-        ZH -- "premium" --> DS["DeepSeek-chat<br/>문화·법규 보충"]
+        ZH -- "premium" --> DS["DeepSeek-flash<br/>문화·법규 보충"]
         ZH --> RAG1["RAG<br/>HyDE + pgvector"]
         OTHER --> RAG2["RAG<br/>HyDE + pgvector"]
         DS --> MRG[/"합류"/]
@@ -176,7 +176,7 @@ flowchart LR
 
     subgraph VPREP["Vision 전처리"]
         VIS --> VLang{"언어 감지"}
-        VLang -- "zh" --> VDS["DeepSeek-chat<br/>중국 문화 보충<br/>(mode별 프롬프트)"]
+        VLang -- "zh" --> VDS["DeepSeek-flash<br/>중국 문화 보충<br/>(mode별 프롬프트)"]
         VLang --> VRAG["RAG<br/>search_knowledge +<br/>펫 건강 이력 + 과거 분석"]
         VDS --> VMRG[/"합류"/]
         VRAG --> VMRG
@@ -186,7 +186,7 @@ flowchart LR
     subgraph MODEL["모델 라우팅 · _select_model()"]
         MRG --> Route{"카테고리"}
         Route -- "disease" --> M1["GPT-4o-mini<br/>정확도 우선"]
-        Route -- "nutrition / behavior /<br/>species / general" --> M2["GPT-4.1-nano<br/>속도·비용 우선"]
+        Route -- "nutrition / behavior /<br/>species / general" --> M2["GPT-4o-mini<br/>(gpt-4.1-nano 폐기 후 통일)"]
         VMRG --> M3["GPT-4o Vision<br/>RAG + 이미지 분석"]
     end
 
@@ -245,7 +245,7 @@ sequenceDiagram
     participant R as FastAPI Router<br/>(ai.py)
     participant DB as PostgreSQL
     participant Lang as _resolve_language
-    participant DS as DeepSeek-chat
+    participant DS as DeepSeek-flash
     participant RAG as RAG Pipeline<br/>(pgvector + 건강 이력)
     participant GPT as GPT-4o<br/>(Vision)
     participant Cal as _calibrate_confidence
