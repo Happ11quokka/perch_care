@@ -586,10 +586,12 @@ def _select_model(tier: str, category: str | None = None) -> tuple[str, int]:
     """모델과 최대 토큰 수를 반환한다.
 
     CB-11: disease/critical 카테고리는 더 정확한 모델 사용.
+    2026-11: gpt-4.1-nano가 OpenAI에서 폐기(404 model_not_found)되어
+    일반 카테고리도 gpt-4o-mini로 통일.
     """
     if category in ("disease",):
         return "gpt-4o-mini", 2048
-    return "gpt-4.1-nano", 2048
+    return "gpt-4o-mini", 2048
 
 
 async def ask(
